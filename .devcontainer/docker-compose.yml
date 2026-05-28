@@ -1,0 +1,53 @@
+services:
+  frontend:
+    image: node:22-slim
+    working_dir: /workspace/frontend
+    volumes:
+      - ..:/workspace:cached
+      - frontend-node-modules:/workspace/frontend/node_modules
+      - pnpm-store:/pnpm-store
+    ports:
+      - "3000:3000"
+    environment:
+      BACKEND_URL: http://backend:8080
+    command: sleep infinity
+
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: bookflow
+      POSTGRES_USER: bookflow
+      POSTGRES_PASSWORD: bookflow
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookflow -d bookflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  localstack:
+    image: localstack/localstack:3
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3,dynamodb
+      DEFAULT_REGION: ap-northeast-1
+    volumes:
+      - localstack-data:/var/lib/localstack
+
+  cognito-local:
+    image: jagregory/cognito-local:latest
+    ports:
+      - "9229:9229"
+    volumes:
+      - cognito-data:/app/.cognito
+
+volumes:
+  postgres-data:
+  localstack-data:
+  cognito-data:
+  frontend-node-modules:
+  pnpm-store:

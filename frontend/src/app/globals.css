@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/*
+ * @theme inline: ユーティリティクラスが CSS カスタムプロパティ（var()）を参照する。
+ * shadcn/ui init が :root に書き込む値をそのまま使用できるため、init 後も競合しない。
+ * ダークモードは :root の値を .dark / @media で上書きするため @theme 外で完結する。
+ */
+@theme inline {
+  /* Colors — shadcn/ui 標準トークン名と一致させ、init 後の自動整合を確保 */
+  --color-background:         var(--background);
+  --color-foreground:         var(--foreground);
+  --color-card:               var(--card);
+  --color-card-foreground:    var(--card-foreground);
+  --color-primary:            var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive:        var(--destructive);
+  --color-muted:              var(--muted);
+  --color-muted-foreground:   var(--muted-foreground);
+  --color-accent:             var(--accent);
+  --color-accent-foreground:  var(--accent-foreground);
+  --color-border:             var(--border);
+  --color-input:              var(--input);
+  --color-ring:               var(--ring);
+  /* BookFlow ドメイン固有トークン（shadcn/ui は上書きしない） */
+  --color-success:            var(--success);
+  --color-warning:            var(--warning);
+  --color-status-draft:       var(--status-draft);
+  --color-status-pending:     var(--status-pending);
+  --color-status-approved:    var(--status-approved);
+  --color-status-rejected:    var(--status-rejected);
+
+  /* Typography — next/font が <html> に注入する CSS 変数を参照 */
+  --font-sans: var(--font-inter), var(--font-noto-sans-jp), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono-custom), "Noto Sans Mono", monospace;
+
+  /* Radius */
+  --radius: var(--radius-base);
+}
+
+/* Light mode — shadcn/ui init はここに上書きする。init 後に DESIGN.md の OKLCH 値へ手動調整すること */
+:root {
+  --background:         oklch(1 0 0);
+  --foreground:         oklch(0.129 0.042 264.695);
+  --card:               oklch(1 0 0);
+  --card-foreground:    oklch(0.129 0.042 264.695);
+  --primary:            oklch(0.546 0.245 262.881);
+  --primary-foreground: oklch(1 0 0);
+  --destructive:        oklch(0.577 0.245 27.325);
+  --muted:              oklch(0.961 0.008 264.695);
+  --muted-foreground:   oklch(0.554 0.028 264.695);
+  --accent:             oklch(0.961 0.008 264.695);
+  --accent-foreground:  oklch(0.129 0.042 264.695);
+  --border:             oklch(0.906 0.013 264.695);
+  --input:              oklch(0.906 0.013 264.695);
+  --ring:               oklch(0.546 0.245 262.881);
+  /* BookFlow 固有（shadcn/ui init の上書き対象外） */
+  --success:            oklch(0.527 0.154 150.069);
+  --warning:            oklch(0.666 0.179 58.318);
+  --status-draft:       oklch(0.704 0.024 264.695);
+  --status-pending:     oklch(0.666 0.179 58.318);
+  --status-approved:    oklch(0.527 0.154 150.069);
+  --status-rejected:    oklch(0.577 0.245 27.325);
+  --radius-base:        0.5rem;
+}
+
+/* Dark mode */
+.dark,
+@media (prefers-color-scheme: dark) {
+  --background:      oklch(0.022 0.019 264.695);
+  --foreground:      oklch(0.984 0.003 264.695);
+  --card:            oklch(0.155 0.026 264.695);
+  --card-foreground: oklch(0.984 0.003 264.695);
+  --border:          oklch(0.155 0.026 264.695);
+  --input:           oklch(0.155 0.026 264.695);
+  --muted:           oklch(0.129 0.042 264.695);
+  --primary:         oklch(0.623 0.214 262.881);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    /* 日本語禁則処理 */
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
+  }
+
+  /* テーブル・時刻・金額の数字を等幅揃え */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

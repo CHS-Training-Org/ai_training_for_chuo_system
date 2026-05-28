@@ -162,7 +162,7 @@ Docker Compose
 | 区分                 | 技術 / サービス                          |
 | -------------------- | ---------------------------------------- |
 | フロントエンド + BFF | React, Next.js (App Router + API Routes) |
-| バックエンド         | Java 21, Spring Boot 3.x, Flyway         |
+| バックエンド         | Java 25, Spring Boot 4.0, Flyway         |
 | コンテナ             | Docker, Amazon ECS Fargate, Amazon ECR   |
 | API 管理             | Amazon API Gateway (HTTP API)            |
 | 認証                 | Amazon Cognito                           |

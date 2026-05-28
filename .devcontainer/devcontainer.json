@@ -1,0 +1,41 @@
+{
+  "name": "BookFlow Full Stack",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "frontend",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": { "version": "25" },
+    "ghcr.io/devcontainers/features/node:2.0.0": { "version": "24" },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "mounts": [
+    "source=${localEnv:USERPROFILE}/.claude,target=/root/.claude,type=bind,consistency=cached"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "redhat.java",
+        "vmware.vscode-spring-boot",
+        "vscjava.vscode-gradle",
+        "bradlc.vscode-tailwindcss",
+        "oxc.oxc-vscode",
+        "ms-playwright.playwright",
+        "ms-azuretools.vscode-docker",
+        "Anthropic.claude-code"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current"
+      }
+    }
+  },
+  "containerEnv": {
+    "WAYLAND_DISPLAY": "",
+    "DISPLAY": ""
+  },
+  "postCreateCommand": "cd frontend && pnpm install && cd ../backend && ./gradlew dependencies -q"
+}

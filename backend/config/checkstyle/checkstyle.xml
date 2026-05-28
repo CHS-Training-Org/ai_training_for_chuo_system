@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+  Google Java Style ベース（最小カスタマイズ版）
+  Spotless（ADR-019）がフォーマットを担うため、ここではフォーマット以外の規約のみチェックする
+-->
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="warning"/>
+  <property name="fileExtensions" value="java"/>
+
+  <!-- ファイル末尾の改行 -->
+  <module name="NewlineAtEndOfFile"/>
+
+  <!-- ファイルサイズ上限 -->
+  <module name="FileLength">
+    <property name="max" value="2000"/>
+  </module>
+
+  <module name="TreeWalker">
+
+    <!-- インポート -->
+    <module name="AvoidStarImport"/>
+    <module name="UnusedImports"/>
+    <module name="RedundantImport"/>
+
+    <!-- 命名規則 -->
+    <module name="TypeName"/>
+    <module name="MethodName"/>
+    <module name="ParameterName"/>
+    <module name="LocalVariableName"/>
+    <module name="ConstantName"/>
+    <module name="MemberName"/>
+    <module name="StaticVariableName"/>
+
+    <!-- コーディング規約 -->
+    <module name="EqualsHashCode"/>
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="StringLiteralEquality"/>
+    <module name="FallThrough"/>
+    <module name="OneStatementPerLine"/>
+    <module name="MultipleVariableDeclarations"/>
+
+    <!-- ブロック -->
+    <module name="NeedBraces"/>
+    <module name="LeftCurly"/>
+    <module name="RightCurly"/>
+    <module name="EmptyBlock">
+      <property name="option" value="TEXT"/>
+      <property name="tokens" value="LITERAL_TRY,LITERAL_FINALLY,LITERAL_IF,LITERAL_ELSE,LITERAL_SWITCH"/>
+    </module>
+
+    <!-- メソッド行数 -->
+    <module name="MethodLength">
+      <property name="max" value="150"/>
+    </module>
+
+    <!-- パラメータ数 -->
+    <module name="ParameterNumber">
+      <property name="max" value="7"/>
+    </module>
+
+  </module>
+</module>
