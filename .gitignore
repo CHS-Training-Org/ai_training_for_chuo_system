@@ -84,3 +84,6 @@ playwright/.cache/
 /.venv/
 *.pyc
 __pycache__/
+
+# Claude Code local settings (per-developer, not tracked)
+.claude/settings.local.json
