@@ -78,3 +78,9 @@ playwright/.cache/
 
 # ===== Docker / DevContainer ローカル =====
 .devcontainer/.env
+
+# ===== Zensical / Python =====
+/site/
+/.venv/
+*.pyc
+__pycache__/

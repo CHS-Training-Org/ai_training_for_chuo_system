@@ -24,6 +24,7 @@
 | テスト（BE） | JUnit 5 + H2 + Mockito |
 | Lint / Format | oxlint + oxfmt（FE）/ Spotless + Checkstyle（BE） |
 | パッケージ管理 | pnpm（FE） / Gradle wrapper（BE） |
+| ドキュメントサイト | Zensical / uv（Python） |
 
 ---
 
@@ -47,8 +48,9 @@ backend/                # Spring Boot
     infrastructure/     # JPA 実装・外部連携
   src/main/resources/
     db/migration/       # Flyway SQL
-Docs/                   # 設計ドキュメント・ADR
-scripts/                # ユーティリティ
+Docs/                   # 設計ドキュメント・ADR（Zensical でサイト化）
+zensical.toml           # ドキュメントサイト設定
+pyproject.toml          # Python / uv 管理（docs ビルド用）
 ```
 
 ---
@@ -74,6 +76,10 @@ cd backend
 
 # ローカルサービス
 docker compose -f .devcontainer/docker-compose.yml up -d
+
+# ドキュメントサイト（Zensical）
+# serve は devcontainer 起動時に docs サービスが自動起動（http://localhost:8000）
+docker compose exec docs uv run zensical build    # 手動ビルド（site/ に出力）
 ```
 
 ---

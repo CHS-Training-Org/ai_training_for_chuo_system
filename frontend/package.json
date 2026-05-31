@@ -36,11 +36,12 @@
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.5.2",
     "msw": "^2.7.5",
+    "oxfmt": "^0.52.0",
     "oxlint": "^1.6.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.8",
     "typescript": "^5.8.3",
     "vitest": "^3.2.2"
   },
-  "packageManager": "pnpm@10.10.0"
+  "packageManager": "pnpm@11.5.0"
 }

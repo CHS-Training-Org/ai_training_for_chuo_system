@@ -91,6 +91,9 @@
 | [plan/04_LEARNING_CURRICULUM.md](./plan/04_LEARNING_CURRICULUM.md)         | 学習パス・課題設計・Issue/Label 設計        | 学習者・メンター |
 | [plan/05_OPERATION_GUIDE.md](./plan/05_OPERATION_GUIDE.md)                 | 運用フロー・AI 利用ポリシー・CI/CD          | メンター・管理者 |
 | [plan/PHASE1_INIT_TASKS.md](./plan/PHASE1_INIT_TASKS.md)                   | Phase 1 初期化タスク・進捗トラッキング      | メンター・管理者 |
+| [plan/PHASE2_INIT_TASKS.md](./plan/PHASE2_INIT_TASKS.md)                   | Phase 2 ドキュメント整備タスク・進捗トラッキング | メンター・管理者 |
+| [spec/index.md](./spec/index.md)                                           | BookFlow 実装仕様（要件・画面・API・ER 図）     | 全員             |
+| [guide/index.md](./guide/index.md)                                         | 学習者向けガイド（環境構築・AI 活用・規約・トラブル） | 学習者・メンター |
 
 ---
 
@@ -117,3 +120,4 @@
 | 必須課題      | 環境構築など順序依存のあるステップ課題。新人は先にこれをクリアする                                          |
 | LocalStack    | AWS サービス（S3・DynamoDB・Lambda・API Gateway）をローカルでエミュレートするツール                         |
 | cognito-local | Amazon Cognito のユーザープール認証フローをローカルでエミュレートする npm パッケージ                        |
+

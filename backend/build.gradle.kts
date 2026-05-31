@@ -33,19 +33,19 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
     // ADR-017: 構造化ログ
     implementation("net.logstash.logback:logstash-logback-encoder:8.0")
-    compileOnly("org.projectlombok:lombok")
+    compileOnly("org.projectlombok:lombok:1.18.38")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor(platform(SpringBootPlugin.BOM_COORDINATES))
-    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     // ADR-018: セキュリティテスト支援
     testImplementation("org.springframework.security:spring-security-test")
     // ADR-018: H2 インメモリ DB（テスト専用）
     testRuntimeOnly("com.h2database:h2")
-    testCompileOnly("org.projectlombok:lombok")
+    testCompileOnly("org.projectlombok:lombok:1.18.38")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor(platform(SpringBootPlugin.BOM_COORDINATES))
-    testAnnotationProcessor("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
 }
 
 tasks.withType<Test> {

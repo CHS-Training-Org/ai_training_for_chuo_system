@@ -11,14 +11,14 @@
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
   "mounts": [
-    "source=${localEnv:USERPROFILE}/.claude,target=/root/.claude,type=bind,consistency=cached"
+    "source=${localEnv:USERPROFILE}/.claude,target=/root/.claude,type=bind,consistency=cached",
+    "source=${localEnv:USERPROFILE}/.claude.json,target=/root/.claude.json,type=bind,consistency=cached"
   ],
   "customizations": {
     "vscode": {
       "extensions": [
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
         "redhat.java",
+        "vscjava.vscode-java-test",
         "vmware.vscode-spring-boot",
         "vscjava.vscode-gradle",
         "bradlc.vscode-tailwindcss",
@@ -33,9 +33,10 @@
       }
     }
   },
+  "forwardPorts": [3000, 8000],
   "containerEnv": {
     "WAYLAND_DISPLAY": "",
     "DISPLAY": ""
   },
-  "postCreateCommand": "cd frontend && pnpm install && cd ../backend && ./gradlew dependencies -q"
+  "postCreateCommand": "bash .devcontainer/postCreate.sh"
 }

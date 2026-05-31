@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: node:22-slim
+    image: node:24-slim
     working_dir: /workspace/frontend
     volumes:
       - ..:/workspace:cached
@@ -45,9 +45,30 @@ services:
     volumes:
       - cognito-data:/app/.cognito
 
+  docs:
+    image: ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace:cached
+      # .venv を 9p バインドマウントから逃がし、高速な ext4 ボリュームに配置する
+      # （9p 上だと uv sync が極端に遅く、rm -rf も不安定で構成が止まるため）
+      - docs-venv:/workspace/.venv
+    ports:
+      - "8000:8000"
+    environment:
+      UV_LINK_MODE: copy
+      # pnpm install が node_modules 再作成の確認待ち(非TTY)で止まるのを防ぐ
+      CI: "true"
+      # CI=true によるカラー抑制を上書きし、Claude Code 等の CLI ツールで色付き表示を維持する
+      FORCE_COLOR: "1"
+    # 9p マウントでは inotify が効かず zensical serve の自動再ビルドが動かないため、
+    # mtime ポーリングで再ビルドするスクリプト経由で起動する（詳細は docs-watch.sh）。
+    command: sh /workspace/.devcontainer/docs-watch.sh
+
 volumes:
   postgres-data:
   localstack-data:
   cognito-data:
   frontend-node-modules:
   pnpm-store:
+  docs-venv:

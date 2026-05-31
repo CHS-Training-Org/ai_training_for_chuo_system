@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Read(//usr/bin/**)",
+      "Read(//mnt/c/**)",
+      "Bash(npx oxfmt *)",
+      "Skill(update-config)",
+      "Bash(pnpm list *)",
+      "Read(//root/**)",
+      "Read(//root/.claude/backups/**)"
     ]
   }
 }

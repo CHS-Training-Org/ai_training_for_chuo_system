@@ -1,0 +1,11 @@
+{
+  "hooks": {},
+  "statusLine": {
+    "type": "command",
+    "command": "bash .claude/scripts/statusline-command.sh"
+  },
+  "language": "japanese",
+  "advisorModel": "opus",
+  "autoUpdatesChannel": "latest",
+  "theme": "auto"
+}
