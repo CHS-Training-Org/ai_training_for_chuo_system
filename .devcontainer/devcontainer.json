@@ -14,10 +14,9 @@
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
-  "mounts": [
-    "source=${localEnv:USERPROFILE}/.claude,target=/root/.claude,type=bind,consistency=cached",
-    "source=${localEnv:USERPROFILE}/.claude.json,target=/root/.claude.json,type=bind,consistency=cached"
-  ],
+  // ホストの ~/.claude / ~/.claude.json のバインドは docker-compose.yml の frontend サービスへ
+  // long-form 構文で定義している（compose 構成では devcontainer.json の mounts(短縮形)だと
+  // Windows のドライブレターを含むパスが Docker のボリューム parser に弾かれるため）。
   "customizations": {
     "vscode": {
       "extensions": [

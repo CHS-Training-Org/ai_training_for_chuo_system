@@ -6,6 +6,19 @@ services:
       - ..:/workspace:cached
       - frontend-node-modules:/workspace/frontend/node_modules
       - pnpm-store:/pnpm-store
+      # ホストの Claude Code 設定/認証をコンテナへ共有する。
+      # devcontainer.json の mounts(短縮形)では Windows のドライブレター(C:)を含むパスが
+      # 'C:\...:/root/...:rw' に変換され、Docker のボリューム parser が ':' で誤分割して
+      # 「invalid volume specification」で起動失敗する。long-form は source/target を別キーに
+      # 分けるため ':' の曖昧さがなく回避できる（VS Code 公式が compose 構成で推奨する方式）。
+      # NOTE: ${USERPROFILE} は Windows ホスト前提（devcontainer.json の initializeCommand も
+      # Windows 依存で、マウント前にホスト側へ .claude / .claude.json を事前生成している）。
+      - type: bind
+        source: ${USERPROFILE}/.claude
+        target: /root/.claude
+      - type: bind
+        source: ${USERPROFILE}/.claude.json
+        target: /root/.claude.json
     ports:
       - "3000:3000"
     environment:
