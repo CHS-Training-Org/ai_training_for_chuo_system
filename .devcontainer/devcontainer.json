@@ -3,6 +3,10 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "frontend",
   "workspaceFolder": "/workspace",
+  // Claude Code 未起動だとホストに ~/.claude.json が存在せず、Docker がマウント元を
+  // 空ディレクトリとして自動生成 → ファイル↔ディレクトリの型衝突でコンテナ起動が失敗する。
+  // マウント前にホスト側で空ファイル/ディレクトリの存在を保証して回避する（Windows ホスト前提）。
+  "initializeCommand": "powershell -NoProfile -Command \"$j = Join-Path $env:USERPROFILE '.claude.json'; if (-not (Test-Path $j)) { Set-Content -Path $j -Value '{}' -NoNewline }; $d = Join-Path $env:USERPROFILE '.claude'; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d | Out-Null }\"",
   "features": {
     "ghcr.io/devcontainers/features/java:1": { "version": "25" },
     "ghcr.io/devcontainers/features/node:2.0.0": { "version": "24" },
@@ -17,10 +21,11 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "redhat.java",
-        "vscjava.vscode-java-test",
+        // Java 関連は Extension Pack for Java に集約。redhat.java / vscode-java-test /
+        // vscode-gradle 等を内包するため、個別指定で起きる「依存先(redhat.java)が未インストール」
+        // のインストール順序レースを回避できる。
+        "vscjava.vscode-java-pack",
         "vmware.vscode-spring-boot",
-        "vscjava.vscode-gradle",
         "bradlc.vscode-tailwindcss",
         "oxc.oxc-vscode",
         "ms-playwright.playwright",
