@@ -18,8 +18,10 @@ repo_url  = "https://github.com/Bizarress/AI-Development-Tutorial"
 repo_name = "Bizarress/AI-Development-Tutorial"
 
 nav = [
-  {"ホーム"        = "PROJECT_PLAN.md"},
-  {"アーキテクチャ" = "ARCHITECTURE.md"},
+  {"ホーム"           = "index.md"},
+  {"プロジェクト計画" = "PROJECT_PLAN.md"},
+  {"アーキテクチャ"   = "ARCHITECTURE.md"},
+  {"デザイン"         = "design.md"},
   {"計画 (Plan)"   = [
     "plan/01_REPO_STRUCTURE.md",
     "plan/02_DOCS_SET_DESIGN.md",

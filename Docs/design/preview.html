@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design System Preview: BookFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* === Colors（DESIGN.md §2 実値） === */
+    --primary: #2563EB;
+    --primary-dark: #1D4ED8;
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --danger-dark: #B91C1C;
+    --background: #FFFFFF;
+    --foreground: #0F172A;
+    --card: #FFFFFF;
+    --border: #E2E8F0;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
+    /* status */
+    --st-draft: #94A3B8;
+    --st-pending: #D97706;
+    --st-approved: #16A34A;
+    --st-rejected: #DC2626;
+    /* dark */
+    --dark-bg: #020817;
+    --dark-card: #1E293B;
+    --dark-primary: #3B82F6;
+    /* === Elevation（DESIGN.md §6） === */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    /* === Fonts（DESIGN.md §3） === */
+    --font-base: "Inter", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", "Noto Sans Mono", monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-base);
+    font-size: 16px; font-weight: 400; line-height: 1.8;
+    letter-spacing: 0.04em;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 72px 32px 56px; text-align: center;
+    background: linear-gradient(180deg, var(--muted) 0%, var(--background) 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 {
+    font-size: 30px; font-weight: 700; line-height: 1.3;
+    letter-spacing: -0.02em; color: var(--foreground); margin-bottom: 12px;
+  }
+  .hero h1 em { font-style: normal; color: var(--primary); }
+  .hero p {
+    font-size: 16px; font-weight: 400; line-height: 1.8;
+    color: var(--muted-foreground); max-width: 680px; margin: 0 auto 28px;
+  }
+  .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* BUTTONS（DESIGN.md §4） */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-base); font-size: 14px; font-weight: 500;
+    padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;
+    text-decoration: none; transition: background-color 0.15s, color 0.15s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-destructive { background: var(--danger); color: #fff; }
+  .btn-destructive:hover { background: var(--danger-dark); }
+  .btn-outline { background: transparent; color: var(--foreground); border: 1px solid var(--border); }
+  .btn-outline:hover { background: var(--muted); }
+  .btn-ghost { background: transparent; color: var(--foreground); }
+  .btn-ghost:hover { background: var(--muted); }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 12px; }
+  .btn-md { height: 40px; padding: 0 16px; font-size: 14px; }
+  .btn-lg { height: 44px; padding: 0 32px; font-size: 16px; }
+
+  /* SECTIONS */
+  .section { padding: 56px 32px; max-width: 980px; margin: 0 auto; }
+  .section-surface { background: var(--muted); }
+  .section-surface .section { background: transparent; }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 700; color: var(--primary);
+    text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 24px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em;
+    margin-bottom: 8px; color: var(--foreground);
+  }
+  .section-desc { font-size: 14px; color: var(--muted-foreground); margin-bottom: 28px; line-height: 1.8; }
+  .group-label { font-size: 14px; font-weight: 600; color: var(--foreground); margin: 24px 0 10px; }
+
+  /* COLORS */
+  .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .swatch { border-radius: 8px; overflow: hidden; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+  .swatch-block { height: 72px; width: 100%; }
+  .swatch-info { padding: 10px 12px; }
+  .swatch-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; color: var(--foreground); letter-spacing: 0; }
+  .swatch-hex { font-size: 12px; color: var(--muted-foreground); font-family: var(--font-mono); letter-spacing: 0; }
+  .swatch-role { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; line-height: 1.5; }
+
+  /* TYPOGRAPHY */
+  .type-sample { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .type-sample:last-child { border-bottom: none; }
+  .type-meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted-foreground); margin-top: 8px; letter-spacing: 0; }
+  .type-context { display: inline-block; background: var(--muted); color: var(--muted-foreground); font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; font-family: var(--font-base); }
+
+  /* CONTENT 組版 */
+  .content-preview { max-width: 680px; }
+  .content-preview h2 { font-size: 20px; font-weight: 600; line-height: 1.3; margin: 0 0 12px; }
+  .content-preview p { font-size: 16px; font-weight: 400; line-height: 1.8; letter-spacing: 0.04em; margin-bottom: 16px; color: var(--foreground); }
+
+  /* TABLE（予約一覧） */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted-foreground); padding: 8px 12px; border-bottom: 1px solid var(--border); letter-spacing: 0; }
+  .data-table td { font-size: 14px; color: var(--foreground); padding: 12px; border-bottom: 1px solid var(--border); letter-spacing: 0; }
+  .data-table tr:hover td { background: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; font-family: var(--font-base); }
+
+  /* BADGE（予約ステータス §4） */
+  .badge { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 9999px; letter-spacing: 0; }
+  .badge-draft { background: #F1F5F9; color: #64748B; }
+  .badge-pending { background: #FEF3C7; color: #B45309; }
+  .badge-approved { background: #DCFCE7; color: #15803D; }
+  .badge-rejected { background: #FEE2E2; color: #B91C1C; }
+  .badge-cancelled { background: #F1F5F9; color: #94A3B8; }
+
+  /* COMPONENT ROWS */
+  .row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+  .item { text-align: center; }
+  .item-label { font-size: 12px; color: var(--muted-foreground); margin-top: 8px; letter-spacing: 0; }
+
+  /* CARDS */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .ui-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; box-shadow: var(--shadow-sm); }
+  .ui-card-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; line-height: 1.3; }
+  .ui-card p { font-size: 14px; color: var(--muted-foreground); line-height: 1.8; letter-spacing: 0.04em; }
+
+  /* FORMS */
+  .form-group { margin-bottom: 20px; max-width: 420px; }
+  .form-label { display: block; font-size: 14px; font-weight: 500; color: var(--foreground); margin-bottom: 8px; letter-spacing: 0; }
+  .form-label .req { color: var(--danger); }
+  .form-input {
+    width: 100%; background: var(--background); color: var(--foreground);
+    border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; height: 40px;
+    font-family: var(--font-base); font-size: 14px; outline: none; letter-spacing: 0;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-input::placeholder { color: var(--muted-foreground); }
+  .form-input--focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgb(37 99 235 / 0.2); }
+  .form-input--error { border-color: var(--danger); box-shadow: 0 0 0 3px rgb(220 38 38 / 0.2); }
+  .form-state { font-size: 14px; margin-top: 6px; letter-spacing: 0; }
+  .form-state--error { color: var(--danger); }
+  .form-state--muted { color: var(--muted-foreground); }
+
+  /* ELEVATION */
+  .elev-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; }
+  .elev-card { background: var(--card); border-radius: 8px; padding: 24px; text-align: center; border: 1px solid var(--border); }
+  .elev-label { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .elev-desc { font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); letter-spacing: 0; }
+
+  /* SPACING */
+  .spacing-row { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+  .spacing-item { text-align: center; }
+  .spacing-block { background: var(--primary); border-radius: 4px; margin-bottom: 6px; height: 28px; }
+  .spacing-value { font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); letter-spacing: 0; line-height: 1.4; }
+
+  /* WIDTH BARS */
+  .width-row { margin-bottom: 16px; }
+  .width-head { font-size: 14px; font-weight: 600; color: var(--foreground); margin-bottom: 4px; }
+  .width-head span { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--muted-foreground); margin-left: 6px; }
+  .width-bar { height: 28px; background: var(--muted); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .width-bar-inner { height: 100%; background: var(--primary); opacity: 0.25; }
+
+  /* BREAKPOINT TABLE */
+  .bp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .bp-table th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted-foreground); padding: 8px 12px; border-bottom: 1px solid var(--border); letter-spacing: 0; }
+  .bp-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--foreground); letter-spacing: 0; }
+  .bp-table code { font-family: var(--font-mono); font-size: 13px; color: var(--primary); }
+
+  /* DO / DON'T */
+  .dodont-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  .dodont { border-radius: 8px; padding: 20px 24px; border: 1px solid var(--border); }
+  .dodont--do { background: #F0FDF4; border-color: #BBF7D0; }
+  .dodont--dont { background: #FEF2F2; border-color: #FECACA; }
+  .dodont h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; letter-spacing: 0; }
+  .dodont--do h3 { color: #15803D; }
+  .dodont--dont h3 { color: #B91C1C; }
+  .dodont ul { list-style: none; }
+  .dodont li { font-size: 14px; line-height: 1.7; color: var(--foreground); padding-left: 20px; position: relative; margin-bottom: 6px; letter-spacing: 0.02em; }
+  .dodont--do li::before { content: "✓"; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+  .dodont--dont li::before { content: "✕"; position: absolute; left: 0; color: var(--danger); font-weight: 700; }
+
+  /* FOOTER */
+  .footer { padding: 28px 32px; text-align: center; background: var(--muted); border-top: 1px solid var(--border); font-size: 12px; color: var(--muted-foreground); }
+
+  @media (max-width: 768px) {
+    .hero { padding: 48px 20px 40px; }
+    .hero h1 { font-size: 24px; }
+    .section { padding: 40px 20px; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <h1>Design System Preview — <em>BookFlow</em></h1>
+  <p>DESIGN.md から抽出したデザイントークンのカタログ。<strong>Structured Clarity（整理された明瞭さ）</strong>を方針とする、高情報密度の業務 UI。カラー・タイポグラフィ・コンポーネント・スペーシングの全値を実物として可視化しています。</p>
+  <div class="hero-buttons">
+    <a class="btn btn-primary btn-md" href="https://github.com/Bizarress/AI-Development-Tutorial/blob/main/DESIGN.md" target="_blank" rel="noopener">DESIGN.md を読む</a>
+    <a class="btn btn-outline btn-md" href="./preview.html" target="_blank" rel="noopener">全画面で開く</a>
+  </div>
+</section>
+
+<!-- 01 COLORS -->
+<section class="section" id="colors">
+  <div class="section-label">01 / Colors</div>
+  <h2 class="section-title">カラーパレット</h2>
+  <p class="section-desc">ブランドカラーは信頼感・プロフェッショナルを想起させる青。Neutral は青みがかった Slate スケールで Primary と自然に調和します。</p>
+
+  <div class="group-label">Primary（ブランドカラー）</div>
+  <div class="color-grid">
+    <div class="swatch"><div class="swatch-block" style="background:#2563EB"></div><div class="swatch-info"><div class="swatch-name">Primary</div><div class="swatch-hex">#2563EB</div><div class="swatch-role">CTA・リンク・アクティブ状態（Blue 600）</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#1D4ED8"></div><div class="swatch-info"><div class="swatch-name">Primary Dark</div><div class="swatch-hex">#1D4ED8</div><div class="swatch-role">ホバー・プレス時（Blue 700）</div></div></div>
+  </div>
+
+  <div class="group-label">Semantic（意味的な色）</div>
+  <div class="color-grid">
+    <div class="swatch"><div class="swatch-block" style="background:#16A34A"></div><div class="swatch-info"><div class="swatch-name">Success</div><div class="swatch-hex">#16A34A</div><div class="swatch-role">承認済み・完了・成功</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#D97706"></div><div class="swatch-info"><div class="swatch-name">Warning</div><div class="swatch-hex">#D97706</div><div class="swatch-role">承認待ち・注意喚起</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#DC2626"></div><div class="swatch-info"><div class="swatch-name">Danger</div><div class="swatch-hex">#DC2626</div><div class="swatch-role">却下・エラー・破壊的操作</div></div></div>
+  </div>
+
+  <div class="group-label">Neutral（Slate スケール）</div>
+  <div class="color-grid">
+    <div class="swatch"><div class="swatch-block" style="background:#FFFFFF; border-bottom:1px solid #E2E8F0"></div><div class="swatch-info"><div class="swatch-name">Background</div><div class="swatch-hex">#FFFFFF</div><div class="swatch-role">ページ背景</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#0F172A"></div><div class="swatch-info"><div class="swatch-name">Foreground</div><div class="swatch-hex">#0F172A</div><div class="swatch-role">本文テキスト（Slate 900）</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#E2E8F0"></div><div class="swatch-info"><div class="swatch-name">Border / Input</div><div class="swatch-hex">#E2E8F0</div><div class="swatch-role">区切り線・入力枠（Slate 200）</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#F1F5F9; border-bottom:1px solid #E2E8F0"></div><div class="swatch-info"><div class="swatch-name">Muted</div><div class="swatch-hex">#F1F5F9</div><div class="swatch-role">非アクティブ領域（Slate 100）</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#64748B"></div><div class="swatch-info"><div class="swatch-name">Muted Foreground</div><div class="swatch-hex">#64748B</div><div class="swatch-role">補足テキスト（Slate 500）</div></div></div>
+  </div>
+
+  <div class="group-label">予約ステータス専用</div>
+  <div class="color-grid">
+    <div class="swatch"><div class="swatch-block" style="background:#94A3B8"></div><div class="swatch-info"><div class="swatch-name">draft</div><div class="swatch-hex">#94A3B8</div><div class="swatch-role">下書き（Slate 400）</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#D97706"></div><div class="swatch-info"><div class="swatch-name">pending</div><div class="swatch-hex">#D97706</div><div class="swatch-role">承認待ち（Amber 600）</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#16A34A"></div><div class="swatch-info"><div class="swatch-name">approved</div><div class="swatch-hex">#16A34A</div><div class="swatch-role">承認済み（Green 600）</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#DC2626"></div><div class="swatch-info"><div class="swatch-name">rejected</div><div class="swatch-hex">#DC2626</div><div class="swatch-role">却下（Red 600）</div></div></div>
+  </div>
+
+  <div class="group-label">Dark Mode</div>
+  <div class="color-grid">
+    <div class="swatch"><div class="swatch-block" style="background:#020817"></div><div class="swatch-info"><div class="swatch-name">Background</div><div class="swatch-hex">#020817</div><div class="swatch-role">ダーク背景（Slate 950）</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#1E293B"></div><div class="swatch-info"><div class="swatch-name">Card</div><div class="swatch-hex">#1E293B</div><div class="swatch-role">ダークカード面（Slate 800）</div></div></div>
+    <div class="swatch"><div class="swatch-block" style="background:#3B82F6"></div><div class="swatch-info"><div class="swatch-name">Primary</div><div class="swatch-hex">#3B82F6</div><div class="swatch-role">ダーク時はやや明るめ（Blue 500）</div></div></div>
+  </div>
+</section>
+
+<!-- 02 TYPOGRAPHY -->
+<section class="section-surface">
+<div class="section" id="typography">
+  <div class="section-label">02 / Typography</div>
+  <h2 class="section-title">タイポグラフィ階層</h2>
+  <p class="section-desc">和文 Noto Sans JP ／ 欧文 Inter。本文の行間は 1.8（和文）、字間 0.04em で全角文字の可読性を確保します。</p>
+
+  <div class="type-sample">
+    <div style="font-size:30px; font-weight:700; line-height:1.3; letter-spacing:-0.02em;">予約 128 件 — Display</div>
+    <div class="type-meta">30px / 700 / line-height: 1.3 / letter-spacing: -0.02em<span class="type-context">ダッシュボード KPI</span></div>
+  </div>
+  <div class="type-sample">
+    <div style="font-size:24px; font-weight:600; line-height:1.3; letter-spacing:-0.01em;">会議室の予約申請 — Heading 1</div>
+    <div class="type-meta">24px / 600 / line-height: 1.3 / letter-spacing: -0.01em<span class="type-context">ページタイトル</span></div>
+  </div>
+  <div class="type-sample">
+    <div style="font-size:20px; font-weight:600; line-height:1.3;">承認ワークフロー — Heading 2</div>
+    <div class="type-meta">20px / 600 / line-height: 1.3<span class="type-context">セクション見出し</span></div>
+  </div>
+  <div class="type-sample">
+    <div style="font-size:18px; font-weight:600; line-height:1.4;">予約詳細 — Heading 3</div>
+    <div class="type-meta">18px / 600 / line-height: 1.4<span class="type-context">カードタイトル</span></div>
+  </div>
+  <div class="type-sample">
+    <div style="font-size:16px; font-weight:400; line-height:1.8; letter-spacing:0.04em;">本文テキスト — 施設・備品の予約申請を行い、承認者の確認を経て確定します。日本語は欧文より広めの行間（1.8）と字間（0.04em）で速読性を高めています。</div>
+    <div class="type-meta">16px / 400 / line-height: 1.8 / letter-spacing: 0.04em<span class="type-context">本文</span></div>
+  </div>
+  <div class="type-sample">
+    <div style="font-size:14px; font-weight:400; line-height:1.6; color:var(--muted-foreground);">テーブルセル・補足テキスト — Small</div>
+    <div class="type-meta">14px / 400 / line-height: 1.6<span class="type-context">テーブルセル・補足</span></div>
+  </div>
+  <div class="type-sample">
+    <div style="font-size:12px; font-weight:400; line-height:1.5; color:var(--muted-foreground);">2026年5月28日 9:00 更新 — Caption</div>
+    <div class="type-meta">12px / 400 / line-height: 1.5<span class="type-context">注釈・タイムスタンプ</span></div>
+  </div>
+</div>
+</section>
+
+<!-- 03 CONTENT 組版 -->
+<section class="section" id="content">
+  <div class="section-label">03 / Content</div>
+  <h2 class="section-title">本文組版サンプル</h2>
+  <p class="section-desc">禁則処理（行頭・行末禁止）と tabular-nums を適用した、業務 UI の標準的な本文組版。</p>
+  <div class="content-preview">
+    <h2>予約申請の流れ</h2>
+    <p>BookFlow では、利用したい施設または備品を選択し、日時・利用目的を入力して予約を申請します。申請後はステータスが「承認待ち」となり、承認者の確認を待ちます。承認されると予約が確定し、却下された場合は理由とともに通知されます。</p>
+    <p>キャンセルは予約日の前日まで可能です。承認済みの予約をキャンセルすると、同じ時間帯が他の利用者に開放されます。月間の予約上限は 1 ユーザーあたり 20 件です。</p>
+  </div>
+</section>
+
+<!-- 04 予約テーブル -->
+<section class="section-surface">
+<div class="section" id="table">
+  <div class="section-label">04 / Data Table</div>
+  <h2 class="section-title">予約一覧テーブル</h2>
+  <p class="section-desc">数字列（日時）は tabular-nums で等幅揃え。ステータスは必ず Badge コンポーネントで表現します。</p>
+  <table class="data-table">
+    <thead>
+      <tr><th>リソース</th><th>利用日時</th><th>申請者</th><th>ステータス</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>第1会議室</td><td class="num">2026/05/28 09:00–10:30</td><td>田中 太郎</td><td><span class="badge badge-approved">承認済み</span></td></tr>
+      <tr><td>プロジェクター A</td><td class="num">2026/05/28 13:00–15:00</td><td>佐藤 花子</td><td><span class="badge badge-pending">承認待ち</span></td></tr>
+      <tr><td>大会議室</td><td class="num">2026/05/29 10:00–12:00</td><td>鈴木 一郎</td><td><span class="badge badge-rejected">却下</span></td></tr>
+      <tr><td>応接室</td><td class="num">2026/05/30 14:30–16:00</td><td>高橋 次郎</td><td><span class="badge badge-draft">下書き</span></td></tr>
+      <tr><td>備品: ノートPC</td><td class="num">2026/05/31 09:00–18:00</td><td>伊藤 美咲</td><td><span class="badge badge-cancelled">キャンセル済み</span></td></tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<!-- 05 BUTTONS -->
+<section class="section" id="buttons">
+  <div class="section-label">05 / Buttons</div>
+  <h2 class="section-title">ボタンバリエーション</h2>
+  <p class="section-desc">承認は default（Primary）、却下・キャンセル・削除には destructive を使用します。</p>
+
+  <div class="group-label">バリアント</div>
+  <div class="row">
+    <div class="item"><button class="btn btn-primary btn-md">承認</button><div class="item-label">default (Primary)</div></div>
+    <div class="item"><button class="btn btn-destructive btn-md">却下</button><div class="item-label">destructive</div></div>
+    <div class="item"><button class="btn btn-outline btn-md">詳細</button><div class="item-label">outline</div></div>
+    <div class="item"><button class="btn btn-ghost btn-md">キャンセル</button><div class="item-label">ghost</div></div>
+  </div>
+
+  <div class="group-label">サイズ</div>
+  <div class="row">
+    <div class="item"><button class="btn btn-primary btn-sm">Small</button><div class="item-label">sm / h-8 / 12px</div></div>
+    <div class="item"><button class="btn btn-primary btn-md">Medium</button><div class="item-label">md / h-10 / 14px</div></div>
+    <div class="item"><button class="btn btn-primary btn-lg">Large</button><div class="item-label">lg / h-11 / 16px</div></div>
+  </div>
+</section>
+
+<!-- 06 CARDS -->
+<section class="section-surface">
+<div class="section" id="cards">
+  <div class="section-label">06 / Cards & Badges</div>
+  <h2 class="section-title">カード & バッジ</h2>
+  <p class="section-desc">Card は radius 8px・padding 24px・shadow-sm。予約ステータスは pill 形状の Badge で表示します。</p>
+  <div class="card-grid">
+    <div class="ui-card">
+      <div class="ui-card-title">第1会議室</div>
+      <p style="margin-bottom:16px;">定員 8 名 / プロジェクター・ホワイトボード完備。2026年5月28日 9:00–10:30。</p>
+      <span class="badge badge-approved">承認済み</span>
+    </div>
+    <div class="ui-card">
+      <div class="ui-card-title">プロジェクター A</div>
+      <p style="margin-bottom:16px;">4K 対応モバイルプロジェクター。貸出申請は承認者の確認待ちです。</p>
+      <span class="badge badge-pending">承認待ち</span>
+    </div>
+  </div>
+  <div class="group-label">ステータス Badge 一覧</div>
+  <div class="row" style="align-items:center;">
+    <span class="badge badge-draft">下書き</span>
+    <span class="badge badge-pending">承認待ち</span>
+    <span class="badge badge-approved">承認済み</span>
+    <span class="badge badge-rejected">却下</span>
+    <span class="badge badge-cancelled">キャンセル済み</span>
+  </div>
+</div>
+</section>
+
+<!-- 07 FORMS -->
+<section class="section" id="forms">
+  <div class="section-label">07 / Forms</div>
+  <h2 class="section-title">フォーム要素</h2>
+  <p class="section-desc">必須項目には * マーク。フォーカスは Primary、エラーは Danger の枠 + ring で表現します。</p>
+  <div class="form-group">
+    <label class="form-label">利用目的 <span class="req">*</span></label>
+    <input class="form-input" type="text" placeholder="入力してください">
+    <div class="form-state form-state--muted">デフォルト — border: #E2E8F0 / radius: 6px</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">利用日時 <span class="req">*</span></label>
+    <input class="form-input form-input--focus" type="text" value="2026/05/28 09:00">
+    <div class="form-state form-state--muted">フォーカス — border: #2563EB + ring-2 ring-primary/20</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">メールアドレス <span class="req">*</span></label>
+    <input class="form-input form-input--error" type="text" value="invalid@">
+    <div class="form-state form-state--error">メールアドレスの形式が正しくありません。</div>
+  </div>
+</section>
+
+<!-- 08 ELEVATION -->
+<section class="section-surface">
+<div class="section" id="elevation">
+  <div class="section-label">08 / Depth & Elevation</div>
+  <h2 class="section-title">エレベーション</h2>
+  <p class="section-desc">用途に応じた 5 段階の影。z-index 階層と対応します。</p>
+  <div class="elev-grid">
+    <div class="elev-card"><div class="elev-label">Level 0</div><div class="elev-desc">none — テーブル行・フォーム</div></div>
+    <div class="elev-card" style="box-shadow:var(--shadow-sm);"><div class="elev-label">Level 1</div><div class="elev-desc">shadow-sm — カード・サイドバー</div></div>
+    <div class="elev-card" style="box-shadow:var(--shadow-md);"><div class="elev-label">Level 2</div><div class="elev-desc">shadow-md — ドロップダウン</div></div>
+    <div class="elev-card" style="box-shadow:var(--shadow-lg);"><div class="elev-label">Level 3</div><div class="elev-desc">shadow-lg — モーダル</div></div>
+    <div class="elev-card" style="box-shadow:var(--shadow-xl);"><div class="elev-label">Level 4</div><div class="elev-desc">shadow-xl — Toast 通知</div></div>
+  </div>
+</div>
+</section>
+
+<!-- 09 SPACING -->
+<section class="section" id="spacing">
+  <div class="section-label">09 / Spacing</div>
+  <h2 class="section-title">スペーシングスケール</h2>
+  <p class="section-desc">8px グリッドを基本リズムとする 6 段階のスケール。</p>
+  <div class="spacing-row">
+    <div class="spacing-item"><div class="spacing-block" style="width:4px;"></div><div class="spacing-value">4px<br>XS</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:8px;"></div><div class="spacing-value">8px<br>S</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:16px;"></div><div class="spacing-value">16px<br>M</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:24px;"></div><div class="spacing-value">24px<br>L</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:32px;"></div><div class="spacing-value">32px<br>XL</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:48px;"></div><div class="spacing-value">48px<br>XXL</div></div>
+  </div>
+</section>
+
+<!-- 10 LAYOUT -->
+<section class="section-surface">
+<div class="section" id="layout">
+  <div class="section-label">10 / Layout & Responsive</div>
+  <h2 class="section-title">レイアウト</h2>
+  <p class="section-desc">コンテナ最大幅とブレークポイント。業務システムのため Desktop &gt; Tablet &gt; Mobile を優先します。</p>
+
+  <div class="group-label">コンテンツ幅</div>
+  <div class="width-row"><div class="width-head">Max Container <span>1280px (max-w-screen-xl)</span></div><div class="width-bar"><div class="width-bar-inner" style="width:100%"></div></div></div>
+  <div class="width-row"><div class="width-head">Main Content <span>896px (max-w-4xl)</span></div><div class="width-bar"><div class="width-bar-inner" style="width:70%"></div></div></div>
+  <div class="width-row"><div class="width-head">Sidebar <span>240px (w-60)</span></div><div class="width-bar"><div class="width-bar-inner" style="width:19%"></div></div></div>
+
+  <div class="group-label">ブレークポイント</div>
+  <table class="bp-table">
+    <thead><tr><th>Name</th><th>Width</th><th>主な変更</th></tr></thead>
+    <tbody>
+      <tr><td><code>sm</code></td><td>≥ 640px</td><td>1 カラムレイアウト</td></tr>
+      <tr><td><code>md</code></td><td>≥ 768px</td><td>サイドバー → スライドオーバー切替</td></tr>
+      <tr><td><code>lg</code></td><td>≥ 1024px</td><td>サイドバー固定、2→3 カラムグリッド</td></tr>
+      <tr><td><code>xl</code></td><td>≥ 1280px</td><td>コンテンツ最大幅（container 有効）</td></tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<!-- 11 DO / DON'T -->
+<section class="section" id="dodont">
+  <div class="section-label">11 / Do's &amp; Don'ts</div>
+  <h2 class="section-title">推奨と禁止</h2>
+  <div class="dodont-grid">
+    <div class="dodont dodont--do">
+      <h3>Do（推奨）</h3>
+      <ul>
+        <li>予約ステータスは必ず Badge を使用しカラー定義に従う</li>
+        <li>破壊的操作には variant="destructive" を使う</li>
+        <li>数字列（時刻・金額・件数）は tabular-nums で等幅揃え</li>
+        <li>承認ボタンを左、却下ボタンを右に配置する</li>
+        <li>必須項目には * と aria-required="true" を付与</li>
+      </ul>
+    </div>
+    <div class="dodont dodont--dont">
+      <h3>Don't（禁止）</h3>
+      <ul>
+        <li>ステータス専用色以外で状態を独自表現しない</li>
+        <li>Primary Blue と Danger Red を同面積で並べない</li>
+        <li>Card のネストは最大 2 段まで</li>
+        <li>テキストのみで情報を伝達しない（色盲対応）</li>
+        <li>日本語本文に line-height 1.2 以下を使わない</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  Generated from <strong>BookFlow DESIGN.md</strong> — 社内 AI 駆動開発チュートリアル
+</footer>
+
+</body>
+</html>
