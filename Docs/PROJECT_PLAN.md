@@ -72,8 +72,8 @@
 | フェーズ | 担当 | 内容 | 完了条件 |
 | --- | --- | --- | --- |
 | **Phase 0：計画書策定** ✅ | 人間 | 本計画書セット（6ファイル）の作成・レビュー | 本ドキュメントのチェックリスト全通過 |
-| **Phase 1：リポジトリ初期化** | AI エージェント | ディレクトリ構造・DevContainer・CI/CD 骨格の実装。詳細は [`PHASE1_INIT_TASKS.md`](./plan/PHASE1_INIT_TASKS.md) 参照 | `docker compose up` でローカル起動確認・ADR 全件確定 |
-| **Phase 2：ベースサービス実装** | AI エージェント | BookFlow の初期機能（認証・予約申請・承認ワークフロー）の実装 | 学習者が読解できる品質のコードが揃う |
+| **Phase 1：リポジトリ初期化** ✅ | AI エージェント | ディレクトリ構造・DevContainer・CI/CD 骨格の実装。詳細は [`PHASE1_INIT_TASKS.md`](./plan/PHASE1_INIT_TASKS.md) 参照 | `docker compose up` でローカル起動確認・ADR 全件確定 |
+| **Phase 2：ベースサービス実装** ✅ | AI エージェント | BookFlow の初期機能（認証・予約申請・承認ワークフロー）の実装。詳細は [`PHASE3_IMPL_TASKS.md`](./plan/PHASE3_IMPL_TASKS.md) 参照（管理上 Phase 3 として進捗トラッキング） | 18 API・10 画面が仕様準拠で動作し、CI がグリーン |
 | **Phase 3：課題登録** | 人間 | GitHub Issue に必須・選択課題を登録、ラベル設定 | 新人が Phase 0 から始められる状態 |
 | **Phase 4：初回学習実施** | 学習者 | 学習者がリポジトリを使い、フィードバック収集 | 満足度アンケート実施・課題の見直し |
 
@@ -92,6 +92,7 @@
 | [plan/05_OPERATION_GUIDE.md](./plan/05_OPERATION_GUIDE.md)                 | 運用フロー・AI 利用ポリシー・CI/CD          | メンター・管理者 |
 | [plan/PHASE1_INIT_TASKS.md](./plan/PHASE1_INIT_TASKS.md)                   | Phase 1 初期化タスク・進捗トラッキング      | メンター・管理者 |
 | [plan/PHASE2_INIT_TASKS.md](./plan/PHASE2_INIT_TASKS.md)                   | Phase 2 ドキュメント整備タスク・進捗トラッキング | メンター・管理者 |
+| [plan/PHASE3_IMPL_TASKS.md](./plan/PHASE3_IMPL_TASKS.md)                   | Phase 3 ベースサービス実装タスク・進捗トラッキング | メンター・管理者 |
 | [spec/index.md](./spec/index.md)                                           | BookFlow 実装仕様（要件・画面・API・ER 図）     | 全員             |
 | [guide/index.md](./guide/index.md)                                         | 学習者向けガイド（環境構築・AI 活用・規約・トラブル） | 学習者・メンター |
 

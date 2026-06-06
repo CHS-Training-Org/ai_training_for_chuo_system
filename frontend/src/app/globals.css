@@ -21,6 +21,17 @@
   --color-border:             var(--border);
   --color-input:              var(--input);
   --color-ring:               var(--ring);
+  /* shadcn/ui 追加トークン（secondary, popover, chart 等） */
+  --color-secondary:            var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-popover:              var(--popover);
+  --color-popover-foreground:   var(--popover-foreground);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-chart-1:              var(--chart-1);
+  --color-chart-2:              var(--chart-2);
+  --color-chart-3:              var(--chart-3);
+  --color-chart-4:              var(--chart-4);
+  --color-chart-5:              var(--chart-5);
   /* BookFlow ドメイン固有トークン（shadcn/ui は上書きしない） */
   --color-success:            var(--success);
   --color-warning:            var(--warning);
@@ -53,6 +64,17 @@
   --border:             oklch(0.906 0.013 264.695);
   --input:              oklch(0.906 0.013 264.695);
   --ring:               oklch(0.546 0.245 262.881);
+  /* shadcn/ui 追加トークン */
+  --secondary:            oklch(0.961 0.008 264.695);
+  --secondary-foreground: oklch(0.129 0.042 264.695);
+  --popover:              oklch(1 0 0);
+  --popover-foreground:   oklch(0.129 0.042 264.695);
+  --destructive-foreground: oklch(1 0 0);
+  --chart-1:              oklch(0.646 0.222 41.116);
+  --chart-2:              oklch(0.6 0.118 184.704);
+  --chart-3:              oklch(0.398 0.07 227.392);
+  --chart-4:              oklch(0.828 0.189 84.429);
+  --chart-5:              oklch(0.769 0.188 70.08);
   /* BookFlow 固有（shadcn/ui init の上書き対象外） */
   --success:            oklch(0.527 0.154 150.069);
   --warning:            oklch(0.666 0.179 58.318);
@@ -74,6 +96,10 @@
   --input:           oklch(0.155 0.026 264.695);
   --muted:           oklch(0.129 0.042 264.695);
   --primary:         oklch(0.623 0.214 262.881);
+  --secondary:       oklch(0.269 0.015 264.695);
+  --secondary-foreground: oklch(0.984 0.003 264.695);
+  --popover:         oklch(0.155 0.026 264.695);
+  --popover-foreground: oklch(0.984 0.003 264.695);
 }
 
 @layer base {

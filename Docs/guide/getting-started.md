@@ -9,7 +9,33 @@
 
 ## 前提ソフトウェア
 
-<!-- Batch 5 で記述：Docker Desktop（バージョン指定）・VS Code・Dev Containers 拡張のバージョン要件。OS 別の注意事項 -->
+| ソフトウェア | 用途 | 備考 |
+|------------|------|------|
+| VS Code | エディタ | `Dev Containers` 拡張が必須。Windows では `WSL` 拡張も必須 |
+| Dev Containers 拡張 | コンテナ開発 | `ms-vscode-remote.remote-containers` |
+| Docker Engine | コンテナ実行 | Rancher Desktop（`dockerd (moby)` ランタイム）または Docker Desktop（RAM 8GB 以上割当） |
+
+### OS 別の注意事項（Windows: WSL2 を使う）
+
+Windows で開発する場合は **WSL2（Ubuntu 等の Linux）上にリポジトリを配置**してください。
+Windows 側（`C:\...` / WSL2 からは `/mnt/c/...`）にソースを置くと、クロスファイルシステムアクセスにより
+ファイル I/O が著しく遅くなり、ホットリロード（HMR / devtools）も効かなくなることがあります。
+
+- **WSL2 / Ubuntu のインストール**（PowerShell を管理者で実行）:
+  ```powershell
+  wsl --install -d Ubuntu
+  ```
+- **VS Code 拡張**: `WSL`（`ms-vscode-remote.remote-wsl`）と `Dev Containers` を両方インストール。
+
+#### WSL2 ターミナルの入り方
+
+- **Windows Terminal** を起動し、タブのドロップダウンから「Ubuntu」を選択（推奨）
+- スタートメニューで「Ubuntu」を検索して起動
+- PowerShell / コマンドプロンプトで `wsl`（ディストリ指定は `wsl -d Ubuntu`）
+- VS Code 統合ターミナルのドロップダウンで「Ubuntu (WSL)」を選択
+
+> プロンプトが `user@host:~$` 形式で、`pwd` が `/home/<user>/...` を返せば WSL2 ネイティブ FS 上です。
+> `/mnt/c/...` を返す場合は Windows 側なので、下記の「クローンから起動まで」に従い WSL2 側へ移動してください。
 
 ---
 
@@ -21,7 +47,27 @@
 
 ## クローンから起動まで
 
-<!-- Batch 5 で記述：全コマンドをコピペ可能な形式で記載。git clone → VS Code で「Reopen in Container」→ サービス起動（pnpm dev / ./gradlew bootRun）の手順 -->
+> **Windows ユーザーは必ず WSL2（Ubuntu）のターミナル内で**以下を実行してください（上記「OS 別の注意事項」参照）。
+> macOS / Linux ユーザーは通常のターミナルでそのまま実行できます。
+
+```bash
+# 1. WSL2 ネイティブ FS にクローン（Windows の場合は /home 配下に置くのが重要）
+cd ~
+mkdir -p projects && cd projects
+git clone <repository-url> ai-development-tutorial
+cd ai-development-tutorial
+
+# 2. VS Code で開く（Windows では WSL リモートとして起動し、左下に「WSL: Ubuntu」と表示される）
+code .
+
+# 3. コマンドパレット（Ctrl+Shift+P）→ "Dev Containers: Reopen in Container"
+#    → postgres / localstack / cognito-local / backend / docs コンテナが自動起動
+
+# 4. DevContainer 内のターミナルでサービスを起動
+cd frontend && pnpm dev          # http://localhost:3000
+# 別ターミナルで
+cd backend && ./gradlew bootRun  # http://localhost:8080
+```
 
 ---
 

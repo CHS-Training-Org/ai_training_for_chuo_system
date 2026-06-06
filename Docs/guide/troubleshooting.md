@@ -9,7 +9,19 @@
 
 ## DevContainer・Docker 関連
 
-<!-- Batch 5 で記述：Docker Desktop の設定ミス・ポート競合・「Reopen in Container」が失敗する等のトラブルと解決策 -->
+### （Windows）ファイル操作・ビルドが極端に遅い / ホットリロードが効かない
+
+- **症状**: `pnpm install` や Gradle ビルドが異常に遅い。ファイルを保存しても HMR / Spring devtools が再読み込みしない。
+- **原因**: リポジトリを Windows 側（`/mnt/c/...`）に置いている。WSL2 からのクロスファイルシステムアクセスが低速で、inotify のファイル変更イベントも正しく伝播しない。
+- **解決策**: リポジトリを **WSL2 ネイティブ FS（`/home/<user>/...`）へ clone し直す**。WSL2 ターミナルで `pwd` が `/home/...` を返すことを確認してから VS Code を `code .` で開き、`Reopen in Container` する。詳細は [getting-started.md の「OS 別の注意事項」](./getting-started.md#os-別の注意事項windows-wsl2-を使う) を参照。
+
+### （Windows）「Reopen in Container」時に Wayland ソケットのマウントエラーが出る
+
+- **症状**: WSLg 有効環境で DevContainer 起動時に Wayland ソケット関連のマウントエラーで失敗する。
+- **解決策**: VS Code のグローバル設定（`Preferences: Open User Settings (JSON)`）に以下を追加する。
+  ```json
+  "dev.containers.mountWaylandSocket": false
+  ```
 
 ---
 

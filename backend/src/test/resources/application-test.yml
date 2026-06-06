@@ -6,13 +6,17 @@ spring:
     driver-class-name: org.h2.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      # create-drop: テスト用にエンティティから DDL を生成し、終了時に破棄する。
+      # Spring Boot 4.0 では Flyway の自動構成が別モジュールに移動したため、
+      # テスト環境では Hibernate の DDL 自動生成を使用する（本番は ddl-auto: validate + Flyway）。
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
   flyway:
-    enabled: true
-    locations: classpath:db/migration
+    # Spring Boot 4.0 では Flyway 自動構成が未稼働のため、テスト環境で明示的に無効化する。
+    # テーブル作成は ddl-auto: create-drop に委ねる。
+    enabled: false
   security:
     oauth2:
       resourceserver:

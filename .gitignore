@@ -87,3 +87,6 @@ __pycache__/
 
 # Claude Code local settings (per-developer, not tracked)
 .claude/settings.local.json
+
+# cognito-local provisioning state（環境ごとの pool ID / client ID を保存）
+scripts/.cognito-provision-state

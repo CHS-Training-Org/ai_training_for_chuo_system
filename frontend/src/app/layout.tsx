@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Noto_Sans_JP } from 'next/font/google'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
 const inter = Inter({
@@ -27,7 +28,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* トースト通知（sonner）。shadcn/ui の toast は非推奨のため sonner を採用 */}
+        <Toaster richColors closeButton />
+      </body>
     </html>
   )
 }

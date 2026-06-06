@@ -4,6 +4,15 @@
 
 Accepted
 
+> **実装時 DEVIATION（2026-06-02）**
+> - `issuer-uri` ではなく **`jwk-set-uri`** を使用。cognito-local 停止中でも起動できるよう、起動時の OIDC discovery（`/.well-known/openid-configuration` フェッチ）を回避するため。
+> - `hasAuthority("SCOPE_xxx")` ではなく **`hasRole("MEMBER")`** 等を使用。Cognito JWT の `custom:role` クレーム（スカラー文字列 `MEMBER`/`APPROVER`/`ADMIN`）を `ROLE_*` 権限にマッピングする `RoleJwtAuthenticationConverter` を実装。
+> - `JwtDecoder` Bean の明示定義は不要（Spring Boot 自動構成が `jwk-set-uri` から生成）。
+> - テストでは `@WithMockMember`/`@WithMockApprover`/`@WithMockAdmin`（`JwtAuthenticationToken` ベースのカスタムアノテーション）を採用（`@WithMockUser` は Spring Security の通常 Auth 向けで JWT には非推奨）。
+>
+> **実装時 DEVIATION（2026-06-03）**
+> - `CurrentUserArgumentResolver`（`@CurrentUser User`）を `WebMvcConfigurer.addArgumentResolvers` で登録。JWT `sub` クレーム → `UserRepository.findByCognitoSub()` → `User` エンティティを解決。未登録ユーザーには `UnregisteredUserException`（素の `RuntimeException`）をスロー。フィルタチェーン後のリゾルバから投げるため Spring Security の `AuthenticationException` にはせず、`@RestControllerAdvice` の `@ExceptionHandler(UnregisteredUserException.class)` が 401 `UNAUTHORIZED` に変換する。
+
 ## Context
 
 Spring Boot での API 認証・認可の実装方針を決定する。フロントエンドは Better Auth（ADR-008）+ cognito-local を通じて発行された JWT を Spring Boot に送信する。

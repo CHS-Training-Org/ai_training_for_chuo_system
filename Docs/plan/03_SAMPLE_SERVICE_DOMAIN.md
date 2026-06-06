@@ -89,7 +89,7 @@ users
 ├── email (VARCHAR)
 ├── department_id (UUID, FK → departments)
 ├── role (VARCHAR)                                   ← MEMBER / APPROVER / ADMIN
-└── created_at (TIMESTAMPTZ)
+└── created_at (TIMESTAMP)
 
 resources
 ├── id (UUID, PK)
@@ -100,18 +100,18 @@ resources
 ├── requires_approval (BOOLEAN)                     ← 承認フローを通すか
 ├── is_active (BOOLEAN)
 ├── description (TEXT, nullable)
-└── created_at (TIMESTAMPTZ)
+└── created_at (TIMESTAMP)
 
 reservations
 ├── id (UUID, PK)
 ├── resource_id (UUID, FK → resources)
 ├── requester_id (UUID, FK → users)
-├── start_at (TIMESTAMPTZ)
-├── end_at (TIMESTAMPTZ)
+├── start_at (TIMESTAMP)
+├── end_at (TIMESTAMP)
 ├── purpose (VARCHAR)
 ├── attendees_count (INTEGER, nullable)
 ├── status (VARCHAR)                                 ← DRAFT / PENDING / APPROVED / REJECTED / CANCELLED
-└── created_at / updated_at (TIMESTAMPTZ)
+└── created_at / updated_at (TIMESTAMP)
 
 approval_steps
 ├── id (UUID, PK)
@@ -120,8 +120,8 @@ approval_steps
 ├── step_order (INTEGER)                            ← 多段階承認の順序
 ├── status (VARCHAR)                                ← PENDING / APPROVED / REJECTED
 ├── comment (TEXT, nullable)
-├── decided_at (TIMESTAMPTZ, nullable)
-└── created_at (TIMESTAMPTZ)
+├── decided_at (TIMESTAMP, nullable)
+└── created_at (TIMESTAMP)
 ```
 
 **主な制約**
