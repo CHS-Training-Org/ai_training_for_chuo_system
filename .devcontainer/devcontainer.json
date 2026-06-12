@@ -5,8 +5,11 @@
   "workspaceFolder": "/workspace",
   // Claude Code 未起動だとホストに ~/.claude.json が存在せず、Docker がマウント元を
   // 空ディレクトリとして自動生成 → ファイル↔ディレクトリの型衝突でコンテナ起動が失敗する。
-  // マウント前にホスト側で空ファイル/ディレクトリの存在を保証して回避する（Windows ホスト前提）。
-  "initializeCommand": "powershell -NoProfile -Command \"$j = Join-Path $env:USERPROFILE '.claude.json'; if (-not (Test-Path $j)) { Set-Content -Path $j -Value '{}' -NoNewline }; $d = Join-Path $env:USERPROFILE '.claude'; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d | Out-Null }\"",
+  // マウント前にホスト側で空ファイル/ディレクトリの存在を保証して回避する。
+  // initializeCommand はホストのシェルで実行される（WSL2/Linux/macOS は /bin/sh）。
+  // そのため POSIX sh で記述する。Windows で開発する場合は WSL2 経由で起動すること
+  // （README の「Windows ユーザー向け: WSL2 セットアップ」を参照）。
+  "initializeCommand": "[ -f \"$HOME/.claude.json\" ] || printf '{}' > \"$HOME/.claude.json\"; mkdir -p \"$HOME/.claude\"",
   "features": {
     "ghcr.io/devcontainers/features/java:1": { "version": "25" },
     "ghcr.io/devcontainers/features/node:2.0.0": { "version": "24" },
@@ -37,10 +40,12 @@
       }
     }
   },
-  "forwardPorts": [3000, 8000],
+  "forwardPorts": [3000, 8000, 8080],
   "containerEnv": {
     "WAYLAND_DISPLAY": "",
-    "DISPLAY": ""
+    "DISPLAY": "",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8"
   },
   "postCreateCommand": "bash .devcontainer/postCreate.sh"
 }

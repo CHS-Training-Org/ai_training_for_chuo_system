@@ -1,7 +1,7 @@
 # 画面仕様書
 
 > 対象読者：学習者・メンター
-> 参照：[requirements.md](./requirements.md) / [03_SAMPLE_SERVICE_DOMAIN.md](../plan/03_SAMPLE_SERVICE_DOMAIN.md)
+> 参照：[requirements.md](./requirements.md) / [api-spec.md](./api-spec.md)
 
 ---
 
@@ -112,6 +112,7 @@ flowchart TD
 | 要素 | 説明 |
 |------|------|
 | サインインボタン | クリックで Cognito OAuth2 フローを開始（`authClient.signIn.social({ provider: 'cognito' })`） |
+| 開発用ロール別ログインボタン | **開発環境限定**（`NODE_ENV !== 'production'` でのみ表示）。MEMBER / APPROVER / ADMIN の各シードユーザーで cognito-local に直接ログインする（`devLoginAction` → `InitiateAuth` → IdToken を httpOnly Cookie `dev-id-token` に保存）。本番ビルドには含まれない |
 
 #### バリデーション
 
@@ -135,7 +136,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 |------|------|
 | カテゴリフィルター | 「すべて」／「会議室（ROOM）」／「備品（EQUIPMENT）」／「社用車（VEHICLE）」のタブまたはセレクト |
 | リソースカード一覧 | 名称・カテゴリ・場所・定員・承認フロー要否を表示。`is_active = false` のリソースは MEMBER / APPROVER には非表示（ADMIN はグレーアウトして表示） |
-| 空き確認フォーム | 開始日時・終了日時の入力欄。入力後にリソース一覧を再取得し、当該時間帯に占有予約のあるリソースに「予約済み」バッジを表示 |
+| 空き確認フォーム | 開始日時・終了日時の入力欄。入力後にリソース一覧を再取得し、当該時間帯に空きのあるリソースのみを表示する（占有予約のあるリソースは一覧から除外。`GET /api/resources` の `from`/`to` フィルタ仕様に準拠）。絞り込み中は対象期間と件数のメッセージを表示 |
 | 「詳細を見る」リンク | リソース詳細（`/resources/{id}`）へ遷移 |
 | ページネーション | page/size 方式（デフォルト 20 件/ページ） |
 
@@ -148,8 +149,8 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 | 要素 | 説明 |
 |------|------|
 | リソース情報 | 名称・カテゴリ・場所・定員・説明・承認フロー要否 |
-| 予約カレンダー | 当日を基点に今後 4 週間程度の占有時間帯（`status IN ('PENDING', 'APPROVED')` の予約）をカレンダー表示 |
-| 「このリソースを予約する」ボタン | 予約申請フォーム（`/reservations/new?resourceId={id}`）へ遷移 |
+| 空き状況リスト | 当日〜7 日後の占有時間帯（`status IN ('PENDING', 'APPROVED')` の予約。`GET /api/resources/{id}/availability` で取得）をリスト表示。占有なしの場合は「予約はありません」メッセージ |
+| 「このリソースを予約する」ボタン | 予約申請フォーム（`/reservations/new?resourceId={id}`）へ遷移。`is_active = false` のリソースでは非表示 |
 
 ---
 

@@ -9,7 +9,7 @@
 
 ### 目的
 
-社内エンジニアが **AI駆動開発**（GitHub Copilot + Claude Code CLI）を活用したフルスタック開発を体験・習得するための学習用リポジトリを構築する。
+社内エンジニアが **AI駆動開発**（Claude Code）を活用したフルスタック開発を体験・習得するための学習用リポジトリを構築する。
 
 学習者は、あらかじめ用意されたベースサービス（**BookFlow**）を土台として、AIツールを積極的に活用しながらエンハンス開発を行う。実際の業務に近い技術スタックと開発フローを通じて、AI駆動開発の実践スキルを身につける。
 
@@ -50,7 +50,7 @@
 
 ### やらないこと（スコープ外）
 
-- GitHub Issue / Label / Actions の実体作成（Phase 3 で人間が実施）
+- GitHub Issue / Label / Actions の実体作成（Phase 4 で実施。詳細は [`plan/PHASE4_AI_DRIVEN_DEV_TASKS.md`](./plan/PHASE4_AI_DRIVEN_DEV_TASKS.md)）
 - AWS リソースの実プロビジョニング（本チュートリアルの対象外）
 
 ---
@@ -72,10 +72,12 @@
 | フェーズ | 担当 | 内容 | 完了条件 |
 | --- | --- | --- | --- |
 | **Phase 0：計画書策定** ✅ | 人間 | 本計画書セット（6ファイル）の作成・レビュー | 本ドキュメントのチェックリスト全通過 |
-| **Phase 1：リポジトリ初期化** ✅ | AI エージェント | ディレクトリ構造・DevContainer・CI/CD 骨格の実装。詳細は [`PHASE1_INIT_TASKS.md`](./plan/PHASE1_INIT_TASKS.md) 参照 | `docker compose up` でローカル起動確認・ADR 全件確定 |
-| **Phase 2：ベースサービス実装** ✅ | AI エージェント | BookFlow の初期機能（認証・予約申請・承認ワークフロー）の実装。詳細は [`PHASE3_IMPL_TASKS.md`](./plan/PHASE3_IMPL_TASKS.md) 参照（管理上 Phase 3 として進捗トラッキング） | 18 API・10 画面が仕様準拠で動作し、CI がグリーン |
-| **Phase 3：課題登録** | 人間 | GitHub Issue に必須・選択課題を登録、ラベル設定 | 新人が Phase 0 から始められる状態 |
-| **Phase 4：初回学習実施** | 学習者 | 学習者がリポジトリを使い、フィードバック収集 | 満足度アンケート実施・課題の見直し |
+| **Phase 1：リポジトリ初期化** ✅ | AI エージェント | ディレクトリ構造・DevContainer・CI/CD 骨格の実装 | `docker compose up` でローカル起動確認・ADR 全件確定 |
+| **Phase 2：ベースサービス実装** ✅ | AI エージェント | BookFlow の初期機能（認証・予約申請・承認ワークフロー）の実装（管理上 Phase 3 として進捗トラッキング） | 18 API・10 画面が仕様準拠で動作し、CI がグリーン |
+| **Phase 4：AI 駆動開発整備** | 人間 + AI エージェント | 仕様書整備・AI 駆動開発ワークフロー整備・エンハンス要件策定・課題登録。詳細は [`PHASE4_AI_DRIVEN_DEV_TASKS.md`](./plan/PHASE4_AI_DRIVEN_DEV_TASKS.md) 参照 | 新人が STEP-01 から始められる状態 |
+| **Phase 5：初回学習実施** | 学習者 | 学習者がリポジトリを使い、フィードバック収集 | 満足度アンケート実施・課題の見直し |
+
+> 完了済みフェーズ（Phase 0〜3）の計画ファイルは削除済み（必要な場合は git 履歴を参照）。Phase 3 はベースサービス実装の進捗トラッキングに使用したため欠番とし、次フェーズを Phase 4 とする。
 
 ---
 
@@ -85,14 +87,7 @@
 | -------------------------------------------------------------------------- | ------------------------------------------- | ---------------- |
 | [ARCHITECTURE.md](./ARCHITECTURE.md)                                       | AWS 標準アーキテクチャ（上位設計）          | 全員             |
 | **PROJECT_PLAN.md**（本ドキュメント）                                      | 全体計画・索引                              | 全員             |
-| [plan/01_REPO_STRUCTURE.md](./plan/01_REPO_STRUCTURE.md)                   | リポジトリ構造・DevContainer 仕様           | メンター・管理者 |
-| [plan/02_DOCS_SET_DESIGN.md](./plan/02_DOCS_SET_DESIGN.md)                 | ドキュメント体系・更新ルール                | メンター・管理者 |
-| [plan/03_SAMPLE_SERVICE_DOMAIN.md](./plan/03_SAMPLE_SERVICE_DOMAIN.md)     | BookFlow のドメイン・要件・ER・API          | 全員             |
-| [plan/04_LEARNING_CURRICULUM.md](./plan/04_LEARNING_CURRICULUM.md)         | 学習パス・課題設計・Issue/Label 設計        | 学習者・メンター |
-| [plan/05_OPERATION_GUIDE.md](./plan/05_OPERATION_GUIDE.md)                 | 運用フロー・AI 利用ポリシー・CI/CD          | メンター・管理者 |
-| [plan/PHASE1_INIT_TASKS.md](./plan/PHASE1_INIT_TASKS.md)                   | Phase 1 初期化タスク・進捗トラッキング      | メンター・管理者 |
-| [plan/PHASE2_INIT_TASKS.md](./plan/PHASE2_INIT_TASKS.md)                   | Phase 2 ドキュメント整備タスク・進捗トラッキング | メンター・管理者 |
-| [plan/PHASE3_IMPL_TASKS.md](./plan/PHASE3_IMPL_TASKS.md)                   | Phase 3 ベースサービス実装タスク・進捗トラッキング | メンター・管理者 |
+| [plan/PHASE4_AI_DRIVEN_DEV_TASKS.md](./plan/PHASE4_AI_DRIVEN_DEV_TASKS.md) | Phase 4（AI 駆動開発整備）タスク・進捗トラッキング | メンター・管理者 |
 | [spec/index.md](./spec/index.md)                                           | BookFlow 実装仕様（要件・画面・API・ER 図）     | 全員             |
 | [guide/index.md](./guide/index.md)                                         | 学習者向けガイド（環境構築・AI 活用・規約・トラブル） | 学習者・メンター |
 
@@ -102,10 +97,10 @@
 
 | リスク                                                      | 対策                                                                                    |
 | ----------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| DevContainer 起動が重く、学習者の PC スペック不足で動かない | スペック要件を `01_REPO_STRUCTURE.md` に明記。コア3サービスのみの軽量プロファイルも準備 |
-| AI ツールが誤った実装を提案し学習者が鵜呑みにする           | `05_OPERATION_GUIDE.md` に AI 利用ガイドライン・レビュー観点を記載                      |
+| DevContainer 起動が重く、学習者の PC スペック不足で動かない | スペック要件を [`guide/getting-started.md`](./guide/getting-started.md) に明記。コア3サービスのみの軽量プロファイルも準備 |
+| AI ツールが誤った実装を提案し学習者が鵜呑みにする           | AI 利用ガイドライン・レビュー観点を [`guide/ai-tools-guide.md`](./guide/ai-tools-guide.md) に整備（Phase 4 タスク 2.2 / 3.5） |
 | 課題の難易度ばらつきで新人が詰まる                          | 必須課題に「つまずきポイント」と参考リンクを明記。メンターの SLA を設定                 |
-| サンプルサービスの依存ライブラリが陳腐化する                | 依存更新ポリシー（月次チェック）を `05_OPERATION_GUIDE.md` に規定                       |
+| サンプルサービスの依存ライブラリが陳腐化する                | 依存更新ポリシー（月次チェック・Dependabot）を Phase 4 タスク 5.2 で整備               |
 
 ---
 
@@ -113,7 +108,7 @@
 
 | 用語          | 説明                                                                                                        |
 | ------------- | ----------------------------------------------------------------------------------------------------------- |
-| AI駆動開発    | GitHub Copilot や Claude Code CLI などのAIツールを積極活用して開発速度・品質を高める開発手法                |
+| AI駆動開発    | Claude Code などのAIツールを積極活用して開発速度・品質を高める開発手法                                      |
 | BookFlow      | 本リポジトリのベースとなるサンプルサービス（施設・備品予約 ＋ 承認ワークフロー統合アプリ）                  |
 | BFF           | Backend for Frontend。Next.js API Routes がこの役割を担い、認証トークン管理とバックエンド呼び出しを集約する |
 | DevContainer  | VS Code + Docker を用いた再現性の高い開発環境。`.devcontainer/` 配下に定義                                  |

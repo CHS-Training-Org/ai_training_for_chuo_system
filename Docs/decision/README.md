@@ -1,7 +1,7 @@
 # ADR（Architecture Decision Records）ガイド
 
 > 対象読者：メンター・リポジトリ管理者・学習者
-> 参照：`Docs/plan/02_DOCS_SET_DESIGN.md` / `Docs/plan/03_SAMPLE_SERVICE_DOMAIN.md`
+> 参照：[PROJECT_PLAN.md](../PROJECT_PLAN.md) / [Docs/spec/](../spec/index.md)
 
 このディレクトリには、BookFlow の技術選定・設計上の重要な意思決定を記録した ADR（Architecture Decision Records）が格納されています。
 
@@ -29,7 +29,7 @@ ADR-NNN-kebab-case.md
 - `kebab-case`：テーマを英語の小文字ハイフン区切りで記述
 - 例：`ADR-001-frontend-package-manager.md`
 
-> **注意**：`02_DOCS_SET_DESIGN.md` では `NNN_kebab-case.md` と記載されていますが、既存の ADR-001〜019 はすべて `ADR-NNN-kebab-case.md` 形式で作成されています。後者の形式が実体の命名規則です。表記の整合性修正は今後のメンテナンスで対応予定です。
+> **注意**：既存の ADR-001〜019 はすべて `ADR-NNN-kebab-case.md` 形式で作成されており、この形式が正式な命名規則です。
 
 ---
 

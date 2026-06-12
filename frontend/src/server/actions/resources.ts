@@ -7,26 +7,11 @@ import {
   type ResourceResponse,
 } from '@/lib/types/api'
 import { getAccessToken } from '@/lib/session'
-import { z } from 'zod'
 
-// ---------------------------------------------------------------------------
-// リクエスト入力スキーマ（フォームバリデーション用）
-// ---------------------------------------------------------------------------
+// 入力スキーマは 'use server' ファイルから export できないため lib/schemas/resource.ts に分離している。
+import type { CreateResourceInput, UpdateResourceInput } from '@/lib/schemas/resource'
 
-export const CreateResourceSchema = z.object({
-  name: z.string().min(1, 'リソース名は必須です').max(100, '100文字以内で入力してください'),
-  category: z.enum(['ROOM', 'EQUIPMENT', 'VEHICLE'], { required_error: 'カテゴリは必須です' }),
-  capacity: z.number().int().positive().nullable().optional(),
-  location: z.string().max(200, '200文字以内で入力してください').optional().nullable(),
-  requiresApproval: z.boolean(),
-  isActive: z.boolean(),
-  description: z.string().optional().nullable(),
-})
-
-export const UpdateResourceSchema = CreateResourceSchema
-
-export type CreateResourceInput = z.infer<typeof CreateResourceSchema>
-export type UpdateResourceInput = z.infer<typeof UpdateResourceSchema>
+export type { CreateResourceInput, UpdateResourceInput } from '@/lib/schemas/resource'
 
 // ---------------------------------------------------------------------------
 // リソース一覧パラメータ

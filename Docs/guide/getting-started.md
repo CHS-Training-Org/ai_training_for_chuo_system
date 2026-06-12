@@ -1,9 +1,17 @@
 # はじめに（環境構築・起動手順）
 
-> 対象読者：学習者（主に新人）
+> 対象読者：学習者（主に新人）  
 > 参照：[troubleshooting.md](./troubleshooting.md) / [ai-tools-guide.md](./ai-tools-guide.md)
 
-このガイドは STEP-01「環境構築」の手順書として機能します。DevContainer を使って BookFlow のローカル開発環境を構築し、動作確認するまでの全手順を記載しています。
+このガイドは STEP-01「環境構築」の手順書です。DevContainer を使って BookFlow のローカル開発環境を構築し、動作確認するまでの全手順を記載しています。
+
+手順の全体像は次の 5 ステップです。
+
+1. 前提ソフトウェアの準備（OS 別の事前準備を含む）
+2. リポジトリのクローンと DevContainer 起動
+3. フロントエンド環境変数の設定（初回のみ）
+4. サービスの起動
+5. 動作確認・初期データ投入
 
 ---
 
@@ -15,65 +23,144 @@
 | Dev Containers 拡張 | コンテナ開発 | `ms-vscode-remote.remote-containers` |
 | Docker Engine | コンテナ実行 | Rancher Desktop（`dockerd (moby)` ランタイム）または Docker Desktop（RAM 8GB 以上割当） |
 
-### OS 別の注意事項（Windows: WSL2 を使う）
+### 推奨ホストスペック
 
-Windows で開発する場合は **WSL2（Ubuntu 等の Linux）上にリポジトリを配置**してください。
-Windows 側（`C:\...` / WSL2 からは `/mnt/c/...`）にソースを置くと、クロスファイルシステムアクセスにより
-ファイル I/O が著しく遅くなり、ホットリロード（HMR / devtools）も効かなくなることがあります。
+DevContainer では postgres / localstack / cognito-local / docs の各コンテナが開発コンテナと同時に起動します。次のスペックを推奨します。
 
-- **WSL2 / Ubuntu のインストール**（PowerShell を管理者で実行）:
-  ```powershell
-  wsl --install -d Ubuntu
-  ```
-- **VS Code 拡張**: `WSL`（`ms-vscode-remote.remote-wsl`）と `Dev Containers` を両方インストール。
+| 項目 | 推奨値 | 備考 |
+|------|--------|------|
+| RAM | 16GB 以上 | Docker への割当は 8GB 以上を確保する |
+| CPU | 4 コア以上 | Gradle ビルドと Next.js dev サーバーが並走するため |
+| ストレージ空き容量 | 20GB 以上 | コンテナイメージ・pnpm ストア・Gradle キャッシュを含む |
 
-#### WSL2 ターミナルの入り方
+### OS 別の事前準備
 
-- **Windows Terminal** を起動し、タブのドロップダウンから「Ubuntu」を選択（推奨）
-- スタートメニューで「Ubuntu」を検索して起動
-- PowerShell / コマンドプロンプトで `wsl`（ディストリ指定は `wsl -d Ubuntu`）
-- VS Code 統合ターミナルのドロップダウンで「Ubuntu (WSL)」を選択
+=== "Windows（WSL2 必須）"
 
-> プロンプトが `user@host:~$` 形式で、`pwd` が `/home/<user>/...` を返せば WSL2 ネイティブ FS 上です。
-> `/mnt/c/...` を返す場合は Windows 側なので、下記の「クローンから起動まで」に従い WSL2 側へ移動してください。
+    Windows では **WSL2（Ubuntu 等の Linux）上にリポジトリを配置**してください。
+
+    !!! warning "Windows 側（`C:\...`）にソースを置かない"
+        Windows 側（WSL2 からは `/mnt/c/...`）にソースを置くと、クロスファイルシステムアクセスにより
+        ファイル I/O が著しく遅くなり、ホットリロード（HMR / devtools）も効かなくなることがあります。
+        必ず WSL2 ネイティブファイルシステム（`/home/<user>/...`）に配置してください。
+
+    1. **WSL2 / Ubuntu のインストール**（PowerShell を管理者で実行）
+
+        ```powershell
+        wsl --install -d Ubuntu
+        ```
+
+    2. **VS Code 拡張のインストール**：`WSL`（`ms-vscode-remote.remote-wsl`）と `Dev Containers` を両方インストールします。
+
+    3. **WSL2 ターミナルに入る**（いずれかの方法）
+
+        - **Windows Terminal** を起動し、タブのドロップダウンから「Ubuntu」を選択（推奨）
+        - スタートメニューで「Ubuntu」を検索して起動
+        - PowerShell / コマンドプロンプトで `wsl`（ディストリ指定は `wsl -d Ubuntu`）
+        - VS Code 統合ターミナルのドロップダウンで「Ubuntu (WSL)」を選択
+
+    !!! tip "WSL2 ネイティブ FS 上にいるかの確認"
+        プロンプトが `user@host:~$` 形式で、`pwd` が `/home/<user>/...` を返せば WSL2 ネイティブ FS 上です。
+        `/mnt/c/...` を返す場合は Windows 側なので、`cd ~` で WSL2 側へ移動してから次のステップに進んでください。
+
+=== "macOS"
+
+    追加の事前準備は不要です。Docker Desktop または Rancher Desktop をインストールし、
+    通常のターミナルでそのまま「ステップ 1」から実行できます。
+
+=== "Linux"
+
+    追加の事前準備は不要です。Docker Engine をインストールし、
+    通常のターミナルでそのまま「ステップ 1」から実行できます。
 
 ---
 
-## 推奨ホストスペック
+## ステップ 1：リポジトリのクローン
 
-<!-- Batch 5 で記述：RAM・ストレージ等の推奨スペック。16GB RAM 以上推奨等 -->
-
----
-
-## クローンから起動まで
-
-> **Windows ユーザーは必ず WSL2（Ubuntu）のターミナル内で**以下を実行してください（上記「OS 別の注意事項」参照）。
-> macOS / Linux ユーザーは通常のターミナルでそのまま実行できます。
+!!! note "Windows ユーザーへ"
+    必ず **WSL2（Ubuntu）のターミナル内で**実行してください（上記「OS 別の事前準備」参照）。
 
 ```bash
-# 1. WSL2 ネイティブ FS にクローン（Windows の場合は /home 配下に置くのが重要）
 cd ~
 mkdir -p projects && cd projects
 git clone <repository-url> ai-development-tutorial
 cd ai-development-tutorial
-
-# 2. VS Code で開く（Windows では WSL リモートとして起動し、左下に「WSL: Ubuntu」と表示される）
-code .
-
-# 3. コマンドパレット（Ctrl+Shift+P）→ "Dev Containers: Reopen in Container"
-#    → postgres / localstack / cognito-local / backend / docs コンテナが自動起動
-
-# 4. DevContainer 内のターミナルでサービスを起動
-cd frontend && pnpm dev          # http://localhost:3000
-# 別ターミナルで
-cd backend && ./gradlew bootRun  # http://localhost:8080
 ```
 
----
+## ステップ 2：VS Code で開き DevContainer を起動
 
-## 動作確認手順
+```bash
+code .
+```
 
-<!-- Batch 5 で記述：確認 URL と期待するレスポンス。http://localhost:3000（フロントエンド）・http://localhost:8080/actuator/health（バックエンド）等 -->
+Windows では WSL リモートとして起動し、ウィンドウ左下に「WSL: Ubuntu」と表示されることを確認してください。
+
+続いて、コマンドパレット（++ctrl+shift+p++）→ **"Dev Containers: Reopen in Container"** を実行します。
+
+- postgres / localstack / cognito-local / docs の各コンテナが自動起動します（バックエンドはコンテナとしては起動せず、ステップ 4 で開発コンテナ内から手動起動します）
+- このとき `postCreate.sh` が `scripts/provision-cognito.sh` を自動実行し、cognito-local 用の **Pool ID / Client ID をターミナルに出力**します（次のステップで使うので控えておく）
+
+## ステップ 3：フロントエンド環境変数の設定（初回のみ）
+
+DevContainer 内のターミナルで実行します。
+
+```bash
+cd frontend
+cp .env.local.example .env.local
+```
+
+ステップ 2 で出力された値を `.env.local` の以下の項目に設定します。
+
+```dotenv
+COGNITO_USER_POOL_ID=local_XXXXXXXX
+COGNITO_CLIENT_ID=XXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+!!! warning "この設定を省略すると 500 エラーになる"
+    `.env.local` の作成と Cognito 環境変数の設定を行わないと、フロントエンドにアクセスした際に
+    Better Auth の初期化エラー（`[BetterAuthError]: DOMAIN_AND_REGION_REQUIRED`）が発生し、`/` が 500 エラーになります。
+
+!!! tip "Pool ID / Client ID を見逃した場合"
+    `postCreate.sh` の provisioning が失敗していた・出力を見逃した場合は、手動で再実行できます。
+
+    ```bash
+    bash scripts/provision-cognito.sh
+    ```
+
+## ステップ 4：サービスの起動
+
+DevContainer 内のターミナルで、フロントエンドとバックエンドをそれぞれ起動します。
+
+```bash
+# ターミナル 1：フロントエンド（http://localhost:3000）
+cd frontend && pnpm dev
+```
+
+```bash
+# ターミナル 2：バックエンド（http://localhost:8080）
+cd backend && ./gradlew bootRun
+```
+
+!!! warning "バックエンド未起動のままアクセスしない"
+    バックエンドを起動せずにフロントエンドにアクセスすると、認証後に `/auth/signin` へリダイレクトされ続けます。
+    先に下記「動作確認」でバックエンドの起動を確認してください。
+
+!!! tip "バックエンドをデバッグ実行したい場合"
+    ブレークポイントを設定してデバッグしたい場合は、`./gradlew bootRun` の代わりに
+    VS Code の「Run and Debug」（++ctrl+shift+d++）→「**Spring Boot: bookflow**」を選択して起動してください
+    （`docker exec` 不要・ネイティブ Java デバッグ）。
+
+## ステップ 5：動作確認
+
+すべて起動できたら、以下を確認します。
+
+| 確認対象 | URL / コマンド | 期待する結果 |
+|---------|----------------|--------------|
+| バックエンド | `curl http://localhost:8080/actuator/health` | `{"status":"UP"}` が返る |
+| フロントエンド | <http://localhost:3000> | サインイン画面またはダッシュボードが表示される |
+| ドキュメントサイト | <http://localhost:8000> | 本ドキュメントサイトが表示される（docs コンテナが自動起動） |
+
+フロントエンドからサインインして画面が表示されれば、環境構築は完了です。続けて下記の「初期データ投入」を行うと、画面にサンプルデータが表示されるようになります。
 
 ---
 
@@ -107,7 +194,9 @@ docker exec -i aidevelopmenttutorial_devcontainer-postgres-1 \
   psql -U bookflow -d bookflow < scripts/seed.sql
 ```
 
-> **docker compose exec を使う場合**：compose プロジェクト名が環境によって異なるため、`docker compose exec postgres psql ...` は「service is not running」と誤判定されることがあります。コンテナ名を直接指定する `docker exec -i` の方法を推奨します。
+!!! note "docker compose exec を使う場合"
+    compose プロジェクト名が環境によって異なるため、`docker compose exec postgres psql ...` は
+    「service is not running」と誤判定されることがあります。コンテナ名を直接指定する `docker exec -i` の方法を推奨します。
 
 ### 投入後の確認
 
@@ -141,6 +230,14 @@ docker exec -i <postgres コンテナ名> psql -U bookflow -d bookflow \
 
 ## よくあるトラブル
 
-詳細は [troubleshooting.md](./troubleshooting.md) を参照してください。
+詰まったときは [troubleshooting.md](./troubleshooting.md) を参照してください。代表的な症状と参照先：
 
-<!-- Batch 5 で記述：頻出エラーへの簡易案内と troubleshooting.md の該当セクションへのリンク -->
+| 症状 | 参照先 |
+|------|--------|
+| DevContainer の起動が失敗する・極端に遅い | [troubleshooting.md §DevContainer・Docker 関連](./troubleshooting.md#devcontainer) |
+| `pnpm install` / Gradle の依存解決が失敗する | [troubleshooting.md §依存インストール関連](./troubleshooting.md#install) |
+| `pnpm dev` / `./gradlew bootRun` が起動しない・ポート競合 | [troubleshooting.md §起動・接続エラー](./troubleshooting.md#startup) |
+| 認証後に `/auth/signin` へ戻され続ける | バックエンド未起動が原因（ステップ 4 の注意参照） |
+| `[BetterAuthError]: DOMAIN_AND_REGION_REQUIRED` で 500 エラー | `.env.local` 未設定が原因（ステップ 3 参照） |
+| DB 接続エラー・Flyway マイグレーション失敗 | [troubleshooting.md §DB・マイグレーション関連](./troubleshooting.md#database) |
+| Claude Code が動かない・コンテナ起動が `.claude.json` で失敗する | [troubleshooting.md §AI ツール関連](./troubleshooting.md#ai-tools) |

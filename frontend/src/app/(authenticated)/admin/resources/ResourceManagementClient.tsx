@@ -9,8 +9,8 @@ import {
   createResourceAction,
   updateResourceAction,
   changeResourceStatusAction,
-  CreateResourceSchema,
 } from '@/server/actions/resources'
+import { CreateResourceSchema } from '@/lib/schemas/resource'
 import type { ResourceResponse } from '@/lib/types/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

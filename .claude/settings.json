@@ -1,6 +1,6 @@
 {
   "env": {
-    "CLAUDE_CODE_NO_FLICKER": "1"
+    "CLAUDE_CODE_NO_FLICKER": "0"
   },
   "hooks": {},
   "statusLine": {
@@ -8,7 +8,7 @@
     "command": "bash .claude/scripts/statusline-command.sh"
   },
   "language": "japanese",
-  "advisorModel": "opus",
+  "advisorModel": "fable",
   "autoUpdatesChannel": "latest",
   "theme": "auto"
 }

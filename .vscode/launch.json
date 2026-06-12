@@ -34,10 +34,10 @@
       "projectName": "bookflow",
       "cwd": "${workspaceFolder}/backend",
       "env": {
-        "DB_URL": "jdbc:postgresql://localhost:5432/bookflow",
+        "DB_URL": "jdbc:postgresql://postgres:5432/bookflow",
         "DB_USERNAME": "bookflow",
         "DB_PASSWORD": "bookflow",
-        "COGNITO_JWKS_URI": "http://localhost:9229/local_user_pool_id/.well-known/jwks.json"
+        "COGNITO_JWKS_URI": "http://cognito-local:9229/local_user_pool_id/.well-known/jwks.json"
       }
     }
   ]

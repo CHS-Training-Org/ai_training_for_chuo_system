@@ -23,13 +23,7 @@ nav = [
   {"アーキテクチャ"   = "ARCHITECTURE.md"},
   {"デザイン"         = "design.md"},
   {"計画 (Plan)"   = [
-    "plan/01_REPO_STRUCTURE.md",
-    "plan/02_DOCS_SET_DESIGN.md",
-    "plan/03_SAMPLE_SERVICE_DOMAIN.md",
-    "plan/04_LEARNING_CURRICULUM.md",
-    "plan/05_OPERATION_GUIDE.md",
-    "plan/PHASE1_INIT_TASKS.md",
-    "plan/PHASE2_INIT_TASKS.md",
+    "plan/PHASE4_AI_DRIVEN_DEV_TASKS.md",
   ]},
   {"設計判断 (ADR)" = [
     "decision/ADR-001-frontend-package-manager.md",
@@ -52,8 +46,20 @@ nav = [
     "decision/ADR-018-backend-test-strategy.md",
     "decision/ADR-019-backend-code-quality.md",
   ]},
-  {"仕様 (Spec)"   = ["spec/index.md"]},
-  {"ガイド (Guide)" = ["guide/index.md"]},
+  {"仕様 (Spec)"   = [
+    "spec/index.md",
+    "spec/requirements.md",
+    "spec/screen-spec.md",
+    "spec/api-spec.md",
+    "spec/er-diagram.md",
+  ]},
+  {"ガイド (Guide)" = [
+    "guide/index.md",
+    "guide/getting-started.md",
+    "guide/ai-tools-guide.md",
+    "guide/coding-conventions.md",
+    "guide/troubleshooting.md",
+  ]},
 ]
 
 # ----------------------------------------------------------------------------

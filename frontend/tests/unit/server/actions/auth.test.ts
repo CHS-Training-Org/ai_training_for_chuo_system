@@ -8,11 +8,16 @@ import { server } from '../../msw/server'
 import { MOCK_USER_RESPONSE } from '../../msw/handlers'
 
 // Next.js サーバー専用モジュールをモック
+const cookieStore = {
+  delete: vi.fn(),
+}
+
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(),
 }))
 vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue(new Headers()),
+  cookies: vi.fn().mockResolvedValue(cookieStore),
 }))
 
 // Better Auth サーバーインスタンスをモック
@@ -26,6 +31,7 @@ vi.mock('@/lib/auth', () => ({
 
 // getAccessToken をモック（トークン取得のみ切り離す）
 vi.mock('@/lib/session', () => ({
+  DEV_ID_TOKEN_COOKIE: 'dev-id-token',
   getSession: vi.fn().mockResolvedValue({ session: { accessToken: 'test-token' } }),
   getAccessToken: vi.fn().mockResolvedValue('test-token'),
 }))
@@ -65,13 +71,15 @@ describe('signOutAction', () => {
   beforeEach(() => {
     vi.mocked(redirect).mockClear()
     vi.mocked(auth.api.signOut).mockClear()
+    cookieStore.delete.mockClear()
   })
 
-  it('auth.api.signOut を呼び出した後 /auth/signin へリダイレクトする', async () => {
+  it('auth.api.signOut と dev-id-token cookie の削除を行った後 /auth/signin へリダイレクトする', async () => {
     // redirect() は Next.js の実装では例外をスローするが、モックでは void
     await signOutAction()
 
     expect(auth.api.signOut).toHaveBeenCalledOnce()
+    expect(cookieStore.delete).toHaveBeenCalledWith('dev-id-token')
     expect(redirect).toHaveBeenCalledWith('/auth/signin')
   })
 })

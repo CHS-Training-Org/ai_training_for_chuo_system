@@ -4,6 +4,11 @@ services:
     working_dir: /workspace/frontend
     volumes:
       - ..:/workspace:cached
+      # node_modules を named volume に隔離する。
+      # 理由: (1) 約2.5GB・数万ファイル規模で IDE の監視/検索対象として重い、
+      # (2) pnpm はストアからハードリンクで配置するため、node_modules と
+      #     pnpm-store を同一 FS（同一 named volume 群）に置く必要がある
+      #     （frontend/pnpm-workspace.yaml の storeDir: /pnpm-store と対応）。
       - frontend-node-modules:/workspace/frontend/node_modules
       - pnpm-store:/pnpm-store
       # ホストの Claude Code 設定/認証をコンテナへ共有する。
@@ -11,18 +16,34 @@ services:
       # 'C:\...:/root/...:rw' に変換され、Docker のボリューム parser が ':' で誤分割して
       # 「invalid volume specification」で起動失敗する。long-form は source/target を別キーに
       # 分けるため ':' の曖昧さがなく回避できる（VS Code 公式が compose 構成で推奨する方式）。
-      # NOTE: ${USERPROFILE} は Windows ホスト前提（devcontainer.json の initializeCommand も
-      # Windows 依存で、マウント前にホスト側へ .claude / .claude.json を事前生成している）。
+      # ホストのホームディレクトリを OS 非依存で解決する。WSL2/Linux/macOS では $HOME、
+      # Windows ホストでは $USERPROFILE（${USERPROFILE:-$HOME} で前者優先・無ければ後者）。
+      # devcontainer.json の initializeCommand が、マウント前にホスト側へ
+      # .claude / .claude.json を事前生成している（同じパスに解決される必要がある）。
       - type: bind
-        source: ${USERPROFILE}/.claude
+        source: ${USERPROFILE:-$HOME}/.claude
         target: /root/.claude
       - type: bind
-        source: ${USERPROFILE}/.claude.json
+        source: ${USERPROFILE:-$HOME}/.claude.json
         target: /root/.claude.json
     ports:
       - "3000:3000"
     environment:
-      BACKEND_URL: http://backend:8080
+      NEXT_TELEMETRY_DISABLED: "1"
+      # BE はこの dev コンテナ内で手動起動する（./gradlew bootRun または VS Code「Spring Boot: bookflow」）。
+      # BACKEND_URL は .env.local の http://localhost:8080 を使用するため、ここでは上書きしない。
+      # application.yml のデフォルト値は localhost:5432 だが、Compose ではサービスごとに
+      # ネットワーク名前空間が分かれるため localhost では postgres / cognito-local に到達できない。
+      # bootRun（JVM プロセス）はこのコンテナ内で動くため、サービス名で参照する必要がある。
+      DB_URL: jdbc:postgresql://postgres:5432/bookflow
+      DB_USERNAME: bookflow
+      DB_PASSWORD: bookflow
+      COGNITO_JWKS_URI: http://cognito-local:9229/local_user_pool_id/.well-known/jwks.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      cognito-local:
+        condition: service_started
     command: sleep infinity
 
   postgres:
@@ -60,46 +81,31 @@ services:
     volumes:
       - cognito-data:/app/.cognito
 
-  backend:
-    image: eclipse-temurin:25-jdk
-    working_dir: /workspace/backend
-    volumes:
-      - ..:/workspace:cached
-      - gradle-cache:/root/.gradle
-    ports:
-      - "8080:8080"
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/bookflow
-      DB_USERNAME: bookflow
-      DB_PASSWORD: bookflow
-      COGNITO_JWKS_URI: http://cognito-local:9229/local_user_pool_id/.well-known/jwks.json
-    depends_on:
-      postgres:
-        condition: service_healthy
-    # bootRun は dev コンテナ内で手動実行する（cd /workspace/backend && ./gradlew bootRun）。
-    # backend と frontend の両コンテナが /workspace/backend/.gradle を共有しているため、
-    # ここで Gradle を自動起動すると dev コンテナ側の Gradle コマンドとロック競合する。
-    command: sleep infinity
-
   docs:
     image: ghcr.io/astral-sh/uv:python3.14-bookworm-slim
     working_dir: /workspace
     volumes:
       - ..:/workspace:cached
-      # .venv を 9p バインドマウントから逃がし、高速な ext4 ボリュームに配置する
-      # （9p 上だと uv sync が極端に遅く、rm -rf も不安定で構成が止まるため）
+      # .venv（生成物・約95MB / 多数のファイル）を named volume に隔離する。
+      # 旧コメントの「9p 回避」は現構成には該当しない
+      # （/workspace 側のバインドマウントも本 volume も ext4 であり、9p は不使用。
+      #  `docker exec <docs コンテナ名> mount | grep workspace` で確認可能）。
+      # 残す理由: frontend-node-modules と同様、生成物を bind mount 側のツリーから
+      # 隔離して IDE のファイル監視・検索対象を減らすため（規模はより小さい）。
       - docs-venv:/workspace/.venv
     ports:
       - "8000:8000"
     environment:
       UV_LINK_MODE: copy
-      # pnpm install が node_modules 再作成の確認待ち(非TTY)で止まるのを防ぐ
+      # uv / zensical を非対話モードで動作させ、確認プロンプトでの停止を防ぐ
       CI: "true"
       # CI=true によるカラー抑制を上書きし、Claude Code 等の CLI ツールで色付き表示を維持する
       FORCE_COLOR: "1"
-    # 9p マウントでは inotify が効かず zensical serve の自動再ビルドが動かないため、
-    # mtime ポーリングで再ビルドするスクリプト経由で起動する（詳細は docs-watch.sh）。
-    command: sh /workspace/.devcontainer/docs-watch.sh
+    # 初回起動時に venv 作成・依存関係同期を行ってから zensical serve を起動する。
+    # zensical serve は inotify ベースの自動再ビルド・ライブリロードを内蔵しているため
+    # （WSL2 ネイティブ FS では inotify が正常に伝播する）、Docs/ 配下を編集すると
+    # ブラウザが自動更新される。追加の監視プロセスは不要。
+    command: sh -c "uv venv --allow-existing && uv sync && exec uv run zensical serve -a 0.0.0.0:8000"
 
 volumes:
   postgres-data:
@@ -108,4 +114,3 @@ volumes:
   frontend-node-modules:
   pnpm-store:
   docs-venv:
-  gradle-cache:

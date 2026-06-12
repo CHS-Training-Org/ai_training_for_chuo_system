@@ -96,10 +96,15 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
 
     // サーバー側: BACKEND_URL を直接指定（undici は絶対 URL が必須・Next.js rewrite は不要）
     // ブラウザ側: /api/backend/* → Next.js rewrite → BACKEND_URL/* を経由
+    //
+    // BE の全コントローラは /api 配下にマッピングされている（例: AuthController#getMe は
+    // /api/users/me）。path 引数（例: /users/me）はこれを含まないため、BACKEND_URL を
+    // 直接指定するサーバー側では prefix に /api を含める必要がある
+    // （new URL の絶対パス解決規則により、origin 側に /api を含めても解決時に失われるため）。
     const origin = _isServer
       ? (process.env.BACKEND_URL ?? 'http://localhost:8080')
       : 'http://localhost' // URL 組み立て用ダミーオリジン（pathname のみ使用）
-    const prefix = _isServer ? '' : '/api/backend'
+    const prefix = _isServer ? '/api' : '/api/backend'
     const url = new URL(`${prefix}${path}`, origin)
 
     if (options.params) {

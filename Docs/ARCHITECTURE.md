@@ -14,7 +14,7 @@ flowchart TD
     subgraph AI["🤖 AI / 開発支援レイヤー"]
         direction LR
         Bedrock["<b>Amazon Bedrock</b><br/>Claude 等 LLM API<br/>RAG・チャット・要約"]
-        Copilot["<b>GitHub Copilot</b><br/>IDE コード補完<br/>全開発者が利用"]
+        ClaudeCode["<b>Claude Code</b><br/>コーディングエージェント<br/>全開発者が利用"]
     end
 
     subgraph FE["🖥️ フロントエンド / BFF レイヤー"]
@@ -46,7 +46,7 @@ flowchart TD
     end
 
     Bedrock -. AI 機能 .-> Next
-    Copilot -. 開発支援 .-> Next
+    ClaudeCode -. 開発支援 .-> Next
     Next ==>|API 呼び出し| APIGW
     Cognito -. JWT 検証 .-> APIGW
     APIGW ==> Lambda
@@ -64,7 +64,7 @@ flowchart TD
     classDef beCls fill:#f0fdf4,stroke:#22c55e,color:#14532d
     classDef dbCls fill:#faf5ff,stroke:#a855f7,color:#581c87
 
-    class Bedrock,Copilot aiCls
+    class Bedrock,ClaudeCode aiCls
     class Next,FEInfra feCls
     class Cognito,APIGW authCls
     class Lambda svCls
@@ -83,7 +83,7 @@ flowchart TD
 | コンポーネント     | 役割                                                          |
 | ------------------ | ------------------------------------------------------------- |
 | **Amazon Bedrock** | 開発時に AI エージェントを呼び出すための LLM API（Claude 等） |
-| **GitHub Copilot** | IDE 拡張コード補完。VS Code / JetBrains プラグインとして動作  |
+| **Claude Code**    | ターミナル / IDE で動作するコーディングエージェント           |
 
 ### フロントエンド / BFF レイヤー（Next.js on ECS）
 
@@ -170,7 +170,7 @@ flowchart LR
 | コンテナ             | Docker, Amazon ECS Fargate, Amazon ECR   |
 | API 管理             | Amazon API Gateway (HTTP API)            |
 | 認証                 | Amazon Cognito                           |
-| AI/LLM               | Amazon Bedrock (Claude), GitHub Copilot  |
+| AI/LLM               | Amazon Bedrock (Claude), Claude Code     |
 | DB (RDB)             | Amazon RDS for PostgreSQL                |
 | DB (NoSQL)           | Amazon DynamoDB                          |
 | ストレージ           | Amazon S3                                |

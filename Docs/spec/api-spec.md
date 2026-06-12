@@ -1,7 +1,7 @@
 # REST API 仕様書
 
 > 対象読者：学習者・メンター
-> 参照：[requirements.md](./requirements.md) / [er-diagram.md](./er-diagram.md) / [03_SAMPLE_SERVICE_DOMAIN.md](../plan/03_SAMPLE_SERVICE_DOMAIN.md)
+> 参照：[requirements.md](./requirements.md) / [er-diagram.md](./er-diagram.md)
 
 ---
 
@@ -14,6 +14,7 @@
 | バージョニング | バージョニングなし（URL パスに `/v1` 等を含めない） |
 | 認証方式 | Bearer JWT（Cognito 発行）。詳細は[§共通 認証方式](#auth-method)を参照 |
 | レスポンス形式 | JSON（`Content-Type: application/json`） |
+| 日時フォーマット | ISO 8601 ローカル日時・オフセットなし（詳細は[§共通 日時フォーマット](#datetime-format)） |
 | エラー形式 | 全エラーを共通フォーマット `{ "code", "message" }` で返却（詳細は[§共通 共通エラーレスポンス](#common-error)） |
 
 ---
@@ -31,7 +32,20 @@ Authorization: Bearer <Cognito JWT>
 - JWT の検証は Spring Security（OAuth2 Resource Server）が行う
 - JWT の `custom:role` クレームからロールを取得し、権限チェックに使用する
 - 認証トークンが不正・期限切れの場合は `401 Unauthorized` を返す
+- JWT は有効だが `users` テーブルに未登録のユーザーの場合も `401 Unauthorized`（`code: UNAUTHORIZED`）を返す
 - トークンは認証済みだが操作権限がない場合は `403 Forbidden` を返す
+
+### 日時フォーマット { #datetime-format }
+
+リクエスト・レスポンスの日時（本書で型 `TIMESTAMP` と表記するフィールド・クエリパラメータ）は、すべて **ISO 8601 拡張形式のローカル日時**（タイムゾーンオフセットなし）で表現する。バックエンドの DTO が `java.time.LocalDateTime` のため、`Z` やオフセット（`+09:00` 等）は付与されない。タイムゾーン変換はサーバー・DB・クライアント間で行わない。
+
+```
+2026-06-02T10:00:00          ← 小数秒なし（秒以下が 0 の場合）
+2026-06-06T06:49:53.199576   ← 小数秒あり（DB TIMESTAMP のマイクロ秒精度に由来）
+```
+
+- **レスポンス**：小数秒は値が存在する場合のみ出力される（**可変**）。クライアントは小数秒の有無どちらもパースできること（`createdAt` / `updatedAt` 等のサーバー生成日時には小数秒が付くことが多い）。
+- **リクエスト**：`2026-06-02T10:00:00` 形式（秒まで）で送信する。オフセット付き（`...+09:00` / `...Z`）はクエリパラメータ・リクエストボディとも `400 Bad Request`（`code: VALIDATION_ERROR`）となる。
 
 ### 共通エラーレスポンス { #common-error }
 
@@ -48,23 +62,28 @@ Authorization: Bearer <Cognito JWT>
 
 | ステータス | 意味 | 例 |
 |---------|------|----|
-| `400 Bad Request` | リクエストのバリデーション失敗 | 必須フィールド未入力・不正な日時範囲 |
-| `401 Unauthorized` | 認証トークン未設定・不正・期限切れ | JWT なし・期限切れ JWT |
+| `400 Bad Request` | リクエストのバリデーション失敗 | 必須フィールド未入力・パラメータの形式不正・必須クエリパラメータ欠落 |
+| `401 Unauthorized` | 認証トークン未設定・不正・期限切れ | JWT なし・期限切れ JWT・JWT は有効だが DB 未登録のユーザー |
 | `403 Forbidden` | 認証済みだが操作権限なし | MEMBER が `/api/resources` に POST |
 | `404 Not Found` | 指定リソースが存在しない | 存在しない ID を指定 |
 | `409 Conflict` | 競合（重複予約） | 同一リソース・同一時間帯に承認済み or 承認待ち予約が存在する |
+| `422 Unprocessable Entity` | 業務ルール違反 | 終了日時 ≦ 開始日時・`PENDING` 以外の予約の更新・決済済みステップへの再操作 |
 | `500 Internal Server Error` | サーバー内部エラー | 予期しない例外 |
 
-#### エラーコード例
+#### エラーコード一覧
 
-| コード | 説明 |
-|--------|------|
-| `VALIDATION_ERROR` | リクエストボディのバリデーション失敗 |
-| `UNAUTHORIZED` | 認証が必要 |
-| `FORBIDDEN` | 操作権限なし |
-| `NOT_FOUND` | 指定リソースが存在しない |
-| `RESERVATION_CONFLICT` | 重複予約（409 Conflict） |
-| `INTERNAL_SERVER_ERROR` | サーバー内部エラー |
+| コード | HTTP | 説明 |
+|--------|------|------|
+| `VALIDATION_ERROR` | 400 / 422 | バリデーション失敗。フィールド単体の違反（必須未入力・文字数超過・形式不正）は 400、業務ルール違反（日時整合性・ステータスガード）は 422 |
+| `UNAUTHORIZED` | 401 | 認証が必要 |
+| `FORBIDDEN` | 403 | 操作権限なし |
+| `NOT_FOUND` | 404 | 指定リソースが存在しない |
+| `RESERVATION_CONFLICT` | 409 | 重複予約 |
+| `COMMENT_REQUIRED` | 400 | 却下コメントが欠落または空（承認操作固有） |
+| `APPROVAL_STEP_NOT_FOUND` | 404 | 指定承認ステップが存在しない（承認操作固有） |
+| `APPROVAL_ALREADY_DECIDED` | 422 | 決済済みステップ（または `PENDING` 以外の予約）への再操作（承認操作固有） |
+| `APPROVER_NOT_AVAILABLE` | 422 | 承認者（APPROVER ロール）が存在しない（予約申請時。seed データ未投入等の設定ミス） |
+| `INTERNAL_SERVER_ERROR` | 500 | サーバー内部エラー |
 
 ### ページネーション規約
 
@@ -79,6 +98,8 @@ Authorization: Bearer <Cognito JWT>
 
 #### レスポンス構造
 
+Spring Data の `Page<T>` をそのまま JSON 化して返却する。
+
 ```json
 {
   "content": [ ...items... ],
@@ -86,11 +107,29 @@ Authorization: Bearer <Cognito JWT>
   "totalPages": 3,
   "number": 0,
   "size": 20,
+  "numberOfElements": 20,
   "first": true,
-  "last": false
+  "last": false,
+  "empty": false,
+  "pageable": { ... },
+  "sort": { ... }
 }
 ```
 
+| フィールド | 説明 |
+|-----------|------|
+| `content` | 当該ページのアイテム配列 |
+| `totalElements` | 全件数 |
+| `totalPages` | 総ページ数 |
+| `number` | 現在のページ番号（0 始まり） |
+| `size` | 1 ページあたりの件数 |
+| `numberOfElements` | 当該ページの実件数 |
+| `first` / `last` | 先頭 / 末尾ページか |
+| `empty` | `content` が空か |
+| `pageable` / `sort` | Spring Data 内部のページング・ソート情報オブジェクト（クライアントは使用しない） |
+
+> フロントエンドが利用するのは `content` / `totalElements` / `totalPages` / `number` / `size` / `first` / `last` の主要フィールドのみ。本書の各エンドポイントのレスポンス例も主要フィールドのみを抜粋して記載する。
+>
 > `GET /api/approvals/pending`・`GET /api/departments` はページネーション不要（件数が少ない想定）。全件返却。
 
 ---
@@ -156,7 +195,9 @@ POST /api/auth/signout
 
 #### レスポンス（200 OK）
 
-ボディなし。サーバー側でセッションを無効化する。
+ボディなし。
+
+> **注意**：バックエンドはステートレス JWT のためサーバー側のセッション無効化は行わない（200 を返すのみ）。実際のセッション Cookie の破棄はフロントエンド（Better Auth）が担当する。
 
 ---
 
@@ -241,7 +282,7 @@ Authorization: Bearer <JWT>
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
-> `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す。ADMIN は `is_active = false` のリソースも含む。
+> `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
 
 #### レスポンス（200 OK）
 
@@ -305,6 +346,20 @@ Content-Type: application/json
 }
 ```
 
+**リクエストフィールド（CreateResourceRequest）**
+
+| フィールド | 型 | 必須 | バリデーション |
+|-----------|-----|------|--------------|
+| `name` | string | ✅ | 100 文字以内 |
+| `category` | string | ✅ | `ROOM` / `EQUIPMENT` / `VEHICLE` |
+| `capacity` | integer / null | ❌ | |
+| `location` | string / null | ❌ | 200 文字以内 |
+| `requiresApproval` | boolean | ✅ | |
+| `isActive` | boolean | ✅ | |
+| `description` | string / null | ❌ | |
+
+バリデーション違反は `400 Bad Request`（`code: VALIDATION_ERROR`）。
+
 #### レスポンス（201 Created）
 
 作成後の ResourceResponse（`POST /api/resources` レスポンスは ResourceResponse 型と同形式）。
@@ -345,6 +400,8 @@ Content-Type: application/json
   "description": "2026年改装。4K プロジェクター追加"
 }
 ```
+
+リクエストフィールド・バリデーションは `POST /api/resources` の CreateResourceRequest と同一（PUT のため全フィールドを置換する）。
 
 #### レスポンス（200 OK）
 
@@ -500,7 +557,7 @@ Authorization: Bearer <JWT>
 | `endAt` | TIMESTAMP | 利用終了日時 |
 | `purpose` | string | 利用目的 |
 | `attendeesCount` | integer / null | 参加人数 |
-| `status` | string | `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED` |
+| `status` | string | `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`（DB の CHECK 制約には `DRAFT` も定義されているがベース実装では未使用。[er-diagram.md](./er-diagram.md) 参照） |
 | `createdAt` | TIMESTAMP | 申請日時 |
 | `updatedAt` | TIMESTAMP | 最終更新日時 |
 
@@ -524,10 +581,20 @@ Content-Type: application/json
 }
 ```
 
+**リクエストフィールド（CreateReservationRequest）**
+
+| フィールド | 型 | 必須 | バリデーション |
+|-----------|-----|------|--------------|
+| `resourceId` | UUID | ✅ | 存在しない ID は `404 Not Found` |
+| `startAt` | TIMESTAMP | ✅ | |
+| `endAt` | TIMESTAMP | ✅ | `endAt > startAt`（違反時は `422`・`code: VALIDATION_ERROR`） |
+| `purpose` | string | ✅ | 255 文字以内 |
+| `attendeesCount` | integer / null | ❌ | 1 以上 |
+
 #### レスポンス（201 Created）
 
 - `requires_approval = false` の場合：`status = "APPROVED"`（即時確定）
-- `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）
+- `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`・`step_order = 1`）を 1 件生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](./requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
 
 ```json
 {
@@ -584,11 +651,17 @@ Content-Type: application/json
 }
 ```
 
-**制約**：`status = 'PENDING'` の予約のみ更新可（`APPROVED` への更新は不可）。申請者本人のみ操作可能。日時変更時は重複予約チェックを再実行する（自分自身を除外）。
+**制約**：`status = 'PENDING'` の予約のみ更新可（`APPROVED` への更新は不可）。申請者本人のみ操作可能。日時変更時は重複予約チェックを再実行する（自分自身を除外）。リクエストフィールド・バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可）。
 
 #### レスポンス（200 OK）
 
-更新後の ReservationResponse。重複予約の場合は `409 Conflict`（`code: "RESERVATION_CONFLICT"`）。
+更新後の ReservationResponse。
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| 403 | `FORBIDDEN` | 申請者本人以外が操作 |
+| 409 | `RESERVATION_CONFLICT` | 変更後の時間帯に重複予約あり |
+| 422 | `VALIDATION_ERROR` | `PENDING` 以外の予約を更新、または `endAt ≦ startAt` |
 
 ---
 
@@ -601,7 +674,7 @@ POST /api/reservations/550e8400-e29b-41d4-a716-446655440030/cancel
 Authorization: Bearer <JWT>
 ```
 
-**制約**：申請者本人または ADMIN のみ操作可。`PENDING` / `APPROVED` の予約のみキャンセル可。
+**制約**：申請者本人または ADMIN のみ操作可（それ以外は `403 Forbidden`）。`PENDING` / `APPROVED` の予約のみキャンセル可（それ以外のステータスは `422`・`code: VALIDATION_ERROR`）。
 
 #### レスポンス（200 OK）
 
@@ -649,7 +722,7 @@ sequenceDiagram
     Spring->>DB: 重複予約チェック
     DB-->>Spring: 0 件（重複なし）
     Spring->>DB: INSERT INTO reservations (status='PENDING')
-    Spring->>DB: INSERT INTO approval_steps<br/>（承認者割当ルールは §承認 参照）
+    Spring->>DB: INSERT INTO approval_steps<br/>（承認者割当ルールは requirements.md UC-05 参照）
     DB-->>Spring: Created
     Spring-->>Next: 201 Created ReservationResponse{status:"PENDING"}
     Next-->>Browser: /reservations へリダイレクト
@@ -724,7 +797,7 @@ Content-Type: application/json
 }
 ```
 
-**権限**：APPROVER / ADMIN のみ。`comment` は**任意**（省略可）。
+**権限**：APPROVER / ADMIN のみ。APPROVER は自分担当（`approver_id = 自分`）のステップのみ操作可（他者担当のステップは `403 Forbidden`。ADMIN は全件操作可）。`comment` は**任意**（省略可。リクエストボディ自体の省略も可）。
 
 **副作用**：
 1. 重複予約再チェック（§予約「重複予約チェック仕様」と同一条件、対象予約自身を除外）。競合時は `409 Conflict`（`code: RESERVATION_CONFLICT`）を返し、ステータス変更を行わない。
@@ -764,7 +837,7 @@ Content-Type: application/json
 }
 ```
 
-**権限**：APPROVER / ADMIN のみ。`comment` は**必須**（欠落または空文字の場合 `400 Bad Request`）。
+**権限**：APPROVER / ADMIN のみ。APPROVER は自分担当（`approver_id = 自分`）のステップのみ操作可（ADMIN は全件操作可）。`comment` は**必須**（欠落または空文字の場合 `400 Bad Request`・`code: COMMENT_REQUIRED`）。却下時は重複再チェックを行わない。
 
 **副作用**：
 1. `approval_steps.status = 'REJECTED'`、`approval_steps.decided_at = 現在時刻`、`approval_steps.comment` 更新。
@@ -792,10 +865,10 @@ Content-Type: application/json
 | HTTP | `code` | 条件 |
 |------|--------|------|
 | 400 | `COMMENT_REQUIRED` | reject でコメントが欠落または空文字 |
-| 403 | `FORBIDDEN` | MEMBER がアクセス |
+| 403 | `FORBIDDEN` | MEMBER がアクセス、または APPROVER が他者担当のステップを操作 |
 | 404 | `APPROVAL_STEP_NOT_FOUND` | `{stepId}` が存在しない |
 | 409 | `RESERVATION_CONFLICT` | approve 時に重複予約が検出された |
-| 422 | `APPROVAL_ALREADY_DECIDED` | すでに APPROVED / REJECTED のステップに再操作 |
+| 422 | `APPROVAL_ALREADY_DECIDED` | すでに APPROVED / REJECTED のステップに再操作、または対象予約が `PENDING` 以外（キャンセル済み等） |
 
 ---
 
