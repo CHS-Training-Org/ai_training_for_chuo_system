@@ -58,6 +58,7 @@ nav = [
     "guide/getting-started.md",
     "guide/ai-tools-guide.md",
     "guide/coding-conventions.md",
+    "guide/dev-workflow.md",
     "guide/troubleshooting.md",
   ]},
 ]

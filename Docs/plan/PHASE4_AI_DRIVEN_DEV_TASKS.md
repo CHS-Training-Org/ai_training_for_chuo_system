@@ -38,10 +38,10 @@
 | ------------------------------------------ | -------- | ------ | --------------- |
 | 1. 仕様書の整備                            | 4        | 4      | ██████████ 100% |
 | 2. 学習者ガイドの完成                      | 4        | 4      | ██████████ 100% |
-| 3. AI 駆動開発ワークフローの整備           | 6        | 0      | ░░░░░░░░░░ 0%   |
+| 3. AI 駆動開発ワークフローの整備           | 6        | 1      | █░░░░░░░░░ 17%  |
 | 4. エンハンス要件の策定（学習課題設計）    | 5        | 0      | ░░░░░░░░░░ 0%   |
 | 5. 運用・公開整備                          | 4        | 0      | ░░░░░░░░░░ 0%   |
-| **合計**                                   | **23**   | **8**  | **35%**         |
+| **合計**                                   | **23**   | **9**  | **39%**         |
 
 > サマリは各カテゴリのタスクを完了するたびに手動で更新する。
 
@@ -150,12 +150,18 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
 > 課題ごとのビジネス要求シート作成はカテゴリ 4 の 4.3、ラベル設計と課題 Issue の一括登録は 4.4 が担う（カテゴリ 4 は本再構成では編集しない）。  
 > 3.2 で定めた `Docs/spec/enhancements/` の様式を 4.3 が、3.3 の Issue テンプレートを 4.4 が使用する。
 
-- [ ] **3.1 開発ワークフローガイドの作成（`guide/dev-workflow.md`）**
-  - 状態：未着手
+- [x] **3.1 開発ワークフローガイドの作成（`guide/dev-workflow.md`）**
+  - 状態：完了
   - 内容：AI-DLC をベースにした BookFlow 標準フローを図解付き（Mermaid flowchart 想定）で日本語で記述する。  
       フローは ビジネス要求シート（Issue）選択 → `feature/<issue番号>-<short-desc>` ブランチ作成 → Claude Code plan mode で AI が実装計画を提示 → メンター承認（第 1 ゲート）→ Spec-first で仕様更新 → 縦切り実装 → セルフレビュー → PR 作成 → メンターレビュー（第 2 ゲート）→ マージ → Issue クローズ。  
       冒頭に AI-DLC（Inception／Construction／Operations）と本フローの写像表を掲載する。  
       `coding-conventions.md`（PR 運用フローの申し送り先）・`ai-tools-guide.md`・`spec/index.md` §Spec-first と相互リンクし、`zensical.toml` の guide nav に追記する。
+  - メモ：`Docs/guide/dev-workflow.md` を新規作成。  
+      冒頭に AI-DLC（Inception／Construction／Operations・plan-first ゲート）と BookFlow 実体の対応表（`{ #aidlc-mapping }`）を本ファイル §AI-DLC 写像表（136-144 行）と矛盾しない内容で掲載。  
+      標準フロー（`{ #flow }`）は Mermaid `flowchart TD` で 2 つの承認ゲートを菱形ノードで表現し、各ステップを H3 で解説。  
+      `coding-conventions.md#commit-pr`・`ai-tools-guide.md#checklist` / `#prohibited`・`spec/index.md#spec-first` と相互リンク（plan mode 専用アンカーが無いため `#checklist` 経由で参照）。  
+      ビジネス要求シート・Issue/PR テンプレートは未作成のため本文ではリンクせず、HTML コメントで後続タスクへの申し送りのみ記載。  
+      `Docs/guide/index.md` の管理ファイル一覧と `zensical.toml` の guide nav（coding-conventions と troubleshooting の間）に追記。
 - [ ] **3.2 ビジネス要求シート テンプレートと配置規約の確立**
   - 状態：未着手
   - 内容：AI-DLC の Inception 成果物（要件・受入条件）を「学習課題 1 件＝ 1 ファイル」のビジネス要求シートとして定型化する。  
