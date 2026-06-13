@@ -178,7 +178,7 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 
 ## コミット・PR 規約 { #commit-pr }
 
-<!-- 開発フロー全体（Issue 選択〜マージ）はタスク 3.1（dev-workflow.md）、PR テンプレートはタスク 3.2 で整備する -->
+<!-- 開発フロー全体（Issue 選択〜マージ）は dev-workflow.md（タスク 3.1）、PR テンプレートは .github/PULL_REQUEST_TEMPLATE.md（タスク 3.4）で整備済み -->
 
 ### Conventional Commits
 
