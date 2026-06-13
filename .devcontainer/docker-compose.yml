@@ -11,7 +11,9 @@ services:
       #     （frontend/pnpm-workspace.yaml の storeDir: /pnpm-store と対応）。
       - frontend-node-modules:/workspace/frontend/node_modules
       - pnpm-store:/pnpm-store
-      # ホストの Claude Code 設定/認証をコンテナへ共有する。
+      # Claude Code の設定は .claude ディレクトリ（コンテナ専用 volume に隔離）と
+      # ~/.claude.json（ホストと共有するバインド）に分かれる。下記の long-form / OS 非依存
+      # 解決は ~/.claude.json バインドに対する注意書き:
       # devcontainer.json の mounts(短縮形)では Windows のドライブレター(C:)を含むパスが
       # 'C:\...:/root/...:rw' に変換され、Docker のボリューム parser が ':' で誤分割して
       # 「invalid volume specification」で起動失敗する。long-form は source/target を別キーに
@@ -19,10 +21,22 @@ services:
       # ホストのホームディレクトリを OS 非依存で解決する。WSL2/Linux/macOS では $HOME、
       # Windows ホストでは $USERPROFILE（${USERPROFILE:-$HOME} で前者優先・無ければ後者）。
       # devcontainer.json の initializeCommand が、マウント前にホスト側へ
-      # .claude / .claude.json を事前生成している（同じパスに解決される必要がある）。
-      - type: bind
-        source: ${USERPROFILE:-$HOME}/.claude
-        target: /root/.claude
+      # .claude.json を事前生成している（同じパスに解決される必要がある）。
+      # Claude Code の設定ディレクトリ(.claude)はホストと共有せず、コンテナ専用の
+      # named volume に隔離する。
+      # 理由: .claude 配下（plugins の known_marketplaces.json 等）にはプラグインの設置先や
+      #   各種パスが絶対パスで書き込まれる。ホスト($HOME=/home/<user>)とコンテナ($HOME=/root)で
+      #   base パスが食い違うため、ディレクトリを共有するとホストが書いたパスをコンテナが
+      #   探しに行き、プラグインインストール等が「Source path does not exist」で失敗する
+      #   （逆向きにホスト側を壊すシーソーも起きる）。
+      #   ディレクトリごと隔離することで settings/memory/history/plugins/認証(.credentials.json)が
+      #   ホストとコンテナで完全に独立する（frontend-node-modules の隔離と同じ手法）。
+      #   ※ 認証情報(.credentials.json)も .claude 配下のため分離される。コンテナ側では
+      #     初回に一度だけ /login が必要（以後はこの volume に保持され再ビルドでも維持される）。
+      - claude-config:/root/.claude
+      # ~/.claude.json は .claude ディレクトリ外の単一ファイル。per-project 設定が絶対パスを
+      # キーにするためホストと共有しても衝突せず（コンテナは /workspace、ホストは /home/<user>/...）、
+      # アカウント識別・MCP 設定を引き継げるので共有を維持する。
       - type: bind
         source: ${USERPROFILE:-$HOME}/.claude.json
         target: /root/.claude.json
@@ -114,3 +128,6 @@ volumes:
   frontend-node-modules:
   pnpm-store:
   docs-venv:
+  # Claude Code の設定ディレクトリ(.claude)をホストと分離するための専用ボリューム。
+  # 詳細は frontend サービスの claude-config マウントのコメントを参照。
+  claude-config:

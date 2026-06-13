@@ -22,12 +22,16 @@ model_name=$(echo "$input"   | jq -r '.model.display_name // empty')
 used_pct=$(echo "$input"     | jq -r '.context_window.used_percentage // empty')
 tokens_used=$(echo "$input"  | jq -r '.context_window.tokens_used // empty')
 tokens_total=$(echo "$input" | jq -r '.context_window.tokens_total // empty')
-effort=$(echo "$input"       | jq -r '.session.effort // empty')
-cache_pct=$(echo "$input"    | jq -r '.session.cache_read_percentage // empty')
+effort=$(echo "$input"       | jq -r '.effort.level // empty')
+cache_pct=$(echo "$input"    | jq -r '
+  (.context_window.total_input_tokens // 0) as $t
+  | if $t > 0
+    then ((.context_window.current_usage.cache_read_input_tokens // 0) * 100 / $t)
+    else empty end')
 five_pct=$(echo "$input"     | jq -r '.rate_limits.five_hour.used_percentage // empty')
-five_reset=$(echo "$input"   | jq -r '.rate_limits.five_hour.reset_at // empty')
+five_reset=$(echo "$input"   | jq -r '.rate_limits.five_hour.resets_at // empty')
 week_pct=$(echo "$input"     | jq -r '.rate_limits.seven_day.used_percentage // empty')
-week_reset=$(echo "$input"   | jq -r '.rate_limits.seven_day.reset_at // empty')
+week_reset=$(echo "$input"   | jq -r '.rate_limits.seven_day.resets_at // empty')
 
 # --- Git branch ---
 branch=""
@@ -50,11 +54,26 @@ fmt_k() {
   fi
 }
 
-# --- Format reset timestamp → MM/DD ---
-fmt_date() {
+# --- Format reset timestamp → 残り時刻表示（日本時間 JST） ---
+# 同日内なら "HH:MM"、別日なら "MM/DD HH:MM"
+fmt_reset() {
   local ts=$1
   [ -z "$ts" ] && return
-  date -d "$ts" "+%m/%d" 2>/dev/null
+  local epoch ts_day now_day
+  export TZ="Asia/Tokyo"
+  # ts は Unix epoch 秒（整数）か ISO 文字列のどちらでも受け付ける
+  if [[ "$ts" =~ ^[0-9]+$ ]]; then
+    epoch=$ts
+  else
+    epoch=$(date -d "$ts" +%s 2>/dev/null) || return
+  fi
+  ts_day=$(date -d "@$epoch" "+%Y%m%d" 2>/dev/null)
+  now_day=$(date "+%Y%m%d")
+  if [ "$ts_day" = "$now_day" ]; then
+    date -d "@$epoch" "+%H:%M" 2>/dev/null
+  else
+    date -d "@$epoch" "+%m/%d %H:%M" 2>/dev/null
+  fi
 }
 
 # --- Progress bar ---
@@ -133,19 +152,19 @@ if [ -n "$five_pct" ]; then
   pct_int=$(printf "%.0f" "$five_pct")
   color=$(pct_color "$pct_int")
   bar=$(make_bar "$pct_int" 6)
-  date_str=$(fmt_date "$five_reset")
+  reset_str=$(fmt_reset "$five_reset")
   limits_line+="${dim}5h:${reset} ${color}${bar}${reset} ${bright_yellow}${pct_int}%${reset}"
-  [ -n "$date_str" ] && limits_line+=" ${gray}@${date_str}${reset}"
+  [ -n "$reset_str" ] && limits_line+=" ${gray}↻ ${reset_str}${reset}"
 fi
 
 if [ -n "$week_pct" ]; then
   pct_int=$(printf "%.0f" "$week_pct")
   color=$(pct_color "$pct_int")
   bar=$(make_bar "$pct_int" 6)
-  date_str=$(fmt_date "$week_reset")
+  reset_str=$(fmt_reset "$week_reset")
   [ -n "$limits_line" ] && limits_line+="  ${gray}│${reset}  "
   limits_line+="${dim}7d:${reset} ${color}${bar}${reset} ${bright_yellow}${pct_int}%${reset}"
-  [ -n "$date_str" ] && limits_line+=" ${gray}@${date_str}${reset}"
+  [ -n "$reset_str" ] && limits_line+=" ${gray}↻ ${reset_str}${reset}"
 fi
 
 [ -n "$limits_line" ] && printf "%b\n" "$limits_line"
