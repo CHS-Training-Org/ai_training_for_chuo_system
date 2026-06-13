@@ -38,10 +38,10 @@
 | ------------------------------------------ | -------- | ------ | --------------- |
 | 1. 仕様書の整備                            | 4        | 4      | ██████████ 100% |
 | 2. 学習者ガイドの完成                      | 4        | 4      | ██████████ 100% |
-| 3. AI 駆動開発ワークフローの整備           | 6        | 4      | ███████░░░ 67%  |
+| 3. AI 駆動開発ワークフローの整備           | 7        | 5      | ███████░░░ 71%  |
 | 4. エンハンス要件の策定（学習課題設計）    | 5        | 0      | ░░░░░░░░░░ 0%   |
 | 5. 運用・公開整備                          | 4        | 0      | ░░░░░░░░░░ 0%   |
-| **合計**                                   | **23**   | **12** | **52%**         |
+| **合計**                                   | **24**   | **13** | **54%**         |
 
 > サマリは各カテゴリのタスクを完了するたびに手動で更新する。
 
@@ -199,17 +199,30 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
       様式の二重管理を避けるため `references/` は作成せず、`PULL_REQUEST_TEMPLATE.md` 本体を唯一の真実の源とした。  
       プレースホルダー2件を修正：`dev-workflow.md` §7 のコメントを実リンク＋ `/draft-pr` 案内に置換、`coding-conventions.md` §commit-pr の古い「タスク 3.2」表記を整理。  
       申し送り：PR 作成の AI 駆動運用は `/draft-pr` で対応済みのため、3.5 の `CLAUDE.md` 導線整備では PR ワークフローを再定義せず `/draft-pr` を参照すること。
-- [ ] **3.5 AI 利用ポリシーの恒久文書化と CLAUDE.md の AI-DLC 導線整備**
-  - 状態：未着手
+- [x] **3.5 AI 利用ポリシーの恒久文書化と CLAUDE.md の AI-DLC 導線整備**
+  - 状態：完了
   - 内容：（旧 3.4 ＋ 3.5 を統合）① `guide/ai-tools-guide.md` の一節として AI 利用ポリシーを正式化する（利用範囲：補完・解説・テスト／ドキュメント生成は ○、機密情報入力は ✗／生成コードの責任はマージした開発者が負う／PR への AI 活用箇所明記の必須化。  
       2.2 §禁止事項と連携）。  
       ② `CLAUDE.md` に AI-DLC 前提の開発導線を追記する（`Docs/spec/` を真実の源とする参照導線・plan mode で計画提示 → 承認するゲート運用・縦切り実装の標準パターン・検証コマンド（テスト・lint）・Spec-first ルール・`dev-workflow.md` へのリンク）。  
       `AGENTS.md` は導入しない（Claude Code 専一・タスク 2.2 の決定に従う）旨を `CLAUDE.md` に 1 行明記する。
+  - メモ：`ai-tools-guide.md` §禁止事項（`{ #prohibited }`）を「AI 利用ポリシー」に拡充。  
+      旧プレースホルダーコメントを削除し、利用範囲の ○/✗ 表（補完・解説・テスト/ドキュメント生成＝○、機密情報入力・無検証コミット＝✗）・既存3 admonition・PR への AI 活用箇所明記必須化（PR テンプレート §AI ツールを使った箇所への導線）を追記。  
+      アンカー `{ #prohibited }` は `coding-conventions.md`・`dev-workflow.md` からの参照が壊れないよう維持。  
+      `CLAUDE.md` に新セクション「AI 駆動開発の進め方」を追加：Spec-first・plan-first 承認ゲート・縦切り実装・PR（`/draft-pr`）の要点をリンク中心で記述し、`AGENTS.md` 非採用を1行明記。  
+      写像表の実体は `dev-workflow.md` を唯一の源とし、CLAUDE.md 側は重複させていない。  
+      申し送り：ワークフローファイル（AI-DLC `aidlc-rules/`）のインストールはタスク 3.7 として新設（本タスクの範囲外）。
 - [ ] **3.6 CI 品質ゲートの確認・整備**
   - 状態：未着手
   - 内容：`ci-frontend` / `ci-backend` / `security-scan` ワークフローの動作確認と green 化、ブランチ保護（CI 必須・1 名以上 Approve）の設定。  
       AI-DLC の Operations フェーズに相当する自動品質ゲートとして位置づける。  
       `security-scan` は未設定のため新規作成が必要（既存は `ci-frontend.yml`／`ci-backend.yml`／`docs.yml`）。
+- [ ] **3.7 AI-DLC ワークフローファイルのインストール＋カスタマイズ**
+  - 状態：未着手
+  - 内容：公式 [`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows) の `aidlc-rules/aws-aidlc-rules/core-workflow.md`・`aidlc-rules/aws-aidlc-rule-details/` を導入する。  
+      カスタマイズ方針：①成果物の出力先を `Docs/spec/enhancements/`（既存ビジネス要求シート）へ付け替え、`aidlc-docs/` 並行ツリーは作らない（カテゴリ3冒頭の写像方針を維持）。  
+      ②非 Claude エージェント用ルール（`.amazonq/`・`.cursor/`・`.kiro/`・`AGENTS.md` 等）は除外し、Claude 用設定は `.claude/` 配下に配置する。  
+      ③ `CLAUDE.md` は上書きせず、3.5 で追記した「AI 駆動開発の進め方」セクションと統合する。  
+      着手可否は既存の「写像する」方針との整合性をメンターが評価したうえで判断する。
 
 ## カテゴリ 4：エンハンス要件の策定（学習課題設計）
 

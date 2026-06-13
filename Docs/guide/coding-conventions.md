@@ -221,7 +221,7 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 
 - [ ] [§共通方針](#common)のフォーマット・Lint・テストをすべて通した
 - [ ] 仕様（`Docs/spec/`）と実装が一致している（仕様にない挙動を勝手に追加していない）
-- [ ] AI が生成したコードを自分で読み、説明できる状態になっている（→ [ai-tools-guide.md §禁止事項](./ai-tools-guide.md#prohibited)）
+- [ ] AI が生成したコードを自分で読み、説明できる状態になっている（→ [ai-tools-guide.md §AI 利用ポリシー](./ai-tools-guide.md#prohibited)）
 - [ ] 動作確認の手順と結果を PR に書ける状態になっている
 
 ---
