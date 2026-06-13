@@ -21,6 +21,8 @@
 
 テンプレート本体・記述規約は [`spec-conventions.md`](../../../.claude/skills/update-spec/references/spec-conventions.md) の「enhancements/\<課題\>.md — ビジネス要求シートのテンプレート」を参照してください。新規シートを作成する際は Claude Code の `/update-spec` スキルを使います。
 
+対応する GitHub Issue は `.github/ISSUE_TEMPLATE/` の「選択課題（エンハンス）」テンプレートから起票し、本シートへのリンクを記入します。
+
 ## シート一覧
 
 | ファイル | 課題名 | 難易度 |

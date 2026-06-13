@@ -1,0 +1,4 @@
+# 自由記述（テンプレートなし）の Issue 作成を無効化し、
+# 「必須課題（STEP）」「選択課題（エンハンス）」のいずれかのテンプレートから
+# 起票させる。開発フローは Docs/guide/dev-workflow.md を参照。
+blank_issues_enabled: false
