@@ -24,6 +24,7 @@ description: BookFlow の仕様書 Docs/spec/（requirements / screen-spec / api
 | 画面の追加・変更 | `screen-spec.md`（画面一覧表 ＋ 画面遷移図 ＋ 該当 §セクション） | requirements の画面アクセス権限表、呼び出す API（api-spec） |
 | API の追加・変更 | `api-spec.md`（エンドポイント一覧表 ＋ 該当 §セクション。§共通の認証/日時/エラー/ページネーションに影響するならそちらも） | requirements の API 権限マトリクス、呼び出す画面（screen-spec） |
 | データモデル変更 | `er-diagram.md`（Mermaid ER 図 ＋ エンティティ定義表 ＋ インデックス方針表） | **正は Flyway マイグレーション**（`backend/src/main/resources/db/migration/`）。必ず突合する |
+| エンハンス課題（ビジネス要求シート） | `Docs/spec/enhancements/<課題>.md`（新規作成。様式は §5 参照） | 課題に応じて requirements / screen-spec / api-spec / er-diagram も確認 |
 
 > **注意**：ER 図の正は ER 図そのものではなく Flyway の SQL。データモデルを変えるときは新しいマイグレーション（`V0xx__*.sql`）と er-diagram.md を同時に整合させる。
 
@@ -48,7 +49,7 @@ description: BookFlow の仕様書 Docs/spec/（requirements / screen-spec / api
 
 ## 5. 新規仕様ページの作成手順
 
-1. `Docs/spec/` 配下に作成する（エンハンス課題の要件書は `Docs/spec/enhancements/` サブディレクトリに置く）。
+1. `Docs/spec/` 配下に作成する（エンハンス課題の要件書は `Docs/spec/enhancements/` サブディレクトリに置く。様式は [`references/spec-conventions.md`](references/spec-conventions.md) の「enhancements/\<課題\>.md — ビジネス要求シートのテンプレート」を使う。配置規約・運用原則は [`Docs/spec/enhancements/index.md`](../../../Docs/spec/enhancements/index.md) を参照）。
 2. 既存ファイルの冒頭スタイルを踏襲する：
 
    ```

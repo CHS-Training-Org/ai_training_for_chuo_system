@@ -126,6 +126,48 @@ UC を足すときは、(1) 「主要ユースケース一覧」表に `[UC-XX](
 - 型・制約は SQL に合わせる（`UUID`・`VARCHAR(n)`・`TIMESTAMP`（`TIMESTAMPTZ` 不可）・`INTEGER`・`BOOLEAN`・`TEXT`）。
 - H2 / PostgreSQL 両対応のため PostgreSQL 固有型・関数（`jsonb`・`gen_random_uuid` 等）は使わない（注記済み）。
 
+### enhancements/\<課題\>.md — ビジネス要求シートのテンプレート
+
+エンハンス課題（学習者向け拡張課題）の要件を `Docs/spec/enhancements/<short-desc>.md` に 1 課題 1 ファイルで作成する。配置規約・運用原則は [enhancements/index.md](../../../../Docs/spec/enhancements/index.md) を参照。
+
+```markdown
+# <課題名>
+
+> 対象読者：学習者・メンター
+> 参照：[../requirements.md](../requirements.md) / [index.md](./index.md)
+
+---
+
+## 背景
+
+<なぜこの課題に取り組むか・どのユースケースを拡張するかを地の文で記述する>
+
+## 要件
+
+| # | 要件 |
+|---|------|
+| <領域接頭辞>-01 | <要件文> |
+
+## 受入条件
+
+- [ ] <検証可能な完了条件>
+- [ ] <検証可能な完了条件>
+
+## 影響範囲
+
+- 対象レイヤー：<frontend / backend / 両方>
+- 更新が必要な spec：<requirements.md §xx / api-spec.md §xx / screen-spec.md §xx / er-diagram.md §xx>
+
+## AI 活用ポイント
+
+<plan mode での計画提示が有効な箇所・AI に検証させやすい観点 等>
+```
+
+- 文体・表記は既存 spec ファイルに合わせる（地の文はです・ます調、制約の断定はだ・である調、表は体言止め）。
+- 機能要件の ID は `requirements.md` の既存接頭辞（`AUTH-`・`RES-`・`RSV-`・`APRV-`・`USER-`・`DEPT-`・`DASH-`）を流用するか、新規領域なら新接頭辞を定義する。
+- 受入条件は**チェックリスト形式**（`- [ ] …`）で、レビュー時に完了条件として個別にチェックできる単位に分割する。
+- ファイル名は英小文字ケバブケース（`<short-desc>.md`）。他所から参照する明示アンカーが必要な見出しには `{ #id }` を付与する。
+
 ---
 
 ## Mermaid 図の使い分け

@@ -52,6 +52,7 @@ nav = [
     "spec/screen-spec.md",
     "spec/api-spec.md",
     "spec/er-diagram.md",
+    "spec/enhancements/index.md",
   ]},
   {"ガイド (Guide)" = [
     "guide/index.md",
