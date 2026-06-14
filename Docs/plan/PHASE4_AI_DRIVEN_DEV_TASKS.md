@@ -38,10 +38,10 @@
 | ------------------------------------------ | -------- | ------ | --------------- |
 | 1. 仕様書の整備                            | 4        | 4      | ██████████ 100% |
 | 2. 学習者ガイドの完成                      | 4        | 4      | ██████████ 100% |
-| 3. AI 駆動開発ワークフローの整備           | 7        | 5      | ███████░░░ 71%  |
+| 3. AI 駆動開発ワークフローの整備           | 7        | 6      | ████████░░ 86%  |
 | 4. エンハンス要件の策定（学習課題設計）    | 5        | 0      | ░░░░░░░░░░ 0%   |
 | 5. 運用・公開整備                          | 4        | 0      | ░░░░░░░░░░ 0%   |
-| **合計**                                   | **24**   | **13** | **54%**         |
+| **合計**                                   | **24**   | **14** | **58%**         |
 
 > サマリは各カテゴリのタスクを完了するたびに手動で更新する。
 
@@ -211,11 +211,28 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
       `CLAUDE.md` に新セクション「AI 駆動開発の進め方」を追加：Spec-first・plan-first 承認ゲート・縦切り実装・PR（`/draft-pr`）の要点をリンク中心で記述し、`AGENTS.md` 非採用を1行明記。  
       写像表の実体は `dev-workflow.md` を唯一の源とし、CLAUDE.md 側は重複させていない。  
       申し送り：ワークフローファイル（AI-DLC `aidlc-rules/`）のインストールはタスク 3.7 として新設（本タスクの範囲外）。
-- [ ] **3.6 CI 品質ゲートの確認・整備**
-  - 状態：未着手
+- [x] **3.6 CI 品質ゲートの確認・整備**
+  - 状態：完了
   - 内容：`ci-frontend` / `ci-backend` / `security-scan` ワークフローの動作確認と green 化、ブランチ保護（CI 必須・1 名以上 Approve）の設定。  
       AI-DLC の Operations フェーズに相当する自動品質ゲートとして位置づける。  
       `security-scan` は未設定のため新規作成が必要（既存は `ci-frontend.yml`／`ci-backend.yml`／`docs.yml`）。
+  - メモ：`.github/workflows/security-scan.yml` を新規作成（Trivy `scan-type: fs`、ジョブ id `trivy`）。  
+      当初は CodeQL + dependency-review-action を検討したが、リポジトリ（`Bizarress/AI-Development-Tutorial`）の公開設定が不明で、private + GHAS 無しだと毎回失敗し学習者の PR を全ブロックしてしまうため不採用（将来 public 化・GHAS 導入時の選択肢として申し送り）。  
+      Trivy は GHAS 不要で public/private いずれでも動作し、Java25 環境での CodeQL ビルド追随リスクも回避できる。  
+      `scanners: vuln`（依存関係の既知脆弱性、`severity: HIGH,CRITICAL` + `ignore-unfixed: true`）をブロッキング（`exit-code: 1`）、`scanners: misconfig`（Dockerfile/compose/ワークフロー等の設定ミス）は `continue-on-error: true` で非ブロッキング（参考情報）に分離。  
+      理由：misconfig はローカルで Trivy を実行できず（本開発環境ではバイナリ取得が制限され検証不可）、`.devcontainer/docker-compose.yml` に healthcheck 未設定のサービスがあるなど初回実行で未知の HIGH 検出により学習者 PR を全ブロックするリスクを排除できなかったため。初回 Actions 実行結果を見てメンターが misconfig 側のブロッキング化や閾値調整を判断する。  
+      注：Trivy `fs` の依存スキャンは FE（`pnpm-lock.yaml`）が対象。BE は `dependencyLocking` 未導入で `gradle.lockfile` が存在しないため、現状 Gradle 依存は実質スキャン対象外（このタスクでは Gradle locking 自体は導入しない。必要なら別タスク）。  
+      vuln ゲートを green 化するため、`pnpm audit --audit-level high` で検出した fixable な CRITICAL/HIGH（vitest の脆弱性、推移的依存 esbuild の脆弱性）を解消：`vitest` を既存 semver 範囲内（`^3.2.6`）で 3.2.4→3.2.6 に更新、`esbuild` は `pnpm-workspace.yaml` の `overrides` で `>=0.28.1` に固定（package.json への直接依存ではないため override が必要）。これは依存修正として CI/ドキュメント変更とは別コミットに分離する。  
+      `ci-frontend.yml` に `pnpm format:check`（oxfmt --check）ステップを Lint の直後に追加し、`PULL_REQUEST_TEMPLATE.md` の動作確認欄にも反映（ADR-010 で「CI のフォーマットチェックは `oxfmt --check .` で実施する」と定義済みだが未導入だった差分）。  
+      導入時、既存コード71ファイルが oxfmt のデフォルト書式（ダブルクォート・セミコロンあり）に未準拠だったため `pnpm format` で一括整形（ロジック変更なし。別コミットに分離）し `format:check` を green 化。  
+      `ci-backend.yml` は既存で `./gradlew test`（テスト18本）→ `spotlessCheck` → `checkstyleMain` を実行済みのため変更不要（新規 backend CI ジョブは不要と判断）。  
+      `dev-workflow.md` §8（第2ゲート）に、ブランチ保護で必須化する status check 名（`CI Frontend / ci`・`CI Backend / ci`・`Security Scan / trivy`）と Approve 1名以上の admonition を追加（MkDocs 形式 `!!! note` に統一）。  
+      CODEOWNERS は学習リポジトリには不要と判断し作成せず。  
+      申し送り：ブランチ保護ルールの実設定（GitHub Settings）はリポジトリ管理者作業のため本タスクの範囲外。`security-scan` の vuln/misconfig 双方の実 Actions 実行結果（`aquasecurity/trivy-action@0.33.1` のタグ解決含む）はメンターが初回確認すること（misconfig が常に green であれば、必須 status check への追加・ブロッキング化を検討）。  
+      ローカル検証は `pnpm audit --audit-level high`（FE のみ。Trivy の DB とは異なるため参考情報）で clean を確認済みだが、Trivy vuln ゲート自体の green は未確認（初回 Actions 実行で確認）。  
+      vuln はブロッキングのため、今後も fixable な推移的 CVE が出るたびに同様の依存修正が必要になる。メンテナンス負荷が高い場合は misconfig と同様に非ブロッキング化を検討する余地がある旨を留意点として残す。  
+      Playwright E2E の CI 化は見送り（別タスク候補）。  
+      security-scan の実 Actions 実行は本環境からトリガー不可のため、GitHub 上での初回実行確認をメンターに申し送り。
 - [ ] **3.7 AI-DLC ワークフローファイルのインストール＋カスタマイズ**
   - 状態：未着手
   - 内容：公式 [`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows) の `aidlc-rules/aws-aidlc-rules/core-workflow.md`・`aidlc-rules/aws-aidlc-rule-details/` を導入する。  

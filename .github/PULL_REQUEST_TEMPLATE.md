@@ -35,7 +35,7 @@ PR 文面の下書きは Claude Code の `/draft-pr` スキルで生成できま
 
 <!-- 自分が実際に確認した事実を書く（AI に推測で埋めさせない）。 -->
 
-- フロントエンド: <!-- pnpm lint / pnpm test / pnpm build の結果 -->
+- フロントエンド: <!-- pnpm lint / pnpm format:check / pnpm test / pnpm build の結果 -->
 - バックエンド: <!-- ./gradlew test / spotlessCheck / checkstyleMain の結果 -->
 - 手動確認: <!-- 画面・API を実際に操作して確認した内容 -->
 
