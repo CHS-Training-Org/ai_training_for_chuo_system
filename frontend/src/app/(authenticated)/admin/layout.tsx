@@ -1,4 +1,4 @@
-import { getProfileAction } from '@/server/actions/auth'
+import { getProfileAction } from "@/server/actions/auth";
 
 /**
  * /admin/* 配下の共通レイアウト（ADMIN ガード）。
@@ -8,13 +8,13 @@ import { getProfileAction } from '@/server/actions/auth'
  * 認証チェック自体は親の (authenticated)/layout.tsx が担当。
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  let isAdmin = false
+  let isAdmin = false;
   try {
-    const profile = await getProfileAction()
-    isAdmin = profile.role === 'ADMIN'
+    const profile = await getProfileAction();
+    isAdmin = profile.role === "ADMIN";
   } catch {
     // プロフィール取得失敗は親レイアウトで処理済みのため、ここでは非 ADMIN として扱う
-    isAdmin = false
+    isAdmin = false;
   }
 
   if (!isAdmin) {
@@ -24,8 +24,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <p className="text-xl font-semibold">アクセス権限がありません</p>
         <p className="text-muted-foreground">このページは管理者（ADMIN）専用です。</p>
       </div>
-    )
+    );
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }

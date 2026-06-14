@@ -1,8 +1,8 @@
-'use server'
+"use server";
 
-import { createApiClient } from '@/lib/api-client'
-import { ApprovalStepResponseSchema, type ApprovalStepResponse } from '@/lib/types/api'
-import { getAccessToken } from '@/lib/session'
+import { createApiClient } from "@/lib/api-client";
+import { ApprovalStepResponseSchema, type ApprovalStepResponse } from "@/lib/types/api";
+import { getAccessToken } from "@/lib/session";
 
 // ---------------------------------------------------------------------------
 // Server Actions
@@ -17,8 +17,8 @@ import { getAccessToken } from '@/lib/session'
  * `api-spec.md` L94 に従いページネーションなし（bare array）。`getArray` を使用する。
  */
 export async function listPendingApprovalsAction(): Promise<ApprovalStepResponse[]> {
-  const client = createApiClient(getAccessToken)
-  return client.getArray('/approvals/pending', ApprovalStepResponseSchema)
+  const client = createApiClient(getAccessToken);
+  return client.getArray("/approvals/pending", ApprovalStepResponseSchema);
 }
 
 /**
@@ -30,10 +30,13 @@ export async function listPendingApprovalsAction(): Promise<ApprovalStepResponse
  * @param stepId 承認ステップ ID（`approval_steps.id`）
  * @param comment 承認コメント（任意）
  */
-export async function approveAction(stepId: string, comment?: string): Promise<ApprovalStepResponse> {
-  const client = createApiClient(getAccessToken)
-  const body: Record<string, string | null> = { comment: comment ?? null }
-  return client.post(`/approvals/${stepId}/approve`, body, ApprovalStepResponseSchema)
+export async function approveAction(
+  stepId: string,
+  comment?: string,
+): Promise<ApprovalStepResponse> {
+  const client = createApiClient(getAccessToken);
+  const body: Record<string, string | null> = { comment: comment ?? null };
+  return client.post(`/approvals/${stepId}/approve`, body, ApprovalStepResponseSchema);
 }
 
 /**
@@ -46,6 +49,6 @@ export async function approveAction(stepId: string, comment?: string): Promise<A
  * @param comment 却下コメント（必須）
  */
 export async function rejectAction(stepId: string, comment: string): Promise<ApprovalStepResponse> {
-  const client = createApiClient(getAccessToken)
-  return client.post(`/approvals/${stepId}/reject`, { comment }, ApprovalStepResponseSchema)
+  const client = createApiClient(getAccessToken);
+  return client.post(`/approvals/${stepId}/reject`, { comment }, ApprovalStepResponseSchema);
 }

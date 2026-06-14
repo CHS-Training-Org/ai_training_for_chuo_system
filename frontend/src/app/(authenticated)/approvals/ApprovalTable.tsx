@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { approveAction, rejectAction } from '@/server/actions/approvals'
-import type { ApprovalStepResponse } from '@/lib/types/api'
-import { Button } from '@/components/ui/button'
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { approveAction, rejectAction } from "@/server/actions/approvals";
+import type { ApprovalStepResponse } from "@/lib/types/api";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -19,13 +19,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 /** 日時文字列（ISO）を日本語表示用にフォーマットする。 */
 function formatDateTime(iso: string): string {
-  return iso.replace('T', ' ').slice(0, 16)
+  return iso.replace("T", " ").slice(0, 16);
 }
 
 // ---------------------------------------------------------------------------
@@ -33,23 +33,23 @@ function formatDateTime(iso: string): string {
 // ---------------------------------------------------------------------------
 
 function ApproveDialog({ step }: { step: ApprovalStepResponse }) {
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
-  const [comment, setComment] = useState('')
-  const [isPending, startTransition] = useTransition()
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [comment, setComment] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   const handleApprove = () => {
     startTransition(async () => {
       try {
-        await approveAction(step.id, comment || undefined)
-        setOpen(false)
-        toast.success('承認しました。')
-        router.refresh()
+        await approveAction(step.id, comment || undefined);
+        setOpen(false);
+        toast.success("承認しました。");
+        router.refresh();
       } catch {
-        toast.error('承認に失敗しました。')
+        toast.error("承認に失敗しました。");
       }
-    })
-  }
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -79,12 +79,12 @@ function ApproveDialog({ step }: { step: ApprovalStepResponse }) {
             キャンセル
           </Button>
           <Button onClick={handleApprove} disabled={isPending}>
-            {isPending ? '承認中...' : '承認する'}
+            {isPending ? "承認中..." : "承認する"}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -92,39 +92,39 @@ function ApproveDialog({ step }: { step: ApprovalStepResponse }) {
 // ---------------------------------------------------------------------------
 
 function RejectDialog({ step }: { step: ApprovalStepResponse }) {
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
-  const [comment, setComment] = useState('')
-  const [commentError, setCommentError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [comment, setComment] = useState("");
+  const [commentError, setCommentError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const handleReject = () => {
     // コメント必須バリデーション（UI 側）
     if (!comment.trim()) {
-      setCommentError('却下理由を入力してください')
-      return
+      setCommentError("却下理由を入力してください");
+      return;
     }
-    setCommentError(null)
+    setCommentError(null);
 
     startTransition(async () => {
       try {
-        await rejectAction(step.id, comment)
-        setOpen(false)
-        toast.success('却下しました。')
-        router.refresh()
+        await rejectAction(step.id, comment);
+        setOpen(false);
+        toast.success("却下しました。");
+        router.refresh();
       } catch {
-        toast.error('却下に失敗しました。')
+        toast.error("却下に失敗しました。");
       }
-    })
-  }
+    });
+  };
 
   const handleOpenChange = (nextOpen: boolean) => {
-    setOpen(nextOpen)
+    setOpen(nextOpen);
     if (!nextOpen) {
-      setComment('')
-      setCommentError(null)
+      setComment("");
+      setCommentError(null);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -148,26 +148,24 @@ function RejectDialog({ step }: { step: ApprovalStepResponse }) {
             placeholder="却下理由を入力してください（必須）"
             value={comment}
             onChange={(e) => {
-              setComment(e.target.value)
-              if (e.target.value.trim()) setCommentError(null)
+              setComment(e.target.value);
+              if (e.target.value.trim()) setCommentError(null);
             }}
             rows={3}
           />
-          {commentError && (
-            <p className="text-sm font-medium text-destructive">{commentError}</p>
-          )}
+          {commentError && <p className="text-sm font-medium text-destructive">{commentError}</p>}
         </div>
         <div className="flex justify-end gap-3 pt-2">
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isPending}>
             キャンセル
           </Button>
           <Button variant="destructive" onClick={handleReject} disabled={isPending}>
-            {isPending ? '却下中...' : '却下する'}
+            {isPending ? "却下中..." : "却下する"}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -180,7 +178,7 @@ export function ApprovalTable({ steps }: { steps: ApprovalStepResponse[] }) {
       <div className="rounded-lg border p-8 text-center text-muted-foreground">
         現在、承認待ちの申請はありません。
       </div>
-    )
+    );
   }
 
   return (
@@ -217,5 +215,5 @@ export function ApprovalTable({ steps }: { steps: ApprovalStepResponse[] }) {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

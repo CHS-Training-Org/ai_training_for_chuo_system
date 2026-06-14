@@ -21,7 +21,7 @@
  * 本番 Cognito（Hosted UI + https://）では通常の OAuth フローが使用される。
  * この実装ロジックは変更しない（本番用のまま維持）。
  */
-import { betterAuth } from 'better-auth'
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
@@ -29,15 +29,15 @@ export const auth = betterAuth({
   socialProviders: {
     cognito: {
       clientId: process.env.COGNITO_CLIENT_ID!,
-      clientSecret: process.env.COGNITO_CLIENT_SECRET ?? '',
+      clientSecret: process.env.COGNITO_CLIENT_SECRET ?? "",
       // COGNITO_DOMAIN: Cognito ホスト型 UI のドメイン
       //   本番: "your-app.auth.ap-northeast-1.amazoncognito.com"
       //   ローカル(cognito-local): "localhost:9229" (https:// 固定のため要検討)
-      domain: process.env.COGNITO_DOMAIN ?? 'localhost:9229',
-      region: process.env.COGNITO_REGION ?? 'ap-northeast-1',
+      domain: process.env.COGNITO_DOMAIN ?? "localhost:9229",
+      region: process.env.COGNITO_REGION ?? "ap-northeast-1",
       userPoolId: process.env.COGNITO_USER_POOL_ID!,
     },
   },
-})
+});
 
-export type Session = typeof auth.$Infer.Session
+export type Session = typeof auth.$Infer.Session;

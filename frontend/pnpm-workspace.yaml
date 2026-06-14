@@ -4,3 +4,9 @@ allowBuilds:
   esbuild: true
   msw: true
   sharp: true
+
+overrides:
+  # esbuild <0.28.1 は GHSA-gv7w-rqvm-qjhr（NPM_CONFIG_REGISTRY 経由の RCE）の対象。
+  # vite/vitest の推移的依存として取り込まれるため固定でアップグレード（security-scan の
+  # vuln ゲートを green にするため）。
+  esbuild: ">=0.28.1"

@@ -1,26 +1,26 @@
-'use client'
+"use client";
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   createResourceAction,
   updateResourceAction,
   changeResourceStatusAction,
-} from '@/server/actions/resources'
-import { CreateResourceSchema } from '@/lib/schemas/resource'
-import type { ResourceResponse } from '@/lib/types/api'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+} from "@/server/actions/resources";
+import { CreateResourceSchema } from "@/lib/schemas/resource";
+import type { ResourceResponse } from "@/lib/types/api";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -28,9 +28,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -38,14 +44,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 
 // ---------------------------------------------------------------------------
 // フォームスキーマ（CreateResourceSchema をそのまま使用）
 // ---------------------------------------------------------------------------
 
-type ResourceFormValues = z.infer<typeof CreateResourceSchema>
+type ResourceFormValues = z.infer<typeof CreateResourceSchema>;
 
 // ---------------------------------------------------------------------------
 // リソースフォーム（新規登録・編集共通）
@@ -56,15 +62,15 @@ function ResourceForm({
   onSubmit,
   submitLabel,
 }: {
-  defaultValues?: Partial<ResourceFormValues>
-  onSubmit: (values: ResourceFormValues) => Promise<void>
-  submitLabel: string
+  defaultValues?: Partial<ResourceFormValues>;
+  onSubmit: (values: ResourceFormValues) => Promise<void>;
+  submitLabel: string;
 }) {
   const form = useForm<ResourceFormValues>({
     resolver: zodResolver(CreateResourceSchema),
     defaultValues: {
-      name: '',
-      category: 'ROOM',
+      name: "",
+      category: "ROOM",
       capacity: null,
       location: null,
       requiresApproval: false,
@@ -72,14 +78,14 @@ function ResourceForm({
       description: null,
       ...defaultValues,
     },
-  })
-  const [isPending, startTransition] = useTransition()
+  });
+  const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (values: ResourceFormValues) => {
     startTransition(async () => {
-      await onSubmit(values)
-    })
-  }
+      await onSubmit(values);
+    });
+  };
 
   return (
     <Form {...form}>
@@ -135,9 +141,9 @@ function ResourceForm({
                   type="number"
                   placeholder="例: 10"
                   min={1}
-                  value={field.value ?? ''}
+                  value={field.value ?? ""}
                   onChange={(e) =>
-                    field.onChange(e.target.value === '' ? null : Number(e.target.value))
+                    field.onChange(e.target.value === "" ? null : Number(e.target.value))
                   }
                 />
               </FormControl>
@@ -156,7 +162,7 @@ function ResourceForm({
               <FormControl>
                 <Input
                   placeholder="例: 3F"
-                  value={field.value ?? ''}
+                  value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value || null)}
                 />
               </FormControl>
@@ -175,7 +181,7 @@ function ResourceForm({
               <FormControl>
                 <Textarea
                   placeholder="リソースの説明を入力..."
-                  value={field.value ?? ''}
+                  value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value || null)}
                 />
               </FormControl>
@@ -223,11 +229,11 @@ function ResourceForm({
         />
 
         <Button type="submit" disabled={isPending}>
-          {isPending ? '処理中...' : submitLabel}
+          {isPending ? "処理中..." : submitLabel}
         </Button>
       </form>
     </Form>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -237,44 +243,44 @@ function ResourceForm({
 export function ResourceManagementClient({
   resources: initialResources,
 }: {
-  resources: ResourceResponse[]
+  resources: ResourceResponse[];
 }) {
-  const router = useRouter()
-  const [editTarget, setEditTarget] = useState<ResourceResponse | null>(null)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const router = useRouter();
+  const [editTarget, setEditTarget] = useState<ResourceResponse | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  const refresh = () => router.refresh()
+  const refresh = () => router.refresh();
 
   // 新規登録
   const handleCreate = async (values: ResourceFormValues) => {
-    await createResourceAction(values)
-    setCreateOpen(false)
-    refresh()
-  }
+    await createResourceAction(values);
+    setCreateOpen(false);
+    refresh();
+  };
 
   // 編集
   const handleEdit = (resource: ResourceResponse) => {
-    setEditTarget(resource)
-    setEditOpen(true)
-  }
+    setEditTarget(resource);
+    setEditOpen(true);
+  };
 
   const handleUpdate = async (values: ResourceFormValues) => {
-    if (!editTarget) return
-    await updateResourceAction(editTarget.id, values)
-    setEditOpen(false)
-    setEditTarget(null)
-    refresh()
-  }
+    if (!editTarget) return;
+    await updateResourceAction(editTarget.id, values);
+    setEditOpen(false);
+    setEditTarget(null);
+    refresh();
+  };
 
   // 有効/無効切替
   const handleToggleActive = (resource: ResourceResponse) => {
     startTransition(async () => {
-      await changeResourceStatusAction(resource.id, !resource.isActive)
-      refresh()
-    })
-  }
+      await changeResourceStatusAction(resource.id, !resource.isActive);
+      refresh();
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -301,7 +307,7 @@ export function ResourceManagementClient({
             <ResourceForm
               defaultValues={{
                 name: editTarget.name,
-                category: editTarget.category as 'ROOM' | 'EQUIPMENT' | 'VEHICLE',
+                category: editTarget.category as "ROOM" | "EQUIPMENT" | "VEHICLE",
                 capacity: editTarget.capacity,
                 location: editTarget.location,
                 requiresApproval: editTarget.requiresApproval,
@@ -330,14 +336,14 @@ export function ResourceManagementClient({
         </TableHeader>
         <TableBody>
           {initialResources.map((resource) => (
-            <TableRow key={resource.id} className={!resource.isActive ? 'opacity-50' : ''}>
+            <TableRow key={resource.id} className={!resource.isActive ? "opacity-50" : ""}>
               <TableCell className="font-medium">{resource.name}</TableCell>
               <TableCell>
                 <Badge variant="secondary">{resource.category}</Badge>
               </TableCell>
-              <TableCell>{resource.location ?? '—'}</TableCell>
-              <TableCell>{resource.capacity ?? '—'}</TableCell>
-              <TableCell>{resource.requiresApproval ? '要' : '不要'}</TableCell>
+              <TableCell>{resource.location ?? "—"}</TableCell>
+              <TableCell>{resource.capacity ?? "—"}</TableCell>
+              <TableCell>{resource.requiresApproval ? "要" : "不要"}</TableCell>
               <TableCell>
                 {resource.isActive ? (
                   <Badge className="bg-green-100 text-green-700">有効</Badge>
@@ -349,20 +355,16 @@ export function ResourceManagementClient({
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(resource)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(resource)}>
                     編集
                   </Button>
                   <Button
-                    variant={resource.isActive ? 'destructive' : 'outline'}
+                    variant={resource.isActive ? "destructive" : "outline"}
                     size="sm"
                     disabled={isPending}
                     onClick={() => handleToggleActive(resource)}
                   >
-                    {resource.isActive ? '無効化' : '有効化'}
+                    {resource.isActive ? "無効化" : "有効化"}
                   </Button>
                 </div>
               </TableCell>
@@ -378,5 +380,5 @@ export function ResourceManagementClient({
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

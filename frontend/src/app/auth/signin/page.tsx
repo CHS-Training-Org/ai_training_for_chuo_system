@@ -1,22 +1,16 @@
-'use client'
+"use client";
 
-import { signIn } from '@/lib/auth-client'
-import { devLoginAction } from '@/server/actions/dev-auth'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import type { Role } from '@/lib/types'
+import { signIn } from "@/lib/auth-client";
+import { devLoginAction } from "@/server/actions/dev-auth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Role } from "@/lib/types";
 
 const DEV_ROLE_LABELS: Record<Role, string> = {
-  MEMBER: '一般ユーザー（MEMBER）',
-  APPROVER: '承認者（APPROVER）',
-  ADMIN: '管理者（ADMIN）',
-}
+  MEMBER: "一般ユーザー（MEMBER）",
+  APPROVER: "承認者（APPROVER）",
+  ADMIN: "管理者（ADMIN）",
+};
 
 export default function SignInPage() {
   return (
@@ -29,14 +23,12 @@ export default function SignInPage() {
         <CardContent className="flex flex-col gap-4">
           <Button
             className="w-full"
-            onClick={() =>
-              signIn.social({ provider: 'cognito', callbackURL: '/' })
-            }
+            onClick={() => signIn.social({ provider: "cognito", callbackURL: "/" })}
           >
             サインイン
           </Button>
 
-          {process.env.NODE_ENV !== 'production' && (
+          {process.env.NODE_ENV !== "production" && (
             <div className="flex flex-col gap-2 border-t pt-4">
               <p className="text-center text-xs text-muted-foreground">
                 開発用：ロールを選択してログイン（cognito-local シードユーザー）
@@ -54,5 +46,5 @@ export default function SignInPage() {
         </CardContent>
       </Card>
     </main>
-  )
+  );
 }

@@ -1,17 +1,17 @@
-import { Suspense } from 'react'
-import Link from 'next/link'
-import { listResourcesAction } from '@/server/actions/resources'
-import { getProfileAction } from '@/server/actions/auth'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { ResourceFilterForm } from './ResourceFilterForm'
-import { PaginationNav } from '@/components/ui/pagination-nav'
+import { Suspense } from "react";
+import Link from "next/link";
+import { listResourcesAction } from "@/server/actions/resources";
+import { getProfileAction } from "@/server/actions/auth";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ResourceFilterForm } from "./ResourceFilterForm";
+import { PaginationNav } from "@/components/ui/pagination-nav";
 
 interface SearchParams {
-  category?: string
-  from?: string
-  to?: string
-  page?: string
+  category?: string;
+  from?: string;
+  to?: string;
+  page?: string;
 }
 
 /**
@@ -23,20 +23,20 @@ interface SearchParams {
 export default async function ResourcesPage({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>
+  searchParams: Promise<SearchParams>;
 }) {
-  const params = await searchParams
-  const profile = await getProfileAction()
-  const isAdmin = profile.role === 'ADMIN'
+  const params = await searchParams;
+  const profile = await getProfileAction();
+  const isAdmin = profile.role === "ADMIN";
 
   const resources = await listResourcesAction({
     category: params.category,
     from: params.from,
     to: params.to,
     page: params.page ? Number(params.page) : 0,
-  })
+  });
 
-  const hasTimeFilter = Boolean(params.from && params.to)
+  const hasTimeFilter = Boolean(params.from && params.to);
 
   return (
     <div className="space-y-6">
@@ -61,7 +61,8 @@ export default async function ResourcesPage({
 
       {hasTimeFilter && (
         <p className="text-sm text-muted-foreground">
-          {params.from} 〜 {params.to} の空きリソースを表示しています（{resources.totalElements} 件）
+          {params.from} 〜 {params.to} の空きリソースを表示しています（{resources.totalElements}{" "}
+          件）
         </p>
       )}
 
@@ -69,15 +70,14 @@ export default async function ResourcesPage({
       <Suspense fallback={<p className="text-muted-foreground">読み込み中...</p>}>
         {resources.content.length === 0 ? (
           <p className="text-muted-foreground">
-            {hasTimeFilter ? '指定した時間帯に空きのあるリソースがありません。' : 'リソースがありません。'}
+            {hasTimeFilter
+              ? "指定した時間帯に空きのあるリソースがありません。"
+              : "リソースがありません。"}
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {resources.content.map((resource) => (
-              <Card
-                key={resource.id}
-                className={!resource.isActive ? 'opacity-50' : ''}
-              >
+              <Card key={resource.id} className={!resource.isActive ? "opacity-50" : ""}>
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base">{resource.name}</CardTitle>
@@ -94,12 +94,8 @@ export default async function ResourcesPage({
                 <CardContent className="space-y-1 text-sm text-muted-foreground">
                   {resource.location && <p>📍 {resource.location}</p>}
                   {resource.capacity != null && <p>👥 定員 {resource.capacity} 名</p>}
-                  {resource.requiresApproval && (
-                    <p className="text-amber-600">⚠ 要承認</p>
-                  )}
-                  {resource.description && (
-                    <p className="line-clamp-2">{resource.description}</p>
-                  )}
+                  {resource.requiresApproval && <p className="text-amber-600">⚠ 要承認</p>}
+                  {resource.description && <p className="line-clamp-2">{resource.description}</p>}
                 </CardContent>
                 <CardFooter>
                   <Link
@@ -126,5 +122,5 @@ export default async function ResourcesPage({
         query={params as Record<string, string | string[] | undefined>}
       />
     </div>
-  )
+  );
 }

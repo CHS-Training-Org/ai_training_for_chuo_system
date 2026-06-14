@@ -1,8 +1,8 @@
-import Link from 'next/link'
-import { listReservationsAction } from '@/server/actions/reservations'
-import { getProfileAction } from '@/server/actions/auth'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import Link from "next/link";
+import { listReservationsAction } from "@/server/actions/reservations";
+import { getProfileAction } from "@/server/actions/auth";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,8 +10,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { PaginationNav } from '@/components/ui/pagination-nav'
+} from "@/components/ui/table";
+import { PaginationNav } from "@/components/ui/pagination-nav";
 
 /**
  * マイ予約一覧画面（screen-spec.md §マイ予約 /reservations 準拠）。
@@ -22,47 +22,43 @@ import { PaginationNav } from '@/components/ui/pagination-nav'
  */
 
 const STATUS_LABELS: Record<string, string> = {
-  DRAFT: 'ドラフト',
-  PENDING: '承認待ち',
-  APPROVED: '確定',
-  REJECTED: '却下',
-  CANCELLED: 'キャンセル',
-}
+  DRAFT: "ドラフト",
+  PENDING: "承認待ち",
+  APPROVED: "確定",
+  REJECTED: "却下",
+  CANCELLED: "キャンセル",
+};
 
 const STATUS_VARIANTS = {
-  PENDING: 'secondary',
-  APPROVED: 'default',
-  REJECTED: 'destructive',
-  CANCELLED: 'outline',
-  DRAFT: 'outline',
-} as const
+  PENDING: "secondary",
+  APPROVED: "default",
+  REJECTED: "destructive",
+  CANCELLED: "outline",
+  DRAFT: "outline",
+} as const;
 
 function statusBadgeClass(status: string): string {
   const map: Record<string, string> = {
-    PENDING: 'bg-yellow-100 text-yellow-700',
-    APPROVED: 'bg-green-100 text-green-700',
-    REJECTED: 'bg-red-100 text-red-700',
-    CANCELLED: 'text-muted-foreground',
-    DRAFT: 'text-muted-foreground',
-  }
-  return map[status] ?? ''
+    PENDING: "bg-yellow-100 text-yellow-700",
+    APPROVED: "bg-green-100 text-green-700",
+    REJECTED: "bg-red-100 text-red-700",
+    CANCELLED: "text-muted-foreground",
+    DRAFT: "text-muted-foreground",
+  };
+  return map[status] ?? "";
 }
 
-const ALL_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED']
+const ALL_STATUSES = ["PENDING", "APPROVED", "REJECTED", "CANCELLED"];
 
 export default async function ReservationsPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const sp = await searchParams
-  const rawStatus = sp.status
-  const selectedStatuses = rawStatus
-    ? Array.isArray(rawStatus)
-      ? rawStatus
-      : [rawStatus]
-    : []
-  const page = Number(sp.page ?? 0)
+  const sp = await searchParams;
+  const rawStatus = sp.status;
+  const selectedStatuses = rawStatus ? (Array.isArray(rawStatus) ? rawStatus : [rawStatus]) : [];
+  const page = Number(sp.page ?? 0);
 
   const [reservations, profile] = await Promise.all([
     listReservationsAction({
@@ -70,17 +66,15 @@ export default async function ReservationsPage({
       page,
     }),
     getProfileAction().catch(() => null),
-  ])
+  ]);
 
-  const isAdmin = profile?.role === 'ADMIN'
+  const isAdmin = profile?.role === "ADMIN";
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">
-            {isAdmin ? '全予約一覧' : 'マイ予約'}
-          </h1>
+          <h1 className="text-2xl font-bold">{isAdmin ? "全予約一覧" : "マイ予約"}</h1>
           <p className="text-sm text-muted-foreground">全 {reservations.totalElements} 件</p>
         </div>
         <Button asChild>
@@ -94,8 +88,8 @@ export default async function ReservationsPage({
           href="/reservations"
           className={`rounded-full px-3 py-1 text-sm border transition-colors ${
             selectedStatuses.length === 0
-              ? 'bg-primary text-primary-foreground border-primary'
-              : 'border-border hover:bg-muted'
+              ? "bg-primary text-primary-foreground border-primary"
+              : "border-border hover:bg-muted"
           }`}
         >
           すべて
@@ -106,8 +100,8 @@ export default async function ReservationsPage({
             href={`/reservations?status=${s}`}
             className={`rounded-full px-3 py-1 text-sm border transition-colors ${
               selectedStatuses.includes(s)
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'border-border hover:bg-muted'
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-border hover:bg-muted"
             }`}
           >
             {STATUS_LABELS[s] ?? s}
@@ -134,15 +128,18 @@ export default async function ReservationsPage({
               <TableCell className="font-medium">{reservation.resourceName}</TableCell>
               {isAdmin && <TableCell>{reservation.requesterName}</TableCell>}
               <TableCell className="text-sm">
-                {new Date(reservation.startAt).toLocaleString('ja-JP')}
+                {new Date(reservation.startAt).toLocaleString("ja-JP")}
               </TableCell>
               <TableCell className="text-sm">
-                {new Date(reservation.endAt).toLocaleString('ja-JP')}
+                {new Date(reservation.endAt).toLocaleString("ja-JP")}
               </TableCell>
               <TableCell className="max-w-[200px] truncate">{reservation.purpose}</TableCell>
               <TableCell>
                 <Badge
-                  variant={STATUS_VARIANTS[reservation.status as keyof typeof STATUS_VARIANTS] ?? 'secondary'}
+                  variant={
+                    STATUS_VARIANTS[reservation.status as keyof typeof STATUS_VARIANTS] ??
+                    "secondary"
+                  }
                   className={statusBadgeClass(reservation.status)}
                 >
                   {STATUS_LABELS[reservation.status] ?? reservation.status}
@@ -178,5 +175,5 @@ export default async function ReservationsPage({
         query={sp}
       />
     </div>
-  )
+  );
 }

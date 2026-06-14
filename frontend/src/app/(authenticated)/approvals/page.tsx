@@ -1,7 +1,7 @@
-import { getProfileAction } from '@/server/actions/auth'
-import { listPendingApprovalsAction } from '@/server/actions/approvals'
-import type { ApprovalStepResponse } from '@/lib/types/api'
-import { ApprovalTable } from './ApprovalTable'
+import { getProfileAction } from "@/server/actions/auth";
+import { listPendingApprovalsAction } from "@/server/actions/approvals";
+import type { ApprovalStepResponse } from "@/lib/types/api";
+import { ApprovalTable } from "./ApprovalTable";
 
 /**
  * 承認待ち一覧ページ（APPROVER / ADMIN 限定）。
@@ -11,12 +11,12 @@ import { ApprovalTable } from './ApprovalTable'
  */
 export default async function ApprovalsPage() {
   // ロール確認（APPROVER / ADMIN のみアクセス可）
-  let isApproverOrAdmin = false
+  let isApproverOrAdmin = false;
   try {
-    const profile = await getProfileAction()
-    isApproverOrAdmin = profile.role === 'APPROVER' || profile.role === 'ADMIN'
+    const profile = await getProfileAction();
+    isApproverOrAdmin = profile.role === "APPROVER" || profile.role === "ADMIN";
   } catch {
-    isApproverOrAdmin = false
+    isApproverOrAdmin = false;
   }
 
   if (!isApproverOrAdmin) {
@@ -24,17 +24,19 @@ export default async function ApprovalsPage() {
       <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
         <p className="text-6xl font-bold text-muted-foreground">403</p>
         <p className="text-xl font-semibold">アクセス権限がありません</p>
-        <p className="text-muted-foreground">このページは承認者（APPROVER）または管理者（ADMIN）専用です。</p>
+        <p className="text-muted-foreground">
+          このページは承認者（APPROVER）または管理者（ADMIN）専用です。
+        </p>
       </div>
-    )
+    );
   }
 
   // 承認待ちステップ取得（エラー時は空配列として扱う）
-  let steps: ApprovalStepResponse[] = []
+  let steps: ApprovalStepResponse[] = [];
   try {
-    steps = await listPendingApprovalsAction()
+    steps = await listPendingApprovalsAction();
   } catch {
-    steps = []
+    steps = [];
   }
 
   return (
@@ -48,5 +50,5 @@ export default async function ApprovalsPage() {
 
       <ApprovalTable steps={steps} />
     </div>
-  )
+  );
 }

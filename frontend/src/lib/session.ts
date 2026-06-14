@@ -7,10 +7,10 @@
  * カテゴリ 3（認証スライス）完成後に、この関数を api-client.ts の TokenGetter として渡す:
  *   const client = createApiClient(() => getSession().then(s => s?.session.token ?? null))
  */
-import { auth } from './auth'
-import { cookies, headers } from 'next/headers'
+import { auth } from "./auth";
+import { cookies, headers } from "next/headers";
 
-export type SessionData = Awaited<ReturnType<typeof auth.api.getSession>>
+export type SessionData = Awaited<ReturnType<typeof auth.api.getSession>>;
 
 /**
  * ローカル開発専用ロール別ログイン（dev-auth.ts）が発行する cookie 名。
@@ -19,12 +19,12 @@ export type SessionData = Awaited<ReturnType<typeof auth.api.getSession>>
  * （ADR-008 補足。cognito-local には Hosted UI が無く本番同様の OAuth が成立しないため）。
  * 本番ビルドではこの分岐に絶対に入らないことが安全性の前提となる。
  */
-export const DEV_ID_TOKEN_COOKIE = 'dev-id-token'
+export const DEV_ID_TOKEN_COOKIE = "dev-id-token";
 
 async function getDevIdToken(): Promise<string | null> {
-  if (process.env.NODE_ENV === 'production') return null
-  const cookieStore = await cookies()
-  return cookieStore.get(DEV_ID_TOKEN_COOKIE)?.value ?? null
+  if (process.env.NODE_ENV === "production") return null;
+  const cookieStore = await cookies();
+  return cookieStore.get(DEV_ID_TOKEN_COOKIE)?.value ?? null;
 }
 
 /**
@@ -36,11 +36,11 @@ async function getDevIdToken(): Promise<string | null> {
  * Better Auth の内部型に依存しない）。
  */
 export async function getSession(): Promise<SessionData> {
-  const devIdToken = await getDevIdToken()
+  const devIdToken = await getDevIdToken();
   if (devIdToken) {
-    return { session: {}, user: {} } as unknown as SessionData
+    return { session: {}, user: {} } as unknown as SessionData;
   }
-  return auth.api.getSession({ headers: await headers() })
+  return auth.api.getSession({ headers: await headers() });
 }
 
 /**
@@ -53,13 +53,13 @@ export async function getSession(): Promise<SessionData> {
  * これらを含む IdToken である必要がある）。
  */
 export async function getAccessToken(): Promise<string | null> {
-  const devIdToken = await getDevIdToken()
-  if (devIdToken) return devIdToken
+  const devIdToken = await getDevIdToken();
+  if (devIdToken) return devIdToken;
 
-  const session = await getSession()
-  if (!session) return null
+  const session = await getSession();
+  if (!session) return null;
   // Better Auth のセッションオブジェクト構造に依存する。
   // カテゴリ 3 で実際のレスポンス形状を確認して調整すること。
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (session as any)?.session?.accessToken ?? null
+  return (session as any)?.session?.accessToken ?? null;
 }

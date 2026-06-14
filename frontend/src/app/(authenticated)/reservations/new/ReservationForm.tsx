@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { CreateReservationSchema } from '@/lib/schemas/reservation'
-import { createReservationAction } from '@/server/actions/reservations'
-import type { ResourceResponse } from '@/lib/types/api'
-import { ApiClientError } from '@/lib/api-client'
-import { Button } from '@/components/ui/button'
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { CreateReservationSchema } from "@/lib/schemas/reservation";
+import { createReservationAction } from "@/server/actions/reservations";
+import type { ResourceResponse } from "@/lib/types/api";
+import { ApiClientError } from "@/lib/api-client";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -17,57 +17,65 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 // cross-field バリデーション（終了日時 > 開始日時）はクライアント側で追加する
 // （'use server' ファイルでは .refine のクロージャを export できないため）
 const FormSchema = CreateReservationSchema.refine(
   (data) => !data.startAt || !data.endAt || data.endAt > data.startAt,
-  { message: '終了日時は開始日時より後に設定してください', path: ['endAt'] },
-)
+  { message: "終了日時は開始日時より後に設定してください", path: ["endAt"] },
+);
 
-type FormValues = z.infer<typeof FormSchema>
+type FormValues = z.infer<typeof FormSchema>;
 
 export function ReservationForm({
   resources,
   defaultResourceId,
 }: {
-  resources: ResourceResponse[]
-  defaultResourceId?: string
+  resources: ResourceResponse[];
+  defaultResourceId?: string;
 }) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [conflictError, setConflictError] = useState<string | null>(null)
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [conflictError, setConflictError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      resourceId: defaultResourceId ?? '',
-      startAt: '',
-      endAt: '',
-      purpose: '',
+      resourceId: defaultResourceId ?? "",
+      startAt: "",
+      endAt: "",
+      purpose: "",
       attendeesCount: null,
     },
-  })
+  });
 
   const handleSubmit = (values: FormValues) => {
-    setConflictError(null)
+    setConflictError(null);
     startTransition(async () => {
       try {
-        await createReservationAction(values)
-        router.push('/reservations')
+        await createReservationAction(values);
+        router.push("/reservations");
       } catch (err) {
-        if (err instanceof ApiClientError && err.code === 'RESERVATION_CONFLICT') {
-          setConflictError('指定した時間帯は既に予約が入っています。別の時間帯を選択してください。')
+        if (err instanceof ApiClientError && err.code === "RESERVATION_CONFLICT") {
+          setConflictError(
+            "指定した時間帯は既に予約が入っています。別の時間帯を選択してください。",
+          );
         } else {
-          throw err
+          throw err;
         }
       }
-    })
-  }
+    });
+  };
 
   return (
     <Form {...form}>
@@ -89,7 +97,7 @@ export function ReservationForm({
                   {resources.map((r) => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.name}
-                      {r.requiresApproval ? '（要承認）' : '（即時確定）'}
+                      {r.requiresApproval ? "（要承認）" : "（即時確定）"}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -156,9 +164,9 @@ export function ReservationForm({
                   type="number"
                   placeholder="例: 10"
                   min={1}
-                  value={field.value ?? ''}
+                  value={field.value ?? ""}
                   onChange={(e) =>
-                    field.onChange(e.target.value === '' ? null : Number(e.target.value))
+                    field.onChange(e.target.value === "" ? null : Number(e.target.value))
                   }
                 />
               </FormControl>
@@ -168,13 +176,11 @@ export function ReservationForm({
         />
 
         {/* 重複エラー表示 */}
-        {conflictError && (
-          <p className="text-sm font-medium text-destructive">{conflictError}</p>
-        )}
+        {conflictError && <p className="text-sm font-medium text-destructive">{conflictError}</p>}
 
         <div className="flex gap-3">
           <Button type="submit" disabled={isPending}>
-            {isPending ? '申請中...' : '予約を申請する'}
+            {isPending ? "申請中..." : "予約を申請する"}
           </Button>
           <Button
             type="button"
@@ -187,5 +193,5 @@ export function ReservationForm({
         </div>
       </form>
     </Form>
-  )
+  );
 }

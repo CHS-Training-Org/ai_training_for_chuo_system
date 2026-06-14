@@ -5,10 +5,5 @@
     "no-unused-vars": "error",
     "no-console": "warn"
   },
-  "ignorePatterns": [
-    "node_modules",
-    ".next",
-    "out",
-    "coverage"
-  ]
+  "ignorePatterns": ["node_modules", ".next", "out", "coverage"]
 }

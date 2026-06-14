@@ -1,9 +1,9 @@
-import Link from 'next/link'
-import { getReservationAction } from '@/server/actions/reservations'
-import { getProfileAction } from '@/server/actions/auth'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CancelButton } from './CancelButton'
+import Link from "next/link";
+import { getReservationAction } from "@/server/actions/reservations";
+import { getProfileAction } from "@/server/actions/auth";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CancelButton } from "./CancelButton";
 
 /**
  * 予約詳細画面（screen-spec.md §予約詳細 /reservations/{id} 準拠）。
@@ -14,40 +14,40 @@ import { CancelButton } from './CancelButton'
  */
 
 const STATUS_LABELS: Record<string, string> = {
-  DRAFT: 'ドラフト',
-  PENDING: '承認待ち',
-  APPROVED: '確定',
-  REJECTED: '却下',
-  CANCELLED: 'キャンセル',
-}
+  DRAFT: "ドラフト",
+  PENDING: "承認待ち",
+  APPROVED: "確定",
+  REJECTED: "却下",
+  CANCELLED: "キャンセル",
+};
 
 function statusBadgeClass(status: string): string {
   const map: Record<string, string> = {
-    PENDING: 'bg-yellow-100 text-yellow-700',
-    APPROVED: 'bg-green-100 text-green-700',
-    REJECTED: 'bg-red-100 text-red-700',
-    CANCELLED: 'text-muted-foreground',
-    DRAFT: 'text-muted-foreground',
-  }
-  return map[status] ?? ''
+    PENDING: "bg-yellow-100 text-yellow-700",
+    APPROVED: "bg-green-100 text-green-700",
+    REJECTED: "bg-red-100 text-red-700",
+    CANCELLED: "text-muted-foreground",
+    DRAFT: "text-muted-foreground",
+  };
+  return map[status] ?? "";
 }
 
-const CANCELLABLE_STATUSES = ['PENDING', 'APPROVED']
+const CANCELLABLE_STATUSES = ["PENDING", "APPROVED"];
 
 export default async function ReservationDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = await params
+  const { id } = await params;
   const [reservation, profile] = await Promise.all([
     getReservationAction(id),
     getProfileAction().catch(() => null),
-  ])
+  ]);
 
-  const isAdmin = profile?.role === 'ADMIN'
-  const isOwner = profile?.id === reservation.requesterId
-  const canCancel = CANCELLABLE_STATUSES.includes(reservation.status) && (isOwner || isAdmin)
+  const isAdmin = profile?.role === "ADMIN";
+  const isOwner = profile?.id === reservation.requesterId;
+  const canCancel = CANCELLABLE_STATUSES.includes(reservation.status) && (isOwner || isAdmin);
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -73,10 +73,10 @@ export default async function ReservationDetailPage({
             <dd>{reservation.requesterName}</dd>
 
             <dt className="font-medium text-muted-foreground">開始日時</dt>
-            <dd>{new Date(reservation.startAt).toLocaleString('ja-JP')}</dd>
+            <dd>{new Date(reservation.startAt).toLocaleString("ja-JP")}</dd>
 
             <dt className="font-medium text-muted-foreground">終了日時</dt>
-            <dd>{new Date(reservation.endAt).toLocaleString('ja-JP')}</dd>
+            <dd>{new Date(reservation.endAt).toLocaleString("ja-JP")}</dd>
 
             <dt className="font-medium text-muted-foreground">利用目的</dt>
             <dd>{reservation.purpose}</dd>
@@ -89,10 +89,10 @@ export default async function ReservationDetailPage({
             )}
 
             <dt className="font-medium text-muted-foreground">申請日時</dt>
-            <dd>{new Date(reservation.createdAt).toLocaleString('ja-JP')}</dd>
+            <dd>{new Date(reservation.createdAt).toLocaleString("ja-JP")}</dd>
 
             <dt className="font-medium text-muted-foreground">更新日時</dt>
-            <dd>{new Date(reservation.updatedAt).toLocaleString('ja-JP')}</dd>
+            <dd>{new Date(reservation.updatedAt).toLocaleString("ja-JP")}</dd>
           </dl>
         </CardContent>
       </Card>
@@ -102,5 +102,5 @@ export default async function ReservationDetailPage({
 
       {/* カテゴリ 6 TODO: 承認ステップ表示（ApprovalStepResponse） */}
     </div>
-  )
+  );
 }

@@ -1,9 +1,9 @@
-'use server'
+"use server";
 
-import { createApiClient } from '@/lib/api-client'
-import { ReservationResponseSchema, type ReservationResponse } from '@/lib/types/api'
-import { getAccessToken } from '@/lib/session'
-import type { CreateReservationInput, UpdateReservationInput } from '@/lib/schemas/reservation'
+import { createApiClient } from "@/lib/api-client";
+import { ReservationResponseSchema, type ReservationResponse } from "@/lib/types/api";
+import { getAccessToken } from "@/lib/session";
+import type { CreateReservationInput, UpdateReservationInput } from "@/lib/schemas/reservation";
 
 // ---------------------------------------------------------------------------
 // リクエスト入力スキーマ（フォームバリデーション用）
@@ -14,16 +14,16 @@ import type { CreateReservationInput, UpdateReservationInput } from '@/lib/schem
 // 型定義は re-export（型情報は 'use server' 制約の対象外）。
 // ---------------------------------------------------------------------------
 
-export type { CreateReservationInput, UpdateReservationInput } from '@/lib/schemas/reservation'
+export type { CreateReservationInput, UpdateReservationInput } from "@/lib/schemas/reservation";
 
 // ---------------------------------------------------------------------------
 // 一覧パラメータ
 // ---------------------------------------------------------------------------
 
 export interface ListReservationsParams {
-  status?: string[]
-  page?: number
-  size?: number
+  status?: string[];
+  page?: number;
+  size?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -35,8 +35,8 @@ export interface ListReservationsParams {
  * BE が期待する秒付き ISO 文字列（"2025-06-10T10:00:00" 19文字）に正規化する。
  */
 function toIsoWithSeconds(value: string): string {
-  if (value.length === 16) return `${value}:00`
-  return value
+  if (value.length === 16) return `${value}:00`;
+  return value;
 }
 
 // ---------------------------------------------------------------------------
@@ -50,12 +50,12 @@ function toIsoWithSeconds(value: string): string {
  * {@code status} は複数指定可（e.g. `['PENDING', 'APPROVED']`）。
  */
 export async function listReservationsAction(params?: ListReservationsParams) {
-  const client = createApiClient(getAccessToken)
-  const queryParams: Record<string, string | string[]> = {}
-  if (params?.status && params.status.length > 0) queryParams.status = params.status
-  if (params?.page !== undefined) queryParams.page = String(params.page)
-  if (params?.size !== undefined) queryParams.size = String(params.size)
-  return client.getPaginated('/reservations', ReservationResponseSchema, queryParams)
+  const client = createApiClient(getAccessToken);
+  const queryParams: Record<string, string | string[]> = {};
+  if (params?.status && params.status.length > 0) queryParams.status = params.status;
+  if (params?.page !== undefined) queryParams.page = String(params.page);
+  if (params?.size !== undefined) queryParams.size = String(params.size);
+  return client.getPaginated("/reservations", ReservationResponseSchema, queryParams);
 }
 
 /**
@@ -64,8 +64,8 @@ export async function listReservationsAction(params?: ListReservationsParams) {
  * MEMBER は本人の予約のみ取得可（他人の予約は 403 → ApiClientError）。
  */
 export async function getReservationAction(id: string): Promise<ReservationResponse> {
-  const client = createApiClient(getAccessToken)
-  return client.get(`/reservations/${id}`, ReservationResponseSchema)
+  const client = createApiClient(getAccessToken);
+  return client.get(`/reservations/${id}`, ReservationResponseSchema);
 }
 
 /**
@@ -77,13 +77,13 @@ export async function getReservationAction(id: string): Promise<ReservationRespo
 export async function createReservationAction(
   input: CreateReservationInput,
 ): Promise<ReservationResponse> {
-  const client = createApiClient(getAccessToken)
+  const client = createApiClient(getAccessToken);
   const body = {
     ...input,
     startAt: toIsoWithSeconds(input.startAt),
     endAt: toIsoWithSeconds(input.endAt),
-  }
-  return client.post('/reservations', body, ReservationResponseSchema)
+  };
+  return client.post("/reservations", body, ReservationResponseSchema);
 }
 
 /**
@@ -95,13 +95,13 @@ export async function updateReservationAction(
   id: string,
   input: UpdateReservationInput,
 ): Promise<ReservationResponse> {
-  const client = createApiClient(getAccessToken)
+  const client = createApiClient(getAccessToken);
   const body = {
     ...input,
     startAt: toIsoWithSeconds(input.startAt),
     endAt: toIsoWithSeconds(input.endAt),
-  }
-  return client.put(`/reservations/${id}`, body, ReservationResponseSchema)
+  };
+  return client.put(`/reservations/${id}`, body, ReservationResponseSchema);
 }
 
 /**
@@ -111,6 +111,6 @@ export async function updateReservationAction(
  * NOTE: {@code postEmpty} ではなく {@code post} を使用すること（api-spec L606 で 200 + ボディあり）。
  */
 export async function cancelReservationAction(id: string): Promise<ReservationResponse> {
-  const client = createApiClient(getAccessToken)
-  return client.post(`/reservations/${id}/cancel`, undefined, ReservationResponseSchema)
+  const client = createApiClient(getAccessToken);
+  return client.post(`/reservations/${id}/cancel`, undefined, ReservationResponseSchema);
 }

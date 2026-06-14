@@ -1,6 +1,6 @@
-import Link from 'next/link'
-import { listResourcesAction } from '@/server/actions/resources'
-import { ReservationForm } from './ReservationForm'
+import Link from "next/link";
+import { listResourcesAction } from "@/server/actions/resources";
+import { ReservationForm } from "./ReservationForm";
 
 /**
  * 予約申請フォーム画面（screen-spec.md §予約申請 /reservations/new 準拠）。
@@ -12,13 +12,13 @@ import { ReservationForm } from './ReservationForm'
 export default async function ReservationNewPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | undefined>>
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const sp = await searchParams
-  const defaultResourceId = sp.resourceId
+  const sp = await searchParams;
+  const defaultResourceId = sp.resourceId;
 
   // 有効なリソース一覧を取得（フォームのセレクトに表示する）
-  const resources = await listResourcesAction({ size: 100 })
+  const resources = await listResourcesAction({ size: 100 });
 
   return (
     <div className="space-y-6 max-w-xl">
@@ -28,15 +28,10 @@ export default async function ReservationNewPage({
 
       <div>
         <h1 className="text-2xl font-bold">予約申請</h1>
-        <p className="text-sm text-muted-foreground">
-          リソースの利用時間帯を申請します。
-        </p>
+        <p className="text-sm text-muted-foreground">リソースの利用時間帯を申請します。</p>
       </div>
 
-      <ReservationForm
-        resources={resources.content}
-        defaultResourceId={defaultResourceId}
-      />
+      <ReservationForm resources={resources.content} defaultResourceId={defaultResourceId} />
     </div>
-  )
+  );
 }

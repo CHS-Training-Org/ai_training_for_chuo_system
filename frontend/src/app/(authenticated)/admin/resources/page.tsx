@@ -1,5 +1,5 @@
-import { listResourcesAction } from '@/server/actions/resources'
-import { ResourceManagementClient } from './ResourceManagementClient'
+import { listResourcesAction } from "@/server/actions/resources";
+import { ResourceManagementClient } from "./ResourceManagementClient";
 
 /**
  * リソース管理画面（screen-spec.md §リソース管理 /admin/resources 準拠）。
@@ -9,7 +9,7 @@ import { ResourceManagementClient } from './ResourceManagementClient'
  */
 export default async function AdminResourcesPage() {
   // ADMIN は BE 側でロール判定し inactive 含む全件を返す
-  const resources = await listResourcesAction({ size: 100 })
+  const resources = await listResourcesAction({ size: 100 });
 
   return (
     <div className="space-y-6">
@@ -17,7 +17,7 @@ export default async function AdminResourcesPage() {
         <div>
           <h1 className="text-2xl font-bold">リソース管理</h1>
           <p className="text-sm text-muted-foreground">
-            全 {resources.totalElements} 件（有効 /{' '}
+            全 {resources.totalElements} 件（有効 /{" "}
             {resources.content.filter((r) => r.isActive).length} 件）
           </p>
         </div>
@@ -26,5 +26,5 @@ export default async function AdminResourcesPage() {
       {/* クライアントコンポーネントに一覧データと操作を委譲 */}
       <ResourceManagementClient resources={resources.content} />
     </div>
-  )
+  );
 }

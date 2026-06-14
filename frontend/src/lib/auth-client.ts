@@ -4,12 +4,12 @@
  * クライアントコンポーネントからサインイン・サインアウト・セッション取得に使用する。
  * Server Actions / Server Components では session.ts を使うこと。
  */
-'use client'
+"use client";
 
-import { createAuthClient } from 'better-auth/react'
+import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
-})
+});
 
-export const { signIn, signOut, useSession } = authClient
+export const { signIn, signOut, useSession } = authClient;

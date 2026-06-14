@@ -1,20 +1,20 @@
-import Link from 'next/link'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface PaginationNavProps {
   /** 現在ページ番号（0 始まり） */
-  page: number
-  totalPages: number
+  page: number;
+  totalPages: number;
   /** Spring Page<T>.first — 最初のページか */
-  first: boolean
+  first: boolean;
   /** Spring Page<T>.last — 最後のページか */
-  last: boolean
-  totalElements: number
+  last: boolean;
+  totalElements: number;
   /** ページ遷移の基準パス（例: "/reservations"） */
-  basePath: string
+  basePath: string;
   /** 現在の searchParams。page 以外のキーを引き継いで href を生成する */
-  query: Record<string, string | string[] | undefined>
+  query: Record<string, string | string[] | undefined>;
 }
 
 /**
@@ -27,21 +27,21 @@ export function buildHref(
   query: Record<string, string | string[] | undefined>,
   targetPage: number,
 ): string {
-  const params = new URLSearchParams()
+  const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
-    if (key === 'page') continue // 後で付け直す
-    if (value === undefined) continue
+    if (key === "page") continue; // 後で付け直す
+    if (value === undefined) continue;
     if (Array.isArray(value)) {
-      for (const v of value) params.append(key, v)
+      for (const v of value) params.append(key, v);
     } else {
-      params.set(key, value)
+      params.set(key, value);
     }
   }
   if (targetPage > 0) {
-    params.set('page', String(targetPage))
+    params.set("page", String(targetPage));
   }
-  const qs = params.toString()
-  return qs ? `${basePath}?${qs}` : basePath
+  const qs = params.toString();
+  return qs ? `${basePath}?${qs}` : basePath;
 }
 
 /**
@@ -60,10 +60,10 @@ export function PaginationNav({
   basePath,
   query,
 }: PaginationNavProps) {
-  if (totalPages <= 1) return null
+  if (totalPages <= 1) return null;
 
-  const prevHref = buildHref(basePath, query, page - 1)
-  const nextHref = buildHref(basePath, query, page + 1)
+  const prevHref = buildHref(basePath, query, page - 1);
+  const nextHref = buildHref(basePath, query, page + 1);
 
   return (
     <div className="flex items-center justify-between">
@@ -99,5 +99,5 @@ export function PaginationNav({
         </Button>
       )}
     </div>
-  )
+  );
 }

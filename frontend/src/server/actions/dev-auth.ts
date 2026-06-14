@@ -1,4 +1,4 @@
-'use server'
+"use server";
 
 /**
  * ローカル開発専用ロール別ログイン（ADR-008 補足）
@@ -16,57 +16,57 @@
  * （UI からボタンを描画していなくても action ID で直接 POST され得るため、ここでの遮断が
  * 唯一かつ最終的な防衛線になる。session.ts 側のガードと合わせて多層防御を構成する）。
  */
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-import { RoleSchema, type Role } from '@/lib/types'
-import { DEV_ID_TOKEN_COOKIE } from '@/lib/session'
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { RoleSchema, type Role } from "@/lib/types";
+import { DEV_ID_TOKEN_COOKIE } from "@/lib/session";
 
-const DEV_USER_PASSWORD = 'BookFlow1234!'
+const DEV_USER_PASSWORD = "BookFlow1234!";
 
 const ROLE_TO_EMAIL: Record<Role, string> = {
-  MEMBER: 'hanako.tanaka@example.com',
-  APPROVER: 'ichiro.suzuki@example.com',
-  ADMIN: 'taro.kanri@example.com',
-}
+  MEMBER: "hanako.tanaka@example.com",
+  APPROVER: "ichiro.suzuki@example.com",
+  ADMIN: "taro.kanri@example.com",
+};
 
 async function resolveCognitoLocalEndpoint(): Promise<string> {
-  return process.env.COGNITO_LOCAL_ENDPOINT ?? 'http://cognito-local:9229'
+  return process.env.COGNITO_LOCAL_ENDPOINT ?? "http://cognito-local:9229";
 }
 
 async function fetchIdToken(email: string): Promise<string> {
-  const endpoint = await resolveCognitoLocalEndpoint()
-  const clientId = process.env.COGNITO_CLIENT_ID
+  const endpoint = await resolveCognitoLocalEndpoint();
+  const clientId = process.env.COGNITO_CLIENT_ID;
 
   const res = await fetch(`${endpoint}/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'X-Amz-Target': 'AmazonCognitoIdentityProviderService.InitiateAuth',
-      'Content-Type': 'application/x-amz-json-1.1',
+      "X-Amz-Target": "AmazonCognitoIdentityProviderService.InitiateAuth",
+      "Content-Type": "application/x-amz-json-1.1",
     },
     body: JSON.stringify({
       ClientId: clientId,
-      AuthFlow: 'USER_PASSWORD_AUTH',
+      AuthFlow: "USER_PASSWORD_AUTH",
       AuthParameters: {
         USERNAME: email,
         PASSWORD: DEV_USER_PASSWORD,
       },
     }),
-    cache: 'no-store',
-  })
+    cache: "no-store",
+  });
 
   if (!res.ok) {
-    throw new Error(`cognito-local InitiateAuth failed: HTTP ${res.status}`)
+    throw new Error(`cognito-local InitiateAuth failed: HTTP ${res.status}`);
   }
 
-  const json: unknown = await res.json()
-  const idToken = (json as { AuthenticationResult?: { IdToken?: string } })
-    ?.AuthenticationResult?.IdToken
+  const json: unknown = await res.json();
+  const idToken = (json as { AuthenticationResult?: { IdToken?: string } })?.AuthenticationResult
+    ?.IdToken;
 
   if (!idToken) {
-    throw new Error('cognito-local InitiateAuth did not return an IdToken')
+    throw new Error("cognito-local InitiateAuth did not return an IdToken");
   }
 
-  return idToken
+  return idToken;
 }
 
 /**
@@ -74,23 +74,23 @@ async function fetchIdToken(email: string): Promise<string> {
  * フォームの hidden input `role` から呼び出される想定。
  */
 export async function devLoginAction(formData: FormData): Promise<void> {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('devLoginAction is not available in production')
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("devLoginAction is not available in production");
   }
 
-  const role = RoleSchema.parse(formData.get('role'))
-  const email = ROLE_TO_EMAIL[role]
+  const role = RoleSchema.parse(formData.get("role"));
+  const email = ROLE_TO_EMAIL[role];
 
-  const idToken = await fetchIdToken(email)
+  const idToken = await fetchIdToken(email);
 
-  const cookieStore = await cookies()
+  const cookieStore = await cookies();
   cookieStore.set(DEV_ID_TOKEN_COOKIE, idToken, {
     httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
+    sameSite: "lax",
+    path: "/",
     secure: false,
     maxAge: 60 * 60,
-  })
+  });
 
-  redirect('/')
+  redirect("/");
 }

@@ -1,16 +1,22 @@
-'use client'
+"use client";
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ResourceFilterFormProps {
-  defaultCategory?: string
-  defaultFrom?: string
-  defaultTo?: string
+  defaultCategory?: string;
+  defaultFrom?: string;
+  defaultTo?: string;
 }
 
 /**
@@ -24,32 +30,32 @@ export function ResourceFilterForm({
   defaultFrom,
   defaultTo,
 }: ResourceFilterFormProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-      const form = e.currentTarget
-      const data = new FormData(form)
-      const params = new URLSearchParams()
+      e.preventDefault();
+      const form = e.currentTarget;
+      const data = new FormData(form);
+      const params = new URLSearchParams();
 
-      const category = data.get('category') as string
-      const from = data.get('from') as string
-      const to = data.get('to') as string
+      const category = data.get("category") as string;
+      const from = data.get("from") as string;
+      const to = data.get("to") as string;
 
-      if (category && category !== 'ALL') params.set('category', category)
-      if (from) params.set('from', from)
-      if (to) params.set('to', to)
+      if (category && category !== "ALL") params.set("category", category);
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
 
-      router.push(`/resources?${params.toString()}`)
+      router.push(`/resources?${params.toString()}`);
     },
     [router, searchParams],
-  )
+  );
 
   const handleReset = useCallback(() => {
-    router.push('/resources')
-  }, [router])
+    router.push("/resources");
+  }, [router]);
 
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4 space-y-4">
@@ -58,7 +64,7 @@ export function ResourceFilterForm({
         {/* カテゴリ */}
         <div className="space-y-1">
           <Label htmlFor="category">カテゴリ</Label>
-          <Select name="category" defaultValue={defaultCategory ?? 'ALL'}>
+          <Select name="category" defaultValue={defaultCategory ?? "ALL"}>
             <SelectTrigger id="category">
               <SelectValue placeholder="すべて" />
             </SelectTrigger>
@@ -78,7 +84,7 @@ export function ResourceFilterForm({
             id="from"
             name="from"
             type="datetime-local"
-            defaultValue={defaultFrom?.replace('T', 'T').slice(0, 16)}
+            defaultValue={defaultFrom?.replace("T", "T").slice(0, 16)}
           />
         </div>
 
@@ -89,7 +95,7 @@ export function ResourceFilterForm({
             id="to"
             name="to"
             type="datetime-local"
-            defaultValue={defaultTo?.replace('T', 'T').slice(0, 16)}
+            defaultValue={defaultTo?.replace("T", "T").slice(0, 16)}
           />
         </div>
       </div>
@@ -103,5 +109,5 @@ export function ResourceFilterForm({
         </Button>
       </div>
     </form>
-  )
+  );
 }

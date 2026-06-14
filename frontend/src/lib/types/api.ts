@@ -5,13 +5,13 @@
  * タイムスタンプは TZ なし ISO 文字列（例: "2025-04-01T09:00:00"）のため
  * z.string().datetime() は使わず z.string() を使用する。
  */
-import { z } from 'zod'
+import { z } from "zod";
 import {
   ApprovalStatusSchema,
   ReservationStatusSchema,
   ResourceCategorySchema,
   RoleSchema,
-} from './enums'
+} from "./enums";
 
 // ---------------------------------------------------------------------------
 // 共通エラー型
@@ -21,8 +21,8 @@ import {
 export const ApiErrorSchema = z.object({
   code: z.string(),
   message: z.string(),
-})
-export type ApiError = z.infer<typeof ApiErrorSchema>
+});
+export type ApiError = z.infer<typeof ApiErrorSchema>;
 
 // ---------------------------------------------------------------------------
 // ページネーションラッパ
@@ -41,17 +41,17 @@ export function paginatedSchema<T extends z.ZodTypeAny>(itemSchema: T) {
     size: z.number().int().positive(),
     first: z.boolean(),
     last: z.boolean(),
-  })
+  });
 }
 export type Paginated<T> = {
-  content: T[]
-  totalElements: number
-  totalPages: number
-  number: number
-  size: number
-  first: boolean
-  last: boolean
-}
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+};
 
 // ---------------------------------------------------------------------------
 // UserResponse (api-spec.md §認証)
@@ -65,8 +65,8 @@ export const UserResponseSchema = z.object({
   departmentId: z.string().uuid(),
   departmentName: z.string(),
   createdAt: z.string(),
-})
-export type UserResponse = z.infer<typeof UserResponseSchema>
+});
+export type UserResponse = z.infer<typeof UserResponseSchema>;
 
 // ---------------------------------------------------------------------------
 // DepartmentResponse (api-spec.md §ユーザー・部署)
@@ -76,8 +76,8 @@ export const DepartmentResponseSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   parentId: z.string().uuid().nullable(),
-})
-export type DepartmentResponse = z.infer<typeof DepartmentResponseSchema>
+});
+export type DepartmentResponse = z.infer<typeof DepartmentResponseSchema>;
 
 // ---------------------------------------------------------------------------
 // ResourceResponse (api-spec.md §リソース)
@@ -93,16 +93,16 @@ export const ResourceResponseSchema = z.object({
   isActive: z.boolean(),
   description: z.string().nullable(),
   createdAt: z.string(),
-})
-export type ResourceResponse = z.infer<typeof ResourceResponseSchema>
+});
+export type ResourceResponse = z.infer<typeof ResourceResponseSchema>;
 
 /** リソース空き状況スロット（/api/resources/{id}/availability） */
 export const AvailabilitySlotSchema = z.object({
   reservationId: z.string().uuid(),
   startAt: z.string(),
   endAt: z.string(),
-})
-export type AvailabilitySlot = z.infer<typeof AvailabilitySlotSchema>
+});
+export type AvailabilitySlot = z.infer<typeof AvailabilitySlotSchema>;
 
 // ---------------------------------------------------------------------------
 // ReservationResponse (api-spec.md §予約)
@@ -121,8 +121,8 @@ export const ReservationResponseSchema = z.object({
   status: ReservationStatusSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
-})
-export type ReservationResponse = z.infer<typeof ReservationResponseSchema>
+});
+export type ReservationResponse = z.infer<typeof ReservationResponseSchema>;
 
 // ---------------------------------------------------------------------------
 // ApprovalStepResponse (api-spec.md §承認)
@@ -139,5 +139,5 @@ export const ApprovalStepResponseSchema = z.object({
   stepOrder: z.number().int().positive(),
   status: ApprovalStatusSchema,
   createdAt: z.string(),
-})
-export type ApprovalStepResponse = z.infer<typeof ApprovalStepResponseSchema>
+});
+export type ApprovalStepResponse = z.infer<typeof ApprovalStepResponseSchema>;

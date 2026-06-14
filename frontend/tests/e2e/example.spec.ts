@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test('トップページが表示される', async ({ page }) => {
-  await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'BookFlow' })).toBeVisible()
-})
+test("トップページが表示される", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "BookFlow" })).toBeVisible();
+});

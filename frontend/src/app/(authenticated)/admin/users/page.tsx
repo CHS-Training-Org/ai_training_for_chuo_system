@@ -1,6 +1,6 @@
-import { listUsersAction } from '@/server/actions/users'
-import { UserManagementClient } from './UserManagementClient'
-import { PaginationNav } from '@/components/ui/pagination-nav'
+import { listUsersAction } from "@/server/actions/users";
+import { UserManagementClient } from "./UserManagementClient";
+import { PaginationNav } from "@/components/ui/pagination-nav";
 
 /**
  * ユーザー管理画面（screen-spec.md §ユーザー管理 /admin/users 準拠）。
@@ -12,12 +12,12 @@ import { PaginationNav } from '@/components/ui/pagination-nav'
 export default async function AdminUsersPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // ADMIN の場合、BE が全ユーザー一覧を返す（MEMBER / APPROVER は admin/layout.tsx でブロック済み）
-  const sp = await searchParams
-  const page = Number(sp.page ?? 0)
-  const users = await listUsersAction({ page, size: 20 })
+  const sp = await searchParams;
+  const page = Number(sp.page ?? 0);
+  const users = await listUsersAction({ page, size: 20 });
 
   return (
     <div className="space-y-6">
@@ -38,5 +38,5 @@ export default async function AdminUsersPage({
         query={sp}
       />
     </div>
-  )
+  );
 }

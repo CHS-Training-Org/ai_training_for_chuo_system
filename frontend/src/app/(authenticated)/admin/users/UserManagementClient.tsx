@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import type { UserResponse } from '@/lib/types/api'
-import { Badge } from '@/components/ui/badge'
+import type { UserResponse } from "@/lib/types/api";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from "@/components/ui/table";
 
 // ---------------------------------------------------------------------------
 // ロールバッジ（screen-spec.md §ユーザー管理 行313）
@@ -17,28 +17,28 @@ import {
 // ---------------------------------------------------------------------------
 
 const ROLE_LABELS: Record<string, string> = {
-  MEMBER: '一般社員',
-  APPROVER: '承認者',
-  ADMIN: '管理者',
-}
+  MEMBER: "一般社員",
+  APPROVER: "承認者",
+  ADMIN: "管理者",
+};
 
 function RoleBadge({ role }: { role: string }) {
-  if (role === 'ADMIN') {
+  if (role === "ADMIN") {
     return (
       <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">
         {ROLE_LABELS[role] ?? role}
       </Badge>
-    )
+    );
   }
-  if (role === 'APPROVER') {
+  if (role === "APPROVER") {
     return (
       <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
         {ROLE_LABELS[role] ?? role}
       </Badge>
-    )
+    );
   }
   // MEMBER
-  return <Badge variant="secondary">{ROLE_LABELS[role] ?? role}</Badge>
+  return <Badge variant="secondary">{ROLE_LABELS[role] ?? role}</Badge>;
 }
 
 // ---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ function RoleBadge({ role }: { role: string }) {
 // ---------------------------------------------------------------------------
 
 interface UserManagementClientProps {
-  users: UserResponse[]
+  users: UserResponse[];
 }
 
 /**
@@ -89,5 +89,5 @@ export function UserManagementClient({ users }: UserManagementClientProps) {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

@@ -1,8 +1,8 @@
-import Link from 'next/link'
-import { getResourceAction, getAvailabilityAction } from '@/server/actions/resources'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Link from "next/link";
+import { getResourceAction, getAvailabilityAction } from "@/server/actions/resources";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
  * リソース詳細画面（screen-spec.md §リソース /resources/{id} 準拠）。
@@ -12,18 +12,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
  * 空き照会は当日〜7日後の範囲をデフォルト表示する。
  */
 export default async function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const resource = await getResourceAction(id)
+  const { id } = await params;
+  const resource = await getResourceAction(id);
 
   // デフォルトの空き照会範囲: 今日〜7日後
-  const now = new Date()
-  const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-  const fromStr = now.toISOString().slice(0, 19)
-  const toStr = weekLater.toISOString().slice(0, 19)
+  const now = new Date();
+  const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const fromStr = now.toISOString().slice(0, 19);
+  const toStr = weekLater.toISOString().slice(0, 19);
 
-  let slots: Awaited<ReturnType<typeof getAvailabilityAction>> = []
+  let slots: Awaited<ReturnType<typeof getAvailabilityAction>> = [];
   try {
-    slots = await getAvailabilityAction(id, fromStr, toStr)
+    slots = await getAvailabilityAction(id, fromStr, toStr);
   } catch {
     // 空き照会エラーは無視してリソース詳細は表示する
   }
@@ -65,7 +65,7 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
               </>
             )}
             <dt className="font-medium text-muted-foreground">承認フロー</dt>
-            <dd>{resource.requiresApproval ? '要承認' : '承認不要（即時確定）'}</dd>
+            <dd>{resource.requiresApproval ? "要承認" : "承認不要（即時確定）"}</dd>
           </dl>
           {resource.description && (
             <p className="text-sm text-muted-foreground border-t pt-3">{resource.description}</p>
@@ -76,16 +76,14 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
       {/* 予約ボタン */}
       {resource.isActive && (
         <Button asChild>
-          <Link href={`/reservations/new?resourceId=${resource.id}`}>
-            このリソースを予約する
-          </Link>
+          <Link href={`/reservations/new?resourceId=${resource.id}`}>このリソースを予約する</Link>
         </Button>
       )}
 
       {/* 空き状況 */}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">
-          空き状況（{now.toLocaleDateString('ja-JP')} 〜 {weekLater.toLocaleDateString('ja-JP')}）
+          空き状況（{now.toLocaleDateString("ja-JP")} 〜 {weekLater.toLocaleDateString("ja-JP")}）
         </h2>
 
         {slots.length === 0 ? (
@@ -105,8 +103,8 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
                 >
                   <span className="text-red-500">●</span>
                   <span>
-                    {new Date(slot.startAt).toLocaleString('ja-JP')} 〜{' '}
-                    {new Date(slot.endAt).toLocaleString('ja-JP')}
+                    {new Date(slot.startAt).toLocaleString("ja-JP")} 〜{" "}
+                    {new Date(slot.endAt).toLocaleString("ja-JP")}
                   </span>
                 </li>
               ))}
@@ -115,5 +113,5 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
         )}
       </section>
     </div>
-  )
+  );
 }
