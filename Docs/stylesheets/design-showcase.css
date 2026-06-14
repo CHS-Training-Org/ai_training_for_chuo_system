@@ -1,0 +1,256 @@
+/* ============================================================================
+ * BookFlow デザインシステム ショーケース用スタイル
+ *
+ * Docs/design.md に埋め込むショーケース（Docs/design/preview.html 由来）のスタイル。
+ * 各セクションの中身は素の HTML ブロックとして verbatim 出力され（md_in_html は使わない）、
+ * その入れ物 .ds-block 配下にスコープする。値は DESIGN.md 由来（preview.html と同一）。
+ *
+ * 見出し（## NN — …）は Markdown 最上位に置くため Material 既定スタイルで描画され、
+ * 右側の見出しバー（in-page TOC）に並ぶ。ここでは見出しのスタイルは触らない。
+ * ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap");
+
+/* === 各セクションの入れ物（トークン定義 + 基底） === */
+.ds-block {
+  /* Colors（DESIGN.md §2 実値） */
+  --primary: #2563EB;
+  --primary-dark: #1D4ED8;
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+  --danger-dark: #B91C1C;
+  --background: #FFFFFF;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --border: #E2E8F0;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  /* Elevation（DESIGN.md §6） */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Fonts（DESIGN.md §3） */
+  --font-base: "Inter", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Noto Sans Mono", monospace;
+
+  color: var(--foreground);
+  font-family: var(--font-base);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px 32px;
+  margin: 8px 0 28px;
+}
+
+/* ショーケース内のリセット（Material .md-typeset の余白等を中和する）。
+ * Material の `.md-typeset tag`（詳細度 0,1,1）に勝てるよう詳細度を確保する。 */
+.ds-block,
+.ds-block *,
+.ds-block *::before,
+.ds-block *::after {
+  box-sizing: border-box;
+}
+.ds-block :is(p, ul, ol, li, h1, h2, h3, h4, h5, h6, table, th, td, figure, blockquote, pre, hr) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+}
+.ds-block a {
+  text-decoration: none;
+}
+
+/* HERO */
+.ds-block.ds-hero {
+  text-align: center;
+  padding: 56px 32px;
+  background: linear-gradient(180deg, var(--muted) 0%, var(--card) 100%);
+}
+.ds-block .hero-title {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  margin-bottom: 12px;
+}
+.ds-block .hero-title em { font-style: normal; color: var(--primary); }
+.ds-block .hero p {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--muted-foreground);
+  max-width: 680px;
+  margin: 0 auto 28px;
+}
+.ds-block .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* BUTTONS（DESIGN.md §4） */
+.ds-block .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-base);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+.ds-block .btn-primary { background: var(--primary); color: #fff; }
+.ds-block .btn-primary:hover { background: var(--primary-dark); }
+.ds-block .btn-destructive { background: var(--danger); color: #fff; }
+.ds-block .btn-destructive:hover { background: var(--danger-dark); }
+.ds-block .btn-outline { background: transparent; color: var(--foreground); border: 1px solid var(--border); }
+.ds-block .btn-outline:hover { background: var(--muted); }
+.ds-block .btn-ghost { background: transparent; color: var(--foreground); }
+.ds-block .btn-ghost:hover { background: var(--muted); }
+.ds-block .btn-sm { height: 32px; padding: 0 12px; font-size: 12px; }
+.ds-block .btn-md { height: 40px; padding: 0 16px; font-size: 14px; }
+.ds-block .btn-lg { height: 44px; padding: 0 32px; font-size: 16px; }
+
+/* SECTION 内部の見出し補助 */
+.ds-block .section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  letter-spacing: 0.08em;
+}
+.ds-block .section-desc { font-size: 14px; color: var(--muted-foreground); margin-bottom: 28px; line-height: 1.8; }
+.ds-block .group-label { font-size: 14px; font-weight: 600; color: var(--foreground); margin: 24px 0 10px; }
+
+/* COLORS */
+.ds-block .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.ds-block .swatch { border-radius: 8px; overflow: hidden; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.ds-block .swatch-block { height: 72px; width: 100%; }
+.ds-block .swatch-info { padding: 10px 12px; }
+.ds-block .swatch-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; color: var(--foreground); letter-spacing: 0; }
+.ds-block .swatch-hex { font-size: 12px; color: var(--muted-foreground); font-family: var(--font-mono); letter-spacing: 0; }
+.ds-block .swatch-role { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; line-height: 1.5; }
+
+/* TYPOGRAPHY */
+.ds-block .type-sample { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.ds-block .type-sample:last-child { border-bottom: none; }
+.ds-block .type-meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted-foreground); margin-top: 8px; letter-spacing: 0; }
+.ds-block .type-context { display: inline-block; background: var(--muted); color: var(--muted-foreground); font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; font-family: var(--font-base); }
+
+/* CONTENT 組版 */
+.ds-block .content-preview { max-width: 680px; }
+.ds-block .content-preview-title { font-size: 20px; font-weight: 600; line-height: 1.3; margin: 0 0 12px; color: var(--foreground); }
+.ds-block .content-preview p { font-size: 16px; font-weight: 400; line-height: 1.8; letter-spacing: 0.04em; margin-bottom: 16px; color: var(--foreground); }
+
+/* TABLE（予約一覧） */
+.ds-block .data-table { width: 100%; border-collapse: collapse; }
+.ds-block .data-table th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted-foreground); padding: 8px 12px; border-bottom: 1px solid var(--border); letter-spacing: 0; }
+.ds-block .data-table td { font-size: 14px; color: var(--foreground); padding: 12px; border-bottom: 1px solid var(--border); letter-spacing: 0; }
+.ds-block .data-table tr:hover td { background: var(--muted); }
+.ds-block .num { font-variant-numeric: tabular-nums; font-family: var(--font-base); }
+
+/* BADGE（予約ステータス §4） */
+.ds-block .badge { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 9999px; letter-spacing: 0; }
+.ds-block .badge-draft { background: #F1F5F9; color: #64748B; }
+.ds-block .badge-pending { background: #FEF3C7; color: #B45309; }
+.ds-block .badge-approved { background: #DCFCE7; color: #15803D; }
+.ds-block .badge-rejected { background: #FEE2E2; color: #B91C1C; }
+.ds-block .badge-cancelled { background: #F1F5F9; color: #94A3B8; }
+
+/* COMPONENT ROWS */
+.ds-block .row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+.ds-block .item { text-align: center; }
+.ds-block .item-label { font-size: 12px; color: var(--muted-foreground); margin-top: 8px; letter-spacing: 0; }
+
+/* CARDS */
+.ds-block .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.ds-block .ui-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; box-shadow: var(--shadow-sm); }
+.ds-block .ui-card-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; line-height: 1.3; }
+.ds-block .ui-card p { font-size: 14px; color: var(--muted-foreground); line-height: 1.8; letter-spacing: 0.04em; }
+
+/* FORMS */
+.ds-block .form-group { margin-bottom: 20px; max-width: 420px; }
+.ds-block .form-label { display: block; font-size: 14px; font-weight: 500; color: var(--foreground); margin-bottom: 8px; letter-spacing: 0; }
+.ds-block .form-label .req { color: var(--danger); }
+.ds-block .form-input {
+  width: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 6px;
+  height: 40px;
+  font-family: var(--font-base);
+  font-size: 14px;
+  outline: none;
+  letter-spacing: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ds-block .form-input::placeholder { color: var(--muted-foreground); }
+.ds-block .form-input--focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgb(37 99 235 / 0.2); }
+.ds-block .form-input--error { border-color: var(--danger); box-shadow: 0 0 0 3px rgb(220 38 38 / 0.2); }
+.ds-block .form-state { font-size: 14px; margin-top: 6px; letter-spacing: 0; }
+.ds-block .form-state--error { color: var(--danger); }
+.ds-block .form-state--muted { color: var(--muted-foreground); }
+
+/* ELEVATION */
+.ds-block .elev-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; }
+.ds-block .elev-card { background: var(--card); border-radius: 8px; padding: 24px; text-align: center; border: 1px solid var(--border); }
+.ds-block .elev-label { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.ds-block .elev-desc { font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); letter-spacing: 0; }
+
+/* SPACING */
+.ds-block .spacing-row { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.ds-block .spacing-item { text-align: center; }
+.ds-block .spacing-block { background: var(--primary); border-radius: 4px; margin-bottom: 6px; height: 28px; }
+.ds-block .spacing-value { font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); letter-spacing: 0; line-height: 1.4; }
+
+/* WIDTH BARS */
+.ds-block .width-row { margin-bottom: 16px; }
+.ds-block .width-head { font-size: 14px; font-weight: 600; color: var(--foreground); margin-bottom: 4px; }
+.ds-block .width-head span { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--muted-foreground); margin-left: 6px; }
+.ds-block .width-bar { height: 28px; background: var(--muted); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.ds-block .width-bar-inner { height: 100%; background: var(--primary); opacity: 0.25; }
+
+/* BREAKPOINT TABLE */
+.ds-block .bp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ds-block .bp-table th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted-foreground); padding: 8px 12px; border-bottom: 1px solid var(--border); letter-spacing: 0; }
+.ds-block .bp-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--foreground); letter-spacing: 0; }
+.ds-block .bp-table code { font-family: var(--font-mono); font-size: 13px; color: var(--primary); background: none; padding: 0; }
+
+/* DO / DON'T */
+.ds-block .dodont-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.ds-block .dodont { border-radius: 8px; padding: 20px 24px; border: 1px solid var(--border); }
+.ds-block .dodont--do { background: #F0FDF4; border-color: #BBF7D0; }
+.ds-block .dodont--dont { background: #FEF2F2; border-color: #FECACA; }
+.ds-block .dodont h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; letter-spacing: 0; }
+.ds-block .dodont--do h3 { color: #15803D; }
+.ds-block .dodont--dont h3 { color: #B91C1C; }
+.ds-block .dodont ul { list-style: none; }
+.ds-block .dodont li { font-size: 14px; line-height: 1.7; color: var(--foreground); padding-left: 20px; position: relative; margin-bottom: 6px; letter-spacing: 0.02em; }
+.ds-block .dodont--do li::before { content: "\2713"; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+.ds-block .dodont--dont li::before { content: "\2715"; position: absolute; left: 0; color: var(--danger); font-weight: 700; }
+
+/* FOOTER */
+.ds-block.ds-footer { text-align: center; background: var(--muted); font-size: 12px; color: var(--muted-foreground); padding: 24px 32px; }
+
+@media (max-width: 768px) {
+  .ds-block { padding: 24px 20px; }
+  .ds-block.ds-hero { padding: 40px 20px; }
+  .ds-block .hero-title { font-size: 24px; }
+  .ds-block .card-grid { grid-template-columns: 1fr; }
+}

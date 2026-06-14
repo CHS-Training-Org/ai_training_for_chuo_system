@@ -13,6 +13,9 @@ copyright = "Copyright &copy; 2026 中央システム"
 docs_dir = "Docs"
 site_dir = "site"
 
+# 追加スタイルシート（docs_dir からの相対）。デザインショーケース（design.md）用。
+extra_css = ["stylesheets/design-showcase.css"]
+
 # リポジトリリンク（ページ右上に GitHub アイコンが表示される）
 repo_url = "https://github.com/Bizarress/AI-Development-Tutorial"
 repo_name = "Bizarress/AI-Development-Tutorial"
