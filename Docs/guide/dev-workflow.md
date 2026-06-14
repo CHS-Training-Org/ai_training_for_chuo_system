@@ -4,7 +4,7 @@
 > 参照：[ai-tools-guide.md](./ai-tools-guide.md) / [coding-conventions.md](./coding-conventions.md) / [仕様更新ルール（Spec-first）](../spec/index.md#spec-first)
 
 このガイドは、学習課題（Issue）に着手してからマージするまでの**標準フロー**を示します。  
-フローは AWS Labs の **AI-DLC**（AI Development Life Cycle）を思考モデルに、チュートリアル向けに簡素化したものです。実装の進め方に迷ったら、まずこのページのフローに沿って進めてください。
+フローは AWS Labs の **AI-DLC**（AI Development Life Cycle）を思考モデルに、BookFlow の既存資産（`Docs/spec/`・`CLAUDE.md`・plan mode 等）へ写像したものです。plan-first ゲート・Spec-first・セルフレビューといったプロセスの厳格さを簡略化するものではありません。実装の進め方に迷ったら、まずこのページのフローに沿って進めてください。
 
 ---
 

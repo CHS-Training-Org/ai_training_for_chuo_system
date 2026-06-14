@@ -3,29 +3,29 @@
 # ============================================================================
 
 [project]
-site_name        = "BookFlow ドキュメント"
+site_name = "BookFlow ドキュメント"
 site_description = "社内 AI 駆動開発チュートリアル「BookFlow」の設計・学習ドキュメント"
-site_author      = "Bizarress"
-site_url         = "https://bizarress.github.io/AI-Development-Tutorial/"
-copyright        = "Copyright &copy; 2026 中央システム"
+site_author = "Bizarress"
+site_url = "https://bizarress.github.io/AI-Development-Tutorial/"
+copyright = "Copyright &copy; 2026 中央システム"
 
 # docs_dir はリポジトリルートからの相対パス（Zensical issue #68 参照）
 docs_dir = "Docs"
 site_dir = "site"
 
 # リポジトリリンク（ページ右上に GitHub アイコンが表示される）
-repo_url  = "https://github.com/Bizarress/AI-Development-Tutorial"
+repo_url = "https://github.com/Bizarress/AI-Development-Tutorial"
 repo_name = "Bizarress/AI-Development-Tutorial"
 
 nav = [
-  {"ホーム"           = "index.md"},
-  {"プロジェクト計画" = "PROJECT_PLAN.md"},
-  {"アーキテクチャ"   = "ARCHITECTURE.md"},
-  {"デザイン"         = "design.md"},
-  {"計画 (Plan)"   = [
+  { "ホーム" = "index.md" },
+  { "プロジェクト計画" = "PROJECT_PLAN.md" },
+  { "アーキテクチャ" = "ARCHITECTURE.md" },
+  { "デザイン" = "design.md" },
+  { "計画 (Plan)" = [
     "plan/PHASE4_AI_DRIVEN_DEV_TASKS.md",
-  ]},
-  {"設計判断 (ADR)" = [
+  ] },
+  { "設計判断 (ADR)" = [
     "decision/ADR-001-frontend-package-manager.md",
     "decision/ADR-002-frontend-styling.md",
     "decision/ADR-003-frontend-ui-components.md",
@@ -45,23 +45,24 @@ nav = [
     "decision/ADR-017-backend-logging.md",
     "decision/ADR-018-backend-test-strategy.md",
     "decision/ADR-019-backend-code-quality.md",
-  ]},
-  {"仕様 (Spec)"   = [
+  ] },
+  { "仕様 (Spec)" = [
     "spec/index.md",
     "spec/requirements.md",
     "spec/screen-spec.md",
     "spec/api-spec.md",
     "spec/er-diagram.md",
     "spec/enhancements/index.md",
-  ]},
-  {"ガイド (Guide)" = [
+    "spec/aidlc-adoption.md",
+  ] },
+  { "ガイド (Guide)" = [
     "guide/index.md",
     "guide/getting-started.md",
     "guide/ai-tools-guide.md",
     "guide/coding-conventions.md",
     "guide/dev-workflow.md",
     "guide/troubleshooting.md",
-  ]},
+  ] },
 ]
 
 # ----------------------------------------------------------------------------
@@ -88,15 +89,16 @@ features = [
   "navigation.top",
   "navigation.tracking",
   "search.highlight",
+  "header.autohide",
 ]
 
 [[project.theme.palette]]
-scheme      = "default"
+scheme = "default"
 toggle.icon = "lucide/sun"
 toggle.name = "ダークモードに切り替え"
 
 [[project.theme.palette]]
-scheme      = "slate"
+scheme = "slate"
 toggle.icon = "lucide/moon"
 toggle.name = "ライトモードに切り替え"
 
@@ -116,10 +118,10 @@ permalink = true
 [project.markdown_extensions.pymdownx.details]
 [project.markdown_extensions.pymdownx.emoji]
 emoji_generator = "zensical.extensions.emoji.to_svg"
-emoji_index     = "zensical.extensions.emoji.twemoji"
+emoji_index = "zensical.extensions.emoji.twemoji"
 [project.markdown_extensions.pymdownx.highlight]
-anchor_linenums    = true
-line_spans         = "__span"
+anchor_linenums = true
+line_spans = "__span"
 pygments_lang_class = true
 [project.markdown_extensions.pymdownx.inlinehilite]
 [project.markdown_extensions.pymdownx.keys]
@@ -128,10 +130,10 @@ pygments_lang_class = true
 [project.markdown_extensions.pymdownx.smartsymbols]
 [project.markdown_extensions.pymdownx.superfences]
 custom_fences = [
-  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
 ]
 [project.markdown_extensions.pymdownx.tabbed]
-alternate_style    = true
+alternate_style = true
 combine_header_slug = true
 [project.markdown_extensions.pymdownx.tasklist]
 custom_checkbox = true

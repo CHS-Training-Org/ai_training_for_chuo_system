@@ -38,10 +38,10 @@
 | ------------------------------------------ | -------- | ------ | --------------- |
 | 1. 仕様書の整備                            | 4        | 4      | ██████████ 100% |
 | 2. 学習者ガイドの完成                      | 4        | 4      | ██████████ 100% |
-| 3. AI 駆動開発ワークフローの整備           | 7        | 6      | ████████░░ 86%  |
+| 3. AI 駆動開発ワークフローの整備           | 7        | 7      | ██████████ 100% |
 | 4. エンハンス要件の策定（学習課題設計）    | 5        | 0      | ░░░░░░░░░░ 0%   |
 | 5. 運用・公開整備                          | 4        | 0      | ░░░░░░░░░░ 0%   |
-| **合計**                                   | **24**   | **14** | **58%**         |
+| **合計**                                   | **24**   | **15** | **63%**         |
 
 > サマリは各カテゴリのタスクを完了するたびに手動で更新する。
 
@@ -126,7 +126,7 @@
 ## カテゴリ 3：AI 駆動開発ワークフローの整備
 
 学習者が「**ビジネス要求シート（Issue）→ AI が計画を提示 → メンター承認 → 実装 → PR → レビュー → マージ**」のサイクルを迷わず回せる状態を作る。  
-開発フローは AWS Labs の **AI-DLC**（[`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)）を**思考モデルとして**下敷きにし、チュートリアル学習向けに簡素化して適用する。  
+開発フローは AWS Labs の **AI-DLC**（[`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)）を**思考モデルとして**下敷きにし、成果物の出力先・対象エージェントを BookFlow の既存資産（`Docs/spec/`・`CLAUDE.md`・plan mode 等）に合わせてカスタマイズして適用する。plan-first ゲート・Spec-first・セルフレビューといった**プロセスの厳格さは簡略化しない**。  
 AI-DLC は Inception（WHAT/WHY）・Construction（HOW）・Operations の 3 フェーズ、plan-first の承認ゲート、units of work（並行可能な作業単位）を柱とする方法論。
 
 AI-DLC の `aidlc-docs/` 成果物ツリーは導入せず、成果物は既存の `Docs/spec/`（真実の源）・`Docs/guide/`・`CLAUDE.md`・Claude Code の plan mode に写像する。  
@@ -233,13 +233,14 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
       vuln はブロッキングのため、今後も fixable な推移的 CVE が出るたびに同様の依存修正が必要になる。メンテナンス負荷が高い場合は misconfig と同様に非ブロッキング化を検討する余地がある旨を留意点として残す。  
       Playwright E2E の CI 化は見送り（別タスク候補）。  
       security-scan の実 Actions 実行は本環境からトリガー不可のため、GitHub 上での初回実行確認をメンターに申し送り。
-- [ ] **3.7 AI-DLC ワークフローファイルのインストール＋カスタマイズ**
-  - 状態：未着手
-  - 内容：公式 [`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows) の `aidlc-rules/aws-aidlc-rules/core-workflow.md`・`aidlc-rules/aws-aidlc-rule-details/` を導入する。  
-      カスタマイズ方針：①成果物の出力先を `Docs/spec/enhancements/`（既存ビジネス要求シート）へ付け替え、`aidlc-docs/` 並行ツリーは作らない（カテゴリ3冒頭の写像方針を維持）。  
-      ②非 Claude エージェント用ルール（`.amazonq/`・`.cursor/`・`.kiro/`・`AGENTS.md` 等）は除外し、Claude 用設定は `.claude/` 配下に配置する。  
-      ③ `CLAUDE.md` は上書きせず、3.5 で追記した「AI 駆動開発の進め方」セクションと統合する。  
-      着手可否は既存の「写像する」方針との整合性をメンターが評価したうえで判断する。
+- [x] **3.7 AI-DLC 実ファイルの取り込み・再構成・台帳化・上流同期**
+  - 状態：完了
+  - 内容：[AI-DLC 概説資料（aidlc-overview.html）](./aidlc-overview.html) で提示した3案のうち「案B改良（vendoring＋再構成＋台帳＋上流同期）」を採用。3層構成で実装：  
+      ①**vendoring（L1）**：公式 [`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)（固定コミット `b19c81928bdf1b8d13856f462fcf2ede1720b4cb`、VERSION 0.1.8、MIT-0）の `aidlc-rules/aws-aidlc-rule-details/common/` 全11ファイルを `vendor/aidlc-rules/common/` に逐語コピー（出典は `vendor/aidlc-rules/PROVENANCE.md`）。`Docs/` 外・Zensical nav 外に配置。  
+      ②**再構成（L2）**：思考ガードレール4ファイル（`overconfidence-prevention`・`content-validation`・`depth-levels`・`ascii-diagram-standards`）を `.claude/rules/aidlc-guardrails.md` に、`question-format-guide` を `.claude/rules/aidlc-questions.md` にBookFlow向けに翻案（`paths`フロントマターなし＝起動時auto-load）。`CLAUDE.md` §AI駆動開発の進め方・§設計書の参照先に追記のみ（上書きなし）。  
+      ③**採用台帳（L3）**：`Docs/spec/aidlc-adoption.md` に全11ファイルの反映先・採用状態（rules化/参照のみ/非該当）・根拠を記載。`Docs/spec/index.md`・`zensical.toml` nav に登録。  
+      ④**上流同期手順**：台帳内に diff→反映→ピン更新の手順を文書化（専用スキル・CIは設けない）。  
+      非活性化ファイル（`process-overview`・`error-handling`・`session-continuity`・`terminology`・`welcome-message`・`workflow-changes`）は「簡素化」ではなく、AI-DLCワークフローエンジン（`aidlc-state.md`/`audit.md`/units）固有または既に `dev-workflow.md` で写像済みという根拠を台帳に明記。`inception/reverse-engineering.md` は今後の候補として台帳に記録のみ。
 
 ## カテゴリ 4：エンハンス要件の策定（学習課題設計）
 
