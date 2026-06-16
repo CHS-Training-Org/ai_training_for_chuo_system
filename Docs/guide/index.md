@@ -12,6 +12,8 @@
 
 | ファイル | 目的 | 対象読者 |
 |---------|------|---------|
+| [curriculum.md](./curriculum.md) | 学習カリキュラム。学習パスマップ（新人・中堅）と必須ステップ課題 STEP-01〜05（環境構築・運用フロー理解・AI ツール・コードベース把握・既存機能読解）の定義 | 学習者（新人・中堅）・メンター |
+| [enhancement-catalog.md](./enhancement-catalog.md) | 選択課題カタログ。エンハンス課題を難易度（Beginner / Intermediate / Advanced）・推定工数・対象レイヤー付きで一覧化。必須ステップ完了後の次の課題選択に使う | 学習者（新人・中堅）・メンター |
 | [getting-started.md](./getting-started.md) | 環境構築・起動手順。STEP-01 の手順書として機能。クローンから動作確認・初期データ投入まで | 学習者（主に新人） |
 | [ai-tools-guide.md](./ai-tools-guide.md) | AI ツール活用ガイド。Claude Code のセットアップ・使い方・活用チェックリスト。STEP-03 の参照資料 | 学習者（主に新人） |
 | [coding-conventions.md](./coding-conventions.md) | コーディング規約。フロントエンド・バックエンドの命名規則・Lint/Format 設定・テスト方針 | 学習者（主に新人） |

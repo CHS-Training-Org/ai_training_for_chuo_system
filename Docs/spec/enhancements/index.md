@@ -25,6 +25,24 @@
 
 ## シート一覧
 
-| ファイル | 課題名 | 難易度 |
-|---------|--------|--------|
-<!-- 4.3 で各課題シートを追記 -->
+選択課題の一覧（難易度・推定工数・対象レイヤー）は [選択課題カタログ](../../guide/enhancement-catalog.md) を参照してください。
+
+各課題のビジネス要求シートは、4.3 で `enhancements/<short-desc>.md` として作成し、下表に追記します。
+
+| ファイル | 課題名 |
+|---------|--------|
+| [resource-list-filter.md](./resource-list-filter.md) | リソース一覧の検索・フィルタ追加 |
+| [resource-list-sort.md](./resource-list-sort.md) | リソース一覧のソート順選択 |
+| [reservation-list-filter.md](./reservation-list-filter.md) | 予約一覧のフィルタ拡張 |
+| [resource-detail-info.md](./resource-detail-info.md) | リソース詳細画面の情報拡充 |
+| [e2e-test-coverage.md](./e2e-test-coverage.md) | 既存機能の E2E テスト追加 |
+| [recurring-reservation.md](./recurring-reservation.md) | 繰り返し予約 |
+| [calendar-view.md](./calendar-view.md) | カレンダービュー |
+| [usage-statistics.md](./usage-statistics.md) | 利用実績の集計・グラフ表示 |
+| [csv-export.md](./csv-export.md) | CSV 帳票出力 |
+| [reservation-draft.md](./reservation-draft.md) | 予約の下書き保存 |
+| [multi-step-approval.md](./multi-step-approval.md) | 多段階承認フロー |
+| [department-approver.md](./department-approver.md) | 部署ごとの承認者設定 |
+| [resource-image-upload.md](./resource-image-upload.md) | リソース画像アップロード |
+| [audit-log.md](./audit-log.md) | 操作ログ・監査証跡 |
+| [openapi-client-gen.md](./openapi-client-gen.md) | OpenAPI クライアント自動生成 |

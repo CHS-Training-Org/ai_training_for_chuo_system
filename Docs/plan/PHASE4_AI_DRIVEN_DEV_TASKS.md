@@ -39,9 +39,9 @@
 | 1. 仕様書の整備                            | 4        | 4      | ██████████ 100% |
 | 2. 学習者ガイドの完成                      | 4        | 4      | ██████████ 100% |
 | 3. AI 駆動開発ワークフローの整備           | 7        | 7      | ██████████ 100% |
-| 4. エンハンス要件の策定（学習課題設計）    | 5        | 0      | ░░░░░░░░░░ 0%   |
+| 4. エンハンス要件の策定（学習課題設計）    | 5        | 3      | ██████░░░░ 60%  |
 | 5. 運用・公開整備                          | 4        | 0      | ░░░░░░░░░░ 0%   |
-| **合計**                                   | **24**   | **15** | **63%**         |
+| **合計**                                   | **24**   | **18** | **75%**         |
 
 > サマリは各カテゴリのタスクを完了するたびに手動で更新する。
 
@@ -246,15 +246,38 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
 
 学習者向けの課題を要件として文書化し、GitHub Issue に登録する。
 
-- [ ] **4.1 学習カリキュラムの文書化（`guide/curriculum.md`）**
-  - 状態：未着手
-  - 内容：学習パスマップ（新人：STEP-01〜05 を順に必須 → 選択課題、中堅：STEP-01〜03 任意確認 → 中級以上の選択課題）と必須ステップ課題 5 件（環境構築 / コードベース把握 / AI ツール導入 / 既存機能読解 / 小規模改修）の定義を記述する。
-- [ ] **4.2 選択課題カタログの策定**
-  - 状態：未着手
+- [x] **4.1 学習カリキュラムの文書化（`guide/curriculum.md`）**
+  - 状態：完了
+  - 内容：学習パスマップ（新人：STEP-01〜05 を順に必須 → 選択課題、中堅：STEP-01〜03 任意確認 → 中級以上の選択課題）と必須ステップ課題 5 件（環境構築 / リポジトリ運用・開発フロー理解 / AI ツール導入・活用 / コードベース把握 / 既存機能読解）の定義を記述する。
+  - メモ：`Docs/guide/curriculum.md` を新規作成。STEP 構成を当初定義から再構成（ユーザー判断）：①「小規模改修」を必須 STEP から削除、②「リポジトリ運用・開発フローの理解」（ブランチの切り方・学習パスの選択方法・AI-DLC の進め方）を STEP-02 として新設（別カテゴリではなく curriculum 内 STEP とし、3.1 で完成済みの `dev-workflow.md` を参照）、③ STEP-04「コードベース把握」→ STEP-05「既存機能読解」を連続した読解ステップとして配置。  
+      STEP-01「環境構築」・STEP-03「AI ツール導入・活用」は既存ガイド本文（`getting-started.md`・`ai-tools-guide.md`）に番号が埋め込まれているため番号を据え置き、既存ガイドの本文修正は発生させていない。  
+      重複させずリンクする方針（Markdown-as-truth）を徹底：STEP-01 の完了条件は `getting-started.md`、STEP-03 の回答フォームは `ai-tools-guide.md#checklist`、STEP-02 は `dev-workflow.md#flow`/`#aidlc-mapping` をリンク参照し再掲しない。STEP-02/04/05 のみ curriculum 内にインライン定義。  
+      旧 Phase 2 設計（削除済み `04_LEARNING_CURRICULUM.md`、コミット `ee3a2d2`）を下敷きに、各 STEP を旧 04 準拠の詳細表（ゴール/推奨レベル/推定工数/AI 活用例/完了条件）で記述。推定工数は Issue テンプレ準拠スケール（半日/1日/2〜3日/1週間以上）に変換、AI 活用例は Claude Code に統一（旧 04 の Copilot 記述は削除）。  
+      学習パスマップは Mermaid `flowchart`（新人/中堅の 2 パス）＋ 補足表で表現（ASCII 図は不使用）。各 STEP 見出しに明示アンカー `{ #step-01 }`〜`{ #step-05 }` を付与し、`.github/ISSUE_TEMPLATE/required-task.yml` の `curriculum.md#step-01` リンクと整合（`required-task.yml` の「STEP-01〜05」表記は番号据え置きのため修正不要）。  
+      選択課題カタログ（4.2）・ラベル設計（4.4）は範囲外とし、学習パスマップでは前方参照のプレースホルダー（admonition）に留めた。  
+      `Docs/guide/index.md` 管理ファイル一覧（getting-started.md の直上）・`zensical.toml` guide nav（index.md の直後）に登録。  
+      検証：step-01〜05 アンカーの過不足なし・`grep -i copilot` 0 件・リンク先アンカー（`#flow`/`#aidlc-mapping`/`#checklist`/`#commit-pr`/`ARCHITECTURE.md`）の実在をすべて確認済み。Zensical ビルド検証は docs コンテナが本環境で起動しないため未実施（環境要因、申し送り）。
+- [x] **4.2 選択課題カタログの策定**
+  - 状態：完了
   - 内容：Beginner / Intermediate / Advanced 各 5 件程度（例：リソース詳細表示、繰り返し予約、利用実績集計、カレンダービュー、多段階承認 等）を難易度・推定工数・対象レイヤー付きで一覧化する。
-- [ ] **4.3 エンハンス要件書の作成（`spec/enhancements/`）**
-  - 状態：未着手
+  - メモ：`Docs/guide/enhancement-catalog.md` を新規作成し、カタログ（難易度・推定工数・対象レイヤー・要件シート前方参照一覧）の真実の源とした。  
+      二重管理の回避：`Docs/spec/enhancements/index.md` の「シート一覧」から難易度列を除去しカタログへのリンク参照に置換（index.md はシート様式・配置規約・起票案内に専念、難易度一覧はカタログに集約）。  
+      `curriculum.md:33-34` のプレースホルダー admonition を `enhancement-catalog.md` へのリンクと学習パス別の導線（新人→Beginner、中堅→Intermediate/Advanced）に置換。  
+      `zensical.toml` guide nav の `curriculum.md` 直後に追記。`Docs/guide/index.md` 管理ファイル一覧に追記。  
+      課題リストは `requirements.md` §学習者拡張領域（`:42-49`）・§技術マッピング（S3/DynamoDB/Lambda は拡張先、`:401-403`）・拡張余地の注記（多段階承認 `step_order`・DRAFT ステータス）から採用。  
+      「リソース詳細表示」は実装済み（`resources/[id]/page.tsx`・`GET /api/resources/{id}`）のためカタログから除外（phantom 課題化を避ける）。代替として「リソース詳細画面の情報拡充（設備フィールド追加）」を Beginner に採用。  
+      各課題の要件シートファイル名（`enhancements/<short-desc>.md`）を前方参照として記載済み（実ファイルは 4.3 で作成）。ラベル（`level:*`）は 4.4 でメンターが付与する旨を明記。  
+      申し送り：ラベル設計と Issue 一括登録は 4.4。Zensical ビルド検証は docs コンテナが本環境で起動しないため未実施（環境要因）。  
+      **4.3 での追加修正**：実装と突合した結果、Beginner の「予約ステータスのバッジ表示」（`reservations/page.tsx` に Badge・色分け・日本語ラベル・ステータスタブが実装済み）と「フォームのバリデーションメッセージ改善」（Zod 日本語化・RHF + zodResolver + `<FormMessage />`・cross-field refine が実装済み）が phantom 課題と判明。未実装が確認できた「リソース一覧のソート順選択」（`resource-list-sort.md`）と「予約一覧のフィルタ拡張」（`reservation-list-filter.md`）に差し替え。カタログの前方参照リンクも実体ファイルへの相対リンクに更新済み。
+- [x] **4.3 エンハンス要件書の作成（`spec/enhancements/`）**
+  - 状態：完了
   - 内容：選択課題ごとに要件定義（背景・要件・受入条件・影響範囲・AI 活用ポイント）を `Docs/spec/enhancements/` 配下に 1 課題 1 ファイルで作成する。
+  - メモ：全 15 課題のビジネス要求シートを新規作成（Beginner 5・Intermediate 5・Advanced 5）。テンプレートは `spec-conventions.md` §enhancements/<課題>.md に準拠（5 節構成・要件 ID 接頭辞は既存流用＋新規 `TEST-`/`RPT-`/`AUDIT-`/`DEVEX-`）。  
+      **phantom 課題の差し替え**（4.2 カタログ修正を伴う）：バッジ表示・バリデーション改善の 2 件を実装と突合確認のうえ、未実装の「ソート順選択」「予約一覧フィルタ拡張」に差し替え（詳細は 4.2 メモ参照）。  
+      **各シートの執筆前に phantom 検証**（実装コードを Read/grep で確認）を実施した。  
+      深さは複雑さに比例：小課題（`resource-list-sort`・`reservation-list-filter`・`e2e-test-coverage`）は要件 2〜3 行、大課題（`recurring-reservation`・`multi-step-approval`・`audit-log` 等）は既存設計の予約（`step_order`・`DRAFT`・`parent_id`・S3/DynamoDB）を背景・影響範囲に明記して厚く記述。  
+      `Docs/spec/enhancements/index.md` のシート一覧表（15 行）、`zensical.toml` の `仕様 (Spec)` nav（`enhancements/index.md` をネストセクション化し 15 シートを追記）を更新。`Docs/guide/enhancement-catalog.md` の前方参照リンクを実体ファイルへの相対リンクに更新済み。  
+      Zensical ビルド検証は docs コンテナが本環境で起動しないため未実施（環境要因、申し送り）。
 - [ ] **4.4 ラベル設計と GitHub Issue 一括登録**
   - 状態：未着手
   - 内容：ラベル体系（`required` / `optional` / `sequential` / `level:*` / `type:*` / `in-progress`）を整備し、必須 + 選択課題を Issue として一括登録する（3.3 のテンプレート使用）。
