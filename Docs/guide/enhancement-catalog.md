@@ -28,7 +28,7 @@
 5. PR を作成し `/draft-pr` で下書きを生成してメンターのレビュー（第 2 ゲート）を受ける
 
 !!! note "ラベルについて"
-    課題 Issue には `level:beginner` / `level:intermediate` / `level:advanced` のラベルがメンターから付与されます（ラベル体系の正式整備はタスク 4.4 で実施）。
+    課題 Issue には `level:beginner` / `level:intermediate` / `level:advanced` のラベルがメンターから付与されます（ラベル体系の詳細は [issue-registration.md](./issue-registration.md) を参照）。
 
 ---
 

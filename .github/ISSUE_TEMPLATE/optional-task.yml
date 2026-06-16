@@ -64,7 +64,7 @@ body:
     attributes:
       label: 難易度
       description: |
-        課題の想定難易度を選択してください。対応する `level:*` ラベル（`level:beginner` 等）はメンターが起票後に付与します（ラベル体系の正式整備はカテゴリ4のタスク4.4で実施）。
+        課題の想定難易度を選択してください。対応する `level:*` ラベル（`level:beginner` 等）はメンターが起票後に付与します（ラベル体系の詳細は [Docs/guide/issue-registration.md](../Docs/guide/issue-registration.md) を参照）。
       options:
         - Beginner
         - Intermediate

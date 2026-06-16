@@ -83,6 +83,8 @@ nav = [
     "guide/ai-tools-guide.md",
     "guide/coding-conventions.md",
     "guide/dev-workflow.md",
+    "guide/review-criteria.md",
+    "guide/issue-registration.md",
     "guide/troubleshooting.md",
   ] },
 ]

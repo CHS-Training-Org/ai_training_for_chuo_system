@@ -18,4 +18,6 @@
 | [ai-tools-guide.md](./ai-tools-guide.md) | AI ツール活用ガイド。Claude Code のセットアップ・使い方・活用チェックリスト。STEP-03 の参照資料 | 学習者（主に新人） |
 | [coding-conventions.md](./coding-conventions.md) | コーディング規約。フロントエンド・バックエンドの命名規則・Lint/Format 設定・テスト方針 | 学習者（主に新人） |
 | [dev-workflow.md](./dev-workflow.md) | 開発ワークフロー。Issue 選択からブランチ・実装・PR・レビュー・マージまでの標準フロー | 学習者（主に新人） |
+| [review-criteria.md](./review-criteria.md) | 評価基準・レビュー観点。第 2 ゲート（メンターレビュー）の完了条件チェックリストと新人/中堅別のレビュー観点表 | メンター・リポジトリ管理者 |
+| [issue-registration.md](./issue-registration.md) | ラベル設計と課題 Issue 起票手順。ラベル体系・マッピング規則・起票フロー・label-sync 実行手順 | メンター・リポジトリ管理者 |
 | [troubleshooting.md](./troubleshooting.md) | よくあるトラブルと解決策。DevContainer・依存インストール・起動・DB 等のエラーと対処法 | 学習者（主に新人） |
