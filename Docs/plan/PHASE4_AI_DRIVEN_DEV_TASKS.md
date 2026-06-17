@@ -40,8 +40,8 @@
 | 2. 学習者ガイドの完成                      | 4        | 4      | ██████████ 100% |
 | 3. AI 駆動開発ワークフローの整備           | 7        | 7      | ██████████ 100% |
 | 4. エンハンス要件の策定（学習課題設計）    | 5        | 5      | ██████████ 100% |
-| 5. 運用・公開整備                          | 4        | 2      | █████░░░░░ 50%  |
-| **合計**                                   | **24**   | **22** | **92%**         |
+| 5. 運用・公開整備                          | 4        | 3      | ███████░░░ 75%  |
+| **合計**                                   | **24**   | **23** | **96%**         |
 
 > サマリは各カテゴリのタスクを完了するたびに手動で更新する。
 
@@ -312,9 +312,13 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
       `operations-guide.md:106` のプレースホルダを `dependency-policy.md` への実リンクに置換。`guide/index.md` 管理ファイル一覧・`zensical.toml` nav（`operations-guide.md` 直後）に追記。  
       ADR-011:33「Dependabot で `build.gradle.kts` の依存更新を自動提案する設定を追加する」の約束を本タスクで充足。  
       Dependabot の実動作検証（初回 PR 起票・Insights → Dependabot 表示）は本環境からトリガー不可のためメンターが push 後に確認。Zensical ビルド検証は docs コンテナが本環境で起動しないため未実施（環境要因、申し送り）。
-- [ ] **5.3 ドキュメントサイトの公開**
-  - 状態：未着手
+- [x] **5.3 ドキュメントサイトの公開**
+  - 状態：完了
   - 内容：Zensical ビルドを GitHub Pages へデプロイする workflow を作成する（`site_url` は設定済み）。
+  - メモ：調査の結果、`.github/workflows/docs.yml` は Phase2（コミット `ee3a2d2`）で既に作成済みだった。GitHub 公式「Pages via Actions」テンプレートそのものであり（`build`：`uv sync` → `zensical build` → `upload-pages-artifact path: site` ＋ `deploy`：`actions/deploy-pages@v4`、`permissions: pages/id-token`・`concurrency: pages`・`environment: github-pages`・`workflow_dispatch` すべて完備）、**修正不要と確認**。  
+      **ローカルビルド検証（申し送り解消）**：docs コンテナ（`ai-development-tutorial_devcontainer-docs-1`）で `uv run zensical build` を実行し、"Build finished in 0.79s" でエラーなく完了することを本タスクで確認。`site/spec/enhancements/`（15 シート全件）・`site/guide/`（operations-guide・dependency-policy 等の最新ページ含む全件）の生成も確認。**これまで繰り返し申し送られていた「Zensical ビルド検証は docs コンテナが起動しないため未実施（環境要因）」を本タスクで解消**（コンテナは現在稼働中・`pyproject.toml` 存在）。ビルド時の 7 件 Warning（`page does not exist`）はすべて `Docs/` 外ファイル（`.claude/rules/`・`vendor/`・`.claude/skills/`）へのリンクに起因する既存の既知警告であり、サイト外リンクのため無視可。  
+      公開手順（管理者による GitHub Pages 有効化・URL・ビルド失敗対処）を `guide/operations-guide.md` に `## ドキュメントサイトの公開・運用 { #docs-publish }` 節として追記。  
+      **申し送り（管理者作業）**：GitHub Pages の有効化（Settings → Pages → Source: GitHub Actions）と初回 Actions 実行の確認は本環境からトリガー不可のため申し送り。受入条件「ドキュメントサイトが公開され、最新の Docs を参照できる」は管理者が上記手順を実行するまで未充足（4.4 の「…はその実行まで未充足」と同様）。
 - [ ] **5.4 学習効果測定の準備**
   - 状態：未着手
   - 内容：定量指標（課題完了数・PR サイクルタイム）と満足度アンケート（環境構築のしやすさ・難易度感・AI ツールの有用性）のフォーマットを準備する。

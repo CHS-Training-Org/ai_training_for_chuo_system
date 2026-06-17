@@ -96,6 +96,58 @@ PR レビューの流れと完了条件は [dev-workflow.md §8](./dev-workflow.
 
 ---
 
+## ドキュメントサイトの公開・運用 { #docs-publish }
+
+### 公開 URL
+
+| 項目 | 値 |
+|------|---|
+| 公開先 URL | `https://bizarress.github.io/AI-Development-Tutorial/` |
+| ソース | `main` ブランチの `Docs/` 配下 |
+| ビルドツール | Zensical（`zensical.toml` で設定） |
+| 設定ファイル | `zensical.toml`・`pyproject.toml`・`uv.lock` |
+
+### 自動デプロイの仕組み
+
+`.github/workflows/docs.yml` が次のタイミングで自動的にビルド＆デプロイします。
+
+- **main/master への push** ：`Docs/**`・`zensical.toml`・`pyproject.toml`・`uv.lock`・`docs.yml` のいずれかが変更された場合
+- **手動実行**（`workflow_dispatch`）：GitHub Actions の UI からいつでも実行可能
+
+ビルドフローは「`uv sync` → `uv run zensical build`（`site/` へ出力）→ GitHub Pages へデプロイ」の 2 ジョブ構成です。
+
+### 管理者による初回有効化手順（申し送り）
+
+!!! warning "リポジトリ管理者作業"
+    以下の手順は本環境からは実施不可のため、オーナー（リポジトリ管理者）への申し送りです。**この手順が完了するまでは受入条件「ドキュメントサイトが公開され…」は未充足です**（4.4 / 5.2 / 3.6 と同じ申し送りパターン）。
+
+1. GitHub リポジトリの **Settings → Pages** を開く
+2. **Source** を **"GitHub Actions"** に設定して保存する
+3. `docs.yml` を手動実行（Actions → "Deploy Docs to GitHub Pages" → "Run workflow"）またはドキュメントの変更を main に push する
+4. Actions が green になったあと `https://bizarress.github.io/AI-Development-Tutorial/` にアクセスし、サイトが表示されることを確認する
+
+### ビルド失敗時の対処
+
+ローカルで以下のコマンドで再現できます（docs コンテナが起動している必要があります）：
+
+```bash
+docker compose exec docs uv run zensical build
+```
+
+> DevContainer 外から実行する場合：`docker exec ai-development-tutorial_devcontainer-docs-1 sh -c 'cd /workspace && uv run zensical build'`
+
+**主なビルド失敗パターン：**
+
+| 症状 | 原因 | 対処 |
+|------|------|------|
+| `page does not exist` | `zensical.toml` の nav に追記したが対応ファイルが存在しない（または逆） | nav とファイルを揃える |
+| `page does not exist`（警告のみ） | `Docs/` 外のファイルへのリンク（`.claude/`・`vendor/` 等） | サイト外リンクのため無視してよい（既存の既知警告） |
+| ビルドエラー | Markdown 構文エラー・Mermaid 構文ミス | エラー箇所を修正する |
+
+環境・コンテナ起動に関するトラブルは [troubleshooting.md](./troubleshooting.md) を参照してください。
+
+---
+
 ## 関連ドキュメント
 
 - 役割の名簿・ステークホルダー定義：[PROJECT_PLAN.md §3](../PROJECT_PLAN.md)
