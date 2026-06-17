@@ -384,8 +384,65 @@ Phase 4 のタスク遂行と並行して意思決定が必要な論点を記録
 
 ## 受入条件（Phase 4 完了の定義）
 
-- [ ] `Docs/spec/` が実装と一致し、Spec-first の更新ルールが明文化されている
-- [ ] `Docs/guide/` 配下の未記入プレースホルダーがすべて解消されている
-- [ ] PR / Issue テンプレート・ラベル・課題 Issue が登録され、新人が STEP-01 から自走で開始できる
-- [ ] CI 品質ゲート（lint・テスト・セキュリティスキャン）が green で運用されている
-- [ ] ドキュメントサイトが公開され、最新の Docs を参照できる
+- [x] `Docs/spec/` が実装と一致し、Spec-first の更新ルールが明文化されている
+- [x] `Docs/guide/` 配下の未記入プレースホルダーがすべて解消されている
+- [ ] PR / Issue テンプレート・ラベル・課題 Issue が登録され、新人が STEP-01 から自走で開始できる  
+  （テンプレート・ラベル定義は完了。課題 Issue 起票はメンター作業後に `[x]` へ→申し送り参照）
+- [ ] CI 品質ゲート（lint・テスト・セキュリティスキャン）が green で運用されている  
+  （ワークフロー作成済み。security-scan 初回 Actions 実行確認後に `[x]` へ→申し送り参照）
+- [ ] ドキュメントサイトが公開され、最新の Docs を参照できる  
+  （`docs.yml` 作成済み・ローカルビルド検証済み。GitHub Pages 有効化後に `[x]` へ→申し送り参照）
+
+> **現状**：ファイルベースの作業は 24/24 タスクすべて完了。受入条件 3〜5 の達成は push 後の管理者・メンター作業に依存する。
+
+---
+
+## push 後の申し送り事項
+
+Phase 4 のすべてのファイルベース作業は完了済み。以下を **順序通りに**実行することで受入条件 3〜5 が充足される。
+
+> **順序依存の注意**：push → CI ワークフロー初回実行 → ブランチ保護設定、かつ label-sync → Issue 起票、の 2 つの順序を守ること。  
+> ブランチ保護で必須 status check を指定するには、対象 check が少なくとも 1 回実行されていなければ GitHub Settings で名前が選択できない。
+
+### 1. push 直後（自動または管理者）
+
+- [ ] **push を実行する**（ローカルが `origin/main` より 6 コミット先行中）
+- [ ] **CI ワークフロー初回実行の確認**  
+  push トリガーで `CI Frontend / ci`・`CI Backend / ci`・`Security Scan / trivy` が実行される。  
+  ① `trivy`（vuln ゲート）が green であることを確認。  
+  ② `trivy`（misconfig ゲート）の結果を確認 → 常に green なら必須 status check 追加とブロッキング化を検討（3.6 申し送り）。  
+  ③ 全ゲートが green であることを確認後、受入条件 4 を `[x]` に更新する。
+
+### 2. CI 確認後（管理者）
+
+- [ ] **ブランチ保護ルールの設定**（CI 初回実行後に実施すること）  
+  GitHub Settings → Branches → `main` に以下を設定する（`dev-workflow.md §8` 参照）。  
+  - 必須 status check：`CI Frontend / ci`・`CI Backend / ci`・`Security Scan / trivy`  
+  - Approve 1 名以上
+
+- [ ] **GitHub Pages の有効化**  
+  Settings → Pages → Source: `GitHub Actions` を選択 → Save。  
+  `docs.yml` の初回 Actions 実行後、公開 URL を `operations-guide.md` §ドキュメントサイトの公開・運用 に記録し、受入条件 5 を `[x]` に更新する。
+
+### 3. label-sync 実行後（メンター、順序依存あり）
+
+- [ ] **label-sync workflow の実行**【Issue 起票・Dependabot ラベル付与より前に必ず実行】  
+  Actions → `Sync Labels` → `Run workflow` で 10 ラベルをリポジトリに反映する。  
+  参照：`Docs/guide/issue-registration.md#label-sync`
+
+- [ ] **課題 Issue の一括起票**【label-sync 完了後】  
+  `Docs/guide/issue-registration.md` の手順に従い、必須 STEP 5 件 + 選択課題 15 件を起票する。  
+  完了後、受入条件 3 を `[x]` に更新する。
+
+- [ ] **Dependabot 初回動作確認**  
+  Insights → Dependabot タブで有効化を確認する。  
+  `type:dependencies` ラベルが付いた Dependabot PR が来たら CI ゲートが通ることを確認する（label-sync 後でないとラベルが付かない）。
+
+### 4. 将来対応候補
+
+以下は Phase 4 スコープ外。必要性が生じた際にタスク化する。
+
+- **Springdoc アノテーション改善**（1.3）：`@Parameter(hidden=true)` 等の付与による OpenAPI 出力改善。コード変更を伴う。
+- **Playwright E2E の CI 化**（3.6）：`pnpm test:e2e` を CI に組み込む。
+- **リポジトリ public/private の確定**（追加 E・検討事項参照）：CodeQL/GHAS 採用判断の前提になる。
+- **検討 A・B の確定**（→`## 検討事項` 参照）：Phase 5 開始前（学習者受け入れ前）に確定することが望ましい。
