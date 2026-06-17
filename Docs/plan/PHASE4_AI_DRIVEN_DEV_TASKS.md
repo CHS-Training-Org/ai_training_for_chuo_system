@@ -40,8 +40,8 @@
 | 2. 学習者ガイドの完成                      | 4        | 4      | ██████████ 100% |
 | 3. AI 駆動開発ワークフローの整備           | 7        | 7      | ██████████ 100% |
 | 4. エンハンス要件の策定（学習課題設計）    | 5        | 5      | ██████████ 100% |
-| 5. 運用・公開整備                          | 4        | 1      | ██░░░░░░░░ 25%  |
-| **合計**                                   | **24**   | **21** | **88%**         |
+| 5. 運用・公開整備                          | 4        | 2      | █████░░░░░ 50%  |
+| **合計**                                   | **24**   | **22** | **92%**         |
 
 > サマリは各カテゴリのタスクを完了するたびに手動で更新する。
 
@@ -300,9 +300,18 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
       `guide/index.md` の管理ファイル一覧に 1 行追加、`zensical.toml` の guide nav（`issue-registration.md` の直後）に追加。  
       `review-criteria.md` のプレースホルダ 2 箇所（`:8`・`:56`）を実ページへの相互リンクに置換し、`:8` の役割列挙を「オーナー / メンター」から「オーナー / メンター / 学習者」に修正。  
       Zensical ビルド検証は docs コンテナが本環境で起動しないため未実施（環境要因、申し送り）。
-- [ ] **5.2 依存更新ポリシーの運用開始**
-  - 状態：未着手
+- [x] **5.2 依存更新ポリシーの運用開始**
+  - 状態：完了
   - 内容：Dependabot の有効化（pnpm / Gradle / Docker / GitHub Actions）と更新サイクル（FE・BE 月次、ベースイメージ四半期）の設定。
+  - メモ：成果物 = `.github/dependabot.yml`（4 エコシステム）・`.github/labels.yml`（`type:dependencies` 追加）・`Docs/guide/dependency-policy.md`（新規・メンター向け）。  
+      **設計判断①：`docker-compose` エコシステム**：本リポジトリに Dockerfile が存在しないため `docker` ではなく `docker-compose` エコシステムを使用（`directory: "/.devcontainer"`）。公式ドキュメントで 2 つが別エコシステムであることを確認済み。  
+      **設計判断②：`quarterly` ネイティブ対応**：Dependabot の `schedule.interval` が `quarterly` をネイティブ対応することを公式ドキュメントで確認（doc-only 回避策は不要）。ベースイメージ四半期更新を直接設定。  
+      **グルーピング**：minor/patch をエコシステムごとにグループ PR に集約し、メンターのレビュー負荷を軽減。major は個別 PR。  
+      **ラベル**：`type:dependencies`（`labels.yml` に追加済み）。Dependabot 初回 PR の前に label-sync workflow の再実行が必要（`issue-registration.md#label-sync` 参照）。  
+      **CI ゲート**：既存 3 ゲート（`CI Frontend / ci`・`CI Backend / ci`・`Security Scan / trivy`）は `pull_request` トリガーのため Dependabot PR にも適用。追加ワークフロー不要。  
+      `operations-guide.md:106` のプレースホルダを `dependency-policy.md` への実リンクに置換。`guide/index.md` 管理ファイル一覧・`zensical.toml` nav（`operations-guide.md` 直後）に追記。  
+      ADR-011:33「Dependabot で `build.gradle.kts` の依存更新を自動提案する設定を追加する」の約束を本タスクで充足。  
+      Dependabot の実動作検証（初回 PR 起票・Insights → Dependabot 表示）は本環境からトリガー不可のためメンターが push 後に確認。Zensical ビルド検証は docs コンテナが本環境で起動しないため未実施（環境要因、申し送り）。
 - [ ] **5.3 ドキュメントサイトの公開**
   - 状態：未着手
   - 内容：Zensical ビルドを GitHub Pages へデプロイする workflow を作成する（`site_url` は設定済み）。

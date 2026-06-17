@@ -103,5 +103,5 @@ PR レビューの流れと完了条件は [dev-workflow.md §8](./dev-workflow.
 - レビュー観点・評価基準：[review-criteria.md](./review-criteria.md)
 - ラベル体系・課題起票手順：[issue-registration.md](./issue-registration.md)
 - トラブルシューティング：[troubleshooting.md](./troubleshooting.md)
-- 依存更新ポリシー（Dependabot）：5.2（整備予定）
+- 依存更新ポリシー（Dependabot）：[dependency-policy.md](./dependency-policy.md)
 - 学習効果測定（アンケート）：5.4（整備予定）

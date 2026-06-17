@@ -86,6 +86,7 @@ nav = [
     "guide/review-criteria.md",
     "guide/issue-registration.md",
     "guide/operations-guide.md",
+    "guide/dependency-policy.md",
     "guide/troubleshooting.md",
   ] },
 ]

@@ -37,3 +37,7 @@
 - name: in-progress
   color: FEF2C0
   description: 着手中
+
+- name: type:dependencies
+  color: 5A3DB0
+  description: 依存更新（Dependabot 自動起票）
