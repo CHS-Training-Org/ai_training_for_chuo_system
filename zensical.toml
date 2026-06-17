@@ -85,6 +85,7 @@ nav = [
     "guide/dev-workflow.md",
     "guide/review-criteria.md",
     "guide/issue-registration.md",
+    "guide/operations-guide.md",
     "guide/troubleshooting.md",
   ] },
 ]
