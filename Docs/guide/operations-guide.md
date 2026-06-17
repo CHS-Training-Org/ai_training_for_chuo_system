@@ -54,7 +54,7 @@
 |-----------|-------------|
 | 課題実装中の疑問・詰まり | 対象課題の Issue にコメント |
 | 環境構築・ツール系のトラブル | [troubleshooting.md](./troubleshooting.md) を確認 → 解決しなければ新規 Issue |
-| 学習フロー・カリキュラムへのフィードバック | 5.4 学習効果測定（アンケート、整備予定）または新規 Issue |
+| 学習フロー・カリキュラムへのフィードバック | [学習効果測定（満足度アンケート）](./learning-effectiveness.md) のふりかえり用 Issue にコメント |
 | バグ報告・改善提案 | 新規 Issue（`type:bugfix` または `type:enhancement` ラベル） |
 
 ### エスカレーション
@@ -156,4 +156,4 @@ docker compose exec docs uv run zensical build
 - ラベル体系・課題起票手順：[issue-registration.md](./issue-registration.md)
 - トラブルシューティング：[troubleshooting.md](./troubleshooting.md)
 - 依存更新ポリシー（Dependabot）：[dependency-policy.md](./dependency-policy.md)
-- 学習効果測定（アンケート）：5.4（整備予定）
+- 学習効果測定（満足度アンケート）：[learning-effectiveness.md](./learning-effectiveness.md)

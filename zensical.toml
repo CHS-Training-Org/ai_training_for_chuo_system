@@ -87,6 +87,7 @@ nav = [
     "guide/issue-registration.md",
     "guide/operations-guide.md",
     "guide/dependency-policy.md",
+    "guide/learning-effectiveness.md",
     "guide/troubleshooting.md",
   ] },
 ]
