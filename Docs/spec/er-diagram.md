@@ -135,7 +135,7 @@ erDiagram
 | `approver_id` | `UUID` | NOT NULL / FK → users(id) | 承認者 |
 | `step_order` | `INTEGER` | NOT NULL | 多段階承認の順序（ベース実装は 1 段階のみ） |
 | `status` | `VARCHAR(20)` | NOT NULL / DEFAULT `'PENDING'` / CHECK (`PENDING` / `APPROVED` / `REJECTED`) | 承認ステータス |
-| `comment` | `TEXT` | NULL 可 | 承認者コメント（却下時は記述推奨） |
+| `comment` | `TEXT` | NULL 可 | 承認者コメント（承認時は任意・却下時は必須） |
 | `decided_at` | `TIMESTAMP` | NULL 可 | 承認・却下日時 |
 | `created_at` | `TIMESTAMP` | NOT NULL / DEFAULT CURRENT_TIMESTAMP | |
 

@@ -350,6 +350,17 @@ class ApprovalControllerTest extends BaseControllerTest {
   }
 
   @Test
+  @WithMockApprover
+  void reject_noBody_returns400CommentRequired() throws Exception {
+    // ボディ自体を送らないケース（api-spec.md L867: COMMENT_REQUIRED を返す仕様）。
+    // 修正前は HttpMessageNotReadableException により VALIDATION_ERROR が返っていた。
+    mockMvc
+        .perform(post("/api/approvals/" + STEP_ID + "/reject"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("COMMENT_REQUIRED"));
+  }
+
+  @Test
   @WithMockAdmin
   void reject_byAdmin_returns200Rejected() throws Exception {
     String body =

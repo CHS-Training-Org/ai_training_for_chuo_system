@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PaginationNav } from "@/components/ui/pagination-nav";
+import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
 
 /**
  * マイ予約一覧画面（screen-spec.md §マイ予約 /reservations 準拠）。
@@ -21,13 +22,7 @@ import { PaginationNav } from "@/components/ui/pagination-nav";
  * page でページ遷移（0 始まり）。status フィルタは引き継ぐ。
  */
 
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: "ドラフト",
-  PENDING: "承認待ち",
-  APPROVED: "確定",
-  REJECTED: "却下",
-  CANCELLED: "キャンセル",
-};
+const STATUS_LABELS = RESERVATION_STATUS_LABELS;
 
 const STATUS_VARIANTS = {
   PENDING: "secondary",

@@ -36,7 +36,7 @@ BookFlow の承認フローは現在 1 段階固定です。`ApprovalService.cre
 
 - 対象レイヤー：両方（バックエンド中心）
 - 更新が必要な spec：
-  - `api-spec.md` §`POST /api/reservations` — 多段階承認での `approval_steps` 生成を追記；§`POST /api/approvals/{id}/approve` / §`POST /api/approvals/{id}/reject` — ステップ連鎖の挙動を追記
+  - `api-spec.md` §`POST /api/reservations` — 多段階承認での `approval_steps` 生成を追記；§`POST /api/approvals/{stepId}/approve` / §`POST /api/approvals/{stepId}/reject` — ステップ連鎖の挙動を追記
   - `screen-spec.md` — 承認フロー設定の管理 UI を追記
   - `requirements.md` §APRV — 多段階フローの遷移パターンを追記
 

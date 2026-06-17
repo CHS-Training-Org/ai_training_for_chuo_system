@@ -2,24 +2,21 @@ import Link from "next/link";
 import { getReservationAction } from "@/server/actions/reservations";
 import { getProfileAction } from "@/server/actions/auth";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CancelButton } from "./CancelButton";
+import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
 
 /**
  * 予約詳細画面（screen-spec.md §予約詳細 /reservations/{id} 準拠）。
  *
  * MEMBER は本人の予約のみ閲覧可（他人の予約は BE が 403 → エラー画面）。
+ * PENDING のみ編集ボタンを表示（本人のみ、ADMIN は不可）。
  * PENDING/APPROVED 状態のみキャンセルボタンを表示（本人 or ADMIN）。
  * 承認ステップの表示はカテゴリ 6（ApprovalStepResponse）で実装。
  */
 
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: "ドラフト",
-  PENDING: "承認待ち",
-  APPROVED: "確定",
-  REJECTED: "却下",
-  CANCELLED: "キャンセル",
-};
+const STATUS_LABELS = RESERVATION_STATUS_LABELS;
 
 function statusBadgeClass(status: string): string {
   const map: Record<string, string> = {
@@ -47,6 +44,8 @@ export default async function ReservationDetailPage({
 
   const isAdmin = profile?.role === "ADMIN";
   const isOwner = profile?.id === reservation.requesterId;
+  // 編集可能条件: PENDING かつ本人（ADMIN は PUT 権限なし: api-spec.md §権限マトリクス L108）
+  const canEdit = reservation.status === "PENDING" && isOwner && !isAdmin;
   const canCancel = CANCELLABLE_STATUSES.includes(reservation.status) && (isOwner || isAdmin);
 
   return (
@@ -96,6 +95,13 @@ export default async function ReservationDetailPage({
           </dl>
         </CardContent>
       </Card>
+
+      {/* 編集ボタン（PENDING・本人のみ） */}
+      {canEdit && (
+        <Button asChild variant="outline">
+          <Link href={`/reservations/${reservation.id}/edit`}>予約内容を編集する</Link>
+        </Button>
+      )}
 
       {/* キャンセルボタン（PENDING/APPROVED・本人 or ADMIN のみ） */}
       {canCancel && <CancelButton reservationId={reservation.id} />}

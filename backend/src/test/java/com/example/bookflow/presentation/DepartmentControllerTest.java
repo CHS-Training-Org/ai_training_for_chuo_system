@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.bookflow.support.BaseControllerTest;
 import com.example.bookflow.support.WithMockMember;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,10 +29,12 @@ class DepartmentControllerTest extends BaseControllerTest {
   // ---- テスト用固定 ID（70xxxxxx プレフィックスで他テストと分離）----
   private static final UUID ROOT_DEPT_ID = UUID.fromString("70000000-0000-0000-0000-000000000001");
   private static final UUID CHILD_DEPT_ID = UUID.fromString("70000000-0000-0000-0000-000000000002");
+  /** RegisteredUserInterceptor が参照する認証済みユーザー（@WithMockMember の sub に一致） */
+  private static final UUID AUTH_USER_ID = UUID.fromString("70000000-0000-0000-0000-000000000010");
 
   @Autowired private JdbcTemplate jdbcTemplate;
 
-  /** 各テスト前に部署データ（ルート + 子）を挿入する。 */
+  /** 各テスト前に部署データ（ルート + 子）と認証ユーザーを挿入する。 */
   @BeforeEach
   void insertSeedData() {
     // ルート部署（parent_id = NULL）
@@ -42,11 +45,24 @@ class DepartmentControllerTest extends BaseControllerTest {
         CHILD_DEPT_ID,
         "開発部",
         ROOT_DEPT_ID);
+    // @WithMockMember が使う sub（"test-member-sub"）を RegisteredUserInterceptor が照合するためのユーザー。
+    // @CurrentUser なしのエンドポイント（GET /api/departments）でも 401 を返さないよう必要。
+    jdbcTemplate.update(
+        "INSERT INTO users (id, cognito_sub, name, email, department_id, role, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        AUTH_USER_ID,
+        "test-member-sub",
+        "テスト会員",
+        "member-dept70@example.com",
+        ROOT_DEPT_ID,
+        "MEMBER",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
   }
 
-  /** 各テスト後に FK 制約の逆順（子 → ルート）で削除する。 */
+  /** 各テスト後に FK 制約の逆順（User → 子部署 → ルート部署）で削除する。 */
   @AfterEach
   void deleteSeedData() {
+    jdbcTemplate.update("DELETE FROM users WHERE id = ?", AUTH_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", CHILD_DEPT_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", ROOT_DEPT_ID);
   }

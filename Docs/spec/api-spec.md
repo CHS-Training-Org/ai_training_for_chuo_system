@@ -201,7 +201,7 @@ POST /api/auth/signout
 
 ---
 
-### `GET /api/users/me` — 自プロフィール取得
+### `GET /api/users/me` — 自プロフィール取得 { #get-apiusersme }
 
 #### リクエスト
 

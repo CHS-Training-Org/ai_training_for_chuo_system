@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/types";
+import { ROLE_LABELS } from "@/lib/labels";
 
 interface HeaderProps {
   userName?: string;
@@ -30,16 +31,9 @@ function roleBadgeVariant(role: Role): "secondary" | "default" | "outline" {
   }
 }
 
-/** ロール表示名 */
+/** ロール表示名（labels.ts の ROLE_LABELS を使用） */
 function roleLabel(role: Role): string {
-  switch (role) {
-    case "ADMIN":
-      return "管理者";
-    case "APPROVER":
-      return "承認者";
-    case "MEMBER":
-      return "一般";
-  }
+  return ROLE_LABELS[role] ?? role;
 }
 
 export function Header({ userName, role, onSignOut }: HeaderProps) {

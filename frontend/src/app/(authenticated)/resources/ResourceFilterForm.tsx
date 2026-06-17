@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 interface ResourceFilterFormProps {
   defaultCategory?: string;
@@ -70,9 +71,9 @@ export function ResourceFilterForm({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">すべて</SelectItem>
-              <SelectItem value="ROOM">会議室（ROOM）</SelectItem>
-              <SelectItem value="EQUIPMENT">備品（EQUIPMENT）</SelectItem>
-              <SelectItem value="VEHICLE">車両（VEHICLE）</SelectItem>
+              <SelectItem value="ROOM">{RESOURCE_CATEGORY_LABELS.ROOM}</SelectItem>
+              <SelectItem value="EQUIPMENT">{RESOURCE_CATEGORY_LABELS.EQUIPMENT}</SelectItem>
+              <SelectItem value="VEHICLE">{RESOURCE_CATEGORY_LABELS.VEHICLE}</SelectItem>
             </SelectContent>
           </Select>
         </div>

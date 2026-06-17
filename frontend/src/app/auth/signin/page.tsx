@@ -5,11 +5,13 @@ import { devLoginAction } from "@/server/actions/dev-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Role } from "@/lib/types";
+import { ROLE_LABELS } from "@/lib/labels";
 
+/** 開発用ログインボタンのラベル（「表示名（ENUM）」形式、screen-spec.md L115 準拠） */
 const DEV_ROLE_LABELS: Record<Role, string> = {
-  MEMBER: "一般ユーザー（MEMBER）",
-  APPROVER: "承認者（APPROVER）",
-  ADMIN: "管理者（ADMIN）",
+  MEMBER: `${ROLE_LABELS.MEMBER}（MEMBER）`,
+  APPROVER: `${ROLE_LABELS.APPROVER}（APPROVER）`,
+  ADMIN: `${ROLE_LABELS.ADMIN}（ADMIN）`,
 };
 
 export default function SignInPage() {

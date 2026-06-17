@@ -80,8 +80,12 @@ public class ApprovalController {
   @PreAuthorize("hasAnyRole('APPROVER','ADMIN')")
   public ApprovalStepResponse reject(
       @PathVariable UUID stepId,
-      @RequestBody ApprovalDecisionRequest req,
+      @RequestBody(required = false) ApprovalDecisionRequest req,
       @CurrentUser User currentUser) {
-    return approvalService.reject(stepId, req.comment(), currentUser);
+    // ボディ欠落・不正 JSON 時も null として扱い、Service 層の COMMENT_REQUIRED チェックに一本化する。
+    // （以前は HttpMessageNotReadableException で VALIDATION_ERROR が返っていたが、
+    //   仕様は COMMENT_REQUIRED を要求する: api-spec.md §却下 L840, L867）
+    String comment = req != null ? req.comment() : null;
+    return approvalService.reject(stepId, comment, currentUser);
   }
 }

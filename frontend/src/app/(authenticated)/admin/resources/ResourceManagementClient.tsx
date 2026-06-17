@@ -12,6 +12,7 @@ import {
 } from "@/server/actions/resources";
 import { CreateResourceSchema } from "@/lib/schemas/resource";
 import type { ResourceResponse } from "@/lib/types/api";
+import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -119,9 +120,9 @@ function ResourceForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="ROOM">会議室（ROOM）</SelectItem>
-                  <SelectItem value="EQUIPMENT">備品（EQUIPMENT）</SelectItem>
-                  <SelectItem value="VEHICLE">車両（VEHICLE）</SelectItem>
+                  <SelectItem value="ROOM">{RESOURCE_CATEGORY_LABELS.ROOM}</SelectItem>
+                  <SelectItem value="EQUIPMENT">{RESOURCE_CATEGORY_LABELS.EQUIPMENT}</SelectItem>
+                  <SelectItem value="VEHICLE">{RESOURCE_CATEGORY_LABELS.VEHICLE}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

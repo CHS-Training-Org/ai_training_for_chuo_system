@@ -10,17 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ROLE_LABELS } from "@/lib/labels";
 
 // ---------------------------------------------------------------------------
 // ロールバッジ（screen-spec.md §ユーザー管理 行313）
 // MEMBER=グレー / APPROVER=青 / ADMIN=紫
 // ---------------------------------------------------------------------------
-
-const ROLE_LABELS: Record<string, string> = {
-  MEMBER: "一般社員",
-  APPROVER: "承認者",
-  ADMIN: "管理者",
-};
 
 function RoleBadge({ role }: { role: string }) {
   if (role === "ADMIN") {

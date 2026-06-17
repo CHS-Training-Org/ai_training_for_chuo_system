@@ -432,4 +432,20 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
   }
+
+  // ---------------------------------------------------------------------------
+  // RegisteredUserInterceptor — 未登録ユーザーの 401 保証（api-spec.md §認証方式）
+  // ---------------------------------------------------------------------------
+
+  @Test
+  @WithMockMember(sub = "unregistered-sub")
+  void list_unregisteredUser_returns401() throws Exception {
+    // "unregistered-sub" は @BeforeEach で users テーブルに挿入されないため、
+    // RegisteredUserInterceptor が UnregisteredUserException をスローして 401 を返す。
+    // （修正前は @CurrentUser を持たない GET /api/resources では DB 未登録ユーザーが通過していた）
+    mockMvc
+        .perform(get("/api/resources").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+  }
 }
