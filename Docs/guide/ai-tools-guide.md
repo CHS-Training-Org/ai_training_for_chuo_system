@@ -1,7 +1,16 @@
-# AI ツール活用ガイド（Claude Code）
+---
+type: guide
+title: AI ツール活用ガイド（Claude Code）
+description: Claude Code を中心とした AI ツールの活用方法・禁止事項・開発フローを解説するガイド
+tags: [guide, ai-tools, claude-code]
+timestamp: 2026-06-13
+audience: 学習者（主に新人）
+references:
+  - Docs/guide/coding-conventions.md
+  - Docs/guide/getting-started.md
+---
 
-> 対象読者：学習者（主に新人）  
-> 参照：[coding-conventions.md](./coding-conventions.md) / [getting-started.md](./getting-started.md)
+# AI ツール活用ガイド（Claude Code）
 
 このガイドは STEP-03「AI ツール導入・活用」の参照資料です。本リポジトリの標準 AI ツールである **Claude Code** の特性を理解し、状況に応じて意図的に活用できるようになることを目標とします。
 

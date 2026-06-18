@@ -1,3 +1,11 @@
+---
+type: adr
+title: ADR-005 — フロントエンド：フォームライブラリ
+description: フロントエンドのフォーム管理ライブラリとして React Hook Form を採用した判断の記録
+tags: [frontend, forms, react-hook-form]
+timestamp: 2026-05-28
+---
+
 # ADR-005 — フロントエンド：フォームライブラリ
 
 ## Status

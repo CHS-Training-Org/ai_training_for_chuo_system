@@ -1,7 +1,18 @@
-# Phase 4 AI 駆動開発整備タスク
+---
+type: plan
+title: Phase 4 AI 駆動開発整備タスク
+description: AI 駆動開発フロー・学習カリキュラム・運用体制の整備タスク進捗と計画（Phase 4）
+tags: [plan, phase4, ai-dlc]
+timestamp: 2026-06-18
+audience: メンター・リポジトリ管理者・AI エージェント
+references:
+  - Docs/PROJECT_PLAN.md
+  - Docs/spec/index.md
+  - Docs/guide/index.md
+  - Docs/ARCHITECTURE.md
+---
 
-> 対象読者：メンター・リポジトリ管理者・AI エージェント  
-> 参照：[PROJECT_PLAN.md](../PROJECT_PLAN.md) §4 / [Docs/spec/](../spec/index.md) / [Docs/guide/](../guide/index.md) / [ARCHITECTURE.md](../ARCHITECTURE.md)
+# Phase 4 AI 駆動開発整備タスク
 
 ---
 

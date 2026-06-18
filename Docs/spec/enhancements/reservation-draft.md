@@ -1,7 +1,16 @@
-# 予約の下書き保存
+---
+type: spec
+title: 予約の下書き保存
+description: 予約申請を完了前に下書きとして保存できる機能のエンハンス課題ビジネス要求シート
+tags: [spec, enhancement, reservation, draft]
+timestamp: 2026-06-16
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/enhancements/index.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[../requirements.md](../requirements.md) / [index.md](./index.md)
+# 予約の下書き保存
 
 ---
 

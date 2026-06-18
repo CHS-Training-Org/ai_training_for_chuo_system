@@ -1,3 +1,11 @@
+---
+type: adr
+title: ADR-002 — フロントエンド：スタイリング
+description: フロントエンドのスタイリング方針として Tailwind CSS v4 を採用した判断の記録
+tags: [frontend, styling, tailwind]
+timestamp: 2026-05-28
+---
+
 # ADR-002 — フロントエンド：スタイリング
 
 ## Status

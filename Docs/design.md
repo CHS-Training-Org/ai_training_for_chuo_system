@@ -1,3 +1,11 @@
+---
+type: design
+title: デザインシステム
+description: BookFlow のデザイントークン（カラー・タイポグラフィ・コンポーネント）の CSS ショーケース
+tags: [design, ui, css]
+timestamp: 2026-06-14
+---
+
 # デザインシステム
 
 > [`DESIGN.md`](https://github.com/Bizarress/AI-Development-Tutorial/blob/main/DESIGN.md) のデザイントークン（カラー・タイポグラフィ・コンポーネント）を実際の CSS で可視化したショーケースです。AI エージェントが正確な日本語 UI を生成するための仕様を、実物として確認できます。右側の見出しバーから各セクションへ移動できます。

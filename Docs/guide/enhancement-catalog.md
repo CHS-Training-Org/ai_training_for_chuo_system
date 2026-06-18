@@ -1,7 +1,17 @@
-# 選択課題カタログ
+---
+type: guide
+title: 選択課題カタログ
+description: 学習者が選択できるエンハンス課題の一覧と選択・着手手順
+tags: [guide, enhancement, catalog]
+timestamp: 2026-06-16
+audience: 学習者（新人・中堅）・メンター
+references:
+  - Docs/guide/curriculum.md
+  - Docs/spec/enhancements/index.md
+  - Docs/guide/dev-workflow.md
+---
 
-> 対象読者：学習者（新人・中堅）・メンター  
-> 参照：[curriculum.md](./curriculum.md) / [spec/enhancements/index.md](../spec/enhancements/index.md) / [dev-workflow.md](./dev-workflow.md)
+# 選択課題カタログ
 
 このページは、BookFlow の**選択課題（エンハンス課題）**を一覧化したカタログです。難易度・推定工数・対象レイヤーを確認し、必須ステップ（STEP-01〜05）を終えたあとに取り組む課題を選んでください。
 

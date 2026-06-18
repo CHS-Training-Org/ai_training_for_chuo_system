@@ -1,7 +1,16 @@
-# 評価基準・レビュー観点
+---
+type: guide
+title: 評価基準・レビュー観点
+description: PR レビュー時の評価基準と学習者・メンターの観点別チェックリスト
+tags: [guide, review, criteria]
+timestamp: 2026-06-17
+audience: メンター・リポジトリ管理者
+references:
+  - Docs/guide/dev-workflow.md
+  - Docs/spec/index.md
+---
 
-> 対象読者：メンター・リポジトリ管理者  
-> 参照：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) / [spec/index.md §レビュー観点](../spec/index.md#review-mentor)
+# 評価基準・レビュー観点
 
 このページは、第 2 ゲート（メンターレビュー）で使う**評価レンズ**を一元化します。各基準の実体は真実の源（リンク先）が持ちます——このページはリンクと重み付けのみを提供します。
 

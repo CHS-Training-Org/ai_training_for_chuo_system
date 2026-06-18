@@ -1,7 +1,16 @@
-# カレンダービュー
+---
+type: spec
+title: カレンダービュー
+description: 予約状況をカレンダー形式で可視化するエンハンス課題のビジネス要求シート
+tags: [spec, enhancement, calendar]
+timestamp: 2026-06-16
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/enhancements/index.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[../requirements.md](../requirements.md) / [index.md](./index.md)
+# カレンダービュー
 
 ---
 

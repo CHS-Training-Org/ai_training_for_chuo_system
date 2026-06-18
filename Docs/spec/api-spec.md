@@ -1,7 +1,16 @@
-# REST API 仕様書
+---
+type: spec
+title: REST API 仕様書
+description: BookFlow のエンドポイント・リクエスト/レスポンス・認証・シーケンス図を定義した API 仕様書
+tags: [spec, api, rest]
+timestamp: 2026-06-17
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/er-diagram.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[requirements.md](./requirements.md) / [er-diagram.md](./er-diagram.md)
+# REST API 仕様書
 
 ---
 

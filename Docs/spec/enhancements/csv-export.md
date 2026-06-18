@@ -1,7 +1,16 @@
-# CSV 帳票出力
+---
+type: spec
+title: CSV 帳票出力
+description: 予約一覧・利用実績を CSV 形式でエクスポートするエンハンス課題のビジネス要求シート
+tags: [spec, enhancement, csv-export]
+timestamp: 2026-06-16
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/enhancements/index.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[../requirements.md](../requirements.md) / [index.md](./index.md)
+# CSV 帳票出力
 
 ---
 

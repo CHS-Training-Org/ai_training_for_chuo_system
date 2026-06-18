@@ -1,7 +1,17 @@
-# 学習効果測定（満足度アンケート）
+---
+type: guide
+title: 学習効果測定（満足度アンケート）
+description: 学習プログラムの効果を定量化するアンケート設計と結果分析の方針
+tags: [guide, learning, measurement, survey]
+timestamp: 2026-06-17
+audience: メンター・リポジトリ管理者
+references:
+  - Docs/guide/operations-guide.md
+  - Docs/guide/curriculum.md
+  - Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md
+---
 
-> 対象読者：メンター・リポジトリ管理者
-> 参照：[operations-guide.md §質問サポートフロー](./operations-guide.md#support) / [curriculum.md](./curriculum.md) / [PHASE4_AI_DRIVEN_DEV_TASKS.md §5.4](../plan/PHASE4_AI_DRIVEN_DEV_TASKS.md)
+# 学習効果測定（満足度アンケート）
 
 本ページはアンケート様式と運用方針の真実の源です。  
 定量指標（課題完了数・PR サイクルタイム等）の収集は本フェーズのスコープ外のため、ここでは満足度アンケートのみを扱います。

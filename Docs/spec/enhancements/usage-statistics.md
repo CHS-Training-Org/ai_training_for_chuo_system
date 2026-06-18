@@ -1,7 +1,16 @@
-# 利用実績の集計・グラフ表示
+---
+type: spec
+title: 利用実績の集計・グラフ表示
+description: リソース別・期間別の予約利用実績を集計してグラフで可視化するエンハンス課題ビジネス要求シート
+tags: [spec, enhancement, statistics, analytics]
+timestamp: 2026-06-16
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/enhancements/index.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[../requirements.md](../requirements.md) / [index.md](./index.md)
+# 利用実績の集計・グラフ表示
 
 ---
 

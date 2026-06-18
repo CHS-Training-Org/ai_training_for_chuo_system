@@ -1,3 +1,11 @@
+---
+type: adr
+title: ADR-018 — バックエンド：テスト戦略
+description: バックエンドのテスト戦略として JUnit 5 + H2 + Mockito を採用した判断の記録
+tags: [backend, testing, junit, mockito, h2]
+timestamp: 2026-05-28
+---
+
 # ADR-018 — バックエンド：テスト戦略
 
 ## Status

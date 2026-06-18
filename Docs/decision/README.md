@@ -1,7 +1,16 @@
-# ADR（Architecture Decision Records）ガイド
+---
+type: index
+title: ADR（Architecture Decision Records）ガイド
+description: BookFlow における ADR の命名規則・フォーマット・起票プロセスと全 ADR の一覧
+tags: [adr, decision, guide]
+timestamp: 2026-06-18
+audience: メンター・リポジトリ管理者・学習者
+references:
+  - Docs/PROJECT_PLAN.md
+  - Docs/spec/index.md
+---
 
-> 対象読者：メンター・リポジトリ管理者・学習者
-> 参照：[PROJECT_PLAN.md](../PROJECT_PLAN.md) / [Docs/spec/](../spec/index.md)
+# ADR（Architecture Decision Records）ガイド
 
 このディレクトリには、BookFlow の技術選定・設計上の重要な意思決定を記録した ADR（Architecture Decision Records）が格納されています。
 
@@ -38,11 +47,19 @@ ADR-NNN-kebab-case.md
 新規 ADR を作成する際は以下のテンプレートを使用してください。
 
 ```markdown
+---
+type: adr
+title: ADR-NNN — <領域>：<テーマ>
+description: <採用判断の1文要約>
+tags: [<領域タグ>, ...]
+timestamp: YYYY-MM-DD
+---
+
 # ADR-NNN — <領域>：<テーマ>
 
 ## Status
 
-Accepted
+Accepted（YYYY-MM-DD）
 
 ## Context
 
@@ -115,3 +132,10 @@ Accepted
 | [ADR-017](./ADR-017-backend-logging.md) | ロギング戦略 | Accepted |
 | [ADR-018](./ADR-018-backend-test-strategy.md) | テスト戦略 | Accepted |
 | [ADR-019](./ADR-019-backend-code-quality.md) | コード品質ツール | Accepted |
+
+### AI・ドキュメント（ADR-020〜）
+
+| # | テーマ | Status |
+|---|--------|--------|
+| [ADR-020](./ADR-020-aidlc-engine-adoption.md) | AI-DLC エンジン完全採用 | Accepted |
+| [ADR-021](./ADR-021-okf-frontmatter-adoption.md) | OKF 準拠 frontmatter 部分採用 | Accepted |

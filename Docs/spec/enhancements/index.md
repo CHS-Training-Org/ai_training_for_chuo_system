@@ -1,7 +1,16 @@
-# エンハンス要件（ビジネス要求シート）
+---
+type: index
+title: エンハンス要件（ビジネス要求シート）
+description: BookFlow のエンハンス課題ビジネス要求シートの一覧と管理規約
+tags: [spec, enhancement, index]
+timestamp: 2026-06-16
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/index.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[requirements.md](../requirements.md) / [../index.md](../index.md)
+# エンハンス要件（ビジネス要求シート）
 
 ---
 

@@ -1,7 +1,16 @@
-# 多段階承認フロー
+---
+type: spec
+title: 多段階承認フロー
+description: 予約申請に複数の承認者が関与する多段階承認ワークフローのエンハンス課題ビジネス要求シート
+tags: [spec, enhancement, approval, workflow]
+timestamp: 2026-06-17
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/enhancements/index.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[../requirements.md](../requirements.md) / [index.md](./index.md)
+# 多段階承認フロー
 
 ---
 

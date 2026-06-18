@@ -1,7 +1,16 @@
-# ラベル設計と課題 Issue 起票手順
+---
+type: guide
+title: ラベル設計と課題 Issue 起票手順
+description: GitHub Issue のラベル設計とエンハンス課題の起票・管理手順
+tags: [guide, issues, labels, github]
+timestamp: 2026-06-16
+audience: メンター・リポジトリ管理者
+references:
+  - Docs/guide/enhancement-catalog.md
+  - Docs/guide/dev-workflow.md
+---
 
-> 対象読者：メンター・リポジトリ管理者  
-> 参照：[enhancement-catalog.md](./enhancement-catalog.md) / [dev-workflow.md](./dev-workflow.md)
+# ラベル設計と課題 Issue 起票手順
 
 このページは、課題 Issue に付与するラベル体系と、Issue の起票手順を定義します。  
 ラベルの定義実体は [`.github/labels.yml`](../../.github/labels.yml) が真実の源です。

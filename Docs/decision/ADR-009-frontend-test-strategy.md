@@ -1,3 +1,11 @@
+---
+type: adr
+title: ADR-009 — フロントエンド：テスト戦略
+description: フロントエンドのテスト戦略として Vitest + Playwright + MSW を採用した判断の記録
+tags: [frontend, testing, vitest, playwright, msw]
+timestamp: 2026-05-28
+---
+
 # ADR-009 — フロントエンド：テスト戦略
 
 ## Status

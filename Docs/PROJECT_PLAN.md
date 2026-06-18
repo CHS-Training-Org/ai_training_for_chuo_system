@@ -1,7 +1,15 @@
-# PROJECT_PLAN — 社内AI駆動開発 学習用リポジトリ計画書
+---
+type: plan
+title: PROJECT_PLAN — 社内AI駆動開発 学習用リポジトリ計画書
+description: BookFlow プロジェクトの目的・対象者・フェーズ計画・リスク管理をまとめた計画書
+tags: [project-plan, overview]
+timestamp: 2026-06-12
+audience: 学習者（新人〜ベテランまで全社員）・メンター・リポジトリ管理者
+references:
+  - Docs/ARCHITECTURE.md
+---
 
-> 対象読者：学習者（新人〜ベテランまで全社員）・メンター・リポジトリ管理者  
-> 参照アーキテクチャ：[ARCHITECTURE.md](./ARCHITECTURE.md)
+# PROJECT_PLAN — 社内AI駆動開発 学習用リポジトリ計画書
 
 ---
 

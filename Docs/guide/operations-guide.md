@@ -1,7 +1,17 @@
-# 運用ガイド
+---
+type: guide
+title: 運用ガイド
+description: リポジトリ管理者向けの日常運用・学習者サポート・質問対応フローの手引き
+tags: [guide, operations, management]
+timestamp: 2026-06-17
+audience: メンター・リポジトリ管理者
+references:
+  - Docs/PROJECT_PLAN.md
+  - Docs/guide/dev-workflow.md
+  - Docs/guide/review-criteria.md
+---
 
-> 対象読者：メンター・リポジトリ管理者  
-> 参照：[PROJECT_PLAN.md §3 ステークホルダーと役割](../PROJECT_PLAN.md) / [dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) / [review-criteria.md](./review-criteria.md)
+# 運用ガイド
 
 このページは、BookFlow チュートリアルを**日常的に運営する上での役割分担・サポートフロー・応答方針**を一元化します。  
 役割の名簿（誰が何者か）は [PROJECT_PLAN.md §3](../PROJECT_PLAN.md) が真実の源。レビューの観点・評価基準は [review-criteria.md](./review-criteria.md) が真実の源。本ページはそれらを運用の視点から接続します。

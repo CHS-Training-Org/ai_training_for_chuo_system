@@ -1,3 +1,11 @@
+---
+type: adr
+title: ADR-015 — バックエンド：API ドキュメント
+description: バックエンドの API ドキュメント生成ツールとして Springdoc OpenAPI を採用した判断の記録
+tags: [backend, api-docs, openapi, springdoc]
+timestamp: 2026-06-06
+---
+
 # ADR-015 — バックエンド：API ドキュメント
 
 ## Status

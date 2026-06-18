@@ -1,7 +1,16 @@
-# リソース一覧のソート順選択
+---
+type: spec
+title: リソース一覧のソート順選択
+description: リソース一覧の並び替え基準をユーザーが選択できるエンハンス課題のビジネス要求シート
+tags: [spec, enhancement, resource, sort]
+timestamp: 2026-06-16
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/enhancements/index.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[../requirements.md](../requirements.md) / [index.md](./index.md)
+# リソース一覧のソート順選択
 
 ---
 

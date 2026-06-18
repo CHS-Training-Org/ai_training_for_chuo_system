@@ -1,7 +1,15 @@
-# トラブルシューティング
+---
+type: guide
+title: トラブルシューティング
+description: 環境構築・起動・開発中によく発生するエラーの原因と対処法
+tags: [guide, troubleshooting, debug]
+timestamp: 2026-06-12
+audience: 学習者（主に新人）
+references:
+  - Docs/guide/getting-started.md
+---
 
-> 対象読者：学習者（主に新人）
-> 参照：[getting-started.md](./getting-started.md)
+# トラブルシューティング
 
 環境構築・開発中によくあるトラブルと解決策をまとめています。各項目は「症状 → 原因 → 解決策」の形式で記載します。
 

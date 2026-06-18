@@ -1,3 +1,11 @@
+---
+type: adr
+title: ADR-012 — バックエンド：データアクセス（ORM）
+description: バックエンドのデータアクセス層として Spring Data JPA + PostgreSQL を採用した判断の記録
+tags: [backend, orm, spring-data-jpa, postgresql]
+timestamp: 2026-05-28
+---
+
 # ADR-012 — バックエンド：データアクセス（ORM）
 
 ## Status

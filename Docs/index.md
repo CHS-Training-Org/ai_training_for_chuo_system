@@ -1,3 +1,11 @@
+---
+type: index
+title: BookFlow ドキュメント
+description: 社内 AI 駆動開発チュートリアル「BookFlow」の設計・学習ドキュメントサイトのトップページ
+tags: [index, overview]
+timestamp: 2026-06-12
+---
+
 # BookFlow ドキュメント
 
 > 社内 AI 駆動開発チュートリアル「BookFlow」の設計・学習ドキュメントサイトへようこそ。

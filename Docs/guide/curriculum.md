@@ -1,7 +1,17 @@
-# 学習カリキュラム
+---
+type: guide
+title: 学習カリキュラム
+description: BookFlow を使った AI 駆動開発の学習ステップと到達目標の体系
+tags: [guide, curriculum, learning]
+timestamp: 2026-06-16
+audience: 学習者（新人・中堅）・メンター
+references:
+  - Docs/guide/getting-started.md
+  - Docs/guide/dev-workflow.md
+  - Docs/guide/ai-tools-guide.md
+---
 
-> 対象読者：学習者（新人・中堅）・メンター  
-> 参照：[getting-started.md](./getting-started.md) / [dev-workflow.md](./dev-workflow.md) / [ai-tools-guide.md](./ai-tools-guide.md)
+# 学習カリキュラム
 
 このページは、BookFlow で学習を進める際の**学習パス**と、最初に取り組む**必須ステップ課題（STEP-01〜05）**を定義します。  
 必須ステップを終えたあとは、難易度別の選択課題へ進みます。どの課題に取り組むか迷ったら、まず下の[学習パスマップ](#path-map)を確認してください。

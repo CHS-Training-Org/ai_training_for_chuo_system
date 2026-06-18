@@ -1,7 +1,16 @@
-# 要件定義
+---
+type: spec
+title: 要件定義
+description: BookFlow の機能要件・非機能要件・ロール権限・ステータス遷移を定義した要件定義書
+tags: [spec, requirements, functional]
+timestamp: 2026-06-17
+audience: 学習者・メンター
+references:
+  - Docs/spec/er-diagram.md
+  - Docs/spec/api-spec.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[er-diagram.md](./er-diagram.md) / [api-spec.md](./api-spec.md)
+# 要件定義
 
 ---
 

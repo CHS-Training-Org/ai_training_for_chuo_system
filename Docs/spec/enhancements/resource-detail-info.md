@@ -1,7 +1,16 @@
-# リソース詳細画面の情報拡充
+---
+type: spec
+title: リソース詳細画面の情報拡充
+description: リソース詳細画面に稼働状況・予約履歴・メモなどの追加情報を表示するエンハンス課題ビジネス要求シート
+tags: [spec, enhancement, resource, detail]
+timestamp: 2026-06-16
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/enhancements/index.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[../requirements.md](../requirements.md) / [index.md](./index.md)
+# リソース詳細画面の情報拡充
 
 ---
 

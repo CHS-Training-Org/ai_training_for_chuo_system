@@ -1,3 +1,11 @@
+---
+type: adr
+title: ADR-017 — バックエンド：ロギング戦略
+description: バックエンドのロギング戦略として SLF4J + Logback を採用した判断の記録
+tags: [backend, logging, slf4j, logback]
+timestamp: 2026-05-28
+---
+
 # ADR-017 — バックエンド：ロギング戦略
 
 ## Status

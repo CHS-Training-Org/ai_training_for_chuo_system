@@ -1,7 +1,17 @@
-# 依存更新ポリシー（Dependabot）
+---
+type: guide
+title: 依存更新ポリシー（Dependabot）
+description: Dependabot による依存関係の自動更新方針とレビュー判断基準
+tags: [guide, dependency, dependabot]
+timestamp: 2026-06-17
+audience: メンター・リポジトリ管理者
+references:
+  - Docs/PROJECT_PLAN.md
+  - Docs/guide/operations-guide.md
+  - Docs/decision/ADR-011-backend-build-tool.md
+---
 
-> 対象読者：メンター・リポジトリ管理者  
-> 参照：[PROJECT_PLAN.md §5 リスク管理](../PROJECT_PLAN.md) / [operations-guide.md](./operations-guide.md) / [ADR-011 バックエンド：ビルドツール](../decision/ADR-011-backend-build-tool.md)
+# 依存更新ポリシー（Dependabot）
 
 このページは、BookFlow の**依存ライブラリ・コンテナイメージ・GitHub Actions の自動更新設定と運用方針**を一元化します。  
 設定の真実の源は [`.github/dependabot.yml`](../../.github/dependabot.yml) であり、このページはその方針・背景・運用手順を説明します。

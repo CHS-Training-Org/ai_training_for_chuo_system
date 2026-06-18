@@ -1,7 +1,16 @@
-# ER 図
+---
+type: spec
+title: ER 図
+description: BookFlow のデータモデル・テーブル定義・リレーションを Mermaid で記述した ER 図
+tags: [spec, er-diagram, data-model]
+timestamp: 2026-06-17
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - backend/src/main/resources/db/migration/V001__create_initial_schema.sql
+---
 
-> 対象読者：学習者・メンター
-> 参照：[requirements.md](./requirements.md) / [V001 確定スキーマ](../../backend/src/main/resources/db/migration/V001__create_initial_schema.sql)
+# ER 図
 
 ---
 

@@ -1,7 +1,17 @@
-# 開発ワークフローガイド
+---
+type: guide
+title: 開発ワークフローガイド
+description: AI-DLC エンジンを前提とした BookFlow の標準開発フロー（INCEPTION→CONSTRUCTION→OPERATIONS）
+tags: [guide, workflow, ai-dlc]
+timestamp: 2026-06-18
+audience: 学習者（主に新人）
+references:
+  - Docs/guide/ai-tools-guide.md
+  - Docs/guide/coding-conventions.md
+  - Docs/spec/index.md
+---
 
-> 対象読者：学習者（主に新人）
-> 参照：[ai-tools-guide.md](./ai-tools-guide.md) / [coding-conventions.md](./coding-conventions.md) / [仕様更新ルール（Spec-first）](../spec/index.md#spec-first)
+# 開発ワークフローガイド
 
 このガイドは、学習課題（Issue）に着手してから完了するまでの **BookFlow 標準フロー** を示します。  
 フローは AWS Labs の **AI-DLC**（AI Development Life Cycle、[`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)）の 3 フェーズ・全ステージ・承認ゲートを **BookFlow の標準ワークフローとして採用**したものです。`aidlc-docs/` 並行成果物ツリーは作らず、状態管理は `Docs/spec/` に統合しています。

@@ -1,7 +1,17 @@
-# AI-DLC 採用台帳
+---
+type: adoption
+title: AI-DLC 採用台帳
+description: AWS Labs AI-DLC から BookFlow に取り込んだ要素・反映先・状態・上流同期手順の管理台帳
+tags: [ai-dlc, adoption, vendor]
+timestamp: 2026-06-18
+audience: メンター・学習者
+references:
+  - Docs/guide/dev-workflow.md
+  - Docs/plan/aidlc-overview.html
+  - Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md
+---
 
-> 対象読者：メンター・学習者
-> 参照：[`Docs/guide/dev-workflow.md`](../guide/dev-workflow.md#aidlc-mapping) / [`Docs/plan/aidlc-overview.html`](../plan/aidlc-overview.html) / [`Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md`](../plan/PHASE4_AI_DRIVEN_DEV_TASKS.md)
+# AI-DLC 採用台帳
 
 [AWS Labs AI-DLC（`awslabs/aidlc-workflows`）](https://github.com/awslabs/aidlc-workflows) のうち、本リポジトリに取り込み・反映した要素と、その反映先・状態を管理する台帳。
 

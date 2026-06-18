@@ -1,7 +1,16 @@
-# 学習者向けガイド (Guide)
+---
+type: index
+title: 学習者向けガイド (Guide)
+description: 学習者向けガイド文書の目次と各ガイドの位置付け
+tags: [guide, index]
+timestamp: 2026-06-17
+audience: 学習者（主に新人）
+references:
+  - Docs/PROJECT_PLAN.md
+  - Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md
+---
 
-> 対象読者：学習者（主に新人）
-> 参照：[PROJECT_PLAN.md](../PROJECT_PLAN.md) / [PHASE4_AI_DRIVEN_DEV_TASKS.md](../plan/PHASE4_AI_DRIVEN_DEV_TASKS.md)
+# 学習者向けガイド (Guide)
 
 学習者が詰まりやすいポイントを先回りして解決するためのガイドです。  
 環境構築から AI ツールの活用方法・コーディング規約まで、実装作業に必要な情報を網羅します。

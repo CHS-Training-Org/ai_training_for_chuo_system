@@ -1,3 +1,11 @@
+---
+type: audit
+title: AI-DLC Audit Log
+description: AI-DLC エンジンが記録する全インタラクション・判断の追記専用監査ログ
+tags: [ai-dlc, audit, log]
+timestamp: 2026-06-18
+---
+
 # AI-DLC Audit Log
 
 > このファイルは AI-DLC エンジン（`.claude/rules/aidlc-core.md`）が管理する追記専用の監査ログ。

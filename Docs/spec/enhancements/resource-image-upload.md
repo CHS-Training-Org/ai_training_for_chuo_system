@@ -1,7 +1,16 @@
-# リソース画像アップロード
+---
+type: spec
+title: リソース画像アップロード
+description: 施設・備品のリソースに画像をアップロード・表示するエンハンス課題のビジネス要求シート
+tags: [spec, enhancement, resource, image-upload]
+timestamp: 2026-06-16
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/enhancements/index.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[../requirements.md](../requirements.md) / [index.md](./index.md)
+# リソース画像アップロード
 
 ---
 

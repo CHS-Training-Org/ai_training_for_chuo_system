@@ -1,7 +1,16 @@
-# 画面仕様書
+---
+type: spec
+title: 画面仕様書
+description: BookFlow の全 10 画面のレイアウト・操作フロー・バリデーションを定義した画面仕様書
+tags: [spec, screen, ui]
+timestamp: 2026-06-17
+audience: 学習者・メンター
+references:
+  - Docs/spec/requirements.md
+  - Docs/spec/api-spec.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[requirements.md](./requirements.md) / [api-spec.md](./api-spec.md)
+# 画面仕様書
 
 ---
 

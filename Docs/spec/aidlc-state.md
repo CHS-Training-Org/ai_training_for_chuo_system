@@ -1,3 +1,11 @@
+---
+type: state
+title: AI-DLC State Tracking
+description: AI-DLC エンジンが管理する開発フェーズの進捗トラッカー（INCEPTION/CONSTRUCTION/OPERATIONS）
+tags: [ai-dlc, state, tracking]
+timestamp: 2026-06-18
+---
+
 # AI-DLC State Tracking
 
 > このファイルは AI-DLC エンジン（`.claude/rules/aidlc-core.md`）が管理する進捗トラッカー。

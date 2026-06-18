@@ -1,7 +1,16 @@
-# 仕様書 (Spec)
+---
+type: index
+title: 仕様書 (Spec)
+description: BookFlow の実装仕様文書（要件・画面・API・ER 図）の管理目次と Spec-first 更新ルール
+tags: [spec, index]
+timestamp: 2026-06-16
+audience: 学習者・メンター
+references:
+  - Docs/PROJECT_PLAN.md
+  - Docs/ARCHITECTURE.md
+---
 
-> 対象読者：学習者・メンター
-> 参照：[PROJECT_PLAN.md](../PROJECT_PLAN.md) / [ARCHITECTURE.md](../ARCHITECTURE.md)
+# 仕様書 (Spec)
 
 BookFlow の実装仕様を正確に記述します。学習者が機能を理解する際の参照元です。  
 更新責任：仕様変更を伴う実装を行う本人（学習者を含む）。レビュー責任：メンター。詳細は[仕様更新ルール](#spec-first)を参照

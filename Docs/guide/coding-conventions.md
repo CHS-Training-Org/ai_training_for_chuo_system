@@ -1,7 +1,16 @@
-# コーディング規約
+---
+type: guide
+title: コーディング規約
+description: BookFlow の命名規則・ファイル構成・コミット規約・テスト規約を定めたコーディング標準
+tags: [guide, coding-conventions, style]
+timestamp: 2026-06-13
+audience: 学習者（主に新人）
+references:
+  - Docs/decision/README.md
+  - Docs/guide/ai-tools-guide.md
+---
 
-> 対象読者：学習者（主に新人）  
-> 参照：[ADR 一覧](../decision/README.md) / [ai-tools-guide.md](./ai-tools-guide.md)
+# コーディング規約
 
 BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../decision/README.md) に、API・画面の**仕様**は [Docs/spec/](../spec/index.md) に書かれています。本書は「実装時に迷わないためのルールと実例」に絞っています。
 
