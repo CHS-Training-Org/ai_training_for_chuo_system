@@ -234,13 +234,14 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
       Playwright E2E の CI 化は見送り（別タスク候補）。  
       security-scan の実 Actions 実行は本環境からトリガー不可のため、GitHub 上での初回実行確認をメンターに申し送り。
 - [x] **3.7 AI-DLC 実ファイルの取り込み・再構成・台帳化・上流同期**
-  - 状態：完了
-  - 内容：[AI-DLC 概説資料（aidlc-overview.html）](./aidlc-overview.html) で提示した3案のうち「案B改良（vendoring＋再構成＋台帳＋上流同期）」を採用。3層構成で実装：  
+  - 状態：完了（**2026-06-18 に ADR-020 で採用方針を supersede。下記参照**）
+  - 内容（初回実装 2026-06-14）：[AI-DLC 概説資料（aidlc-overview.html）](./aidlc-overview.html) で提示した3案のうち「案B改良（vendoring＋再構成＋台帳＋上流同期）」を採用。3層構成で実装：  
       ①**vendoring（L1）**：公式 [`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)（固定コミット `b19c81928bdf1b8d13856f462fcf2ede1720b4cb`、VERSION 0.1.8、MIT-0）の `aidlc-rules/aws-aidlc-rule-details/common/` 全11ファイルを `vendor/aidlc-rules/common/` に逐語コピー（出典は `vendor/aidlc-rules/PROVENANCE.md`）。`Docs/` 外・Zensical nav 外に配置。  
       ②**再構成（L2）**：思考ガードレール4ファイル（`overconfidence-prevention`・`content-validation`・`depth-levels`・`ascii-diagram-standards`）を `.claude/rules/aidlc-guardrails.md` に、`question-format-guide` を `.claude/rules/aidlc-questions.md` にBookFlow向けに翻案（`paths`フロントマターなし＝起動時auto-load）。`CLAUDE.md` §AI駆動開発の進め方・§設計書の参照先に追記のみ（上書きなし）。  
       ③**採用台帳（L3）**：`Docs/spec/aidlc-adoption.md` に全11ファイルの反映先・採用状態（rules化/参照のみ/非該当）・根拠を記載。`Docs/spec/index.md`・`zensical.toml` nav に登録。  
       ④**上流同期手順**：台帳内に diff→反映→ピン更新の手順を文書化（専用スキル・CIは設けない）。  
       非活性化ファイル（`process-overview`・`error-handling`・`session-continuity`・`terminology`・`welcome-message`・`workflow-changes`）は「簡素化」ではなく、AI-DLCワークフローエンジン（`aidlc-state.md`/`audit.md`/units）固有または既に `dev-workflow.md` で写像済みという根拠を台帳に明記。`inception/reverse-engineering.md` は今後の候補として台帳に記録のみ。
+  - **⚠️ supersede（2026-06-18）**: 上記「案B改良（写像のみ・エンジン非採用）」は [ADR-020](../decision/ADR-020-aidlc-engine-adoption.md) により**エンジン完全採用（replace + Docs/spec/ 写像統合）**に転換。`vendor/aidlc-rules/` の全フォルダ拡張（common → 全 32 ファイル）、`.claude/rules/aidlc-core.md`（翻案版 core-workflow）、`.aidlc-rule-details/`（全 31 ステージファイルのパス翻案版）、`Docs/spec/aidlc-state.md`・`Docs/spec/aidlc-audit.md`（状態写像ファイル）、`Docs/guide/dev-workflow.md` 全面改訂、`Docs/spec/aidlc-adoption.md` 全面改訂（32 ファイル全カバレッジ）を実施。
 
 ## カテゴリ 4：エンハンス要件の策定（学習課題設計）
 
