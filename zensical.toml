@@ -75,6 +75,10 @@ nav = [
     ] },
     "spec/aidlc-adoption.md",
   ] },
+  { "Claude Code 設定" = [
+    "claude/index.md",
+    "claude/agent-config.md",
+  ] },
   { "ガイド (Guide)" = [
     "guide/index.md",
     "guide/curriculum.md",

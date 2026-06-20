@@ -35,6 +35,7 @@ timestamp: 2026-06-12
 | [設計判断 (ADR)](./decision/README.md) | 技術選定・設計上の意思決定の記録 | メンター・学習者 |
 | [仕様 (Spec)](./spec/index.md) | 要件・画面・API・ER などの実装仕様 | 学習者・メンター |
 | [ガイド (Guide)](./guide/index.md) | 学習者が詰まりやすいポイントを先回りで解決 | 学習者 |
+| [Claude Code 設定](./claude/index.md) | Rules・Skills・Hooks など Claude Code の設定資産一覧 | 学習者・メンター |
 
 ---
 
