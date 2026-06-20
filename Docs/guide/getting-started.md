@@ -61,7 +61,14 @@ DevContainer では postgres / localstack / cognito-local / docs の各コンテ
 
     2. **VS Code 拡張のインストール**：`WSL`（`ms-vscode-remote.remote-wsl`）と `Dev Containers` を両方インストールします。
 
-    3. **WSL2 ターミナルに入る**（いずれかの方法）
+    3. **Docker Engine の WSL2 統合を有効化**（重要）：Rancher Desktop / Docker Desktop は既定では専用ディストロ内でのみ Docker デーモンが動きます。開発に使う `Ubuntu` ディストロに統合を有効化しないと `/var/run/docker.sock` が現れず、DevContainer 起動が失敗します。
+
+        - **Rancher Desktop**: トレイアイコン → **Preferences → WSL → Integrations** → **`Ubuntu`** を **ON** → **Apply**
+        - **Docker Desktop**: **Settings → Resources → WSL Integration** → **`Ubuntu`** を **ON** → **Apply & Restart**
+
+        反映後、PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直してください。確認：Ubuntu ターミナルで `docker ps` が権限エラーなく通れば OK です。
+
+    4. **WSL2 ターミナルに入る**（いずれかの方法）
 
         - **Windows Terminal** を起動し、タブのドロップダウンから「Ubuntu」を選択（推奨）
         - スタートメニューで「Ubuntu」を検索して起動
@@ -234,6 +241,119 @@ docker exec -i <postgres コンテナ名> psql -U bookflow -d bookflow \
 | リソース | 3 件（ROOM・EQUIPMENT・VEHICLE 各 1 件） |
 | 予約 | 2 件（APPROVED 1 件・PENDING 1 件） |
 | 承認待ち（`/approvals`） | 1 件（第1会議室の申請） |
+
+---
+
+## 手動セットアップ（DevContainer なし） { #manual }
+
+DevContainer を使わない場合の手順です。
+
+### 前提条件
+
+| ツール | バージョン |
+|--------|-----------|
+| Node.js | 24.x |
+| pnpm | 11.x（下記手順でインストール） |
+| Java | 25（Temurin 推奨） |
+| Docker + Compose | 最新安定版 |
+
+### 1. pnpm のインストール
+
+```bash
+# Node.js の Corepack 経由でインストール（推奨）
+corepack enable
+corepack prepare pnpm@latest --activate
+```
+
+### 2. ローカルサービス（Docker）の起動
+
+```bash
+docker compose -f .devcontainer/docker-compose.yml up -d
+```
+
+起動するサービス：
+
+- `postgres:5432` — RDB（PostgreSQL 16）
+- `localstack:4566` — AWS モック（S3 / DynamoDB）
+- `cognito-local:9229` — Cognito モック
+- `docs:8000` — ドキュメントサイト
+
+### 3. Cognito のセットアップ（初回のみ）
+
+```bash
+bash scripts/provision-cognito.sh
+```
+
+出力された `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` の値を控えておきます。
+
+### 4. フロントエンドのセットアップ
+
+```bash
+cd frontend
+cp .env.local.example .env.local
+pnpm install
+```
+
+`.env.local` に手順 3 で出力された値を設定します。
+
+```dotenv
+COGNITO_USER_POOL_ID=local_XXXXXXXX
+COGNITO_CLIENT_ID=XXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+フロントエンドを起動します。
+
+```bash
+pnpm dev   # http://localhost:3000
+```
+
+### 5. バックエンドのセットアップ
+
+```bash
+cd backend
+./gradlew bootRun   # http://localhost:8080
+```
+
+---
+
+## Claude Code の起動（Windows WSL2） { #claude-code-wsl2 }
+
+Windows で Claude Code を使う場合、**Windows 側ではなく WSL2 の Linux 内で起動してください**。
+
+Claude Code はホストの `bash` / `git` / 各種 CLI（`jq` など）を直接呼び出して動作します。Windows 側で起動するとファイルアクセスが 9p プロトコル経由になり低速になるほか、`bash` の解決先がずれてコマンドが失敗することがあります。
+
+WSL2（Ubuntu）のターミナル内で実行します。
+
+```bash
+# 1. 依存ツール（jq）を導入
+sudo apt-get update && sudo apt-get install -y jq
+
+# 2. Claude Code をインストール（~/.local/bin に入る）
+curl -fsSL https://claude.ai/install.sh | bash
+
+# 3. ターミナルを開き直して PATH を反映（または source ~/.bashrc）
+
+# 4. インストール確認
+which claude      # → /home/<user>/.local/bin/claude なら成功
+uname -s          # → Linux
+jq --version      # → バージョンが出れば OK
+
+# 5. リポジトリへ移動して起動
+cd ~/projects/ai-development-tutorial
+claude
+```
+
+!!! tip "`which claude` が `/mnt/c/...` を指す場合"
+    Windows 側の Node パスが PATH 上で優先されています。`~/.local/bin` を前に出してください。
+
+    ```bash
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+    source ~/.bashrc
+    which claude   # 再確認
+    ```
+
+!!! note "DevContainer 内で使う場合"
+    `.devcontainer/devcontainer.json` に Claude Code の feature が含まれているため、DevContainer 内のターミナルから起動すれば別途インストール不要です。
 
 ---
 

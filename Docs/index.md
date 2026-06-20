@@ -44,6 +44,6 @@ timestamp: 2026-06-12
 - **フロントエンド**: Next.js 15（App Router）/ React 19 / TypeScript / Tailwind CSS v4 / shadcn/ui
 - **バックエンド**: Spring Boot 4.0 / Java 25 / Spring Data JPA / Flyway
 - **認証・認可**: Better Auth + Cognito / Spring Security + OAuth2 Resource Server
-- **開発環境**: DevContainer + Docker Compose（`docker compose up` 一発で起動）
+- **開発環境**: DevContainer + Docker Compose（コンテナ群を一括起動、アプリは手動起動）
 
 詳細は [リポジトリ概要](./spec/overview.md) と [アーキテクチャ](./ARCHITECTURE.md) を参照してください。

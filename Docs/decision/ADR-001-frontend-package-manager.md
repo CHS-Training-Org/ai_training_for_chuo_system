@@ -29,7 +29,7 @@ Accepted
 - シンボリックリンク方式によるディスク効率とインストール速度が優れる
 - ゴーストパッケージ（未宣言依存）を防ぐ厳格な依存解決アルゴリズム
 - Turborepo / monorepo との親和性が高い
-- Node.js 22 同梱の `corepack enable pnpm` で追加インストール不要
+- Node.js 24 同梱の `corepack enable pnpm` で追加インストール不要
 
 ## Consequences
 

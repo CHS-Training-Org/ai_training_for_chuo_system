@@ -35,7 +35,7 @@ references:
 
 ## ゴール
 
-- DevContainer を使って **`docker compose up` 一発** でフルスタック開発環境が起動できる
+- DevContainer を使って周辺サービス（DB・Cognito・LocalStack）を一括起動し、アプリ（`pnpm dev` / `./gradlew bootRun`）を手動で起動するフルスタック開発環境を構築できる
 - GitHub Issue に登録された課題を AI ツールを活用して実装・PR・レビューのサイクルを回せる
 - [ARCHITECTURE.md](../ARCHITECTURE.md) に記載されたアーキテクチャの全レイヤー（BFF・バックエンド・DB・AWS サービス）を体験できる
 

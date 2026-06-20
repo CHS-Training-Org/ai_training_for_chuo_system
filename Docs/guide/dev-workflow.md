@@ -151,8 +151,6 @@ flowchart TD
 
 取り組む課題を Issue から選びます。Issue にはビジネス要求シート（背景・要件・受入条件・影響範囲・AI 活用ポイント）への参照が含まれます。受入条件はシート側が真実の源です。
 
-新規に課題を起票する場合は、`.github/ISSUE_TEMPLATE/` の「必須課題（STEP）」または「選択課題（エンハンス）」のテンプレートから作成してください。選択課題のビジネス要求シートの様式・一覧は [spec/enhancements/index.md](../spec/enhancements/index.md) を参照してください。
-
 ### 2. ブランチを作成する
 
 [coding-conventions.md §コミット・PR 規約](./coding-conventions.md#commit-pr) の規約に従い、`feature/<issue番号>-<short-desc>` の形式でブランチを作成します。

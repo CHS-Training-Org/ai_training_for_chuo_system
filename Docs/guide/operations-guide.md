@@ -56,16 +56,15 @@ references:
 - 複数の学習者で知識を共有できる
 
 !!! note "メンター・リポジトリ管理者向け"
-    対象の Issue が見つからない、または既存の課題 Issue に紐付かない質問（環境構築全般など）の場合は、新規 Issue としてラベル `type:question` を付けて起票するよう学習者に案内してください（ラベル体系は [issue-registration.md §ラベル体系](./issue-registration.md#labels) 参照）。
+    対象の Issue が見つからない、または既存の課題 Issue に紐付かない質問（環境構築全般など）の場合は、メンターが新規 Issue を起票して対応してください。
 
 ### 受付経路のまとめ
 
 | 質問の種類 | 推奨チャネル |
 |-----------|-------------|
 | 課題実装中の疑問・詰まり | 対象課題の Issue にコメント |
-| 環境構築・ツール系のトラブル | [troubleshooting.md](./troubleshooting.md) を確認 → 解決しなければ新規 Issue |
+| 環境構築・ツール系のトラブル | [troubleshooting.md](./troubleshooting.md) を確認 → 解決しなければメンターへ連絡 |
 | 学習フロー・カリキュラムへのフィードバック | [学習効果測定（満足度アンケート）](./learning-effectiveness.md) のふりかえり用 Issue にコメント |
-| バグ報告・改善提案 | 新規 Issue（`type:bugfix` または `type:enhancement` ラベル） |
 
 ### エスカレーション
 
