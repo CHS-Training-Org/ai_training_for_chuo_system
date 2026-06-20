@@ -14,7 +14,7 @@ references:
 # 開発ワークフローガイド
 
 このガイドは、学習課題（Issue）に着手してから完了するまでの **BookFlow 標準フロー** を示します。  
-フローは AWS Labs の **AI-DLC**（AI Development Life Cycle、[`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)）の 3 フェーズ・全ステージ・承認ゲートを **BookFlow の標準ワークフローとして採用**したものです。`aidlc-docs/` 並行成果物ツリーは作らず、状態管理は `Docs/spec/` に統合しています。
+フローは AWS Labs の **AI-DLC**（AI Development Life Cycle、[`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)）の 3 フェーズ・全ステージ・承認ゲートを **BookFlow の標準ワークフローとして採用**したものです。独立した `aidlc-docs/` 並行ツリーは作らず、作業用成果物は `Docs/spec/aidlc-docs/` に集約し、状態管理は `Docs/spec/` に統合しています。
 
 ---
 

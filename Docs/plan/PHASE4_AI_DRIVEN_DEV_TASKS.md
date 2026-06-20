@@ -140,6 +140,9 @@ references:
 開発フローは AWS Labs の **AI-DLC**（[`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)）を**思考モデルとして**下敷きにし、成果物の出力先・対象エージェントを BookFlow の既存資産（`Docs/spec/`・`CLAUDE.md`・plan mode 等）に合わせてカスタマイズして適用する。plan-first ゲート・Spec-first・セルフレビューといった**プロセスの厳格さは簡略化しない**。  
 AI-DLC は Inception（WHAT/WHY）・Construction（HOW）・Operations の 3 フェーズ、plan-first の承認ゲート、units of work（並行可能な作業単位）を柱とする方法論。
 
+> **⚠️ 以下の採用方針（`aidlc-docs/` 不作成・思考モデル採用）は [ADR-020](../decision/ADR-020-aidlc-engine-adoption.md)（2026-06-18）により supersede されました。**  
+> 現行方針はエンジン完全採用（replace + `Docs/spec/` 写像統合）です。この記述は旧方針（案B改良）の記録として保存しています。
+
 AI-DLC の `aidlc-docs/` 成果物ツリーは導入せず、成果物は既存の `Docs/spec/`（真実の源）・`Docs/guide/`・`CLAUDE.md`・Claude Code の plan mode に写像する。  
 これにより既存の Spec-first ルール（`Docs/spec/` を真実の源とする）・`update-spec` スキルと衝突させず、リポジトリの Markdown-as-truth パターンに揃える。  
 AI-DLC の各要素と BookFlow での実体の対応は次のとおり。

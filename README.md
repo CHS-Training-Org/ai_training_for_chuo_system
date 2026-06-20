@@ -13,26 +13,29 @@
 
 ## Claude Code 通知設定
 
-このリポジトリでは Claude Code のタスク完了時などに**ターミナルベル**で通知する設定をしている（`.claude/settings.local.json` の `preferredNotifChannel: "terminal_bell"`）。
+Claude Code のタスク完了時にターミナルベルで通知したい場合は、`.claude/settings.local.json`（個人環境用・git 管理外）に以下を追加する。
 
-DevContainer（VS Code 統合ターミナル）でベルを鳴らすために、`.vscode/settings.json` で `terminal.integrated.enableBell` を有効化している。
+```json
+{
+  "preferredNotifChannel": "terminal_bell"
+}
+```
+
+DevContainer（VS Code 統合ターミナル）でベルを有効にするには、`.vscode/settings.json` に以下を追加する。
+
+```json
+{
+  "terminal.integrated.enableBell": true
+}
+```
 
 ### 通知を無効にしたい場合
 
-`.claude/settings.local.json` の値を `"notifications_disabled"` に変更する。
+`.claude/settings.local.json` の `preferredNotifChannel` を `"notifications_disabled"` に設定する。
 
 ```json
 {
   "preferredNotifChannel": "notifications_disabled"
-}
-```
-
-または、ベルの音だけ止めたい場合は VS Code の設定で無効化する。
-
-```json
-// .vscode/settings.json
-{
-  "terminal.integrated.enableBell": false
 }
 ```
 

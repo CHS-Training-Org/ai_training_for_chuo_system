@@ -33,7 +33,7 @@ BookFlow は PHASE4 タスク 3.7（2026-06-14 完了）において、AI-DLC（
 
 1. **vendoring 拡張**（`vendor/aidlc-rules/`）：上流の全フォルダ（inception / construction / operations / extensions / `aws-aidlc-rules/core-workflow.md`）を固定コミットで逐語コピー（32 ファイル）
 2. **エンジン活性化**（`.claude/rules/aidlc-core.md`）：`core-workflow.md` の BookFlow 翻案版。状態ファイルパスを `Docs/spec/` に写像
-3. **翻案済みステージファイル**（`.aidlc-rule-details/`）：全 31 ステージファイルを `aidlc-docs/` → `Docs/spec/aidlc-docs/` にパス翻案
+3. **翻案済みステージファイル**（`.aidlc-rule-details/`）：全 31 ステージファイルを `aidlc-docs/` → `Docs/spec/aidlc-docs/` にパス翻案（`core-workflow.md` は `.claude/rules/aidlc-core.md` として別途翻案するため本ディレクトリから除外。vendoring 対象 32 ファイルとの差分はこの 1 ファイル）
 4. **状態管理写像**：
    - `aidlc-docs/aidlc-state.md` → `Docs/spec/aidlc-state.md`（単一ファイル・ツリー新設なし）
    - `aidlc-docs/audit.md` → `Docs/spec/aidlc-audit.md`（単一ファイル・追記専用）

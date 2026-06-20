@@ -78,7 +78,7 @@ references:
 
 ### Permissions
 
-ローカルの権限設定は `.claude/settings.local.json`（git 管理外）が正典です。現在の許可コマンド例（`.claude/settings.local.json` の `permissions.allow`）:
+ローカルの権限設定は `.claude/settings.local.json`（`.gitignore` 対象・個人環境用）が正典です。現在の許可コマンド例（`.claude/settings.local.json` の `permissions.allow`）:
 
 - `Bash(curl -s --max-time 5 http://backend:8080/actuator/health)` — ヘルスチェック確認
 - `WebFetch(domain:github.com)` — GitHub ページの参照
