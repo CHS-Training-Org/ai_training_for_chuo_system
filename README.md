@@ -269,7 +269,7 @@ DevContainer（VS Code 統合ターミナル）でベルを鳴らすために、
 
 | ドキュメント | 内容 |
 |------------|------|
-| [`Docs/PROJECT_PLAN.md`](Docs/PROJECT_PLAN.md) | プロジェクト全体計画 |
+| [`Docs/spec/overview.md`](Docs/spec/overview.md) | リポジトリ概要（目的・対象者・役割・用語集） |
 | [`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md) | システムアーキテクチャ |
 | [`Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md`](Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md) | 今後の計画（AI 駆動開発整備タスク） |
 | [`Docs/decision/`](Docs/decision/) | ADR（アーキテクチャ決定記録） |

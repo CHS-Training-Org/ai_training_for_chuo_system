@@ -22,7 +22,6 @@ repo_name = "Bizarress/AI-Development-Tutorial"
 
 nav = [
   { "ホーム" = "index.md" },
-  { "プロジェクト計画" = "PROJECT_PLAN.md" },
   { "アーキテクチャ" = "ARCHITECTURE.md" },
   { "デザイン" = "design.md" },
   { "計画 (Plan)" = [
@@ -50,6 +49,7 @@ nav = [
     "decision/ADR-019-backend-code-quality.md",
   ] },
   { "仕様 (Spec)" = [
+    "spec/overview.md",
     "spec/index.md",
     "spec/requirements.md",
     "spec/screen-spec.md",

@@ -29,7 +29,7 @@ timestamp: 2026-06-12
 
 | セクション | 概要 | 対象読者 |
 |-----------|------|---------|
-| [プロジェクト計画](./PROJECT_PLAN.md) | プロジェクトの目的・スコープ・体制・ロードマップ | 全員 |
+| [リポジトリ概要](./spec/overview.md) | 本リポジトリの目的・対象者・ステークホルダー役割・用語集 | 全員 |
 | [アーキテクチャ](./ARCHITECTURE.md) | AWS 標準アーキテクチャと全体構成図 | メンター・管理者 |
 | [計画 (Plan)](./plan/PHASE4_AI_DRIVEN_DEV_TASKS.md) | 今後の整備タスク（仕様書整備・AI 駆動開発ワークフロー・エンハンス要件策定） | メンター・管理者 |
 | [設計判断 (ADR)](./decision/README.md) | 技術選定・設計上の意思決定の記録 | メンター・学習者 |
@@ -45,4 +45,4 @@ timestamp: 2026-06-12
 - **認証・認可**: Better Auth + Cognito / Spring Security + OAuth2 Resource Server
 - **開発環境**: DevContainer + Docker Compose（`docker compose up` 一発で起動）
 
-詳細は [プロジェクト計画](./PROJECT_PLAN.md) と [アーキテクチャ](./ARCHITECTURE.md) を参照してください。
+詳細は [リポジトリ概要](./spec/overview.md) と [アーキテクチャ](./ARCHITECTURE.md) を参照してください。

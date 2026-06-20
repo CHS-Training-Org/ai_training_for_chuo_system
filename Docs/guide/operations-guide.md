@@ -6,7 +6,7 @@ tags: [guide, operations, management]
 timestamp: 2026-06-17
 audience: メンター・リポジトリ管理者
 references:
-  - Docs/PROJECT_PLAN.md
+  - Docs/spec/overview.md
   - Docs/guide/dev-workflow.md
   - Docs/guide/review-criteria.md
 ---
@@ -14,15 +14,15 @@ references:
 # 運用ガイド
 
 このページは、BookFlow チュートリアルを**日常的に運営する上での役割分担・サポートフロー・応答方針**を一元化します。  
-役割の名簿（誰が何者か）は [PROJECT_PLAN.md §3](../PROJECT_PLAN.md) が真実の源。レビューの観点・評価基準は [review-criteria.md](./review-criteria.md) が真実の源。本ページはそれらを運用の視点から接続します。
+役割の名簿（誰が何者か）は [リポジトリ概要 §ステークホルダーと役割](../spec/overview.md#roles) が真実の源。レビューの観点・評価基準は [review-criteria.md](./review-criteria.md) が真実の源。本ページはそれらを運用の視点から接続します。
 
-> **用語の統一**：本ガイドでは「オーナー」と「リポジトリ管理者」は同一アクターを指します（[PROJECT_PLAN.md §3](../PROJECT_PLAN.md)：リポジトリ設定管理を担う「リポジトリオーナー」）。以下では「オーナー（リポジトリ管理者）」と表記します。
+> **用語の統一**：本ガイドでは「オーナー」と「リポジトリ管理者」は同一アクターを指します（[リポジトリ概要 §役割](../spec/overview.md#roles)：リポジトリ設定管理を担う「リポジトリオーナー」）。以下では「オーナー（リポジトリ管理者）」と表記します。
 
 ---
 
 ## 役割分担（運用責任マトリクス） { #roles }
 
-役割の定義は [PROJECT_PLAN.md §3](../PROJECT_PLAN.md) を参照してください。以下は**運用上の責務**に絞った一覧です。
+役割の定義は [リポジトリ概要 §ステークホルダーと役割](../spec/overview.md#roles) を参照してください。以下は**運用上の責務**に絞った一覧です。
 
 | 責務 | オーナー（リポジトリ管理者） | メンター | 学習者 |
 |------|:---:|:---:|:---:|
@@ -160,7 +160,7 @@ docker compose exec docs uv run zensical build
 
 ## 関連ドキュメント
 
-- 役割の名簿・ステークホルダー定義：[PROJECT_PLAN.md §3](../PROJECT_PLAN.md)
+- 役割の名簿・ステークホルダー定義：[リポジトリ概要 §ステークホルダーと役割](../spec/overview.md#roles)
 - 標準開発フロー・ゲートの詳細：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow)
 - レビュー観点・評価基準：[review-criteria.md](./review-criteria.md)
 - ラベル体系・課題起票手順：[issue-registration.md](./issue-registration.md)

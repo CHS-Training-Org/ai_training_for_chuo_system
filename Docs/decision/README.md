@@ -6,7 +6,7 @@ tags: [adr, decision, guide]
 timestamp: 2026-06-18
 audience: メンター・リポジトリ管理者・学習者
 references:
-  - Docs/PROJECT_PLAN.md
+  - Docs/spec/overview.md
   - Docs/spec/index.md
 ---
 

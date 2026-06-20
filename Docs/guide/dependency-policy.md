@@ -6,7 +6,7 @@ tags: [guide, dependency, dependabot]
 timestamp: 2026-06-17
 audience: メンター・リポジトリ管理者
 references:
-  - Docs/PROJECT_PLAN.md
+  - Docs/spec/overview.md
   - Docs/guide/operations-guide.md
   - Docs/decision/ADR-011-backend-build-tool.md
 ---
@@ -41,7 +41,7 @@ Dependabot v2 で 4 つのエコシステムを監視します。
 
 | 対象 | 間隔 | 根拠 |
 |------|:----:|------|
-| FE（pnpm）・BE（Gradle）・GitHub Actions | **月次** | [PROJECT_PLAN.md §5](../PROJECT_PLAN.md) の「依存更新ポリシー（月次チェック）」に整合。セキュリティパッチの取り込み遅延を 1 か月以内に抑える |
+| FE（pnpm）・BE（Gradle）・GitHub Actions | **月次** | セキュリティパッチの取り込み遅延を 1 か月以内に抑える |
 | コンテナイメージ（Docker Compose） | **四半期** | 学習環境は安定性を優先。ベースイメージ更新は DevContainer 再ビルドを伴うため、頻繁な変更を避ける |
 
 ---
@@ -117,4 +117,3 @@ Dependabot がマージした main ブランチの更新を、進行中の学習
 - レビュー観点・評価基準：[review-criteria.md](./review-criteria.md)
 - ラベル体系・label-sync 手順：[issue-registration.md](./issue-registration.md)
 - ADR-011（Gradle 採用・Dependabot 整備の約束）：[ADR-011-backend-build-tool.md](../decision/ADR-011-backend-build-tool.md)
-- リスク管理（月次チェック・Dependabot の計画）：[PROJECT_PLAN.md §5](../PROJECT_PLAN.md)

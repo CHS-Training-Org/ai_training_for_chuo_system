@@ -6,7 +6,7 @@ tags: [plan, phase4, ai-dlc]
 timestamp: 2026-06-18
 audience: メンター・リポジトリ管理者・AI エージェント
 references:
-  - Docs/PROJECT_PLAN.md
+  - Docs/spec/overview.md
   - Docs/spec/index.md
   - Docs/guide/index.md
   - Docs/ARCHITECTURE.md
@@ -108,7 +108,7 @@ references:
   - 状態：完了
   - 内容：Claude Code（セットアップ・`CLAUDE.md` 連携・DevContainer 内での使い方・効果的なプロンプトの書き方）、状況別の活用チェックリスト（STEP-03 の回答フォームを兼ねる）、禁止事項（機密情報入力禁止・無検証コミット禁止 等）を記述する。
   - メモ：対象 AI ツールを Claude Code のみに変更（ユーザー判断）。  
-      これに伴い GitHub Copilot の記載をリポジトリ横断で削除（`Docs/index.md`・`PROJECT_PLAN.md`・`ARCHITECTURE.md`（図・表は Claude Code に置換）・`guide/index.md`・`troubleshooting.md` のプレースホルダー。  
+      これに伴い GitHub Copilot の記載をリポジトリ横断で削除（`Docs/index.md`・`ARCHITECTURE.md`（図・表は Claude Code に置換）・`guide/index.md`・`troubleshooting.md` のプレースホルダー。`PROJECT_PLAN.md` はその後 `Docs/spec/overview.md` に移設・削除済み。  
       ADR-002 は過去の意思決定の記録のため対象外）。  
       ガイドは「Claude Code とは／セットアップ（DevContainer 組み込み済み・`~/.claude` マウントによる認証共有）／基本的な使い方／効果的なプロンプトの書き方／活用チェックリスト（STEP-03 回答フォーム・明示アンカー `{ #checklist }`）／禁止事項」で構成。  
       禁止事項はタスク 3.5 で AI 利用ポリシーとして正式化予定。  
@@ -305,7 +305,7 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
   - 状態：完了
   - 内容：役割分担（オーナー / メンター / 学習者）・質問サポートフロー（Issue コメント優先）・レビュー SLA を `guide/` 配下のメンター向けページとして記述する。
   - メモ：`Docs/guide/operations-guide.md` を新規作成（3 つ目のメンター向けページ）。  
-      **役割分担**：役割名簿は `PROJECT_PLAN.md §3` が真実の源のためリンク参照に留め、本ページには運用責任マトリクス（役割 × 責務 7 項目）を新規作成。「オーナー＝リポジトリ管理者」の同一アクター統一を明示（`PROJECT_PLAN.md:62`・`dev-workflow.md:93` を根拠）。  
+      **役割分担**：役割名簿は `Docs/spec/overview.md §ステークホルダーと役割` が真実の源のためリンク参照に留め、本ページには運用責任マトリクス（役割 × 責務 7 項目）を新規作成。「オーナー＝リポジトリ管理者」の同一アクター統一を明示（`dev-workflow.md:93` を根拠。当初参照先の `PROJECT_PLAN.md` は `overview.md` に移設・削除済み）。  
       **質問サポートフロー**：先行記述ゼロのため新規執筆。Issue コメント優先を一次窓口として明文化。受付経路表（4 種）・エスカレーション手順を追加。5.4（アンケート）へ前方リンク。  
       **レビュー・応答方針**：ユーザー判断により具体的な目標日数は設けず「可能な限り早く」の努力目標に留める。PR レビュー・質問応答を同一の応答方針に一本化。第 2 ゲートの手順と観点は `dev-workflow.md#flow`・`review-criteria.md` へリンク参照（再掲しない）。  
       **前方互換メモ**：検討 A（AI 一次レビュー）・追加 E（公開/非公開）は未決のため、AI をアクター・応答方針に組み込むのは両論点の確定後と明記。  

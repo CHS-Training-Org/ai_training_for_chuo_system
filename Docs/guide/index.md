@@ -6,7 +6,7 @@ tags: [guide, index]
 timestamp: 2026-06-17
 audience: 学習者（主に新人）
 references:
-  - Docs/PROJECT_PLAN.md
+  - Docs/spec/overview.md
   - Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md
 ---
 

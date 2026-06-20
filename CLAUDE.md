@@ -130,6 +130,7 @@ bash scripts/provision-cognito.sh
 
 ## 設計書の参照先
 
+- リポジトリ概要（目的・対象者・役割・用語集）: `Docs/spec/overview.md`
 - アーキテクチャ全体: `Docs/ARCHITECTURE.md`
 - 実装仕様（要件・画面・API・ER 図）: `Docs/spec/`
 - 今後の計画（AI 駆動開発整備）: `Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md`
