@@ -66,6 +66,7 @@ pnpm test             # Vitest ユニットテスト
 pnpm test:e2e         # Playwright E2E テスト
 pnpm lint             # oxlint 実行
 pnpm format           # oxfmt フォーマット
+pnpm format:check     # フォーマット検証のみ（CI で使用）
 
 # バックエンド
 cd backend
@@ -81,6 +82,22 @@ docker compose -f .devcontainer/docker-compose.yml up -d
 # serve は devcontainer 起動時に docs サービスが自動起動（http://localhost:8000）
 docker compose exec docs uv run zensical build    # 手動ビルド（site/ に出力）
 ```
+
+---
+
+## ローカル環境セットアップ（Gotcha）
+
+```bash
+# フロントエンド環境変数の初期化
+cp frontend/.env.local.example frontend/.env.local
+
+# Cognito ユーザープール作成（初回のみ）
+bash scripts/provision-cognito.sh
+# → 出力された COGNITO_USER_POOL_ID / COGNITO_CLIENT_ID を frontend/.env.local に記入
+```
+
+**ブラウザサインインはローカルでは動作しない**（cognito-local が http:// のため Better Auth の OAuth リダイレクトが失敗する）。  
+動作確認はサインイン画面の「開発専用ロール別ログインボタン」（`NODE_ENV !== 'production'` 時のみ表示、`src/server/actions/dev-auth.ts`）を使うこと。
 
 ---
 
