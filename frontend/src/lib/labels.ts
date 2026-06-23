@@ -27,13 +27,13 @@ export const RESERVATION_STATUS_LABELS: Record<string, string> = {
 };
 
 /**
- * リソースカテゴリの表示名（screen-spec.md §リソース L137 準拠）。
+ * リソースカテゴリの表示名（requirements.md §カテゴリ定義 / screen-spec.md §リソース 準拠）。
  *
- * 選択UI 向けに「日本語名（ENUM）」形式で保持する。
- * - VEHICLE = "社用車（VEHICLE）"（requirements.md L56 の用語定義に準拠）
+ * 画面表示（Badge・選択UI）で使用する純日本語ラベル。
+ * DB 値・API パラメータ・Zod enum は英語（ROOM / EQUIPMENT / VEHICLE）のまま維持する。
  */
 export const RESOURCE_CATEGORY_LABELS: Record<string, string> = {
-  ROOM: "会議室（ROOM）",
-  EQUIPMENT: "備品（EQUIPMENT）",
-  VEHICLE: "社用車（VEHICLE）",
+  ROOM: "会議室",
+  EQUIPMENT: "備品",
+  VEHICLE: "社用車",
 };

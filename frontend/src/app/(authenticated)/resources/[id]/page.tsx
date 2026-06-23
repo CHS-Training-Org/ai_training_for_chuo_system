@@ -3,6 +3,7 @@ import { getResourceAction, getAvailabilityAction } from "@/server/actions/resou
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 /**
  * リソース詳細画面（screen-spec.md §リソース /resources/{id} 準拠）。
@@ -41,7 +42,7 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-xl">{resource.name}</CardTitle>
             <div className="flex gap-1">
-              <Badge variant="secondary">{resource.category}</Badge>
+              <Badge variant="secondary">{RESOURCE_CATEGORY_LABELS[resource.category]}</Badge>
               {!resource.isActive && (
                 <Badge variant="outline" className="text-muted-foreground">
                   無効

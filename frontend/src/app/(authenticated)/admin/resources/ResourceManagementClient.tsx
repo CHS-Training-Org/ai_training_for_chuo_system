@@ -340,7 +340,7 @@ export function ResourceManagementClient({
             <TableRow key={resource.id} className={!resource.isActive ? "opacity-50" : ""}>
               <TableCell className="font-medium">{resource.name}</TableCell>
               <TableCell>
-                <Badge variant="secondary">{resource.category}</Badge>
+                <Badge variant="secondary">{RESOURCE_CATEGORY_LABELS[resource.category]}</Badge>
               </TableCell>
               <TableCell>{resource.location ?? "—"}</TableCell>
               <TableCell>{resource.capacity ?? "—"}</TableCell>
