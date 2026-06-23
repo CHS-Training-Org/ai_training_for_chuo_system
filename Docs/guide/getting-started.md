@@ -145,26 +145,30 @@ COGNITO_CLIENT_ID=XXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ## ステップ 4：サービスの起動
 
-DevContainer 内のターミナルで、フロントエンドとバックエンドをそれぞれ起動します。
+VS Code の「Run and Debug」（++ctrl+shift+d++）からフロントエンドとバックエンドをそれぞれ起動します。
 
-```bash
-# ターミナル 1：フロントエンド（http://localhost:3000）
-cd frontend && pnpm dev
-```
+1. サイドバーの「Run and Debug」アイコンをクリック（またはショートカット ++ctrl+shift+d++）
+2. ドロップダウンで「**Frontend**」を選択し、▶ で起動（http://localhost:3000）
+3. ドロップダウンで「**Backend**」を選択し、▶ で起動（http://localhost:8080）
 
-```bash
-# ターミナル 2：バックエンド（http://localhost:8080）
-cd backend && ./gradlew bootRun
-```
+「Backend」はネイティブ Java デバッグが有効なため、ブレークポイントをそのまま利用できます。
+
+!!! tip "ターミナルから起動する場合"
+    VS Code の Run and Debug を使わない場合は、ターミナルから直接起動できます。
+
+    ```bash
+    # ターミナル 1：フロントエンド（http://localhost:3000）
+    cd frontend && pnpm dev
+    ```
+
+    ```bash
+    # ターミナル 2：バックエンド（http://localhost:8080）
+    cd backend && ./gradlew bootRun
+    ```
 
 !!! warning "バックエンド未起動のままアクセスしない"
     バックエンドを起動せずにフロントエンドにアクセスすると、認証後に `/auth/signin` へリダイレクトされ続けます。
     先に下記「動作確認」でバックエンドの起動を確認してください。
-
-!!! tip "バックエンドをデバッグ実行したい場合"
-    ブレークポイントを設定してデバッグしたい場合は、`./gradlew bootRun` の代わりに
-    VS Code の「Run and Debug」（++ctrl+shift+d++）→「**Spring Boot: bookflow**」を選択して起動してください
-    （`docker exec` 不要・ネイティブ Java デバッグ）。
 
 ## ステップ 5：動作確認
 

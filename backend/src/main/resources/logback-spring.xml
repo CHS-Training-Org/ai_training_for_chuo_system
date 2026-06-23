@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
+  <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+
   <!-- prod プロファイル：JSON 構造化ログ（ADR-017） -->
   <springProfile name="prod">
     <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
@@ -14,11 +16,11 @@
     </root>
   </springProfile>
 
-  <!-- local / test プロファイル（デフォルト）：人が読みやすいテキスト形式 -->
+  <!-- local / test プロファイル（デフォルト）：色付きテキスト形式 -->
   <springProfile name="!prod">
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
       <encoder>
-        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%thread]){magenta} %clr(%-5level) %clr(%logger{36}){cyan} %clr(-){faint} %msg%n</pattern>
       </encoder>
     </appender>
     <root level="INFO">

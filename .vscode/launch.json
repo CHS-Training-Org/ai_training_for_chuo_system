@@ -2,20 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Next.js: server-side",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "pnpm dev",
-      "cwd": "${workspaceFolder}/frontend"
-    },
-    {
-      "name": "Next.js: client-side",
-      "type": "chrome",
-      "request": "launch",
-      "url": "http://localhost:3000"
-    },
-    {
-      "name": "Next.js: full stack",
+      "name": "Frontend",
       "type": "node-terminal",
       "request": "launch",
       "command": "pnpm dev",
@@ -27,11 +14,10 @@
       }
     },
     {
-      "name": "Spring Boot: bookflow",
+      "name": "Backend",
       "type": "java",
       "request": "launch",
       "mainClass": "com.example.bookflow.BookflowApplication",
-      "projectName": "bookflow",
       "cwd": "${workspaceFolder}/backend",
       "env": {
         "DB_URL": "jdbc:postgresql://postgres:5432/bookflow",

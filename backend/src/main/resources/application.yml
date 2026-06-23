@@ -42,3 +42,6 @@ logging:
   level:
     root: INFO
     com.example.bookflow: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+
+spring.output.ansi.enabled: ALWAYS

@@ -124,7 +124,7 @@ references:
 
 - **症状**: サインイン画面で MEMBER / APPROVER / ADMIN ボタンを押すと、ダッシュボードへ遷移できず再び `/auth/signin` に戻る。
 - **原因**: バックエンドが起動していないため、フロントエンドが `GET /api/users/me` を呼べずユーザー情報を取得できない。認証レイアウトがセッション未確認と判断してサインインへリダイレクトする。
-- **解決策**: DevContainer 内の別ターミナルでバックエンドを起動する。
+- **解決策**: VS Code の「Run and Debug」（++ctrl+shift+d++）→「**Backend**」で起動する。ターミナルから起動する場合は以下を実行する。
   ```bash
   cd backend && ./gradlew bootRun
   ```
@@ -133,7 +133,6 @@ references:
   curl http://localhost:8080/actuator/health
   # {"status":"UP"} が返れば OK
   ```
-  VS Code でデバッグ起動する場合は「Run and Debug」→「**Spring Boot: bookflow**」を選択。
 
 ### `pnpm dev` / `bootRun` がポート使用中エラーになる
 
