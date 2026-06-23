@@ -11,13 +11,11 @@ import { getAccessToken } from "@/lib/session";
 // 入力スキーマは 'use server' ファイルから export できないため lib/schemas/resource.ts に分離している。
 import type { CreateResourceInput, UpdateResourceInput } from "@/lib/schemas/resource";
 
-export type { CreateResourceInput, UpdateResourceInput } from "@/lib/schemas/resource";
-
 // ---------------------------------------------------------------------------
 // リソース一覧パラメータ
 // ---------------------------------------------------------------------------
 
-export interface ListResourcesParams {
+interface ListResourcesParams {
   category?: string;
   from?: string;
   to?: string;
