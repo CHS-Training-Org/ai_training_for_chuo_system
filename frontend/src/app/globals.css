@@ -85,9 +85,9 @@
   --radius-base: 0.5rem;
 }
 
-/* Dark mode */
-.dark,
-@media (prefers-color-scheme: dark) {
+/* Dark mode — .dark クラスで制御（next-themes 経由）。
+   @media (prefers-color-scheme: dark) は ThemeProvider 未導入のため除外。 */
+.dark {
   --background: oklch(0.022 0.019 264.695);
   --foreground: oklch(0.984 0.003 264.695);
   --card: oklch(0.155 0.026 264.695);

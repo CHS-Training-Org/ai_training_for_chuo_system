@@ -6,21 +6,10 @@ import { getAccessToken } from "@/lib/session";
 import type { CreateReservationInput, UpdateReservationInput } from "@/lib/schemas/reservation";
 
 // ---------------------------------------------------------------------------
-// リクエスト入力スキーマ（フォームバリデーション用）
-// ---------------------------------------------------------------------------
-// 'use server' ファイルからは Zod スキーマオブジェクトを export できないため
-// （Next.js の制約：非同期関数以外のオブジェクト export は不可）、
-// スキーマ定義は lib/schemas/reservation.ts に分離している。
-// 型定義は re-export（型情報は 'use server' 制約の対象外）。
+// 一覧パラメータ（"use server" ファイルは非同期関数以外の export 不可のため非公開）
 // ---------------------------------------------------------------------------
 
-export type { CreateReservationInput, UpdateReservationInput } from "@/lib/schemas/reservation";
-
-// ---------------------------------------------------------------------------
-// 一覧パラメータ
-// ---------------------------------------------------------------------------
-
-export interface ListReservationsParams {
+interface ListReservationsParams {
   status?: string[];
   page?: number;
   size?: number;
