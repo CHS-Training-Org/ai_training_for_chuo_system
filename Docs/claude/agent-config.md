@@ -3,7 +3,7 @@ type: agent-config
 title: Claude Code 設定台帳
 description: BookFlow リポジトリにインストールされている Rules・Skills・Hooks・その他設定の一覧と呼び出し方
 tags: [claude, agent-config, rules, skills, hooks]
-timestamp: 2026-06-20
+timestamp: 2026-06-21
 audience: 学習者・メンター
 references:
   - Docs/spec/aidlc-adoption.md
@@ -46,6 +46,7 @@ references:
 |-------|---------|------|
 | `update-spec` | `/update-spec` | `Docs/spec/`（requirements / screen-spec / api-spec / er-diagram）を Spec-first ルールに沿って更新・新規作成する。実装より**先**に起動するのが正解 |
 | `draft-pr` | `/draft-pr` | PR タイトル・本文を `.github/PULL_REQUEST_TEMPLATE.md` の様式で下書き生成する。コミット・push・PR 作成は行わない |
+| `drawio-skill` | `/drawio-skill` または「図を描いて」「ER図を作って」「アーキ図を書いて」などのトリガーで自動発動 | `.drawio` 図（アーキ図・ER図・フローチャート・UML など）を生成・編集する。draw.io CLI は使用せず、VSCode の `hediet.vscode-drawio` 拡張でレンダリング・エクスポートする。上流: [Agents365-ai/drawio-skill v1.14.0](https://github.com/Agents365-ai/drawio-skill/tree/v1.14.0)（MIT）の BookFlow 翻案 |
 
 > **Spec-first 運用**: コードを書く前に `/update-spec` を起動し、仕様書を更新してからコード実装に進む（[dev-workflow.md §3](../guide/dev-workflow.md) 参照）。
 

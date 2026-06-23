@@ -141,20 +141,7 @@ BookFlow は 3 種のロールで操作権限を制御する。
 
 ### 予約ステータス遷移図
 
-```mermaid
-stateDiagram-v2
-    [*] --> PENDING : 申請（requires_approval=true）
-    [*] --> APPROVED : 申請時に即時確定（requires_approval=false）
-
-    PENDING --> APPROVED : 承認者が承認
-    PENDING --> REJECTED : 承認者が却下
-    PENDING --> CANCELLED : 申請者がキャンセル
-    APPROVED --> CANCELLED : 申請者 or ADMIN がキャンセル
-
-    APPROVED --> [*]
-    REJECTED --> [*]
-    CANCELLED --> [*]
-```
+![予約ステータス遷移図](../diagrams/spec/requirements-reservation-status.drawio.svg)
 
 > **注意**：`reservations.status` に DB DEFAULT はない。アプリ層（Service）が申請時に `PENDING`（requires_approval=true）または `APPROVED`（requires_approval=false）を設定する。`DRAFT` はベース実装では未使用（下書き保存は拡張課題用の予約値）。
 

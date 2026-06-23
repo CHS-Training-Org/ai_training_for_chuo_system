@@ -114,12 +114,7 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
 
 `com.example.bookflow` 配下は 4 つのレイヤーに分かれ、依存は一方向です。
 
-```mermaid
-flowchart LR
-    P["presentation<br/>Controller・DTO<br/>例外→HTTPの変換"] --> A["application<br/>ユースケース Service<br/>業務例外"]
-    A --> D["domain<br/>Entity・Enum<br/>Repository interface"]
-    I["infrastructure<br/>config・security"] -.横断設定.-> P
-```
+![4 層アーキテクチャ](../diagrams/guide/coding-conventions-4-layer.drawio.svg)
 
 | レイヤー | 置くもの | 置かないもの |
 |---------|---------|-------------|

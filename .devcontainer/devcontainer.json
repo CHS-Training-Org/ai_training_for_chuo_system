@@ -34,7 +34,8 @@
         "oxc.oxc-vscode",
         "ms-playwright.playwright",
         "ms-azuretools.vscode-docker",
-        "Anthropic.claude-code"
+        "Anthropic.claude-code",
+        "hediet.vscode-drawio"
       ],
       "settings": {
         "editor.formatOnSave": true,

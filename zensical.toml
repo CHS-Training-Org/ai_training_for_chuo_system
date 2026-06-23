@@ -14,7 +14,7 @@ docs_dir = "Docs"
 site_dir = "site"
 
 # 追加スタイルシート（docs_dir からの相対）。デザインショーケース（design.md）用。
-extra_css = ["stylesheets/design-showcase.css"]
+extra_css = ["stylesheets/design-showcase.css", "stylesheets/drawio.css"]
 
 # リポジトリリンク（ページ右上に GitHub アイコンが表示される）
 repo_url = "https://github.com/Bizarress/AI-Development-Tutorial"
@@ -26,6 +26,7 @@ nav = [
   { "デザイン" = "design.md" },
   { "計画 (Plan)" = [
     "plan/PHASE4_AI_DRIVEN_DEV_TASKS.md",
+    "plan/MERMAID_TO_DRAWIO_MIGRATION.md",
   ] },
   { "設計判断 (ADR)" = [
     "decision/ADR-001-frontend-package-manager.md",
@@ -112,7 +113,6 @@ features = [
   "content.tooltips",
   "navigation.footer",
   "navigation.tabs",
-  "navigation.indexes",
   "navigation.instant",
   "navigation.instant.prefetch",
   "navigation.path",
