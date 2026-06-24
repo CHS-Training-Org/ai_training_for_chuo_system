@@ -27,6 +27,8 @@ references:
 
 **2026-06-18 採用方針更新**（ADR-020 参照）: PHASE4 タスク 3.7「案B改良（写像のみ・エンジン非採用）」から「エンジン完全導入（replace）+ Docs/spec/ 写像統合」に転換。AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標準ワークフローとして採用し、`dev-workflow.md` をエンジンベースに全面改訂。
 
+**2026-06-24 起動メカニズム変更**（ADR-020 追記参照）: エンジン本体を `.claude/rules/aidlc-core.md`（常時読込・soft 委譲）から **`.claude/skills/aidlc/SKILL.md`（`/aidlc` スキル）へ移設**。発火は `/aidlc` 明示起動または「AI-DLC で進める」等の意図指定時のみ（常時 OVERRIDES ではない）。これによりスキル内で硬い per-stage 意味論（承認ゲート・成果物生成・監査ログ記録）が保持され、台帳の「活性化」主張が実行時に履行される。常時読込の `aidlc-core.md` は薄いポインタに縮小。
+
 ---
 
 ## 状態管理の写像 { #state-mapping }
@@ -48,7 +50,7 @@ references:
 
 | 上流ファイル | 役割 | BookFlow 反映先 | 採用状態 | 根拠 |
 |---|---|---|---|---|
-| `aws-aidlc-rules/core-workflow.md` | AI-DLC エンジン本体。3フェーズ・全ステージ・ゲート・監査ログ・パス解決・extensions ローディングを統括 | `.claude/rules/aidlc-core.md`（翻案）+ `.aidlc-rule-details/`（ステージファイル群） | **エンジン採用（翻案・活性化）** | BookFlow の標準ワークフローとして教える。"OVERRIDES" 宣言は plan mode 第1ゲートとして統合 |
+| `aws-aidlc-rules/core-workflow.md` | AI-DLC エンジン本体。3フェーズ・全ステージ・ゲート・監査ログ・パス解決・extensions ローディングを統括 | **`.claude/skills/aidlc/SKILL.md`（エンジン本体・硬い意味論）** + `.claude/rules/aidlc-core.md`（薄いポインタ・常時読込）+ `.aidlc-rule-details/`（ステージファイル群） | **エンジン採用（スキル化・活性化）** | BookFlow の標準ワークフローとして教える。発火は `/aidlc` 明示起動または「AI-DLC で進める」等の意図指定時。スキル内で per-stage MANDATORY・承認ゲート・成果物生成・監査ログが確定的に機能する |
 
 ### common（全フェーズ共通、11ファイル）
 
