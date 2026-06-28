@@ -1,0 +1,54 @@
+{
+  "name": "BookFlow Full Stack",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "frontend",
+  "workspaceFolder": "/workspace",
+  // Claude Code 未起動だとホストに ~/.claude.json が存在せず、Docker がマウント元を
+  // 空ディレクトリとして自動生成 → ファイル↔ディレクトリの型衝突でコンテナ起動が失敗する。
+  // マウント前にホスト側で空ファイルの存在を保証して回避する。
+  // （.claude ディレクトリはホスト共有をやめコンテナ専用 named volume に隔離したため、
+  //   ホスト側の mkdir は不要になった。docker-compose.yml の claude-config を参照。）
+  // initializeCommand はホストのシェルで実行される（WSL2/Linux/macOS は /bin/sh）。
+  // そのため POSIX sh で記述する。Windows で開発する場合は WSL2 経由で起動すること
+  // （README の「Windows ユーザー向け: WSL2 セットアップ」を参照）。
+  "initializeCommand": "[ -f \"$HOME/.claude.json\" ] || printf '{}' > \"$HOME/.claude.json\"",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": { "version": "25" },
+    "ghcr.io/devcontainers/features/node:2.0.0": { "version": "24" },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  // ホストの ~/.claude / ~/.claude.json のバインドは docker-compose.yml の frontend サービスへ
+  // long-form 構文で定義している（compose 構成では devcontainer.json の mounts(短縮形)だと
+  // Windows のドライブレターを含むパスが Docker のボリューム parser に弾かれるため）。
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Java 関連は Extension Pack for Java に集約。redhat.java / vscode-java-test /
+        // vscode-gradle 等を内包するため、個別指定で起きる「依存先(redhat.java)が未インストール」
+        // のインストール順序レースを回避できる。
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-spring-boot",
+        "bradlc.vscode-tailwindcss",
+        "oxc.oxc-vscode",
+        "ms-playwright.playwright",
+        "ms-azuretools.vscode-docker",
+        "Anthropic.claude-code",
+        "hediet.vscode-drawio"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current"
+      }
+    }
+  },
+  "forwardPorts": [3000, 8000, 8080],
+  "containerEnv": {
+    "WAYLAND_DISPLAY": "",
+    "DISPLAY": "",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8"
+  },
+  "postCreateCommand": "bash .devcontainer/postCreate.sh"
+}

@@ -1,0 +1,69 @@
+version: 2
+
+updates:
+  # ── GitHub Actions ─────────────────────────────────────────────────────────
+  # .github/workflows/*.yml の uses: に指定されたアクションのバージョンを月次更新。
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "type:dependencies"
+    commit-message:
+      prefix: "chore"
+    groups:
+      github-actions-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+
+  # ── フロントエンド（pnpm） ──────────────────────────────────────────────────
+  # frontend/package.json の依存を月次更新。
+  # pnpm-lock.yaml が存在するため Dependabot は pnpm として処理する。
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "type:dependencies"
+    commit-message:
+      prefix: "chore"
+    groups:
+      frontend-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+
+  # ── バックエンド（Gradle） ──────────────────────────────────────────────────
+  # backend/build.gradle.kts の依存を月次更新。
+  # dependencyLocking 未設定のためマニフェストのバージョン番号を直接更新する。
+  - package-ecosystem: "gradle"
+    directory: "/backend"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "type:dependencies"
+    commit-message:
+      prefix: "chore"
+    groups:
+      backend-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+
+  # ── コンテナイメージ（Docker Compose） ─────────────────────────────────────
+  # .devcontainer/docker-compose.yml の image: タグを四半期更新。
+  # 本リポジトリに Dockerfile は存在しないため docker-compose エコシステムを使用。
+  # cognito-local は既に SHA ダイジェスト固定済みのため実質対象は 4 イメージ。
+  - package-ecosystem: "docker-compose"
+    directory: "/.devcontainer"
+    schedule:
+      interval: "quarterly"
+    labels:
+      - "type:dependencies"
+    commit-message:
+      prefix: "chore"
+    open-pull-requests-limit: 3

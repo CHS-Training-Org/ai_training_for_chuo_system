@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Frontend",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm dev",
+      "cwd": "${workspaceFolder}/frontend",
+      "serverReadyAction": {
+        "pattern": "- Local:.+(https?://.+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome"
+      }
+    },
+    {
+      "name": "Backend",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "com.example.bookflow.BookflowApplication",
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "DB_URL": "jdbc:postgresql://postgres:5432/bookflow",
+        "DB_USERNAME": "bookflow",
+        "DB_PASSWORD": "bookflow",
+        "COGNITO_JWKS_URI": "http://cognito-local:9229/local_user_pool_id/.well-known/jwks.json"
+      }
+    }
+  ]
+}

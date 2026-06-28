@@ -1,0 +1,134 @@
+services:
+  frontend:
+    image: node:24-slim
+    working_dir: /workspace/frontend
+    volumes:
+      - ..:/workspace:cached
+      # node_modules を named volume に隔離する。
+      # 理由: (1) 約2.5GB・数万ファイル規模で IDE の監視/検索対象として重い、
+      # (2) pnpm はストアからハードリンクで配置するため、node_modules と
+      #     pnpm-store を同一 FS（同一 named volume 群）に置く必要がある
+      #     （frontend/pnpm-workspace.yaml の storeDir: /pnpm-store と対応）。
+      - frontend-node-modules:/workspace/frontend/node_modules
+      - pnpm-store:/pnpm-store
+      # Claude Code の設定は .claude ディレクトリ（コンテナ専用 volume に隔離）と
+      # ~/.claude.json（ホストと共有するバインド）に分かれる。下記の long-form / OS 非依存
+      # 解決は ~/.claude.json バインドに対する注意書き:
+      # devcontainer.json の mounts(短縮形)では Windows のドライブレター(C:)を含むパスが
+      # 'C:\...:/root/...:rw' に変換され、Docker のボリューム parser が ':' で誤分割して
+      # 「invalid volume specification」で起動失敗する。long-form は source/target を別キーに
+      # 分けるため ':' の曖昧さがなく回避できる（VS Code 公式が compose 構成で推奨する方式）。
+      # ホストのホームディレクトリを OS 非依存で解決する。WSL2/Linux/macOS では $HOME、
+      # Windows ホストでは $USERPROFILE（${USERPROFILE:-$HOME} で前者優先・無ければ後者）。
+      # devcontainer.json の initializeCommand が、マウント前にホスト側へ
+      # .claude.json を事前生成している（同じパスに解決される必要がある）。
+      # Claude Code の設定ディレクトリ(.claude)はホストと共有せず、コンテナ専用の
+      # named volume に隔離する。
+      # 理由: .claude 配下（plugins の known_marketplaces.json 等）にはプラグインの設置先や
+      #   各種パスが絶対パスで書き込まれる。ホスト($HOME=/home/<user>)とコンテナ($HOME=/root)で
+      #   base パスが食い違うため、ディレクトリを共有するとホストが書いたパスをコンテナが
+      #   探しに行き、プラグインインストール等が「Source path does not exist」で失敗する
+      #   （逆向きにホスト側を壊すシーソーも起きる）。
+      #   ディレクトリごと隔離することで settings/memory/history/plugins/認証(.credentials.json)が
+      #   ホストとコンテナで完全に独立する（frontend-node-modules の隔離と同じ手法）。
+      #   ※ 認証情報(.credentials.json)も .claude 配下のため分離される。コンテナ側では
+      #     初回に一度だけ /login が必要（以後はこの volume に保持され再ビルドでも維持される）。
+      - claude-config:/root/.claude
+      # ~/.claude.json は .claude ディレクトリ外の単一ファイル。per-project 設定が絶対パスを
+      # キーにするためホストと共有しても衝突せず（コンテナは /workspace、ホストは /home/<user>/...）、
+      # アカウント識別・MCP 設定を引き継げるので共有を維持する。
+      - type: bind
+        source: ${USERPROFILE:-$HOME}/.claude.json
+        target: /root/.claude.json
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+      # BE はこの dev コンテナ内で手動起動する（./gradlew bootRun または VS Code「Spring Boot: bookflow」）。
+      # BACKEND_URL は .env.local の http://localhost:8080 を使用するため、ここでは上書きしない。
+      # application.yml のデフォルト値は localhost:5432 だが、Compose ではサービスごとに
+      # ネットワーク名前空間が分かれるため localhost では postgres / cognito-local に到達できない。
+      # bootRun（JVM プロセス）はこのコンテナ内で動くため、サービス名で参照する必要がある。
+      DB_URL: jdbc:postgresql://postgres:5432/bookflow
+      DB_USERNAME: bookflow
+      DB_PASSWORD: bookflow
+      COGNITO_JWKS_URI: http://cognito-local:9229/local_user_pool_id/.well-known/jwks.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      cognito-local:
+        condition: service_started
+    command: sleep infinity
+
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: bookflow
+      POSTGRES_USER: bookflow
+      POSTGRES_PASSWORD: bookflow
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookflow -d bookflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  localstack:
+    image: localstack/localstack:3
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3,dynamodb
+      DEFAULT_REGION: ap-northeast-1
+    volumes:
+      - localstack-data:/var/lib/localstack
+
+  cognito-local:
+    # バージョン固定: DB ファイル直接シード方式の互換性を維持するため digest で固定。
+    # scripts/provision-cognito.sh はこのバージョンのファイルフォーマットを前提とする。
+    image: jagregory/cognito-local@sha256:a5ad30d01da5016a38535a717f6e1642d1b37f886a7b17e90b67f6e5ad134831
+    ports:
+      - "9229:9229"
+    volumes:
+      - cognito-data:/app/.cognito
+
+  docs:
+    image: ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+    restart: on-failure
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace:cached
+      # .venv（生成物・約95MB / 多数のファイル）を named volume に隔離する。
+      # 旧コメントの「9p 回避」は現構成には該当しない
+      # （/workspace 側のバインドマウントも本 volume も ext4 であり、9p は不使用。
+      #  `docker exec <docs コンテナ名> mount | grep workspace` で確認可能）。
+      # 残す理由: frontend-node-modules と同様、生成物を bind mount 側のツリーから
+      # 隔離して IDE のファイル監視・検索対象を減らすため（規模はより小さい）。
+      - docs-venv:/workspace/.venv
+    ports:
+      - "8000:8000"
+    environment:
+      UV_LINK_MODE: copy
+      # uv / zensical を非対話モードで動作させ、確認プロンプトでの停止を防ぐ
+      CI: "true"
+      # CI=true によるカラー抑制を上書きし、Claude Code 等の CLI ツールで色付き表示を維持する
+      FORCE_COLOR: "1"
+    # 初回起動時に venv 作成・依存関係同期を行ってから zensical serve を起動する。
+    # zensical serve は inotify ベースの自動再ビルド・ライブリロードを内蔵しているため
+    # （WSL2 ネイティブ FS では inotify が正常に伝播する）、Docs/ 配下を編集すると
+    # ブラウザが自動更新される。追加の監視プロセスは不要。
+    command: sh -c "uv venv --allow-existing && uv sync && exec uv run zensical serve -a 0.0.0.0:8000"
+
+volumes:
+  postgres-data:
+  localstack-data:
+  cognito-data:
+  frontend-node-modules:
+  pnpm-store:
+  docs-venv:
+  # Claude Code の設定ディレクトリ(.claude)をホストと分離するための専用ボリューム。
+  # 詳細は frontend サービスの claude-config マウントのコメントを参照。
+  claude-config:

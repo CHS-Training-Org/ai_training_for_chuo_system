@@ -1,0 +1,73 @@
+name: 選択課題（エンハンス）
+description: Beginner / Intermediate / Advanced の選択課題（エンハンス課題）に取り組む際の起票用テンプレートです。
+title: "[Enhance] "
+labels:
+  - optional
+body:
+  - type: markdown
+    attributes:
+      value: |
+        対応するビジネス要求シート（`Docs/spec/enhancements/<課題>.md`）を先に読んでから記入してください。
+        **受入条件・完了条件はシート側が真実の源です**。本 Issue では概要のみを記載し、二重管理しないようにしてください。
+  - type: input
+    id: requirement-sheet
+    attributes:
+      label: ビジネス要求シートへのリンク
+      description: "`Docs/spec/enhancements/<課題>.md` へのパス・リンクを記載してください。"
+      placeholder: "例：Docs/spec/enhancements/<short-desc>.md"
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: ゴール
+      description: この課題で達成すること（何ができるようになるか）を記載してください。
+    validations:
+      required: true
+  - type: textarea
+    id: prerequisites
+    attributes:
+      label: 前提条件
+      description: 着手前に完了しておくべき課題・必須課題（STEP）があれば記載してください。
+    validations:
+      required: false
+  - type: textarea
+    id: done-conditions
+    attributes:
+      label: 完了条件
+      description: |
+        詳細な受入条件はビジネス要求シート側を参照してください（本 Issue には再掲しません）。
+        ここでは、レビュー依頼前に自分で確認するチェック項目を簡潔に記載してください。
+    validations:
+      required: true
+  - type: textarea
+    id: ai-hints
+    attributes:
+      label: AI活用ヒント
+      description: Claude Code の plan mode や `/update-spec` スキル等、活用が想定される場面のヒントがあれば記載してください。
+    validations:
+      required: false
+  - type: dropdown
+    id: estimate
+    attributes:
+      label: 推定工数
+      description: 目安となる作業時間を選択してください。
+      options:
+        - 半日
+        - 1日
+        - 2〜3日
+        - 1週間以上
+    validations:
+      required: true
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: 難易度
+      description: |
+        課題の想定難易度を選択してください。対応する `level:*` ラベル（`level:beginner` 等）はメンターが起票後に付与します（ラベル体系の詳細は [Docs/guide/issue-registration.md](../Docs/guide/issue-registration.md) を参照）。
+      options:
+        - Beginner
+        - Intermediate
+        - Advanced
+    validations:
+      required: false

@@ -1,0 +1,43 @@
+- name: required
+  color: B60205
+  description: 必須課題（STEP-01〜05）
+
+- name: optional
+  color: 1D76DB
+  description: 選択課題（エンハンス課題）
+
+- name: sequential
+  color: D93F0B
+  description: 順序依存あり（前のステップ完了が前提）
+
+- name: level:beginner
+  color: 0E8A16
+  description: 難易度 Beginner（フロントエンド中心・局所的な改善）
+
+- name: level:intermediate
+  color: FBCA04
+  description: 難易度 Intermediate（縦切り機能・設計判断が必要）
+
+- name: level:advanced
+  color: E11D21
+  description: 難易度 Advanced（外部連携・複雑な業務ロジック・ツールチェーン）
+
+- name: type:frontend
+  color: 8A63D2
+  description: 対象レイヤー：フロントエンドのみ
+
+- name: type:backend
+  color: 6F42C1
+  description: 対象レイヤー：バックエンドのみ
+
+- name: type:fullstack
+  color: B392F0
+  description: 対象レイヤー：フロントエンド＋バックエンド（両方）
+
+- name: in-progress
+  color: FEF2C0
+  description: 着手中
+
+- name: type:dependencies
+  color: 5A3DB0
+  description: 依存更新（Dependabot 自動起票）
