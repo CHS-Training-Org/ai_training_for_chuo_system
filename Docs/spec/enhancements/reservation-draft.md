@@ -47,6 +47,14 @@ BookFlow の `reservations.status` に `DRAFT` ステータスが定義されて
   - `screen-spec.md` §`/reservations/new` — 「下書き保存」ボタンを追記；§`/reservations` — `DRAFT` タブ・フィルタを追記；§`/reservations/{id}` — 下書き時の操作（再編集・正式申請）を追記
   - `requirements.md` §予約ステータス遷移 — `DRAFT` 遷移パターンを追記
 
+## 依存関係
+
+- 前提課題：なし（`reservations.status` の `DRAFT` は既存スキーマの CHECK 制約に定義済み）
+- 競合する課題：
+  - [繰り返し予約](./recurring-reservation.md) — 両課題とも `POST /api/reservations` と予約申請フォーム（`/reservations/new`）を変更するため、並行着手は非推奨。
+  - [予約一覧のフィルタ拡張](./reservation-list-filter.md) — 両課題とも予約一覧画面（`/reservations`）のタブ・フィルタと `GET /api/reservations` を変更するため、同時並行ではマージ競合の可能性がある。
+- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](./e2e-test-coverage.md) を行うとよい。
+
 ## AI 活用ポイント
 
 - plan mode で「`DRAFT` → `PENDING` のステータス遷移バリデーション（不正遷移の防止）をどこで実装するか（Service 層 vs. ドメイン層）」を相談する

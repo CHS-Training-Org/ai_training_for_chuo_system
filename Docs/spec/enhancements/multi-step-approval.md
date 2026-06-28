@@ -49,6 +49,12 @@ BookFlow の承認フローは現在 1 段階固定です。`ApprovalService.cre
   - `screen-spec.md` — 承認フロー設定の管理 UI を追記
   - `requirements.md` §APRV — 多段階フローの遷移パターンを追記
 
+## 依存関係
+
+- 前提課題：なし（ベースシステムの既存承認フローのみに依存）
+- 競合する課題：[部署ごとの承認者設定](./department-approver.md) — 両課題とも `ApprovalService.createStep()`（`backend/.../application/ApprovalService.java`）を別方向に拡張するため、並行着手は非推奨。一方を完成させてからもう一方に着手する。
+- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](./e2e-test-coverage.md) で承認フローのリグレッションをカバーするとよい。
+
 ## AI 活用ポイント
 
 - plan mode で「承認ステップ順序をリソースに紐づけた設定テーブル（`resource_approval_flows`）として管理するか、都度指定するか」の設計を相談する

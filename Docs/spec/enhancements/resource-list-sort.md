@@ -43,6 +43,12 @@ BookFlow のリソース一覧（`/resources`）は現在、登録日時（`crea
   - `api-spec.md` §`GET /api/resources` — `sort` クエリパラメータと有効値を追記
   - `screen-spec.md` §`/resources` — フィルタフォームにソート選択 UI を追記
 
+## 依存関係
+
+- 前提課題：なし（ベースシステムの既存 `GET /api/resources`・`ResourceFilterForm.tsx` のみに依存）
+- 競合する課題：[リソース一覧の検索・フィルタ追加](./resource-list-filter.md) — 両課題とも `GET /api/resources` と同一の `ResourceFilterForm.tsx` を変更するため、並行着手は非推奨。
+- 推奨着手順序：[リソース一覧の検索・フィルタ追加](./resource-list-filter.md) を**先に着手**するとよい。本課題の受入条件（「キーワード検索との組み合わせでもソートが適用される」）がフィルタ課題のキーワード検索機能を前提としているため。後続として [OpenAPI クライアント自動生成](./openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
+
 ## AI 活用ポイント
 
 - `Pageable` の `Sort` パラメータへのマッピング方法を AI に確認する（`PageableHandlerMethodArgumentResolver` の標準的な記法）
