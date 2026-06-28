@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: node:24-slim
+    image: node:26-slim
     working_dir: /workspace/frontend
     volumes:
       - ..:/workspace:cached
