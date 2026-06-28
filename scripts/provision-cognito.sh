@@ -90,7 +90,7 @@ STATE_FILE="$(dirname "$0")/.cognito-provision-state"
 USER_PASSWORD="BookFlow1234!"
 
 # コンテナ名（docker compose のプロジェクト名に依存）
-CONTAINER="${COGNITO_CONTAINER:-ai-development-tutorial_devcontainer-cognito-local-1}"
+CONTAINER="${COGNITO_CONTAINER:-ai_training_for_chuo_system_devcontainer-cognito-local-1}"
 
 # devcontainer 内からは cognito-local hostname、ホストからは localhost:9229 を使用
 if curl -s --connect-timeout 2 "http://cognito-local:9229/" >/dev/null 2>&1; then

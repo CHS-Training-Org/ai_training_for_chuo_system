@@ -23,7 +23,7 @@
 
 ドキュメントは **Zensical** で静的サイトとして公開しています。
 
-- **公開サイト**: https://bizarress.github.io/AI-Development-Tutorial/
+- **公開サイト**: https://github.com/CHS-Training-Org/ai_training_for_chuo_system
 - **ローカルプレビュー**: devcontainer 起動時に自動で http://localhost:8000 が立ち上がります。
 - **手動ビルド**（`site/` への静的出力が必要な場合）:
   ```bash

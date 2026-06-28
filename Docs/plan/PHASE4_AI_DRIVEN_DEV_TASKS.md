@@ -231,7 +231,7 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
       AI-DLC の Operations フェーズに相当する自動品質ゲートとして位置づける。  
       `security-scan` は未設定のため新規作成が必要（既存は `ci-frontend.yml`／`ci-backend.yml`／`docs.yml`）。
   - メモ：`.github/workflows/security-scan.yml` を新規作成（Trivy `scan-type: fs`、ジョブ id `trivy`）。  
-      当初は CodeQL + dependency-review-action を検討したが、リポジトリ（`Bizarress/AI-Development-Tutorial`）の公開設定が不明で、private + GHAS 無しだと毎回失敗し学習者の PR を全ブロックしてしまうため不採用（将来 public 化・GHAS 導入時の選択肢として申し送り）。  
+      当初は CodeQL + dependency-review-action を検討したが、リポジトリ（`CHS-Training-Org/ai_training_for_chuo_system`）の公開設定が不明で、private + GHAS 無しだと毎回失敗し学習者の PR を全ブロックしてしまうため不採用（将来 public 化・GHAS 導入時の選択肢として申し送り）。  
       Trivy は GHAS 不要で public/private いずれでも動作し、Java25 環境での CodeQL ビルド追随リスクも回避できる。  
       `scanners: vuln`（依存関係の既知脆弱性、`severity: HIGH,CRITICAL` + `ignore-unfixed: true`）をブロッキング（`exit-code: 1`）、`scanners: misconfig`（Dockerfile/compose/ワークフロー等の設定ミス）は `continue-on-error: true` で非ブロッキング（参考情報）に分離。  
       理由：misconfig はローカルで Trivy を実行できず（本開発環境ではバイナリ取得が制限され検証不可）、`.devcontainer/docker-compose.yml` に healthcheck 未設定のサービスがあるなど初回実行で未知の HIGH 検出により学習者 PR を全ブロックするリスクを排除できなかったため。初回 Actions 実行結果を見てメンターが misconfig 側のブロッキング化や閾値調整を判断する。  
@@ -331,7 +331,7 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
   - 状態：完了
   - 内容：Zensical ビルドを GitHub Pages へデプロイする workflow を作成する（`site_url` は設定済み）。
   - メモ：調査の結果、`.github/workflows/docs.yml` は Phase2（コミット `ee3a2d2`）で既に作成済みだった。GitHub 公式「Pages via Actions」テンプレートそのものであり（`build`：`uv sync` → `zensical build` → `upload-pages-artifact path: site` ＋ `deploy`：`actions/deploy-pages@v4`、`permissions: pages/id-token`・`concurrency: pages`・`environment: github-pages`・`workflow_dispatch` すべて完備）、**修正不要と確認**。  
-      **ローカルビルド検証（申し送り解消）**：docs コンテナ（`ai-development-tutorial_devcontainer-docs-1`）で `uv run zensical build` を実行し、"Build finished in 0.79s" でエラーなく完了することを本タスクで確認。`site/spec/enhancements/`（15 シート全件）・`site/guide/`（operations-guide・dependency-policy 等の最新ページ含む全件）の生成も確認。**これまで繰り返し申し送られていた「Zensical ビルド検証は docs コンテナが起動しないため未実施（環境要因）」を本タスクで解消**（コンテナは現在稼働中・`pyproject.toml` 存在）。ビルド時の 7 件 Warning（`page does not exist`）はすべて `Docs/` 外ファイル（`.claude/rules/`・`vendor/`・`.claude/skills/`）へのリンクに起因する既存の既知警告であり、サイト外リンクのため無視可。  
+      **ローカルビルド検証（申し送り解消）**：docs コンテナ（`ai_training_for_chuo_system_devcontainer-docs-1`）で `uv run zensical build` を実行し、"Build finished in 0.79s" でエラーなく完了することを本タスクで確認。`site/spec/enhancements/`（15 シート全件）・`site/guide/`（operations-guide・dependency-policy 等の最新ページ含む全件）の生成も確認。**これまで繰り返し申し送られていた「Zensical ビルド検証は docs コンテナが起動しないため未実施（環境要因）」を本タスクで解消**（コンテナは現在稼働中・`pyproject.toml` 存在）。ビルド時の 7 件 Warning（`page does not exist`）はすべて `Docs/` 外ファイル（`.claude/rules/`・`vendor/`・`.claude/skills/`）へのリンクに起因する既存の既知警告であり、サイト外リンクのため無視可。  
       公開手順（管理者による GitHub Pages 有効化・URL・ビルド失敗対処）を `guide/operations-guide.md` に `## ドキュメントサイトの公開・運用 { #docs-publish }` 節として追記。  
       **申し送り（管理者作業）**：GitHub Pages の有効化（Settings → Pages → Source: GitHub Actions）と初回 Actions 実行の確認は本環境からトリガー不可のため申し送り。受入条件「ドキュメントサイトが公開され、最新の Docs を参照できる」は管理者が上記手順を実行するまで未充足（4.4 の「…はその実行まで未充足」と同様）。
 - [x] **5.4 学習効果測定の準備**

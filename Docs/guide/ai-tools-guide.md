@@ -76,7 +76,7 @@ claude             # 対話セッションを開始
 
 ### CLAUDE.md 連携
 
-Claude Code は起動時にリポジトリルートの [`CLAUDE.md`](https://github.com/Bizarress/AI-Development-Tutorial/blob/main/CLAUDE.md) を自動で読み込みます。本リポジトリの `CLAUDE.md` には技術スタック・ディレクトリ構成・よく使うコマンド・コーディング規約が記載済みのため、**毎回これらを説明しなくても前提を踏まえた回答が得られます**。
+Claude Code は起動時にリポジトリルートの [`CLAUDE.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/CLAUDE.md) を自動で読み込みます。本リポジトリの `CLAUDE.md` には技術スタック・ディレクトリ構成・よく使うコマンド・コーディング規約が記載済みのため、**毎回これらを説明しなくても前提を踏まえた回答が得られます**。
 
 !!! note "CLAUDE.md は「AI への申し送り事項」"
     プロジェクト固有の約束事（規約・コマンド・設計方針）を CLAUDE.md に書いておくと、すべてのセッションで一貫して反映されます。記載内容が古くなっていたら PR で更新してください。

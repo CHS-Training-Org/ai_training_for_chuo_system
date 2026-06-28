@@ -111,7 +111,7 @@ PR レビューの流れと完了条件は [dev-workflow.md §8](./dev-workflow.
 
 | 項目 | 値 |
 |------|---|
-| 公開先 URL | `https://bizarress.github.io/AI-Development-Tutorial/` |
+| 公開先 URL | `https://github.com/CHS-Training-Org/ai_training_for_chuo_system` |
 | ソース | `main` ブランチの `Docs/` 配下 |
 | ビルドツール | Zensical（`zensical.toml` で設定） |
 | 設定ファイル | `zensical.toml`・`pyproject.toml`・`uv.lock` |
@@ -133,7 +133,7 @@ PR レビューの流れと完了条件は [dev-workflow.md §8](./dev-workflow.
 1. GitHub リポジトリの **Settings → Pages** を開く
 2. **Source** を **"GitHub Actions"** に設定して保存する
 3. `docs.yml` を手動実行（Actions → "Deploy Docs to GitHub Pages" → "Run workflow"）またはドキュメントの変更を main に push する
-4. Actions が green になったあと `https://bizarress.github.io/AI-Development-Tutorial/` にアクセスし、サイトが表示されることを確認する
+4. Actions が green になったあと `https://github.com/CHS-Training-Org/ai_training_for_chuo_system` にアクセスし、サイトが表示されることを確認する
 
 ### ビルド失敗時の対処
 
@@ -143,7 +143,7 @@ PR レビューの流れと完了条件は [dev-workflow.md §8](./dev-workflow.
 docker compose exec docs uv run zensical build
 ```
 
-> DevContainer 外から実行する場合：`docker exec ai-development-tutorial_devcontainer-docs-1 sh -c 'cd /workspace && uv run zensical build'`
+> DevContainer 外から実行する場合：`docker exec ai_training_for_chuo_system_devcontainer-docs-1 sh -c 'cd /workspace && uv run zensical build'`
 
 **主なビルド失敗パターン：**
 

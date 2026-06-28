@@ -6,7 +6,7 @@
 site_name = "BookFlow ドキュメント"
 site_description = "社内 AI 駆動開発チュートリアル「BookFlow」の設計・学習ドキュメント"
 site_author = "Bizarress"
-site_url = "https://bizarress.github.io/AI-Development-Tutorial/"
+site_url = "https://github.com/CHS-Training-Org/ai_training_for_chuo_system"
 copyright = "Copyright &copy; 2026 中央システム"
 
 # docs_dir はリポジトリルートからの相対パス（Zensical issue #68 参照）
@@ -17,8 +17,8 @@ site_dir = "site"
 extra_css = ["stylesheets/design-showcase.css", "stylesheets/drawio.css"]
 
 # リポジトリリンク（ページ右上に GitHub アイコンが表示される）
-repo_url = "https://github.com/Bizarress/AI-Development-Tutorial"
-repo_name = "Bizarress/AI-Development-Tutorial"
+repo_url = "https://github.com/CHS-Training-Org/ai_training_for_chuo_system"
+repo_name = "CHS-Training-Org/ai_training_for_chuo_system"
 
 nav = [
   { "ホーム" = "index.md" },

@@ -28,7 +28,7 @@ references:
     1. Windows 側で Rancher Desktop が起動していることを確認する
     2. トレイアイコン → **Preferences → WSL → Integrations** で **Ubuntu** を ON にして **Apply**（Docker Desktop の場合は **Settings → Resources → WSL Integration**）
     3. PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直す
-    4. WSL2 ターミナルで `docker info` がエラーなく返れば OK。手順の詳細は [README「Windows ユーザー向け: WSL2 セットアップ」](https://github.com/Bizarress/AI-Development-Tutorial/blob/main/README.md)を参照
+    4. WSL2 ターミナルで `docker info` がエラーなく返れば OK。手順の詳細は [README「Windows ユーザー向け: WSL2 セットアップ」](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/README.md)を参照
 
 ### （Windows）Rancher Desktop の Container Engine 設定が原因で起動に失敗する
 

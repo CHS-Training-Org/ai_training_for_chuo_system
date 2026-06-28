@@ -8,15 +8,15 @@ timestamp: 2026-06-14
 
 # デザインシステム
 
-> [`DESIGN.md`](https://github.com/Bizarress/AI-Development-Tutorial/blob/main/DESIGN.md) のデザイントークン（カラー・タイポグラフィ・コンポーネント）を実際の CSS で可視化したショーケースです。AI エージェントが正確な日本語 UI を生成するための仕様を、実物として確認できます。右側の見出しバーから各セクションへ移動できます。
+> [`DESIGN.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/DESIGN.md) のデザイントークン（カラー・タイポグラフィ・コンポーネント）を実際の CSS で可視化したショーケースです。AI エージェントが正確な日本語 UI を生成するための仕様を、実物として確認できます。右側の見出しバーから各セクションへ移動できます。
 
-[ショーケースを全画面で開く](./design/preview.html){ target="_blank" } ・ [DESIGN.md 原文（GitHub）](https://github.com/Bizarress/AI-Development-Tutorial/blob/main/DESIGN.md){ target="_blank" }
+[ショーケースを全画面で開く](./design/preview.html){ target="_blank" } ・ [DESIGN.md 原文（GitHub）](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/DESIGN.md){ target="_blank" }
 
 <div class="ds-block ds-hero">
   <div class="hero-title">Design System Preview — <em>BookFlow</em></div>
   <p>DESIGN.md から抽出したデザイントークンのカタログ。<strong>Structured Clarity（整理された明瞭さ）</strong>を方針とする、高情報密度の業務 UI。カラー・タイポグラフィ・コンポーネント・スペーシングの全値を実物として可視化しています。</p>
   <div class="hero-buttons">
-    <a class="btn btn-primary btn-md" href="https://github.com/Bizarress/AI-Development-Tutorial/blob/main/DESIGN.md" target="_blank" rel="noopener">DESIGN.md を読む</a>
+    <a class="btn btn-primary btn-md" href="https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/DESIGN.md" target="_blank" rel="noopener">DESIGN.md を読む</a>
     <a class="btn btn-outline btn-md" href="./design/preview.html" target="_blank" rel="noopener">全画面で開く</a>
   </div>
 </div>

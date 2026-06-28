@@ -99,8 +99,8 @@ DevContainer では postgres / localstack / cognito-local / docs の各コンテ
 ```bash
 cd ~
 mkdir -p projects && cd projects
-git clone <repository-url> ai-development-tutorial
-cd ai-development-tutorial
+git clone <repository-url> ai_training_for_chuo_system
+cd ai_training_for_chuo_system
 ```
 
 ## ステップ 2：VS Code で開き DevContainer を起動
@@ -343,7 +343,7 @@ uname -s          # → Linux
 jq --version      # → バージョンが出れば OK
 
 # 5. リポジトリへ移動して起動
-cd ~/projects/ai-development-tutorial
+cd ~/projects/ai_training_for_chuo_system
 claude
 ```
 
