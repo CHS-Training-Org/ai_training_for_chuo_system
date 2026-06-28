@@ -97,6 +97,7 @@ services:
 
   docs:
     image: ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+    restart: on-failure
     working_dir: /workspace
     volumes:
       - ..:/workspace:cached
