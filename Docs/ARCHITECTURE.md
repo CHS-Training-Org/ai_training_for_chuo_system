@@ -17,68 +17,7 @@ timestamp: 2026-06-12
 
 ## システム構成図
 
-```mermaid
-flowchart TD
-    subgraph AI["🤖 AI / 開発支援レイヤー"]
-        direction LR
-        Bedrock["<b>Amazon Bedrock</b><br/>Claude 等 LLM API<br/>RAG・チャット・要約"]
-        ClaudeCode["<b>Claude Code</b><br/>コーディングエージェント<br/>全開発者が利用"]
-    end
-
-    subgraph FE["🖥️ フロントエンド / BFF レイヤー"]
-        direction LR
-        Next["<b>Next.js</b> App Router + API Routes<br/>BFF / Server Actions でトークン保持<br/>バックエンド呼び出しを集約・変換"]
-        FEInfra["<b>ECS Fargate + ECR</b><br/>ALB → ECS Tasks"]
-        Next -.- FEInfra
-    end
-
-    subgraph AUTH["🔐 認証 / API Gateway レイヤー"]
-        direction LR
-        Cognito["<b>Amazon Cognito</b><br/>ユーザープール / IDプール"]
-        APIGW["<b>Amazon API Gateway</b><br/>REST / HTTP API<br/>レート制限・ルーティング・Authorizer"]
-    end
-
-    subgraph SVLESS["⚡ サーバーレス処理"]
-        Lambda["<b>AWS Lambda</b><br/>非同期・軽量単機能<br/>通知・バッチ・変換"]
-    end
-
-    subgraph BE["☕ バックエンドレイヤー"]
-        Spring["<b>ECS Fargate + ECR</b><br/>Java / Spring Boot<br/>ALB → ECS Tasks"]
-    end
-
-    subgraph DB["🗄️ データベースレイヤー"]
-        direction LR
-        RDS[("<b>Amazon RDS</b><br/>PostgreSQL")]
-        Dynamo[("<b>Amazon DynamoDB</b><br/>NoSQL・高スループット")]
-        S3[("<b>Amazon S3</b><br/>ファイル / オブジェクト")]
-    end
-
-    Bedrock -. AI 機能 .-> Next
-    ClaudeCode -. 開発支援 .-> Next
-    Next ==>|API 呼び出し| APIGW
-    Cognito -. JWT 検証 .-> APIGW
-    APIGW ==> Lambda
-    APIGW ==> Spring
-    Spring ==> RDS
-    Spring ==> Dynamo
-    Spring ==> S3
-    Lambda ==> Dynamo
-    Lambda ==> S3
-
-    classDef aiCls fill:#fff7ed,stroke:#fb923c,color:#7c2d12
-    classDef feCls fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a
-    classDef authCls fill:#fef2f2,stroke:#ef4444,color:#7f1d1d
-    classDef svCls fill:#fefce8,stroke:#eab308,color:#713f12
-    classDef beCls fill:#f0fdf4,stroke:#22c55e,color:#14532d
-    classDef dbCls fill:#faf5ff,stroke:#a855f7,color:#581c87
-
-    class Bedrock,ClaudeCode aiCls
-    class Next,FEInfra feCls
-    class Cognito,APIGW authCls
-    class Lambda svCls
-    class Spring beCls
-    class RDS,Dynamo,S3 dbCls
-```
+![システム構成図](diagrams/architecture/architecture-system.drawio.svg)
 
 > **CI/CD・監視レイヤー**: GitHub Actions → ECR → ECS のローリングデプロイで上記コンテナ群を配信し、Amazon CloudWatch が全レイヤーのログ・メトリクス・アラームを収集する（横断的関心事のため図では省略）。
 
@@ -140,29 +79,7 @@ Next.js を ECS Fargate 上で動かし、フロントエンドと BFF を統合
 
 ## ローカル開発環境の構成概要
 
-```mermaid
-flowchart LR
-    subgraph DC["🐳 Docker Compose"]
-        direction TB
-        N["<b>Next.js</b><br/>BFF + フロントエンド<br/>:3000"]
-        SB["<b>Spring Boot</b><br/>バックエンド<br/>:8080"]
-        PG[("<b>PostgreSQL</b><br/>:5432")]
-        LS["<b>LocalStack</b><br/>S3 / DynamoDB<br/>:4566"]
-    end
-    CL["<b>cognito-local</b>（別途）<br/>Cognito のモック<br/>LocalStack Community 非対応のため"]
-
-    N ==> SB
-    SB ==> PG
-    SB ==> LS
-    N -. 認証 .-> CL
-
-    classDef svc fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a
-    classDef store fill:#faf5ff,stroke:#a855f7,color:#581c87
-    classDef mock fill:#fef2f2,stroke:#ef4444,color:#7f1d1d
-    class N,SB svc
-    class PG,LS store
-    class CL mock
-```
+![ローカル開発環境の構成概要](diagrams/architecture/architecture-local-dev.drawio.svg)
 
 > LocalStack Community（無料）で Lambda・API Gateway・S3・DynamoDB をすべてカバー。  
 > Cognito のみ cognito-local で補完する。

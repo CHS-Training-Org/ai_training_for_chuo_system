@@ -34,34 +34,7 @@ references:
 
 ## 画面遷移図
 
-```mermaid
-flowchart TD
-    signin["/auth/signin\nサインイン"]
-    dashboard["/\nダッシュボード"]
-    resourceList["/resources\nリソース一覧"]
-    resourceDetail["/resources/{id}\nリソース詳細"]
-    reservationNew["/reservations/new\n予約申請フォーム"]
-    reservationList["/reservations\nマイ予約一覧"]
-    reservationDetail["/reservations/{id}\n予約詳細"]
-    approvals["/approvals\n承認待ち一覧\n🔒 APPROVER/ADMIN"]
-    adminResources["/admin/resources\nリソース管理\n🔒 ADMIN"]
-    adminUsers["/admin/users\nユーザー管理\n🔒 ADMIN"]
-
-    signin -->|認証成功| dashboard
-
-    dashboard --> resourceList
-    dashboard --> reservationList
-    dashboard -->|APPROVER/ADMIN| approvals
-
-    resourceList --> resourceDetail
-    resourceDetail -->|予約申請| reservationNew
-
-    reservationNew -->|申請完了| reservationList
-    reservationList --> reservationDetail
-
-    dashboard -->|ADMIN| adminResources
-    dashboard -->|ADMIN| adminUsers
-```
+![画面遷移図](../diagrams/spec/screen-spec-navigation.drawio.svg)
 
 > **アクセス制御**：未認証ユーザーが要認証画面にアクセスした場合は `/auth/signin` にリダイレクトする。権限不足のロールが `/approvals` / `/admin/*` にアクセスした場合は 403 エラー画面を表示する。
 

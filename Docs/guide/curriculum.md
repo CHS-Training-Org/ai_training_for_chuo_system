@@ -22,18 +22,7 @@ references:
 
 学習者のレベルに応じて、2 つのパスを用意しています。新人は必須ステップを順番に進め、中堅は必須ステップを任意確認したうえで選択課題から始めます。
 
-```mermaid
-flowchart TD
-    Start["学習スタート"] --> Role{"レベルは？"}
-    Role -- 新人 --> A1["STEP-01 環境構築"]
-    A1 --> A2["STEP-02 リポジトリ運用・開発フロー理解"]
-    A2 --> A3["STEP-03 AI ツール導入・活用"]
-    A3 --> A4["STEP-04 コードベース把握"]
-    A4 --> A5["STEP-05 既存機能読解"]
-    A5 --> Beg["選択課題（Beginner）へ"]
-    Role -- 中堅 --> B1["STEP-01〜03 を任意確認<br/>（理解済みならスキップ可）"]
-    B1 --> Adv["選択課題（Intermediate / Advanced）へ"]
-```
+![学習パスマップ](../diagrams/guide/curriculum-learning-path.drawio.svg)
 
 | パス | 進め方 |
 | ---- | ------ |

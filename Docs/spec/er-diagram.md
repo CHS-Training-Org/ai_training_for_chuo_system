@@ -16,67 +16,7 @@ references:
 
 ## ER 図
 
-```mermaid
-erDiagram
-    departments {
-        UUID id PK
-        VARCHAR(100) name
-        UUID parent_id FK
-    }
-
-    users {
-        UUID id PK
-        VARCHAR(255) cognito_sub
-        VARCHAR(100) name
-        VARCHAR(255) email
-        UUID department_id FK
-        VARCHAR(20) role
-        TIMESTAMP created_at
-    }
-
-    resources {
-        UUID id PK
-        VARCHAR(100) name
-        VARCHAR(20) category
-        INTEGER capacity
-        VARCHAR(200) location
-        BOOLEAN requires_approval
-        BOOLEAN is_active
-        TEXT description
-        TIMESTAMP created_at
-    }
-
-    reservations {
-        UUID id PK
-        UUID resource_id FK
-        UUID requester_id FK
-        TIMESTAMP start_at
-        TIMESTAMP end_at
-        VARCHAR(255) purpose
-        INTEGER attendees_count
-        VARCHAR(20) status
-        TIMESTAMP created_at
-        TIMESTAMP updated_at
-    }
-
-    approval_steps {
-        UUID id PK
-        UUID reservation_id FK
-        UUID approver_id FK
-        INTEGER step_order
-        VARCHAR(20) status
-        TEXT comment
-        TIMESTAMP decided_at
-        TIMESTAMP created_at
-    }
-
-    departments ||--o{ departments : "parent_id（自己参照）"
-    departments ||--o{ users : "department_id"
-    resources ||--o{ reservations : "resource_id"
-    users ||--o{ reservations : "requester_id"
-    reservations ||--o{ approval_steps : "reservation_id"
-    users ||--o{ approval_steps : "approver_id"
-```
+![ER 図](../diagrams/spec/er-diagram.drawio.svg)
 
 > **注意**：タイムスタンプ型は `TIMESTAMP`（`TIMESTAMPTZ` ではない）。H2 PostgreSQL 互換モードで動作するため PostgreSQL 固有型（`jsonb`・`gen_random_uuid` 等）は不使用。
 

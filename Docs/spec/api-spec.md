@@ -249,24 +249,7 @@ Authorization: Bearer <JWT>
 
 ### サインイン〜JWT 検証シーケンス図
 
-```mermaid
-sequenceDiagram
-    participant Browser as ブラウザ
-    participant Next as Next.js<br/>(Better Auth)
-    participant Cognito as AWS Cognito
-    participant Spring as Spring Boot<br/>(API)
-
-    Browser->>Next: POST /auth/signin<br/>{email, password}
-    Next->>Cognito: AuthenticateUser<br/>(Cognito SDK)
-    Cognito-->>Next: JWT (IdToken, AccessToken)
-    Next-->>Browser: Set-Cookie: session=...<br/>（セッション Cookie）
-
-    Browser->>Next: GET /（ダッシュボード）
-    Next->>Spring: GET /api/users/me<br/>Authorization: Bearer <JWT>
-    Spring->>Spring: JWT 署名検証<br/>custom:role クレーム取得
-    Spring-->>Next: 200 OK UserResponse
-    Next-->>Browser: ダッシュボード HTML
-```
+![サインイン〜JWT 検証シーケンス図](../diagrams/spec/api-spec-signin-jwt.drawio.svg)
 
 ---
 
@@ -477,29 +460,11 @@ Authorization: Bearer <JWT>
 
 ### シーケンス図
 
-```mermaid
-sequenceDiagram
-    participant Browser as ブラウザ
-    participant Next as Next.js<br/>Server Actions
-    participant Spring as Spring Boot<br/>(API)
-    participant DB as PostgreSQL
+![シーケンス図（リソース一覧・空き確認）](../diagrams/spec/api-spec-resource-availability.drawio.svg)
 
-    Note over Browser,DB: ①リソース一覧取得（カテゴリフィルター）
-    Browser->>Next: GET /resources?category=ROOM
-    Next->>Spring: GET /api/resources?category=ROOM<br/>Authorization: Bearer <JWT>
-    Spring->>DB: SELECT * FROM resources<br/>WHERE category='ROOM' AND is_active=true
-    DB-->>Spring: Resource[]
-    Spring-->>Next: 200 OK PageResponse[ResourceResponse]
-    Next-->>Browser: リソース一覧 HTML
-
-    Note over Browser,DB: ②空き確認（日時範囲指定）
-    Browser->>Next: GET /resources/{id}
-    Next->>Spring: GET /api/resources/{id}/availability?from=...&to=...
-    Spring->>DB: SELECT reservation_id, start_at, end_at<br/>FROM reservations<br/>WHERE resource_id=? AND status IN ('PENDING','APPROVED')<br/>AND start_at < :to AND end_at > :from
-    DB-->>Spring: OccupiedSlot[]
-    Spring-->>Next: 200 OK OccupiedSlot[]
-    Next-->>Browser: 予約カレンダー（占有時間帯を描画）
-```
+> **[1]** `SELECT * FROM resources WHERE category='ROOM' AND is_active=true`
+>
+> **[2]** `SELECT reservation_id, start_at, end_at FROM reservations WHERE resource_id=? AND status IN ('PENDING','APPROVED') AND start_at < :to AND end_at > :from`
 
 ---
 
@@ -708,34 +673,9 @@ Authorization: Bearer <JWT>
 
 ### 申請シーケンス図（2 パターン）
 
-```mermaid
-sequenceDiagram
-    participant Browser as ブラウザ
-    participant Next as Next.js<br/>Server Actions
-    participant Spring as Spring Boot<br/>(API)
-    participant DB as PostgreSQL
+![申請シーケンス図（2パターン）](../diagrams/spec/api-spec-reservation-apply.drawio.svg)
 
-    Note over Browser,DB: ①requires_approval=false（即時確定）
-    Browser->>Next: POST /reservations/new フォーム送信
-    Next->>Spring: POST /api/reservations<br/>{resourceId, startAt, endAt, purpose, ...}
-    Spring->>DB: 重複予約チェック<br/>SELECT 1 FROM reservations<br/>WHERE resource_id=? AND status IN ('PENDING','APPROVED')<br/>AND start_at < :endAt AND end_at > :startAt
-    DB-->>Spring: 0 件（重複なし）
-    Spring->>DB: INSERT INTO reservations (status='APPROVED')
-    DB-->>Spring: Created
-    Spring-->>Next: 201 Created ReservationResponse{status:"APPROVED"}
-    Next-->>Browser: /reservations へリダイレクト
-
-    Note over Browser,DB: ②requires_approval=true（承認待ち）
-    Browser->>Next: POST /reservations/new フォーム送信
-    Next->>Spring: POST /api/reservations<br/>{resourceId, startAt, endAt, purpose, ...}
-    Spring->>DB: 重複予約チェック
-    DB-->>Spring: 0 件（重複なし）
-    Spring->>DB: INSERT INTO reservations (status='PENDING')
-    Spring->>DB: INSERT INTO approval_steps<br/>（承認者割当ルールは requirements.md UC-05 参照）
-    DB-->>Spring: Created
-    Spring-->>Next: 201 Created ReservationResponse{status:"PENDING"}
-    Next-->>Browser: /reservations へリダイレクト
-```
+> **[1]** `SELECT 1 FROM reservations WHERE resource_id=? AND status IN ('PENDING','APPROVED') AND start_at < :endAt AND end_at > :startAt`
 
 ---
 
@@ -883,37 +823,9 @@ Content-Type: application/json
 
 ### 承認・却下シーケンス図
 
-```mermaid
-sequenceDiagram
-    participant Browser as ブラウザ
-    participant Next as Next.js<br/>Server Actions
-    participant Spring as Spring Boot<br/>(API)
-    participant DB as PostgreSQL
+![承認・却下シーケンス図](../diagrams/spec/api-spec-approval.drawio.svg)
 
-    Note over Browser,DB: ①承認パス（PENDING → APPROVED）
-    Browser->>Next: POST /approvals/{stepId}/approve<br/>{comment: "..."}（任意）
-    Next->>Spring: POST /api/approvals/{stepId}/approve
-    Spring->>DB: SELECT approval_steps WHERE id = stepId AND status = 'PENDING'
-    DB-->>Spring: 1 件（PENDING ステップ取得）
-    Spring->>DB: 重複予約再チェック<br/>SELECT 1 FROM reservations<br/>WHERE resource_id = ? AND status IN ('PENDING','APPROVED')<br/>AND start_at < endAt AND end_at > startAt<br/>AND id != reservationId
-    DB-->>Spring: 0 件（競合なし）
-    Spring->>DB: UPDATE approval_steps SET status='APPROVED', decided_at=NOW(), comment=?
-    Spring->>DB: UPDATE reservations SET status='APPROVED'
-    DB-->>Spring: Updated
-    Spring-->>Next: 200 OK ApprovalStepResponse{status:"APPROVED"}
-    Next-->>Browser: 承認待ち一覧を再取得・表示更新
-
-    Note over Browser,DB: ②却下パス（PENDING → REJECTED）
-    Browser->>Next: POST /approvals/{stepId}/reject<br/>{comment: "却下理由"}（必須）
-    Next->>Spring: POST /api/approvals/{stepId}/reject
-    Spring->>DB: SELECT approval_steps WHERE id = stepId AND status = 'PENDING'
-    DB-->>Spring: 1 件（PENDING ステップ取得）
-    Spring->>DB: UPDATE approval_steps SET status='REJECTED', decided_at=NOW(), comment=?
-    Spring->>DB: UPDATE reservations SET status='REJECTED'
-    DB-->>Spring: Updated
-    Spring-->>Next: 200 OK ApprovalStepResponse{status:"REJECTED"}
-    Next-->>Browser: 承認待ち一覧を再取得・表示更新
-```
+> **[1]** `SELECT 1 FROM reservations WHERE resource_id = ? AND status IN ('PENDING','APPROVED') AND start_at < endAt AND end_at > startAt AND id != reservationId`
 
 ---
 
@@ -998,26 +910,4 @@ Authorization: Bearer <JWT>
 
 ### ダッシュボード情報取得シーケンス図
 
-```mermaid
-sequenceDiagram
-    participant Browser as ブラウザ
-    participant Next as Next.js<br/>Server Component
-    participant Spring as Spring Boot<br/>(API)
-
-    Browser->>Next: GET /（ダッシュボード）
-
-    par マイ予約件数取得（並行）
-        Next->>Spring: GET /api/reservations?status=PENDING<br/>Authorization: Bearer <JWT>
-        Spring-->>Next: PageResponse{totalElements: 2}
-    and
-        Next->>Spring: GET /api/reservations?status=APPROVED
-        Spring-->>Next: PageResponse{totalElements: 5}
-    end
-
-    opt APPROVER / ADMIN の場合
-        Next->>Spring: GET /api/approvals/pending
-        Spring-->>Next: ApprovalStepResponse[]（length = 3）
-    end
-
-    Next-->>Browser: ダッシュボード HTML<br/>（件数カード表示）
-```
+![ダッシュボード情報取得シーケンス図](../diagrams/spec/api-spec-dashboard.drawio.svg)

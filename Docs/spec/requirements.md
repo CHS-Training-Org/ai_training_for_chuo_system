@@ -147,16 +147,7 @@ BookFlow は 3 種のロールで操作権限を制御する。
 
 ### 承認ステップ ステータス遷移図
 
-```mermaid
-stateDiagram-v2
-    [*] --> PENDING : 予約申請時に approval_steps 生成（requires_approval=true の場合のみ）
-
-    PENDING --> APPROVED : 承認者が承認
-    PENDING --> REJECTED : 承認者が却下
-
-    APPROVED --> [*]
-    REJECTED --> [*]
-```
+![承認ステップ ステータス遷移図](../diagrams/spec/requirements-approval-step-status.drawio.svg)
 
 > `approval_steps.status` の DB DEFAULT は `'PENDING'`。`requires_approval = false` のリソースの予約では `approval_steps` レコードを生成しない。
 
