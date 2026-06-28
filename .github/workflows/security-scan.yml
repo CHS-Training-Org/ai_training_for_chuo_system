@@ -13,7 +13,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run Trivy vulnerability scan (依存関係の既知脆弱性)
         uses: aquasecurity/trivy-action@0.33.1
