@@ -63,6 +63,7 @@ cd frontend
 pnpm dev              # 開発サーバー起動（http://localhost:3000）
 pnpm build            # プロダクションビルド
 pnpm test             # Vitest ユニットテスト
+pnpm test <pattern>   # 単一ファイル/パターンのみ実行（例: pnpm test reservations）
 pnpm test:e2e         # Playwright E2E テスト
 pnpm lint             # oxlint 実行
 pnpm format           # oxfmt フォーマット
@@ -72,6 +73,7 @@ pnpm format:check     # フォーマット検証のみ（CI で使用）
 cd backend
 ./gradlew bootRun                # Spring Boot 起動（http://localhost:8080）
 ./gradlew test                   # JUnit テスト
+./gradlew test --tests "*ReservationServiceTest"  # 特定テストクラスのみ実行
 ./gradlew spotlessApply          # コードフォーマット
 ./gradlew checkstyleMain         # Checkstyle 実行
 
