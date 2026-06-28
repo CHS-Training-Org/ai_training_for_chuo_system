@@ -1,0 +1,92 @@
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ===== IDE / Editor =====
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+
+# ===== Logs =====
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== Environment files =====
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ===== Node.js / Next.js (frontend) =====
+node_modules/
+.next/
+out/
+build/
+.vercel/
+.turbo/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+next-env.d.ts
+
+# pnpm 採用（ADR-001）に伴い他ロックファイルは混入禁止
+package-lock.json
+yarn.lock
+
+# pnpm ストアがワークスペース内に誤作成された場合の保険
+.pnpm-store/
+
+# ===== Java / Gradle (backend) =====
+# Gradle (ADR-011)
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# 万一 Maven が混入した場合の保険
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Java compile artifacts
+*.class
+hs_err_pid*
+replay_pid*
+
+# ===== Test / Coverage =====
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ===== Docker / DevContainer ローカル =====
+.devcontainer/.env
+
+# ===== Zensical / Python =====
+/site/
+/.venv/
+*.pyc
+__pycache__/
+
+# Claude Code local settings (per-developer, not tracked)
+.claude/settings.local.json
+
+# cognito-local provisioning state（環境ごとの pool ID / client ID を保存）
+scripts/.cognito-provision-state

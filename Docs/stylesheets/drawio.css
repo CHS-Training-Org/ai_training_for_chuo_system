@@ -1,0 +1,6 @@
+/* drawio SVG — ダークモードで白背景カードを適用して判読性を確保 */
+[data-md-color-scheme="slate"] img[src$=".drawio.svg"] {
+  background-color: #ffffff;
+  border-radius: 4px;
+  padding: 8px;
+}

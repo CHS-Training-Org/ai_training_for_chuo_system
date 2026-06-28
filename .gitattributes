@@ -1,0 +1,9 @@
+# 既定: テキストは LF に正規化（バイナリは自動判定で除外）
+* text=auto eol=lf
+
+# Windows 専用スクリプトは CRLF を維持（.editorconfig と整合）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 明示的にバイナリ指定（誤変換防止の保険）
+*.jar binary

@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: bookflow
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/bookflow}
+    username: ${DB_USERNAME:bookflow}
+    password: ${DB_PASSWORD:bookflow}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # jwk-set-uri を使用することで起動時の OIDC discovery を回避し、cognito-local 停止中でも起動可能にする
+          jwk-set-uri: ${COGNITO_JWKS_URI:http://localhost:9229/local_user_pool_id/.well-known/jwks.json}
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    root: INFO
+    com.example.bookflow: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+
+spring.output.ansi.enabled: ALWAYS
