@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scan (依存関係の既知脆弱性)
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scanners: vuln
@@ -28,7 +28,7 @@ jobs:
       - name: Run Trivy misconfiguration scan (設定ファイルの既知の問題・参考情報)
         if: always()
         continue-on-error: true
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scanners: misconfig
