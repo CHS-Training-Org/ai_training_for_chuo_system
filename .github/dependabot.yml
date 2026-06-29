@@ -8,7 +8,7 @@ updates:
     schedule:
       interval: "monthly"
     labels:
-      - "type:dependencies"
+      - "依存更新"
     commit-message:
       prefix: "chore"
     groups:
@@ -26,7 +26,7 @@ updates:
     schedule:
       interval: "monthly"
     labels:
-      - "type:dependencies"
+      - "依存更新"
     commit-message:
       prefix: "chore"
     groups:
@@ -44,7 +44,7 @@ updates:
     schedule:
       interval: "monthly"
     labels:
-      - "type:dependencies"
+      - "依存更新"
     commit-message:
       prefix: "chore"
     groups:
@@ -63,7 +63,7 @@ updates:
     schedule:
       interval: "quarterly"
     labels:
-      - "type:dependencies"
+      - "依存更新"
     commit-message:
       prefix: "chore"
     open-pull-requests-limit: 3

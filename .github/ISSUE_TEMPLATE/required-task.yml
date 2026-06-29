@@ -2,7 +2,7 @@ name: 必須課題（STEP）
 description: 新人が STEP-01〜05 等の必須課題に取り組む際の起票用テンプレートです。
 title: "[STEP-XX] "
 labels:
-  - required
+  - 課題
 body:
   - type: markdown
     attributes:
