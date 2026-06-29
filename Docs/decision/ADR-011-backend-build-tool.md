@@ -38,4 +38,3 @@ Spring Boot プロジェクトのビルドツールを決定する。候補は M
 - `./gradlew`（Gradle Wrapper）経由で実行し、Gradle 本体のインストールを不要にする
 - `01_REPO_STRUCTURE.md` に記載の `pom.xml` / `./mvnw` は本 ADR の決定により `build.gradle.kts` / `./gradlew` に読み替える
 - CI の Java ビルドコマンドは `./gradlew test` / `./gradlew bootJar` を使用する
-- Dependabot で `build.gradle.kts` の依存更新を自動提案する設定を追加する

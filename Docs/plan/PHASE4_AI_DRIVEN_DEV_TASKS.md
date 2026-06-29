@@ -226,27 +226,15 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
       写像表の実体は `dev-workflow.md` を唯一の源とし、CLAUDE.md 側は重複させていない。  
       申し送り：ワークフローファイル（AI-DLC `aidlc-rules/`）のインストールはタスク 3.7 として新設（本タスクの範囲外）。
 - [x] **3.6 CI 品質ゲートの確認・整備**
-  - 状態：完了
-  - 内容：`ci-frontend` / `ci-backend` / `security-scan` ワークフローの動作確認と green 化、ブランチ保護（CI 必須・1 名以上 Approve）の設定。  
-      AI-DLC の Operations フェーズに相当する自動品質ゲートとして位置づける。  
-      `security-scan` は未設定のため新規作成が必要（既存は `ci-frontend.yml`／`ci-backend.yml`／`docs.yml`）。
-  - メモ：`.github/workflows/security-scan.yml` を新規作成（Trivy `scan-type: fs`、ジョブ id `trivy`）。  
-      当初は CodeQL + dependency-review-action を検討したが、リポジトリ（`CHS-Training-Org/ai_training_for_chuo_system`）の公開設定が不明で、private + GHAS 無しだと毎回失敗し学習者の PR を全ブロックしてしまうため不採用（将来 public 化・GHAS 導入時の選択肢として申し送り）。  
-      Trivy は GHAS 不要で public/private いずれでも動作し、Java25 環境での CodeQL ビルド追随リスクも回避できる。  
-      `scanners: vuln`（依存関係の既知脆弱性、`severity: HIGH,CRITICAL` + `ignore-unfixed: true`）をブロッキング（`exit-code: 1`）、`scanners: misconfig`（Dockerfile/compose/ワークフロー等の設定ミス）は `continue-on-error: true` で非ブロッキング（参考情報）に分離。  
-      理由：misconfig はローカルで Trivy を実行できず（本開発環境ではバイナリ取得が制限され検証不可）、`.devcontainer/docker-compose.yml` に healthcheck 未設定のサービスがあるなど初回実行で未知の HIGH 検出により学習者 PR を全ブロックするリスクを排除できなかったため。初回 Actions 実行結果を見てメンターが misconfig 側のブロッキング化や閾値調整を判断する。  
-      注：Trivy `fs` の依存スキャンは FE（`pnpm-lock.yaml`）が対象。BE は `dependencyLocking` 未導入で `gradle.lockfile` が存在しないため、現状 Gradle 依存は実質スキャン対象外（このタスクでは Gradle locking 自体は導入しない。必要なら別タスク）。  
-      vuln ゲートを green 化するため、`pnpm audit --audit-level high` で検出した fixable な CRITICAL/HIGH（vitest の脆弱性、推移的依存 esbuild の脆弱性）を解消：`vitest` を既存 semver 範囲内（`^3.2.6`）で 3.2.4→3.2.6 に更新、`esbuild` は `pnpm-workspace.yaml` の `overrides` で `>=0.28.1` に固定（package.json への直接依存ではないため override が必要）。これは依存修正として CI/ドキュメント変更とは別コミットに分離する。  
+  - 状態：完了（⚠️ `security-scan` ワークフローはその後削除済み）
+  - 内容：`ci-frontend` / `ci-backend` ワークフローの動作確認と green 化、ブランチ保護（CI 必須・1 名以上 Approve）の設定。  
+      AI-DLC の Operations フェーズに相当する自動品質ゲートとして位置づける。
+  - メモ：当初 `.github/workflows/security-scan.yml`（Trivy `scan-type: fs`）を新規作成したが、その後不要と判断し削除。現在の必須 status check は `CI Frontend / ci`・`CI Backend / ci` の 2 つ。  
       `ci-frontend.yml` に `pnpm format:check`（oxfmt --check）ステップを Lint の直後に追加し、`PULL_REQUEST_TEMPLATE.md` の動作確認欄にも反映（ADR-010 で「CI のフォーマットチェックは `oxfmt --check .` で実施する」と定義済みだが未導入だった差分）。  
       導入時、既存コード71ファイルが oxfmt のデフォルト書式（ダブルクォート・セミコロンあり）に未準拠だったため `pnpm format` で一括整形（ロジック変更なし。別コミットに分離）し `format:check` を green 化。  
       `ci-backend.yml` は既存で `./gradlew test`（テスト18本）→ `spotlessCheck` → `checkstyleMain` を実行済みのため変更不要（新規 backend CI ジョブは不要と判断）。  
-      `dev-workflow.md` §8（第2ゲート）に、ブランチ保護で必須化する status check 名（`CI Frontend / ci`・`CI Backend / ci`・`Security Scan / trivy`）と Approve 1名以上の admonition を追加（MkDocs 形式 `!!! note` に統一）。  
       CODEOWNERS は学習リポジトリには不要と判断し作成せず。  
-      申し送り：ブランチ保護ルールの実設定（GitHub Settings）はリポジトリ管理者作業のため本タスクの範囲外。`security-scan` の vuln/misconfig 双方の実 Actions 実行結果（`aquasecurity/trivy-action@0.33.1` のタグ解決含む）はメンターが初回確認すること（misconfig が常に green であれば、必須 status check への追加・ブロッキング化を検討）。  
-      ローカル検証は `pnpm audit --audit-level high`（FE のみ。Trivy の DB とは異なるため参考情報）で clean を確認済みだが、Trivy vuln ゲート自体の green は未確認（初回 Actions 実行で確認）。  
-      vuln はブロッキングのため、今後も fixable な推移的 CVE が出るたびに同様の依存修正が必要になる。メンテナンス負荷が高い場合は misconfig と同様に非ブロッキング化を検討する余地がある旨を留意点として残す。  
-      Playwright E2E の CI 化は見送り（別タスク候補）。  
-      security-scan の実 Actions 実行は本環境からトリガー不可のため、GitHub 上での初回実行確認をメンターに申し送り。
+      Playwright E2E の CI 化は見送り（別タスク候補）。
 - [x] **3.7 AI-DLC 実ファイルの取り込み・再構成・台帳化・上流同期**
   - 状態：完了（**2026-06-18 に ADR-020 で採用方針を supersede。下記参照**）
   - 内容（初回実装 2026-06-14）：[AI-DLC 概説資料（aidlc-overview.html）](./aidlc-overview.html) で提示した3案のうち「案B改良（vendoring＋再構成＋台帳＋上流同期）」を採用。3層構成で実装：  
@@ -316,17 +304,9 @@ AI-DLC の各要素と BookFlow での実体の対応は次のとおり。
       `review-criteria.md` のプレースホルダ 2 箇所（`:8`・`:56`）を実ページへの相互リンクに置換し、`:8` の役割列挙を「オーナー / メンター」から「オーナー / メンター / 学習者」に修正。  
       Zensical ビルド検証は docs コンテナが本環境で起動しないため未実施（環境要因、申し送り）。
 - [x] **5.2 依存更新ポリシーの運用開始**
-  - 状態：完了
+  - 状態：完了（⚠️ `.github/dependabot.yml` および `Docs/guide/dependency-policy.md` はその後削除済み）
   - 内容：Dependabot の有効化（pnpm / Gradle / Docker / GitHub Actions）と更新サイクル（FE・BE 月次、ベースイメージ四半期）の設定。
-  - メモ：成果物 = `.github/dependabot.yml`（4 エコシステム）・`.github/labels.yml`（`type:dependencies` 追加）・`Docs/guide/dependency-policy.md`（新規・メンター向け）。  
-      **設計判断①：`docker-compose` エコシステム**：本リポジトリに Dockerfile が存在しないため `docker` ではなく `docker-compose` エコシステムを使用（`directory: "/.devcontainer"`）。公式ドキュメントで 2 つが別エコシステムであることを確認済み。  
-      **設計判断②：`quarterly` ネイティブ対応**：Dependabot の `schedule.interval` が `quarterly` をネイティブ対応することを公式ドキュメントで確認（doc-only 回避策は不要）。ベースイメージ四半期更新を直接設定。  
-      **グルーピング**：minor/patch をエコシステムごとにグループ PR に集約し、メンターのレビュー負荷を軽減。major は個別 PR。  
-      **ラベル**：`type:dependencies`（`labels.yml` に追加済み）。Dependabot 初回 PR の前に label-sync workflow の再実行が必要（`issue-registration.md#label-sync` 参照）。  
-      **CI ゲート**：既存 3 ゲート（`CI Frontend / ci`・`CI Backend / ci`・`Security Scan / trivy`）は `pull_request` トリガーのため Dependabot PR にも適用。追加ワークフロー不要。  
-      `operations-guide.md:106` のプレースホルダを `dependency-policy.md` への実リンクに置換。`guide/index.md` 管理ファイル一覧・`zensical.toml` nav（`operations-guide.md` 直後）に追記。  
-      ADR-011:33「Dependabot で `build.gradle.kts` の依存更新を自動提案する設定を追加する」の約束を本タスクで充足。  
-      Dependabot の実動作検証（初回 PR 起票・Insights → Dependabot 表示）は本環境からトリガー不可のためメンターが push 後に確認。Zensical ビルド検証は docs コンテナが本環境で起動しないため未実施（環境要因、申し送り）。
+  - メモ：当初 `.github/dependabot.yml`（4 エコシステム）・`Docs/guide/dependency-policy.md` を作成したが、その後不要と判断し削除。`依存更新` ラベルも `labels.yml` から削除済み。
 - [x] **5.3 ドキュメントサイトの公開**
   - 状態：完了
   - 内容：Zensical ビルドを GitHub Pages へデプロイする workflow を作成する（`site_url` は設定済み）。
@@ -379,10 +359,10 @@ Phase 4 のタスク遂行と並行して意思決定が必要な論点を記録
 
 **（参考）たたき台案**：
 - エンハンス追加：3.2／3.3 の様式（ビジネス要求シート＋Issue Form）に乗せてメンターが起票。定期（四半期等）に課題カタログ（4.2）を棚卸しする。
-- main 更新：5.2 Dependabot（FE・BE 月次／ベースイメージ四半期）＋ 3.7 の上流同期手順で定期化する。学習中の学習者には main 更新を強制せず、進行中の feature ブランチへの取り込みは任意、新規開始者は最新 main から始める運用とする。
+- main 更新：3.7 の上流同期手順で定期化する。学習中の学習者には main 更新を強制せず、進行中の feature ブランチへの取り込みは任意、新規開始者は最新 main から始める運用とする。
 - 学習者要望：受付経路を Issue／5.4 アンケートに一本化し、定期トリアージで採否を判断する（採用分は冒頭の更新ルールに従いタスク化）。
 
-関連：3.7（AI-DLC 上流同期手順）／5.1（役割分担）／5.2（依存更新ポリシー・Dependabot）／5.4（学習効果測定）。  
+関連：3.7（AI-DLC 上流同期手順）／5.1（役割分担）／5.4（学習効果測定）。  
 既存タスクと重複する運用詳細はそれぞれの該当タスクを真実の源とし、ここでは方針レベルの未決点のみを扱う。
 
 ### 追加検討事項（整合性チェックで洗い出し）
@@ -403,8 +383,8 @@ Phase 4 のタスク遂行と並行して意思決定が必要な論点を記録
 - [x] `Docs/guide/` 配下の未記入プレースホルダーがすべて解消されている
 - [ ] PR / Issue テンプレート・ラベル・課題 Issue が登録され、新人が STEP-01 から自走で開始できる  
   （テンプレート・ラベル定義は完了。課題 Issue 起票はメンター作業後に `[x]` へ→申し送り参照）
-- [ ] CI 品質ゲート（lint・テスト・セキュリティスキャン）が green で運用されている  
-  （ワークフロー作成済み。security-scan 初回 Actions 実行確認後に `[x]` へ→申し送り参照）
+- [ ] CI 品質ゲート（lint・テスト）が green で運用されている  
+  （`ci-frontend` / `ci-backend` ワークフロー作成済み。初回 Actions 実行確認後に `[x]` へ→申し送り参照）
 - [ ] ドキュメントサイトが公開され、最新の Docs を参照できる  
   （`docs.yml` 作成済み・ローカルビルド検証済み。GitHub Pages 有効化後に `[x]` へ→申し送り参照）
 
@@ -423,16 +403,14 @@ Phase 4 のすべてのファイルベース作業は完了済み。以下を **
 
 - [ ] **push を実行する**（ローカルが `origin/main` より 6 コミット先行中）
 - [ ] **CI ワークフロー初回実行の確認**  
-  push トリガーで `CI Frontend / ci`・`CI Backend / ci`・`Security Scan / trivy` が実行される。  
-  ① `trivy`（vuln ゲート）が green であることを確認。  
-  ② `trivy`（misconfig ゲート）の結果を確認 → 常に green なら必須 status check 追加とブロッキング化を検討（3.6 申し送り）。  
-  ③ 全ゲートが green であることを確認後、受入条件 4 を `[x]` に更新する。
+  push トリガーで `CI Frontend / ci`・`CI Backend / ci` が実行される。  
+  全ゲートが green であることを確認後、受入条件 4 を `[x]` に更新する。
 
 ### 2. CI 確認後（管理者）
 
 - [ ] **ブランチ保護ルールの設定**（CI 初回実行後に実施すること）  
   GitHub Settings → Branches → `main` に以下を設定する（`dev-workflow.md §8` 参照）。  
-  - 必須 status check：`CI Frontend / ci`・`CI Backend / ci`・`Security Scan / trivy`  
+  - 必須 status check：`CI Frontend / ci`・`CI Backend / ci`  
   - Approve 1 名以上
 
 - [ ] **GitHub Pages の有効化**  
@@ -441,17 +419,13 @@ Phase 4 のすべてのファイルベース作業は完了済み。以下を **
 
 ### 3. label-sync 実行後（メンター、順序依存あり）
 
-- [ ] **label-sync workflow の実行**【Issue 起票・Dependabot ラベル付与より前に必ず実行】  
-  Actions → `Sync Labels` → `Run workflow` で 10 ラベルをリポジトリに反映する。  
+- [ ] **label-sync workflow の実行**【Issue 起票より前に必ず実行】  
+  Actions → `Sync Labels` → `Run workflow` で全ラベルをリポジトリに反映する。  
   参照：`Docs/guide/issue-registration.md#label-sync`
 
 - [ ] **課題 Issue の一括起票**【label-sync 完了後】  
   `Docs/guide/issue-registration.md` の手順に従い、必須 STEP 5 件 + 選択課題 15 件を起票する。  
   完了後、受入条件 3 を `[x]` に更新する。
-
-- [ ] **Dependabot 初回動作確認**  
-  Insights → Dependabot タブで有効化を確認する。  
-  `type:dependencies` ラベルが付いた Dependabot PR が来たら CI ゲートが通ることを確認する（label-sync 後でないとラベルが付かない）。
 
 ### 4. 将来対応候補
 

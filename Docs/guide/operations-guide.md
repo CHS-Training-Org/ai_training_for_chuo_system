@@ -33,13 +33,13 @@ references:
 | PR レビュー・Approve（第 2 ゲート） | — | ◎ | — |
 | 学習者の質問・詰まりへのサポート | — | ◎ | — |
 | feature ブランチでの開発・PR 作成 | — | — | ◎ |
-| main ブランチの保守・依存更新（5.2） | ◎ | ○ | — |
+| main ブランチの保守 | ◎ | ○ | — |
 
 > ◎ = 主担当、○ = 補助または任意、— = 担当外
 
 **補足：**
 
-- ブランチ保護（Approve 1 名以上・必須 status check 3 つ）は GitHub の Settings で設定します。詳細は [dev-workflow.md §8 の admonition](./dev-workflow.md#flow) を参照してください。
+- ブランチ保護（Approve 1 名以上・必須 status check 2 つ）は GitHub の Settings で設定します。詳細は [dev-workflow.md §8 の admonition](./dev-workflow.md#flow) を参照してください。
 - label-sync の実行手順は [issue-registration.md §label-sync の実行](./issue-registration.md#label-sync) にあります。
 - 課題の起票手順は [issue-registration.md §起票手順](./issue-registration.md#howto) にあります。
 
@@ -164,5 +164,4 @@ docker compose exec docs uv run zensical build
 - レビュー観点・評価基準：[review-criteria.md](./review-criteria.md)
 - ラベル体系・課題起票手順：[issue-registration.md](./issue-registration.md)
 - トラブルシューティング：[troubleshooting.md](./troubleshooting.md)
-- 依存更新ポリシー（Dependabot）：[dependency-policy.md](./dependency-policy.md)
 - 学習効果測定（満足度アンケート）：[learning-effectiveness.md](./learning-effectiveness.md)
