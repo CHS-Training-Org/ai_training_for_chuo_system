@@ -2,7 +2,7 @@ name: 選択課題（エンハンス）
 description: Beginner / Intermediate / Advanced の選択課題（エンハンス課題）に取り組む際の起票用テンプレートです。
 title: "[Enhance] "
 labels:
-  - optional
+  - 課題
 body:
   - type: markdown
     attributes:

@@ -1,43 +1,61 @@
-- name: required
-  color: B60205
-  description: 必須課題（STEP-01〜05）
-
-- name: optional
+# ── 課題区分 ─────────────────────────────────────────────────────────────────
+- name: 課題
   color: 1D76DB
-  description: 選択課題（エンハンス課題）
+  description: 学習課題（必須ステップ・エンハンス選択課題の両方）
 
-- name: sequential
+- name: 順序依存あり
   color: D93F0B
-  description: 順序依存あり（前のステップ完了が前提）
+  description: 前のステップ完了が前提
 
-- name: level:beginner
+# ── 難易度 ───────────────────────────────────────────────────────────────────
+- name: 難易度：初級
   color: 0E8A16
-  description: 難易度 Beginner（フロントエンド中心・局所的な改善）
+  description: フロントエンド中心・局所的な改善
 
-- name: level:intermediate
+- name: 難易度：中級
   color: FBCA04
-  description: 難易度 Intermediate（縦切り機能・設計判断が必要）
+  description: 縦切り機能・設計判断が必要
 
-- name: level:advanced
+- name: 難易度：上級
   color: E11D21
-  description: 難易度 Advanced（外部連携・複雑な業務ロジック・ツールチェーン）
+  description: 外部連携・複雑な業務ロジック・ツールチェーン
 
-- name: type:frontend
+# ── 対象レイヤー ─────────────────────────────────────────────────────────────
+- name: 対象：フロントエンド
   color: 8A63D2
   description: 対象レイヤー：フロントエンドのみ
 
-- name: type:backend
+- name: 対象：バックエンド
   color: 6F42C1
   description: 対象レイヤー：バックエンドのみ
 
-- name: type:fullstack
+- name: 対象：フルスタック
   color: B392F0
   description: 対象レイヤー：フロントエンド＋バックエンド（両方）
 
-- name: in-progress
+# ── ステータス ────────────────────────────────────────────────────────────────
+- name: 進行中
   color: FEF2C0
   description: 着手中
 
-- name: type:dependencies
+# ── 汎用 Issue 種別 ───────────────────────────────────────────────────────────
+- name: バグ報告
+  color: D73A4A
+  description: 学習環境・コード・ドキュメントの不具合報告
+
+- name: 運用・管理
+  color: E4E669
+  description: メンター・オーナーによる設定変更・整備タスク
+
+- name: 質問・相談
+  color: 0075CA
+  description: 学習者からの質問・詰まり相談
+
+- name: ドキュメント改善
+  color: 0052CC
+  description: Docs や仕様書の誤り・改善提案
+
+# ── 自動起票 ─────────────────────────────────────────────────────────────────
+- name: 依存更新
   color: 5A3DB0
   description: 依存更新（Dependabot 自動起票）
