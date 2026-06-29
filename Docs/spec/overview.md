@@ -67,9 +67,3 @@ references:
 | 必須課題 | 環境構築など順序依存のあるステップ課題。新人は先にこれをクリアする |
 | LocalStack | AWS サービス（S3・DynamoDB・Lambda・API Gateway）をローカルでエミュレートするツール |
 | cognito-local | Amazon Cognito のユーザープール認証フローをローカルでエミュレートする npm パッケージ |
-
----
-
-## 依存更新ポリシー
-
-依存ライブラリ・コンテナイメージの更新方針（月次 / 四半期スケジュール・Dependabot 設定・PR の扱い）は [dependency-policy.md](../guide/dependency-policy.md) が真実の源です。

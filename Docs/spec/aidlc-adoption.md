@@ -89,7 +89,7 @@ references:
 | `construction/nfr-design.md` | NFR パターン・論理コンポーネント設計（条件付き・ユニット別） | `.aidlc-rule-details/construction/nfr-design.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。NFR Requirements 実行時に続けて実行 |
 | `construction/infrastructure-design.md` | インフラ・デプロイアーキテクチャ設計（条件付き・ユニット別） | `.aidlc-rule-details/construction/infrastructure-design.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。BookFlow の Docker Compose / DevContainer 環境に対応 |
 | `construction/code-generation.md` | コード生成（必須・ユニット別。計画→生成の 2 段階） | `.aidlc-rule-details/construction/code-generation.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。Spec-first との統合：コード生成前に `Docs/spec/` 更新（`/update-spec` スキル） |
-| `construction/build-and-test.md` | ビルド・テスト手順生成（必須・全ユニット完了後） | `.aidlc-rule-details/construction/build-and-test.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。CI 品質ゲート（`ci-frontend` / `ci-backend` / `security-scan`）に対応 |
+| `construction/build-and-test.md` | ビルド・テスト手順生成（必須・全ユニット完了後） | `.aidlc-rule-details/construction/build-and-test.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。CI 品質ゲート（`ci-frontend` / `ci-backend`）に対応 |
 
 ### operations（フェーズ3、1ファイル）
 
@@ -101,7 +101,7 @@ references:
 
 | 上流ファイル | 役割 | BookFlow 反映先 | 採用状態 | 根拠 |
 |---|---|---|---|---|
-| `extensions/security/baseline/security-baseline.md` | セキュリティベースラインルール（フルルール） | `.aidlc-rule-details/extensions/security/baseline/security-baseline.md`（翻案済み） | **エンジン採用（opt-in 時にロード）** | 既存セキュリティ監査（`Docs/decision/` ADR・`security-scan` CI）と相補的 |
+| `extensions/security/baseline/security-baseline.md` | セキュリティベースラインルール（フルルール） | `.aidlc-rule-details/extensions/security/baseline/security-baseline.md`（翻案済み） | **エンジン採用（opt-in 時にロード）** | 既存セキュリティ監査（`Docs/decision/` ADR）と相補的 |
 | `extensions/security/baseline/security-baseline.opt-in.md` | セキュリティ拡張のオプトイン質問 | `.aidlc-rule-details/extensions/security/baseline/security-baseline.opt-in.md`（翻案済み） | **エンジン採用（Requirements Analysis で表示）** | Requirements Analysis で学習者にセキュリティ適用有無を問う |
 | `extensions/resiliency/baseline/resiliency-baseline.md` | レジリエンシーベースラインルール（フルルール） | `.aidlc-rule-details/extensions/resiliency/baseline/resiliency-baseline.md`（翻案済み） | **エンジン採用（opt-in 時にロード）** | AWS Well-Architected ベース。BookFlow の Spring Boot + Docker 環境に対応 |
 | `extensions/resiliency/baseline/resiliency-baseline.opt-in.md` | レジリエンシー拡張のオプトイン質問 | `.aidlc-rule-details/extensions/resiliency/baseline/resiliency-baseline.opt-in.md`（翻案済み） | **エンジン採用（Requirements Analysis で表示）** | Requirements Analysis で学習者にレジリエンシー適用有無を問う |
