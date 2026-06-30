@@ -2,7 +2,10 @@
 type: adr
 title: ADR-003 — フロントエンド：UI コンポーネントライブラリ
 description: フロントエンドの UI コンポーネントライブラリとして shadcn/ui を採用した判断の記録
-tags: [frontend, ui-components, shadcn]
+tags:
+  - frontend
+  - ui-components
+  - shadcn
 timestamp: 2026-05-28
 ---
 

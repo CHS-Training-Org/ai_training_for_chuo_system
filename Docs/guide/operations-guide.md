@@ -2,7 +2,10 @@
 type: guide
 title: 運用ガイド
 description: リポジトリ管理者向けの日常運用・学習者サポート・質問対応フローの手引き
-tags: [guide, operations, management]
+tags:
+  - guide
+  - operations
+  - management
 timestamp: 2026-06-17
 audience: メンター・リポジトリ管理者
 references:

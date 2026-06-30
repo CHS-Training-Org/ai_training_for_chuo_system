@@ -2,7 +2,10 @@
 type: spec
 title: 要件定義
 description: BookFlow の機能要件・非機能要件・ロール権限・ステータス遷移を定義した要件定義書
-tags: [spec, requirements, functional]
+tags:
+  - spec
+  - requirements
+  - functional
 timestamp: 2026-06-17
 audience: 学習者・メンター
 references:

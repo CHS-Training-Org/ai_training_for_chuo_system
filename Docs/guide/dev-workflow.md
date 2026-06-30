@@ -2,7 +2,10 @@
 type: guide
 title: 開発ワークフローガイド
 description: AI-DLC エンジンを前提とした BookFlow の標準開発フロー（INCEPTION→CONSTRUCTION→OPERATIONS）
-tags: [guide, workflow, ai-dlc]
+tags:
+  - guide
+  - workflow
+  - ai-dlc
 timestamp: 2026-06-18
 audience: 学習者（主に新人）
 references:

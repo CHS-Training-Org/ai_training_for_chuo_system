@@ -2,7 +2,12 @@
 type: adr
 title: ADR-016 — バックエンド：認証・認可
 description: バックエンドの認証・認可として Spring Security + OAuth2 Resource Server（Cognito）を採用した判断の記録
-tags: [backend, auth, spring-security, cognito, oauth2]
+tags:
+  - backend
+  - auth
+  - spring-security
+  - cognito
+  - oauth2
 timestamp: 2026-06-06
 ---
 

@@ -2,7 +2,10 @@
 type: design
 title: AWS 標準アーキテクチャ（受注案件デフォルト構成）
 description: BookFlow が前提とする AWS 標準アーキテクチャの全体構成と各レイヤーの役割
-tags: [architecture, aws, infrastructure]
+tags:
+  - architecture
+  - aws
+  - infrastructure
 timestamp: 2026-06-12
 ---
 

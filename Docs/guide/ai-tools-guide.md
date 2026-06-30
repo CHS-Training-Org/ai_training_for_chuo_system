@@ -2,7 +2,10 @@
 type: guide
 title: AI ツール活用ガイド（Claude Code）
 description: Claude Code を中心とした AI ツールの活用方法・禁止事項・開発フローを解説するガイド
-tags: [guide, ai-tools, claude-code]
+tags:
+  - guide
+  - ai-tools
+  - claude-code
 timestamp: 2026-06-13
 audience: 学習者（主に新人）
 references:

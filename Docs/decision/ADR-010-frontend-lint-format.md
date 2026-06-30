@@ -2,7 +2,11 @@
 type: adr
 title: ADR-010 — フロントエンド：Lint / Format
 description: フロントエンドの Lint・Format ツールとして oxlint + oxfmt を採用した判断の記録
-tags: [frontend, lint, format, oxlint]
+tags:
+  - frontend
+  - lint
+  - format
+  - oxlint
 timestamp: 2026-05-28
 ---
 

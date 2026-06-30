@@ -2,7 +2,11 @@
 type: adr
 title: ADR-020 — AI-DLC エンジン完全採用（PHASE4 タスク 3.7 採用方針転換）
 description: AI-DLC エンジン（awslabs/aidlc-workflows）を BookFlow の標準開発ワークフローとして完全採用した判断の記録
-tags: [ai-dlc, workflow, aidlc, vendor]
+tags:
+  - ai-dlc
+  - workflow
+  - aidlc
+  - vendor
 timestamp: 2026-06-18
 ---
 

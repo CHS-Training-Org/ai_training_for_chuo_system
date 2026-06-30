@@ -2,7 +2,12 @@
 type: spec
 title: 既存機能の E2E テスト追加
 description: 既存の予約機能に対して Playwright を使った E2E テストを追加するエンハンス課題のビジネス要求シート
-tags: [spec, enhancement, e2e, testing, playwright]
+tags:
+  - spec
+  - enhancement
+  - e2e
+  - testing
+  - playwright
 timestamp: 2026-06-16
 audience: 学習者・メンター
 references:

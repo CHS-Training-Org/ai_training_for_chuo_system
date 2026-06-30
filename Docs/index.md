@@ -2,7 +2,9 @@
 type: index
 title: BookFlow ドキュメント
 description: 社内 AI 駆動開発チュートリアル「BookFlow」の設計・学習ドキュメントサイトのトップページ
-tags: [index, overview]
+tags:
+  - index
+  - overview
 timestamp: 2026-06-12
 ---
 
@@ -31,7 +33,6 @@ timestamp: 2026-06-12
 |-----------|------|---------|
 | [リポジトリ概要](./spec/overview.md) | 本リポジトリの目的・対象者・ステークホルダー役割・用語集 | 全員 |
 | [アーキテクチャ](./ARCHITECTURE.md) | AWS 標準アーキテクチャと全体構成図 | メンター・管理者 |
-| [計画 (Plan)](./plan/PHASE4_AI_DRIVEN_DEV_TASKS.md) | 今後の整備タスク（仕様書整備・AI 駆動開発ワークフロー・エンハンス要件策定） | メンター・管理者 |
 | [設計判断 (ADR)](./decision/README.md) | 技術選定・設計上の意思決定の記録 | メンター・学習者 |
 | [仕様 (Spec)](./spec/index.md) | 要件・画面・API・ER などの実装仕様 | 学習者・メンター |
 | [ガイド (Guide)](./guide/index.md) | 学習者が詰まりやすいポイントを先回りで解決 | 学習者 |

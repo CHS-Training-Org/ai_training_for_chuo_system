@@ -2,7 +2,11 @@
 type: spec
 title: 予約一覧のフィルタ拡張
 description: 予約一覧画面に日付・ステータス・リソースなどの絞り込みフィルタを追加するエンハンス課題ビジネス要求シート
-tags: [spec, enhancement, reservation, filter]
+tags:
+  - spec
+  - enhancement
+  - reservation
+  - filter
 timestamp: 2026-06-16
 audience: 学習者・メンター
 references:

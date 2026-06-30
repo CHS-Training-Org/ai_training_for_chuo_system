@@ -2,7 +2,10 @@
 type: adr
 title: ADR-006 — フロントエンド：バリデーション
 description: フロントエンドのバリデーションスキーマライブラリとして Zod を採用した判断の記録
-tags: [frontend, validation, zod]
+tags:
+  - frontend
+  - validation
+  - zod
 timestamp: 2026-05-28
 ---
 

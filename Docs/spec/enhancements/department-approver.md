@@ -2,7 +2,11 @@
 type: spec
 title: 部署ごとの承認者設定
 description: 部署単位で承認者を設定できる権限管理エンハンス課題のビジネス要求シート
-tags: [spec, enhancement, approver, department]
+tags:
+  - spec
+  - enhancement
+  - approver
+  - department
 timestamp: 2026-06-16
 audience: 学習者・メンター
 references:

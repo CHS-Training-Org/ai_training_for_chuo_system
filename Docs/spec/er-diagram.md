@@ -2,7 +2,10 @@
 type: spec
 title: ER 図
 description: BookFlow のデータモデル・テーブル定義・リレーションを Mermaid で記述した ER 図
-tags: [spec, er-diagram, data-model]
+tags:
+  - spec
+  - er-diagram
+  - data-model
 timestamp: 2026-06-17
 audience: 学習者・メンター
 references:

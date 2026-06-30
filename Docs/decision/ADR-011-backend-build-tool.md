@@ -2,7 +2,10 @@
 type: adr
 title: ADR-011 — バックエンド：ビルドツール
 description: バックエンドのビルドツールとして Gradle（Kotlin DSL）を採用した判断の記録
-tags: [backend, build-tool, gradle]
+tags:
+  - backend
+  - build-tool
+  - gradle
 timestamp: 2026-05-28
 ---
 

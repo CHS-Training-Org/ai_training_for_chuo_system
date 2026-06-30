@@ -2,7 +2,9 @@
 type: spec
 title: BookFlow 学習用リポジトリ概要
 description: 本リポジトリ（AI 駆動開発 学習教材）の目的・対象者・ゴール・ステークホルダー役割・用語を定義する概要仕様
-tags: [spec, overview]
+tags:
+  - spec
+  - overview
 timestamp: 2026-06-20
 audience: 学習者（新人〜ベテラン）・メンター・リポジトリ管理者
 references:

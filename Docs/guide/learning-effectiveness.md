@@ -2,13 +2,16 @@
 type: guide
 title: 学習効果測定（満足度アンケート）
 description: 学習プログラムの効果を定量化するアンケート設計と結果分析の方針
-tags: [guide, learning, measurement, survey]
+tags:
+  - guide
+  - learning
+  - measurement
+  - survey
 timestamp: 2026-06-17
 audience: メンター・リポジトリ管理者
 references:
   - Docs/guide/operations-guide.md
   - Docs/guide/curriculum.md
-  - Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md
 ---
 
 # 学習効果測定（満足度アンケート）
@@ -80,11 +83,11 @@ references:
 
 1. メンターが「ふりかえり用 Issue」のコメントを収集し、設問ごとに評価値と記述を整理する。
 2. 改善提案を類型化し、優先度を判断する。
-3. 採用する改善を新規 Issue としてタスク化する（[PHASE4_AI_DRIVEN_DEV_TASKS.md の更新ルール](../plan/PHASE4_AI_DRIVEN_DEV_TASKS.md) に従い該当カテゴリへ追記）。
+3. 採用する改善を新規 Issue としてタスク化する。
 
 ### トリアージ方針
 
-フィードバックの定期トリアージ（四半期など）で採否を判断します。改善提案の受付・トリアージ方針の詳細は [検討 B（メンテナンス方針）](../plan/PHASE4_AI_DRIVEN_DEV_TASKS.md) を参照してください。
+フィードバックの定期トリアージ（四半期など）で採否を判断します。
 
 質問・サポートフローとの棲み分けは [operations-guide.md §質問サポートフロー](./operations-guide.md#support) を参照してください。
 

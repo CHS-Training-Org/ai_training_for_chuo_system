@@ -2,7 +2,10 @@
 type: guide
 title: 評価基準・レビュー観点
 description: PR レビュー時の評価基準と学習者・メンターの観点別チェックリスト
-tags: [guide, review, criteria]
+tags:
+  - guide
+  - review
+  - criteria
 timestamp: 2026-06-17
 audience: メンター・リポジトリ管理者
 references:

@@ -2,7 +2,10 @@
 type: index
 title: Claude Code 設定
 description: BookFlow リポジトリにインストールされている Claude Code の Rules・Skills・Hooks・その他設定の索引
-tags: [claude, agent-config, index]
+tags:
+  - claude
+  - agent-config
+  - index
 timestamp: 2026-06-20
 audience: 学習者・メンター
 references:

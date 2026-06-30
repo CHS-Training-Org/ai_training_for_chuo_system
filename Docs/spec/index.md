@@ -2,7 +2,9 @@
 type: index
 title: 仕様書 (Spec)
 description: BookFlow の概要仕様と実装仕様文書（要件・画面・API・ER 図）の管理目次と Spec-first 更新ルール
-tags: [spec, index]
+tags:
+  - spec
+  - index
 timestamp: 2026-06-20
 audience: 学習者・メンター
 references:

@@ -2,7 +2,12 @@
 type: agent-config
 title: Claude Code 設定台帳
 description: BookFlow リポジトリにインストールされている Rules・Skills・Hooks・その他設定の一覧と呼び出し方
-tags: [claude, agent-config, rules, skills, hooks]
+tags:
+  - claude
+  - agent-config
+  - rules
+  - skills
+  - hooks
 timestamp: 2026-06-21
 audience: 学習者・メンター
 references:

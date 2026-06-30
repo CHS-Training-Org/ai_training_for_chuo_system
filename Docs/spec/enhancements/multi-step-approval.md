@@ -2,7 +2,11 @@
 type: spec
 title: 多段階承認フロー
 description: 予約申請に複数の承認者が関与する多段階承認ワークフローのエンハンス課題ビジネス要求シート
-tags: [spec, enhancement, approval, workflow]
+tags:
+  - spec
+  - enhancement
+  - approval
+  - workflow
 timestamp: 2026-06-17
 audience: 学習者・メンター
 references:

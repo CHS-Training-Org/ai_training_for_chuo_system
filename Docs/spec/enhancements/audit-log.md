@@ -2,7 +2,10 @@
 type: spec
 title: 操作ログ・監査証跡
 description: 予約操作の変更履歴・監査証跡をシステムに記録するエンハンス課題のビジネス要求シート
-tags: [spec, enhancement, audit-log]
+tags:
+  - spec
+  - enhancement
+  - audit-log
 timestamp: 2026-06-16
 audience: 学習者・メンター
 references:
