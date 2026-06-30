@@ -34,14 +34,13 @@
 
 ## ドキュメント一覧
 
-| ドキュメント                                                                         | 内容                                                    |
-| ------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| [`Docs/spec/overview.md`](Docs/spec/overview.md)                                     | リポジトリ概要（目的・対象者・役割・用語集）            |
-| [`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md)                                       | システムアーキテクチャ                                  |
-| [`Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md`](Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md) | 今後の計画（AI 駆動開発整備タスク）                     |
-| [`Docs/decision/`](Docs/decision/)                                                   | ADR（アーキテクチャ決定記録）                           |
-| [`Docs/spec/index.md`](Docs/spec/index.md)                                           | 実装仕様（要件・画面・API・ER 図）                      |
-| [`Docs/guide/index.md`](Docs/guide/index.md)                                         | 学習者向けガイド（環境構築・AI ツール・規約・トラブル） |
+| ドキュメント                                   | 内容                                                    |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| [`Docs/guide/index.md`](Docs/guide/index.md)   | 学習者向けガイド（カリキュラム・環境構築・AI ツール・規約・トラブル） |
+| [`Docs/spec/overview.md`](Docs/spec/overview.md) | リポジトリ概要（目的・対象者・役割・用語集）          |
+| [`Docs/spec/index.md`](Docs/spec/index.md)     | 実装仕様（要件・画面・API・ER 図）                      |
+| [`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md) | システムアーキテクチャ（リファレンス）                  |
+| [`Docs/decision/`](Docs/decision/)             | ADR（アーキテクチャ決定記録、リファレンス）             |
 
 ---
 
