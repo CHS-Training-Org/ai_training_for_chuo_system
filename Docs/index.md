@@ -10,15 +10,16 @@ timestamp: 2026-06-12
 
 # BookFlow ドキュメント
 
-> 社内 AI 駆動開発チュートリアル「BookFlow」の設計・学習ドキュメントサイトへようこそ。
+社内 AI 駆動開発チュートリアル「BookFlow」の設計・学習ドキュメントサイトへようこそ。
 
-**BookFlow** は、社内エンジニアが **AI 駆動開発**（Claude Code）を活用したフルスタック開発を体験・習得するための学習用リポジトリです。あらかじめ用意された施設・備品予約サービスを土台に、AI ツールを積極的に活用しながらエンハンス開発を行い、実務に近い技術スタックと開発フローを通じて実践スキルを身につけます。
+**BookFlow** は、社内エンジニアが **AI 駆動開発**（Claude Code）を活用したフルスタック開発を体験・習得するための学習用リポジトリです。  
+あらかじめ用意された施設・備品予約サービスを土台に、AI ツールを積極的に活用しながらエンハンス開発を行い、実務に近い技術スタックと開発フローを通じて実践スキルを身につけます。
 
 本サイトでは、学習ガイド・仕様・アーキテクチャ・設計判断（ADR）を公開しています。
 
 ---
 
-## まず読む
+## スタートガイド
 
 はじめての方は、学習カリキュラムと環境構築から始めましょう。
 
@@ -43,9 +44,26 @@ timestamp: 2026-06-12
 
 ## 技術スタック概要
 
-- **フロントエンド**: Next.js 15（App Router）/ React 19 / TypeScript / Tailwind CSS v4 / shadcn/ui
-- **バックエンド**: Spring Boot 4.0 / Java 25 / Spring Data JPA / Flyway
-- **認証・認可**: Better Auth + Cognito / Spring Security + OAuth2 Resource Server
-- **開発環境**: DevContainer + Docker Compose（コンテナ群を一括起動、アプリは手動起動）
+<div class="tech-stack-section">
+  <p class="tech-stack-category-label">フロントエンド</p>
+  <div class="tech-stack-grid">
+    <div class="tech-card"><img src="assets/logos/nextdotjs.svg" alt="Next.js"><span class="tech-name">Next.js 15</span></div>
+    <div class="tech-card"><img src="assets/logos/react.svg" alt="React"><span class="tech-name">React 19</span></div>
+    <div class="tech-card"><img src="assets/logos/typescript.svg" alt="TypeScript"><span class="tech-name">TypeScript</span></div>
+    <div class="tech-card"><img src="assets/logos/tailwindcss.svg" alt="Tailwind CSS"><span class="tech-name">Tailwind CSS</span></div>
+  </div>
+  <p class="tech-stack-category-label">バックエンド</p>
+  <div class="tech-stack-grid">
+    <div class="tech-card"><img src="assets/logos/spring.svg" alt="Spring Boot"><span class="tech-name">Spring Boot</span></div>
+    <div class="tech-card"><img src="assets/logos/openjdk.svg" alt="Java"><span class="tech-name">Java 25</span></div>
+    <div class="tech-card"><img src="assets/logos/postgresql.svg" alt="PostgreSQL"><span class="tech-name">PostgreSQL</span></div>
+    <div class="tech-card"><img src="assets/logos/gradle.svg" alt="Gradle"><span class="tech-name">Gradle</span></div>
+  </div>
+  <p class="tech-stack-category-label">テスト / インフラ</p>
+  <div class="tech-stack-grid">
+    <div class="tech-card"><img src="assets/logos/vitest.svg" alt="Vitest"><span class="tech-name">Vitest</span></div>
+    <div class="tech-card"><img src="assets/logos/docker.svg" alt="Docker"><span class="tech-name">Docker</span></div>
+  </div>
+</div>
 
 詳細は [リポジトリ概要](./spec/overview.md) と [アーキテクチャ](./ARCHITECTURE.md) を参照してください。

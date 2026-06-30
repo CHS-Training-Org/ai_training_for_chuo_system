@@ -14,7 +14,7 @@ docs_dir = "Docs"
 site_dir = "site"
 
 # 追加スタイルシート（docs_dir からの相対）。デザインショーケース（design.md）用。
-extra_css = ["stylesheets/design-showcase.css", "stylesheets/drawio.css"]
+extra_css = ["stylesheets/design-showcase.css", "stylesheets/drawio.css", "stylesheets/tech-stack.css"]
 
 # リポジトリリンク（ページ右上に GitHub アイコンが表示される）
 repo_url = "https://github.com/CHS-Training-Org/ai_training_for_chuo_system"
