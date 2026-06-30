@@ -2,7 +2,10 @@
 type: guide
 title: はじめに（環境構築・起動手順）
 description: DevContainer を使った BookFlow の環境構築と初回起動手順
-tags: [guide, getting-started, setup]
+tags:
+  - guide
+  - getting-started
+  - setup
 timestamp: 2026-06-12
 audience: 学習者（主に新人）
 references:

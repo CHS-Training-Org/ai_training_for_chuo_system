@@ -2,7 +2,10 @@
 type: adoption
 title: AI-DLC 採用台帳
 description: AWS Labs AI-DLC から BookFlow に取り込んだ要素・反映先・状態・上流同期手順の管理台帳
-tags: [ai-dlc, adoption, vendor]
+tags:
+  - ai-dlc
+  - adoption
+  - vendor
 timestamp: 2026-06-18
 audience: メンター・学習者
 references:

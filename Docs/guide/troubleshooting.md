@@ -2,7 +2,10 @@
 type: guide
 title: トラブルシューティング
 description: 環境構築・起動・開発中によく発生するエラーの原因と対処法
-tags: [guide, troubleshooting, debug]
+tags:
+  - guide
+  - troubleshooting
+  - debug
 timestamp: 2026-06-12
 audience: 学習者（主に新人）
 references:

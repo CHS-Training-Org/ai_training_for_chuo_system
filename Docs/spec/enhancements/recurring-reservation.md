@@ -2,7 +2,11 @@
 type: spec
 title: 繰り返し予約
 description: 定期的なスケジュールで繰り返し予約を自動生成するエンハンス課題のビジネス要求シート
-tags: [spec, enhancement, recurring, reservation]
+tags:
+  - spec
+  - enhancement
+  - recurring
+  - reservation
 timestamp: 2026-06-16
 audience: 学習者・メンター
 references:

@@ -2,7 +2,10 @@
 type: adr
 title: ADR-004 — フロントエンド：データ取得戦略
 description: Server Components 優先・Server Actions を BFF として利用するデータ取得戦略の採用記録
-tags: [frontend, data-fetching, server-components]
+tags:
+  - frontend
+  - data-fetching
+  - server-components
 timestamp: 2026-05-28
 ---
 

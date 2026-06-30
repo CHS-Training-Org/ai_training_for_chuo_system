@@ -2,7 +2,11 @@
 type: adr
 title: ADR-019 — バックエンド：コード品質ツール
 description: バックエンドのコード品質ツールとして Spotless + Checkstyle を採用した判断の記録
-tags: [backend, code-quality, spotless, checkstyle]
+tags:
+  - backend
+  - code-quality
+  - spotless
+  - checkstyle
 timestamp: 2026-05-31
 ---
 

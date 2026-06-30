@@ -2,7 +2,10 @@
 type: spec
 title: REST API 仕様書
 description: BookFlow のエンドポイント・リクエスト/レスポンス・認証・シーケンス図を定義した API 仕様書
-tags: [spec, api, rest]
+tags:
+  - spec
+  - api
+  - rest
 timestamp: 2026-06-17
 audience: 学習者・メンター
 references:

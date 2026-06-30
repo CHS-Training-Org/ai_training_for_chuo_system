@@ -2,7 +2,11 @@
 type: guide
 title: ラベル設計と課題 Issue 起票手順
 description: GitHub Issue のラベル設計とエンハンス課題の起票・管理手順
-tags: [guide, issues, labels, github]
+tags:
+  - guide
+  - issues
+  - labels
+  - github
 timestamp: 2026-06-16
 audience: メンター・リポジトリ管理者
 references:

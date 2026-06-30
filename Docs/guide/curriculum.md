@@ -2,7 +2,10 @@
 type: guide
 title: 学習カリキュラム
 description: BookFlow を使った AI 駆動開発の学習ステップと到達目標の体系
-tags: [guide, curriculum, learning]
+tags:
+  - guide
+  - curriculum
+  - learning
 timestamp: 2026-06-16
 audience: 学習者（新人・中堅）・メンター
 references:

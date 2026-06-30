@@ -2,7 +2,10 @@
 type: state
 title: AI-DLC State Tracking
 description: AI-DLC エンジンが管理する開発フェーズの進捗トラッカー（INCEPTION/CONSTRUCTION/OPERATIONS）
-tags: [ai-dlc, state, tracking]
+tags:
+  - ai-dlc
+  - state
+  - tracking
 timestamp: 2026-06-18
 ---
 

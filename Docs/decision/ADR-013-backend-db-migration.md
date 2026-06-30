@@ -2,7 +2,11 @@
 type: adr
 title: ADR-013 — バックエンド：DB マイグレーション
 description: バックエンドの DB マイグレーションツールとして Flyway を採用した判断の記録
-tags: [backend, db, flyway, migration]
+tags:
+  - backend
+  - db
+  - flyway
+  - migration
 timestamp: 2026-05-28
 ---
 

@@ -2,7 +2,11 @@
 type: adr
 title: ADR-008 — フロントエンド：認証クライアント
 description: フロントエンドの認証クライアントとして Better Auth + Cognito 連携を採用した判断の記録
-tags: [frontend, auth, better-auth, cognito]
+tags:
+  - frontend
+  - auth
+  - better-auth
+  - cognito
 timestamp: 2026-05-28
 ---
 

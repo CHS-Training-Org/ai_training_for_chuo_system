@@ -2,7 +2,10 @@
 type: design
 title: デザインシステム
 description: BookFlow のデザイントークン（カラー・タイポグラフィ・コンポーネント）の CSS ショーケース
-tags: [design, ui, css]
+tags:
+  - design
+  - ui
+  - css
 timestamp: 2026-06-14
 ---
 

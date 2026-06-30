@@ -2,7 +2,10 @@
 type: index
 title: ADR（Architecture Decision Records）ガイド
 description: BookFlow における ADR の命名規則・フォーマット・起票プロセスと全 ADR の一覧
-tags: [adr, decision, guide]
+tags:
+  - adr
+  - decision
+  - guide
 timestamp: 2026-06-18
 audience: メンター・リポジトリ管理者・学習者
 references:
@@ -51,7 +54,9 @@ ADR-NNN-kebab-case.md
 type: adr
 title: ADR-NNN — <領域>：<テーマ>
 description: <採用判断の1文要約>
-tags: [<領域タグ>, ...]
+tags:
+  - <領域タグ>
+  - ...
 timestamp: YYYY-MM-DD
 ---
 
@@ -139,3 +144,9 @@ Accepted（YYYY-MM-DD）
 |---|--------|--------|
 | [ADR-020](./ADR-020-aidlc-engine-adoption.md) | AI-DLC エンジン完全採用 | Accepted |
 | [ADR-021](./ADR-021-okf-frontmatter-adoption.md) | OKF 準拠 frontmatter 部分採用 | Accepted |
+
+### 開発環境（ADR-022〜）
+
+| # | テーマ | Status |
+|---|--------|--------|
+| [ADR-022](./ADR-022-wsl-container-future-adoption.md) | WSL Container（wslc）の将来採用 | Proposed |

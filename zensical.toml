@@ -24,10 +24,6 @@ nav = [
   { "ホーム" = "index.md" },
   { "アーキテクチャ" = "ARCHITECTURE.md" },
   { "デザイン" = "design.md" },
-  { "計画 (Plan)" = [
-    "plan/PHASE4_AI_DRIVEN_DEV_TASKS.md",
-    "plan/MERMAID_TO_DRAWIO_MIGRATION.md",
-  ] },
   { "設計判断 (ADR)" = [
     "decision/ADR-001-frontend-package-manager.md",
     "decision/ADR-002-frontend-styling.md",
@@ -48,6 +44,9 @@ nav = [
     "decision/ADR-017-backend-logging.md",
     "decision/ADR-018-backend-test-strategy.md",
     "decision/ADR-019-backend-code-quality.md",
+    "decision/ADR-020-aidlc-engine-adoption.md",
+    "decision/ADR-021-okf-frontmatter-adoption.md",
+    "decision/ADR-022-wsl-container-future-adoption.md",
   ] },
   { "仕様 (Spec)" = [
     "spec/overview.md",
@@ -91,7 +90,6 @@ nav = [
     "guide/review-criteria.md",
     "guide/issue-registration.md",
     "guide/operations-guide.md",
-    "guide/dependency-policy.md",
     "guide/learning-effectiveness.md",
     "guide/troubleshooting.md",
   ] },

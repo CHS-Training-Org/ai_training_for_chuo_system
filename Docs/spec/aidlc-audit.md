@@ -2,7 +2,10 @@
 type: audit
 title: AI-DLC Audit Log
 description: AI-DLC エンジンが記録する全インタラクション・判断の追記専用監査ログ
-tags: [ai-dlc, audit, log]
+tags:
+  - ai-dlc
+  - audit
+  - log
 timestamp: 2026-06-18
 ---
 

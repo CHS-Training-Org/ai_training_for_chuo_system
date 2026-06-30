@@ -2,7 +2,11 @@
 type: spec
 title: OpenAPI クライアント自動生成
 description: OpenAPI スキーマからフロントエンドの型定義・API クライアントを自動生成するエンハンス課題ビジネス要求シート
-tags: [spec, enhancement, openapi, codegen]
+tags:
+  - spec
+  - enhancement
+  - openapi
+  - codegen
 timestamp: 2026-06-16
 audience: 学習者・メンター
 references:

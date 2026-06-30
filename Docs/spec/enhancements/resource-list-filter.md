@@ -2,7 +2,12 @@
 type: spec
 title: リソース一覧の検索・フィルタ追加
 description: リソース一覧にキーワード検索・カテゴリフィルタ機能を追加するエンハンス課題のビジネス要求シート
-tags: [spec, enhancement, resource, search, filter]
+tags:
+  - spec
+  - enhancement
+  - resource
+  - search
+  - filter
 timestamp: 2026-06-16
 audience: 学習者・メンター
 references:

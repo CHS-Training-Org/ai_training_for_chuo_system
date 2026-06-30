@@ -2,7 +2,10 @@
 type: guide
 title: 選択課題カタログ
 description: 学習者が選択できるエンハンス課題の一覧と選択・着手手順
-tags: [guide, enhancement, catalog]
+tags:
+  - guide
+  - enhancement
+  - catalog
 timestamp: 2026-06-16
 audience: 学習者（新人・中堅）・メンター
 references:

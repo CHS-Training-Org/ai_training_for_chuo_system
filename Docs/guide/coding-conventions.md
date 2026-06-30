@@ -2,7 +2,10 @@
 type: guide
 title: コーディング規約
 description: BookFlow の命名規則・ファイル構成・コミット規約・テスト規約を定めたコーディング標準
-tags: [guide, coding-conventions, style]
+tags:
+  - guide
+  - coding-conventions
+  - style
 timestamp: 2026-06-13
 audience: 学習者（主に新人）
 references:
