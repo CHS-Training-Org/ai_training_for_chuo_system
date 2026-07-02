@@ -47,15 +47,15 @@ references:
 
 - 対象レイヤー：両方
 - 更新が必要な spec：
-  - `er-diagram.md` — 部署×承認者の対応を保持するデータ構造（カラム追加 or 新テーブル）を追記
-  - `api-spec.md` — 部署承認者設定の CRUD エンドポイントを新セクションとして追記
-  - `screen-spec.md` — 管理画面に部署承認者設定 UI を追記
-  - `requirements.md` §DEPT — 承認者割り当て要件を追記
+  - `er-diagram.md`：部署×承認者の対応を保持するデータ構造（カラム追加 or 新テーブル）を追記
+  - `api-spec.md`：部署承認者設定の CRUD エンドポイントを新セクションとして追記
+  - `screen-spec.md`：管理画面に部署承認者設定 UI を追記
+  - `requirements.md` §DEPT：承認者割り当て要件を追記
 
 ## 依存関係
 
 - 前提課題：なし（ベースシステムの既存承認フロー・`departments` 階層構造のみに依存）
-- 競合する課題：[多段階承認フロー](./multi-step-approval.md) — 両課題とも `ApprovalService.createStep()`（`backend/.../application/ApprovalService.java`）を別方向に拡張するため、並行着手は非推奨。一方を完成させてからもう一方に着手する。
+- 競合する課題：[多段階承認フロー](./multi-step-approval.md)。両課題とも `ApprovalService.createStep()`（`backend/.../application/ApprovalService.java`）を別方向に拡張するため、並行着手は非推奨。一方を完成させてからもう一方に着手する。
 - 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](./e2e-test-coverage.md) で承認ルーティングのリグレッションをカバーするとよい。
 
 ## AI 活用ポイント

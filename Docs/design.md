@@ -11,13 +11,14 @@ timestamp: 2026-06-14
 
 # デザインシステム
 
-> [`DESIGN.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/DESIGN.md) のデザイントークン（カラー・タイポグラフィ・コンポーネント）を実際の CSS で可視化したショーケースです。AI エージェントが正確な日本語 UI を生成するための仕様を、実物として確認できます。右側の見出しバーから各セクションへ移動できます。
+> [`DESIGN.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/DESIGN.md) のデザイントークン（カラー、タイポグラフィ、コンポーネント）を実際の CSS で可視化したショーケースです。  
+> AI エージェントが正確な日本語 UI を生成するための仕様を、実物として確認できます。右側の見出しバーから各セクションへ移動できます。
 
 [ショーケースを全画面で開く](./design/preview.html){ target="_blank" } ・ [DESIGN.md 原文（GitHub）](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/DESIGN.md){ target="_blank" }
 
 <div class="ds-block ds-hero">
   <div class="hero-title">Design System Preview — <em>BookFlow</em></div>
-  <p>DESIGN.md から抽出したデザイントークンのカタログ。<strong>Structured Clarity（整理された明瞭さ）</strong>を方針とする、高情報密度の業務 UI。カラー・タイポグラフィ・コンポーネント・スペーシングの全値を実物として可視化しています。</p>
+  <p>DESIGN.md から抽出したデザイントークンのカタログ。<strong>Structured Clarity（整理された明瞭さ）</strong>を方針とする、高情報密度の業務 UI。カラー、タイポグラフィ、コンポーネント、スペーシングの全値を実物として可視化しています。</p>
   <div class="hero-buttons">
     <a class="btn btn-primary btn-md" href="https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/DESIGN.md" target="_blank" rel="noopener">DESIGN.md を読む</a>
     <a class="btn btn-outline btn-md" href="./design/preview.html" target="_blank" rel="noopener">全画面で開く</a>
@@ -28,7 +29,7 @@ timestamp: 2026-06-14
 
 <div class="ds-block">
   <div class="section-label">01 / Colors</div>
-  <p class="section-desc">ブランドカラーは信頼感・プロフェッショナルを想起させる青。Neutral は青みがかった Slate スケールで Primary と自然に調和します。</p>
+  <p class="section-desc">ブランドカラーは信頼感、プロフェッショナルを想起させる青。Neutral は青みがかった Slate スケールで Primary と自然に調和します。</p>
   <div class="group-label">Primary（ブランドカラー）</div>
   <div class="color-grid">
     <div class="swatch"><div class="swatch-block" style="background:#2563EB"></div><div class="swatch-info"><div class="swatch-name">Primary</div><div class="swatch-hex">#2563EB</div><div class="swatch-role">CTA・リンク・アクティブ状態（Blue 600）</div></div></div>
@@ -133,7 +134,7 @@ timestamp: 2026-06-14
 
 <div class="ds-block">
   <div class="section-label">05 / Buttons</div>
-  <p class="section-desc">承認は default（Primary）、却下・キャンセル・削除には destructive を使用します。</p>
+  <p class="section-desc">承認は default（Primary）、却下、キャンセル、削除には destructive を使用します。</p>
   <div class="group-label">バリアント</div>
   <div class="row">
     <div class="item"><button class="btn btn-primary btn-md">承認</button><div class="item-label">default (Primary)</div></div>
@@ -153,7 +154,7 @@ timestamp: 2026-06-14
 
 <div class="ds-block">
   <div class="section-label">06 / Cards & Badges</div>
-  <p class="section-desc">Card は radius 8px・padding 24px・shadow-sm。予約ステータスは pill 形状の Badge で表示します。</p>
+  <p class="section-desc">Card は radius 8px、padding 24px、shadow-sm。予約ステータスは pill 形状の Badge で表示します。</p>
   <div class="card-grid">
     <div class="ui-card">
       <div class="ui-card-title">第1会議室</div>
@@ -277,5 +278,5 @@ timestamp: 2026-06-14
 </div>
 
 <div class="ds-block ds-footer">
-  Generated from <strong>BookFlow DESIGN.md</strong> — 社内 AI 駆動開発チュートリアル
+  Generated from <strong>BookFlow DESIGN.md</strong>（社内 AI 駆動開発チュートリアル）
 </div>

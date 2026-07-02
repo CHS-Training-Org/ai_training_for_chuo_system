@@ -85,7 +85,7 @@ references:
 
 ## §認証
 
-### `/auth/signin` — サインイン
+### `/auth/signin`（サインイン）
 
 > **実装注記（ADR-008 適用）**：ADR-008（Status: Accepted）により Cognito OAuth2 ソーシャルログインを採用。以下の「メールアドレス/パスワードフォーム」記述は廃止済み。Better Auth の `signIn.social({ provider: 'cognito' })` を使用した単一ボタン方式を実装済み。
 
@@ -114,7 +114,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ## §リソース
 
-### `/resources` — リソース一覧・空き確認
+### `/resources`（リソース一覧、空き確認）
 
 #### UI 要素
 
@@ -128,7 +128,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ---
 
-### `/resources/{id}` — リソース詳細
+### `/resources/{id}`（リソース詳細）
 
 #### UI 要素
 
@@ -140,7 +140,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ---
 
-### `/admin/resources` — リソース管理（ADMIN）
+### `/admin/resources`（リソース管理、ADMIN）
 
 **アクセス制御**：ADMIN のみアクセス可。他ロールがアクセスした場合は 403 エラー画面を表示する。
 
@@ -169,7 +169,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ## §予約
 
-### `/reservations/new` — 予約申請フォーム
+### `/reservations/new`（予約申請フォーム）
 
 #### UI 要素
 
@@ -201,7 +201,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ---
 
-### `/reservations` — マイ予約一覧
+### `/reservations`（マイ予約一覧）
 
 #### UI 要素
 
@@ -217,7 +217,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ---
 
-### `/reservations/{id}` — 予約詳細
+### `/reservations/{id}`（予約詳細）
 
 #### UI 要素
 
@@ -239,7 +239,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ---
 
-### `/reservations/{id}/edit` — 予約編集
+### `/reservations/{id}/edit`（予約編集）
 
 #### UI 要素
 
@@ -277,7 +277,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ## §承認
 
-### `/approvals` — 承認待ち一覧（APPROVER / ADMIN）
+### `/approvals`（承認待ち一覧、APPROVER / ADMIN）
 
 **アクセス制御**：APPROVER / ADMIN のみアクセス可。MEMBER がアクセスした場合は 403 エラー画面を表示する。
 
@@ -302,7 +302,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ## §ユーザー・部署
 
-### `/` — ダッシュボード
+### `/`（ダッシュボード）
 
 #### UI 要素
 
@@ -321,7 +321,7 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 
 ---
 
-### `/admin/users` — ユーザー管理（ADMIN）
+### `/admin/users`（ユーザー管理、ADMIN）
 
 **アクセス制御**：ADMIN のみアクセス可。他ロールがアクセスした場合は 403 エラー画面を表示する。
 

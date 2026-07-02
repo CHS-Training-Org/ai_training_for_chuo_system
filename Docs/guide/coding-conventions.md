@@ -15,7 +15,8 @@ references:
 
 # コーディング規約
 
-BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../decision/README.md) に、API・画面の**仕様**は [Docs/spec/](../spec/index.md) に書かれています。本書は「実装時に迷わないためのルールと実例」に絞っています。
+BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../decision/README.md) に、API、画面の**仕様**は [Docs/spec/](../spec/index.md) に書かれています。  
+本書は「実装時に迷わないためのルールと実例」に絞っています。
 
 !!! tip "最大の規約は「既存コードに合わせる」"
     本書に書かれていないことで迷ったら、**同じ種類の既存ファイルを開いてパターンを真似る**のが正解です。
@@ -89,9 +90,8 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
 - レスポンスは Zod スキーマ（`@/lib/types/api`）で検証してから返す
 
 !!! warning "Zod スキーマは `'use server'` ファイルに置けない"
-    Next.js の制約により、`'use server'` ファイルからは非同期関数以外（Zod スキーマオブジェクト等）を
-    export できません。入力スキーマは `src/lib/schemas/`（例：`src/lib/schemas/resource.ts`）に分離し、
-    Action 側では `z.infer` で導出した**型のみ**をインポート・再エクスポートします。
+    Next.js の制約により、`'use server'` ファイルからは非同期関数以外（Zod スキーマオブジェクト等）を export できません。  
+    入力スキーマは `src/lib/schemas/`（例：`src/lib/schemas/resource.ts`）に分離し、Action 側では `z.infer` で導出した**型のみ**をインポートしたうえで再エクスポートします。
 
 ### 命名規則
 
@@ -105,7 +105,9 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
 
 ### Lint / Format（oxlint + oxfmt）
 
-設定は `frontend/oxlint.json`。react / nextjs / typescript プラグインを有効化し、`no-unused-vars` はエラー、`no-console` は警告です。デバッグ用の `console.log` は残さないでください。インポートパスはエイリアス `@/`（= `src/`）を使います（tsconfig は strict モード）。
+設定は `frontend/oxlint.json` です。react / nextjs / typescript プラグインを有効化し、`no-unused-vars` はエラー、`no-console` は警告です。  
+デバッグ用の `console.log` は残さないでください。  
+インポートパスはエイリアス `@/`（= `src/`）を使います（tsconfig は strict モード）。
 
 ---
 
@@ -126,7 +128,7 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
 | `presentation/` | Controller・DTO（`dto/`）・`GlobalExceptionHandler` | 業務ロジック |
 | `infrastructure/` | Spring 設定（`config/`）・セキュリティ（`security/`） | 業務ロジック |
 
-**下のレイヤーから上のレイヤーを参照してはいけません**（domain が presentation の DTO を import したら違反）。
+**下のレイヤーから上のレイヤーを参照するわけにはいきません**（domain が presentation の DTO を import したら違反）。
 
 ### クラス命名・配置
 
@@ -154,7 +156,7 @@ public record ResourceResponse(
 }
 ```
 
-リクエスト DTO には Jakarta Bean Validation アノテーション（`@NotBlank`・`@Size` 等）を付け、Controller で `@Valid` を指定します（ADR-014）。エラーメッセージは日本語で書きます。
+リクエスト DTO には Jakarta Bean Validation アノテーション（`@NotBlank`、`@Size` 等）を付け、Controller で `@Valid` を指定します（ADR-014）。エラーメッセージは日本語で書きます。
 
 ### 例外処理
 
@@ -170,7 +172,8 @@ public record ResourceResponse(
 
 ### ログ
 
-SLF4J の Logger を使います（`private static final Logger LOG = LoggerFactory.getLogger(Xxx.class);`）。`System.out.println` は禁止。出力形式はプロファイルで切り替わるため（ADR-017）、コード側は形式を意識しなくて構いません。
+SLF4J の Logger を使います（`private static final Logger LOG = LoggerFactory.getLogger(Xxx.class);`）。`System.out.println` の使用は禁止です。  
+出力形式はプロファイルで切り替わるため（ADR-017）、コード側は形式を意識しなくて構いません。
 
 ### Format / Lint（Spotless + Checkstyle）
 
@@ -218,11 +221,12 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
     feat: 画面追加とバグ修正とリファクタ
     ```
 
-    → 内容が分からない・複数の関心事が 1 コミットに混在している。
+    → 内容が分からない、複数の関心事が 1 コミットに混在している。
 
 ### コミットの粒度
 
-**1 コミット 1 関心事**が原則です。「機能追加」と「無関係なリファクタ」が混ざっていたら分割してください。レビュアー（メンター）がコミット単位で差分を追える状態が目標です。
+**1 コミット 1 関心事**が原則です。「機能追加」と「無関係なリファクタ」が混ざっていたら分割してください。  
+レビュアー（メンター）がコミット単位で差分を追える状態が目標です。
 
 ### PR 提出前のセルフレビュー
 
@@ -288,8 +292,9 @@ Controller テストで認証ユーザーが必要な場合は、`src/test/java/
 
 ### カバレッジの考え方
 
-カバレッジの数値基準は設けていません。その代わり、**新規・変更したコードには必ず対応するテストを付ける**こと、既存テストを green に保つことを必須とします。
+カバレッジの数値基準は設けていません。  
+その代わり、**新規に追加または変更したコードには必ず対応するテストを付ける**こと、既存テストを green に保つことを必須とします。
 
 !!! tip "テスト作成は AI の得意分野"
-    既存テストファイルを参照させたうえで Claude Code に生成させると、命名規約・モックパターンに沿った
-    テストの叩き台が得られます（→ [ai-tools-guide.md](./ai-tools-guide.md)）。生成後は必ず実行して検証してください。
+    既存テストファイルを参照させたうえで Claude Code に生成させると、命名規約、モックパターンに沿ったテストの叩き台が得られます（→ [ai-tools-guide.md](./ai-tools-guide.md)）。  
+    生成後は必ず実行して検証してください。

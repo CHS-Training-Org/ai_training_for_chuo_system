@@ -80,15 +80,16 @@ references:
 
 ### statusLine スクリプト
 
-`.claude/scripts/statusline-command.sh` — model / トークン数 / git ブランチ / コンテキスト使用率 / レートリミット（5h・7d、JST）をダッシュボード形式で表示する読み取り専用スクリプト。`.claude/settings.json` の `statusLine` から呼び出されます。
+`.claude/scripts/statusline-command.sh`：model / トークン数 / git ブランチ / コンテキスト使用率 / レートリミット（5h、7d、JST）をダッシュボード形式で表示する読み取り専用スクリプト。  
+`.claude/settings.json` の `statusLine` から呼び出されます。
 
 ### Permissions
 
 ローカルの権限設定は `.claude/settings.local.json`（`.gitignore` 対象・個人環境用）が正典です。現在の許可コマンド例（`.claude/settings.local.json` の `permissions.allow`）:
 
-- `Bash(curl -s --max-time 5 http://backend:8080/actuator/health)` — ヘルスチェック確認
-- `WebFetch(domain:github.com)` — GitHub ページの参照
-- `WebSearch` — Web 検索
+- `Bash(curl -s --max-time 5 http://backend:8080/actuator/health)`：ヘルスチェック確認
+- `WebFetch(domain:github.com)`：GitHub ページの参照
+- `WebSearch`：Web 検索
 
 実際の設定値は `.claude/settings.local.json` を直接参照してください（個人環境で異なる場合があります）。
 

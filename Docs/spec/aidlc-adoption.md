@@ -28,9 +28,12 @@ references:
 
 ## 採用方針の変更記録
 
-**2026-06-18 採用方針更新**（ADR-020 参照）: PHASE4 タスク 3.7「案B改良（写像のみ・エンジン非採用）」から「エンジン完全導入（replace）+ Docs/spec/ 写像統合」に転換。AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標準ワークフローとして採用し、`dev-workflow.md` をエンジンベースに全面改訂。
+**2026-06-18 採用方針更新**（ADR-020 参照）: PHASE4 タスク 3.7「案B改良（写像のみ・エンジン非採用）」から「エンジン完全導入（replace）+ Docs/spec/ 写像統合」に転換。  
+AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標準ワークフローとして採用し、`dev-workflow.md` をエンジンベースに全面改訂。
 
-**2026-06-24 起動メカニズム変更**（ADR-020 追記参照）: エンジン本体を `.claude/rules/aidlc-core.md`（常時読込・soft 委譲）から **`.claude/skills/aidlc/SKILL.md`（`/aidlc` スキル）へ移設**。発火は `/aidlc` 明示起動または「AI-DLC で進める」等の意図指定時のみ（常時 OVERRIDES ではない）。これによりスキル内で硬い per-stage 意味論（承認ゲート・成果物生成・監査ログ記録）が保持され、台帳の「活性化」主張が実行時に履行される。常時読込の `aidlc-core.md` は薄いポインタに縮小。
+**2026-06-24 起動メカニズム変更**（ADR-020 追記参照）: エンジン本体を `.claude/rules/aidlc-core.md`（常時読込、soft 委譲）から **`.claude/skills/aidlc/SKILL.md`（`/aidlc` スキル）へ移設**。  
+発火は `/aidlc` 明示起動または「AI-DLC で進める」等の意図指定時のみ（常時 OVERRIDES ではない）。  
+これによりスキル内で硬い per-stage 意味論（承認ゲート、成果物生成、監査ログ記録）が保持され、台帳の「活性化」主張が実行時に履行される。常時読込の `aidlc-core.md` は薄いポインタに縮小。
 
 ---
 

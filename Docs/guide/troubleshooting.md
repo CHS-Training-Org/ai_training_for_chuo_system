@@ -14,10 +14,12 @@ references:
 
 # トラブルシューティング
 
-環境構築・開発中によくあるトラブルと解決策をまとめています。各項目は「症状 → 原因 → 解決策」の形式で記載します。
+環境構築、開発中によくあるトラブルと解決策をまとめています。各項目は「症状 → 原因 → 解決策」の形式で記載します。
 
 !!! tip "コマンドの「実行場所」に注意"
-    本リポジトリではコマンドの実行場所が 3 つあります。**DevContainer 内**（VS Code の統合ターミナル。`pnpm` / `gradlew` / `claude` はここ）、**WSL2 ターミナル**（`~/.claude` などホスト側ファイルの操作）、**Windows 側**（PowerShell。`wsl --shutdown` 等）。場所の取り違えが「コマンドが無い」「バージョンが違う」系トラブルの最大の原因です。各項目の解決策には実行場所を明記しています。なお `docker` コマンドは DevContainer 内・WSL2 のどちらからでも同じ Docker デーモンに接続できます。
+    本リポジトリではコマンドの実行場所が 3 つあります。**DevContainer 内**（VS Code の統合ターミナル。`pnpm` / `gradlew` / `claude` はここ）、**WSL2 ターミナル**（`~/.claude` などホスト側ファイルの操作）、**Windows 側**（PowerShell。`wsl --shutdown` 等）。  
+    場所の取り違えが「コマンドが無い」「バージョンが違う」系トラブルの最大の原因です。各項目の解決策には実行場所を明記しています。  
+    なお `docker` コマンドは DevContainer 内、WSL2 のどちらからでも同じ Docker デーモンに接続できます。
 
 ---
 
@@ -58,7 +60,7 @@ references:
 - **解決策**: コマンドパレット →「**Dev Containers: Show Container Log**」で失敗箇所のログを確認する。`.claude.json` 関連のマウントエラーであれば [§AI ツール関連](#ai-tools) を参照。原因を解消したら「**Dev Containers: Rebuild Container**」で再作成する（named volume は消えないため `node_modules` や DB データは保持される）。
 
 !!! note "`docker ps -a` に `k8s_` で始まるコンテナが大量に表示される場合"
-    Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本プロジェクトとは無関係です。
+    Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本プロジェクトとは無関係です。  
     使わない場合は **Preferences → Kubernetes** で無効化するとリソース消費を抑えられます。
 
 ---
@@ -68,7 +70,7 @@ references:
 ### `pnpm: command not found`／Node・Java のバージョンが想定と違う
 
 - **症状**: `pnpm` や `java` が `command not found` になる。または `node -v` / `java -version` の結果がドキュメントの記載（Node 24 / Java 25）と異なる。
-- **原因**: **DevContainer の外**（WSL2 やホストのターミナル）でコマンドを実行している。ツールチェーン（Node 24・pnpm 11・Java 25・Gradle 9.5）はすべて DevContainer 内にのみ導入されている。
+- **原因**: **DevContainer の外**（WSL2 やホストのターミナル）でコマンドを実行している。ツールチェーン（Node 24、pnpm 11、Java 25、Gradle 9.5）はすべて DevContainer 内にのみ導入されている。
 - **解決策**: VS Code のウィンドウ左下が「**Dev Container: BookFlow Full Stack**」表示になっていることを確認し、VS Code の統合ターミナル（= コンテナ内）で実行する。確認コマンド（コンテナ内）：
 
   ```bash
@@ -159,7 +161,7 @@ references:
 ### ロール別ログイン（開発用ログイン）がエラーになる
 
 - **症状**: バックエンドは起動しているのに、サインイン画面のロール別ボタンでログインに失敗する。
-- **原因**: cognito-local の User Pool・シードユーザーが provisioning されていない。または `.env.local` の `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` が現在の Pool と一致していない。認証はポート 9229 で動く cognito-local コンテナが担う（9229 は Node.js のデバッグポートではありません）。
+- **原因**: cognito-local の User Pool、シードユーザーが provisioning されていない。または `.env.local` の `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` が現在の Pool と一致していない。認証はポート 9229 で動く cognito-local コンテナが担う（9229 は Node.js のデバッグポートではありません）。
 - **解決策**: コンテナ内で provisioning を再実行し、出力された Pool ID / Client ID を `frontend/.env.local` に反映して `pnpm dev` を再起動する。
   ```bash
   cd /workspace && bash scripts/provision-cognito.sh
@@ -200,7 +202,8 @@ references:
   その後バックエンドを起動し直し、[getting-started.md](./getting-started.md) §初期データ投入の手順で seed を再投入する（postgres コンテナ名の確認方法と `docker exec -i` を使う理由も同節を参照）。
 
 !!! warning "`docker compose down -v` は使わない"
-    `-v` はすべての named volume を削除するため、DB データだけでなく `node_modules`・pnpm ストア・cognito-local のユーザーデータまで消えてしまいます。リセットは上記の `DROP SCHEMA` 方式で DB だけを対象にしてください。
+    `-v` はすべての named volume を削除するため、DB データだけでなく `node_modules`、pnpm ストア、cognito-local のユーザーデータまで消えてしまいます。  
+    リセットは上記の `DROP SCHEMA` 方式で DB だけを対象にしてください。
 
 ### `relation "..." does not exist` のような SQL エラーが出る
 
@@ -223,7 +226,7 @@ references:
   rm -rf ~/.claude.json   # ディレクトリだった場合のみ実行
   ```
 
-  ファイルとして存在する `~/.claude.json` は Claude Code の認証・設定情報を含むため削除しないでください。
+  ファイルとして存在する `~/.claude.json` は Claude Code の認証、設定情報を含むため削除しないでください。
 
 ### `claude: command not found`
 

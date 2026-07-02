@@ -84,7 +84,7 @@ Next.js を ECS Fargate 上で動かし、フロントエンドと BFF を統合
 
 ![ローカル開発環境の構成概要](diagrams/architecture/architecture-local-dev.drawio.svg)
 
-> LocalStack Community（無料）で Lambda・API Gateway・S3・DynamoDB をすべてカバー。  
+> LocalStack Community（無料）で Lambda、API Gateway、S3、DynamoDB をすべてカバー。  
 > Cognito のみ cognito-local で補完する。
 
 ---

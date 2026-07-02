@@ -49,14 +49,14 @@ BookFlow の承認フローは現在 1 段階固定です。`ApprovalService.cre
 
 - 対象レイヤー：両方（バックエンド中心）
 - 更新が必要な spec：
-  - `api-spec.md` §`POST /api/reservations` — 多段階承認での `approval_steps` 生成を追記；§`POST /api/approvals/{stepId}/approve` / §`POST /api/approvals/{stepId}/reject` — ステップ連鎖の挙動を追記
-  - `screen-spec.md` — 承認フロー設定の管理 UI を追記
-  - `requirements.md` §APRV — 多段階フローの遷移パターンを追記
+  - `api-spec.md` §`POST /api/reservations`：多段階承認での `approval_steps` 生成を追記；§`POST /api/approvals/{stepId}/approve` / §`POST /api/approvals/{stepId}/reject`：ステップ連鎖の挙動を追記
+  - `screen-spec.md`：承認フロー設定の管理 UI を追記
+  - `requirements.md` §APRV：多段階フローの遷移パターンを追記
 
 ## 依存関係
 
 - 前提課題：なし（ベースシステムの既存承認フローのみに依存）
-- 競合する課題：[部署ごとの承認者設定](./department-approver.md) — 両課題とも `ApprovalService.createStep()`（`backend/.../application/ApprovalService.java`）を別方向に拡張するため、並行着手は非推奨。一方を完成させてからもう一方に着手する。
+- 競合する課題：[部署ごとの承認者設定](./department-approver.md)。両課題とも `ApprovalService.createStep()`（`backend/.../application/ApprovalService.java`）を別方向に拡張するため、並行着手は非推奨。一方を完成させてからもう一方に着手する。
 - 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](./e2e-test-coverage.md) で承認フローのリグレッションをカバーするとよい。
 
 ## AI 活用ポイント

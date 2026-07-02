@@ -24,6 +24,7 @@ nav = [
   { "ホーム" = "index.md" },
   { "はじめる" = [
     "guide/index.md",
+    "guide/glossary.md",
     "guide/curriculum.md",
     "guide/getting-started.md",
     "guide/ai-tools-guide.md",

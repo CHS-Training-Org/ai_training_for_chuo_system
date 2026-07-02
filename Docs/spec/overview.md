@@ -11,6 +11,7 @@ references:
   - Docs/ARCHITECTURE.md
   - Docs/spec/index.md
   - Docs/guide/index.md
+  - Docs/guide/glossary.md
 ---
 
 # BookFlow 学習用リポジトリ概要
@@ -21,7 +22,8 @@ references:
 
 社内エンジニアが **AI 駆動開発**（Claude Code）を活用したフルスタック開発を体験・習得するための学習用リポジトリです。
 
-学習者は、あらかじめ用意されたベースサービス（**BookFlow**）を土台として、AI ツールを積極的に活用しながらエンハンス開発を行います。実際の業務に近い技術スタックと開発フロー（AI-DLC エンジン）を通じて、AI 駆動開発の実践スキルを身につけます。
+学習者は、あらかじめ用意されたベースサービス（**BookFlow**）を土台として、AI ツールを積極的に活用しながらエンハンス開発を行います。  
+実際の業務に近い技術スタックと開発フロー（AI-DLC エンジン）を通じて、AI 駆動開発の実践スキルを身につけます。
 
 ---
 
@@ -59,13 +61,4 @@ references:
 
 ## 用語集
 
-| 用語 | 説明 |
-|------|------|
-| AI 駆動開発 | Claude Code などの AI ツールを積極活用して開発速度・品質を高める開発手法 |
-| BookFlow | 本リポジトリのベースとなるサンプルサービス（施設・備品予約 + 承認ワークフロー統合アプリ） |
-| BFF | Backend for Frontend。Next.js API Routes がこの役割を担い、認証トークン管理とバックエンド呼び出しを集約する |
-| DevContainer | VS Code + Docker を用いた再現性の高い開発環境。`.devcontainer/` 配下に定義 |
-| 選択課題 | GitHub Issue に登録された課題のうち、順序性のないもの。学習者が自由に選択して取り組む |
-| 必須課題 | 環境構築など順序依存のあるステップ課題。新人は先にこれをクリアする |
-| LocalStack | AWS サービス（S3・DynamoDB・Lambda・API Gateway）をローカルでエミュレートするツール |
-| cognito-local | Amazon Cognito のユーザープール認証フローをローカルでエミュレートする npm パッケージ |
+プロジェクト・技術用語の説明は [用語集](../guide/glossary.md) に集約しました。

@@ -49,7 +49,8 @@ Authorization: Bearer <Cognito JWT>
 
 ### 日時フォーマット { #datetime-format }
 
-リクエスト・レスポンスの日時（本書で型 `TIMESTAMP` と表記するフィールド・クエリパラメータ）は、すべて **ISO 8601 拡張形式のローカル日時**（タイムゾーンオフセットなし）で表現する。バックエンドの DTO が `java.time.LocalDateTime` のため、`Z` やオフセット（`+09:00` 等）は付与されない。タイムゾーン変換はサーバー・DB・クライアント間で行わない。
+リクエスト、レスポンスの日時（本書で型 `TIMESTAMP` と表記するフィールド、クエリパラメータ）は、すべて **ISO 8601 拡張形式のローカル日時**（タイムゾーンオフセットなし）で表現する。  
+バックエンドの DTO が `java.time.LocalDateTime` のため、`Z` やオフセット（`+09:00` 等）は付与されない。タイムゾーン変換はサーバー、DB、クライアント間で行わない。
 
 ```
 2026-06-02T10:00:00          ← 小数秒なし（秒以下が 0 の場合）
@@ -57,7 +58,7 @@ Authorization: Bearer <Cognito JWT>
 ```
 
 - **レスポンス**：小数秒は値が存在する場合のみ出力される（**可変**）。クライアントは小数秒の有無どちらもパースできること（`createdAt` / `updatedAt` 等のサーバー生成日時には小数秒が付くことが多い）。
-- **リクエスト**：`2026-06-02T10:00:00` 形式（秒まで）で送信する。オフセット付き（`...+09:00` / `...Z`）はクエリパラメータ・リクエストボディとも `400 Bad Request`（`code: VALIDATION_ERROR`）となる。
+- **リクエスト**：`2026-06-02T10:00:00` 形式（秒まで）で送信する。オフセット付き（`...+09:00` / `...Z`）はクエリパラメータ、リクエストボディとも `400 Bad Request`（`code: VALIDATION_ERROR`）となる。
 
 ### 共通エラーレスポンス { #common-error }
 
@@ -99,7 +100,7 @@ Authorization: Bearer <Cognito JWT>
 
 ### ページネーション規約
 
-一覧系エンドポイント（`/api/resources`・`/api/reservations`・`/api/users`）は Spring Data `Pageable` 準拠の page/size 方式を採用する。
+一覧系エンドポイント（`/api/resources`、`/api/reservations`、`/api/users`）は Spring Data `Pageable` 準拠の page/size 方式を採用する。
 
 #### リクエストクエリパラメーター
 
@@ -142,7 +143,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 
 > フロントエンドが利用するのは `content` / `totalElements` / `totalPages` / `number` / `size` / `first` / `last` の主要フィールドのみ。本書の各エンドポイントのレスポンス例も主要フィールドのみを抜粋して記載する。
 >
-> `GET /api/approvals/pending`・`GET /api/departments` はページネーション不要（件数が少ない想定）。全件返却。
+> `GET /api/approvals/pending`、`GET /api/departments` はページネーション不要（件数が少ない想定）。全件返却。
 
 ---
 
@@ -195,7 +196,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 
 ## §認証
 
-### `POST /api/auth/signout` — サインアウト
+### `POST /api/auth/signout`（サインアウト）
 
 #### リクエスト
 
@@ -213,7 +214,7 @@ POST /api/auth/signout
 
 ---
 
-### `GET /api/users/me` — 自プロフィール取得 { #get-apiusersme }
+### `GET /api/users/me`（自プロフィール取得） { #get-apiusersme }
 
 #### リクエスト
 
@@ -258,7 +259,7 @@ Authorization: Bearer <JWT>
 
 ## §リソース
 
-### `GET /api/resources` — リソース一覧
+### `GET /api/resources`（リソース一覧）
 
 #### リクエスト
 
@@ -321,7 +322,7 @@ Authorization: Bearer <JWT>
 
 ---
 
-### `POST /api/resources` — リソース登録（ADMIN）
+### `POST /api/resources`（リソース登録、ADMIN）
 
 #### リクエスト
 
@@ -361,7 +362,7 @@ Content-Type: application/json
 
 ---
 
-### `GET /api/resources/{id}` — リソース詳細
+### `GET /api/resources/{id}`（リソース詳細）
 
 #### リクエスト
 
@@ -376,7 +377,7 @@ ResourceResponse 型。存在しない ID の場合は `404 Not Found`。
 
 ---
 
-### `PUT /api/resources/{id}` — リソース更新（ADMIN）
+### `PUT /api/resources/{id}`（リソース更新、ADMIN）
 
 #### リクエスト
 
@@ -404,7 +405,7 @@ Content-Type: application/json
 
 ---
 
-### `PATCH /api/resources/{id}/status` — 有効/無効切替（ADMIN）
+### `PATCH /api/resources/{id}/status`（有効/無効切替、ADMIN）
 
 #### リクエスト
 
@@ -424,7 +425,7 @@ Content-Type: application/json
 
 ---
 
-### `GET /api/resources/{id}/availability` — 空き状況照会
+### `GET /api/resources/{id}/availability`（空き状況照会）
 
 #### リクエスト
 
@@ -473,7 +474,7 @@ Authorization: Bearer <JWT>
 
 ## §予約
 
-### `GET /api/reservations` — 予約一覧
+### `GET /api/reservations`（予約一覧）
 
 #### リクエスト
 
@@ -540,7 +541,7 @@ Authorization: Bearer <JWT>
 
 ---
 
-### `POST /api/reservations` — 予約申請
+### `POST /api/reservations`（予約申請）
 
 #### リクエスト
 
@@ -594,7 +595,7 @@ Content-Type: application/json
 
 ---
 
-### `GET /api/reservations/{id}` — 予約詳細
+### `GET /api/reservations/{id}`（予約詳細）
 
 #### リクエスト
 
@@ -611,7 +612,7 @@ ReservationResponse 型。
 
 ---
 
-### `PUT /api/reservations/{id}` — 予約内容更新
+### `PUT /api/reservations/{id}`（予約内容更新）
 
 #### リクエスト
 
@@ -628,7 +629,8 @@ Content-Type: application/json
 }
 ```
 
-**制約**：`status = 'PENDING'` の予約のみ更新可（`APPROVED` への更新は不可）。申請者本人のみ操作可能。日時変更時は重複予約チェックを再実行する（自分自身を除外）。リクエストフィールド・バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可）。
+**制約**：`status = 'PENDING'` の予約のみ更新可（`APPROVED` への更新は不可）。申請者本人のみ操作可能。日時変更時は重複予約チェックを再実行する（自分自身を除外）。  
+リクエストフィールド、バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可）。
 
 #### レスポンス（200 OK）
 
@@ -642,7 +644,7 @@ Content-Type: application/json
 
 ---
 
-### `POST /api/reservations/{id}/cancel` — キャンセル
+### `POST /api/reservations/{id}/cancel`（キャンセル）
 
 #### リクエスト
 
@@ -651,7 +653,8 @@ POST /api/reservations/550e8400-e29b-41d4-a716-446655440030/cancel
 Authorization: Bearer <JWT>
 ```
 
-**制約**：申請者本人または ADMIN のみ操作可（それ以外は `403 Forbidden`）。`PENDING` / `APPROVED` の予約のみキャンセル可（それ以外のステータスは `422`・`code: VALIDATION_ERROR`）。
+**制約**：申請者本人または ADMIN のみ操作可（それ以外は `403 Forbidden`）。  
+`PENDING` / `APPROVED` の予約のみキャンセル可（それ以外のステータスは `422`、`code: VALIDATION_ERROR`）。
 
 #### レスポンス（200 OK）
 
@@ -684,7 +687,7 @@ Authorization: Bearer <JWT>
 
 ## §承認
 
-### `GET /api/approvals/pending` — 承認待ち一覧
+### `GET /api/approvals/pending`（承認待ち一覧）
 
 #### リクエスト
 
@@ -735,7 +738,7 @@ Authorization: Bearer <JWT>
 
 ---
 
-### `POST /api/approvals/{stepId}/approve` — 承認
+### `POST /api/approvals/{stepId}/approve`（承認）
 
 #### リクエスト
 
@@ -775,7 +778,7 @@ Content-Type: application/json
 
 ---
 
-### `POST /api/approvals/{stepId}/reject` — 却下
+### `POST /api/approvals/{stepId}/reject`（却下）
 
 #### リクエスト
 
@@ -834,7 +837,7 @@ Content-Type: application/json
 
 ## §ユーザー・部署
 
-### `GET /api/users` — ユーザー一覧（ADMIN）
+### `GET /api/users`（ユーザー一覧、ADMIN）
 
 #### リクエスト
 
@@ -873,7 +876,7 @@ UserResponse 型定義は [`GET /api/users/me`](#get-apiusersme) を参照。
 
 ---
 
-### `GET /api/departments` — 部署一覧
+### `GET /api/departments`（部署一覧）
 
 #### リクエスト
 
