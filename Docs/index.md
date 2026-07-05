@@ -47,22 +47,34 @@ timestamp: 2026-06-12
 <div class="tech-stack-section">
   <p class="tech-stack-category-label">フロントエンド</p>
   <div class="tech-stack-grid">
+    <div class="tech-card"><img src="assets/logos/typescript.svg" alt="TypeScript"><span class="tech-name">TypeScript</span></div>
     <div class="tech-card"><img src="assets/logos/nextdotjs.svg" alt="Next.js"><span class="tech-name">Next.js 15</span></div>
     <div class="tech-card"><img src="assets/logos/react.svg" alt="React"><span class="tech-name">React 19</span></div>
-    <div class="tech-card"><img src="assets/logos/typescript.svg" alt="TypeScript"><span class="tech-name">TypeScript</span></div>
     <div class="tech-card"><img src="assets/logos/tailwindcss.svg" alt="Tailwind CSS"><span class="tech-name">Tailwind CSS</span></div>
+    <div class="tech-card"><img src="assets/logos/shadcnui.svg" alt="shadcn/ui"><span class="tech-name">shadcn/ui</span></div>
+    <div class="tech-card"><img src="assets/logos/betterauth.svg" alt="Better Auth"><span class="tech-name">Better Auth</span></div>
   </div>
   <p class="tech-stack-category-label">バックエンド</p>
   <div class="tech-stack-grid">
-    <div class="tech-card"><img src="assets/logos/spring.svg" alt="Spring Boot"><span class="tech-name">Spring Boot</span></div>
     <div class="tech-card"><img src="assets/logos/openjdk.svg" alt="Java"><span class="tech-name">Java 25</span></div>
-    <div class="tech-card"><img src="assets/logos/postgresql.svg" alt="PostgreSQL"><span class="tech-name">PostgreSQL</span></div>
+    <div class="tech-card"><img src="assets/logos/spring.svg" alt="Spring Boot"><span class="tech-name">Spring Boot</span></div>
     <div class="tech-card"><img src="assets/logos/gradle.svg" alt="Gradle"><span class="tech-name">Gradle</span></div>
+    <div class="tech-card"><img src="assets/logos/postgresql.svg" alt="PostgreSQL"><span class="tech-name">PostgreSQL</span></div>
+    <div class="tech-card"><img src="assets/logos/springsecurity.svg" alt="Spring Security"><span class="tech-name">Spring Security</span></div>
+    <div class="tech-card"><img src="assets/logos/flyway.svg" alt="Flyway"><span class="tech-name">Flyway</span></div>
   </div>
-  <p class="tech-stack-category-label">テスト / インフラ</p>
+  <p class="tech-stack-category-label">テスト</p>
   <div class="tech-stack-grid">
     <div class="tech-card"><img src="assets/logos/vitest.svg" alt="Vitest"><span class="tech-name">Vitest</span></div>
+    <div class="tech-card"><img src="assets/logos/junit5.svg" alt="JUnit5"><span class="tech-name">JUnit 5</span></div>
+  </div>
+  <p class="tech-stack-category-label">開発ツール</p>
+  <div class="tech-stack-grid">
     <div class="tech-card"><img src="assets/logos/docker.svg" alt="Docker"><span class="tech-name">Docker</span></div>
+    <div class="tech-card"><img src="assets/logos/developmentcontainers.svg" alt="Dev Containers"><span class="tech-name">Dev Containers</span></div>
+    <div class="tech-card"><img src="assets/logos/claudecode.svg" alt="Claude Code"><span class="tech-name">Claude Code</span></div>
+    <div class="tech-card"><img src="assets/logos/githubactions.svg" alt="GitHub Actions"><span class="tech-name">GitHub Actions</span></div>
+    <div class="tech-card"><img src="assets/logos/oxc.svg" alt="oxc"><span class="tech-name">oxlint / oxfmt</span></div>
   </div>
 </div>
 
