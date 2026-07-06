@@ -6,7 +6,9 @@
 # aws CLI 不要。curl / jq / docker exec のみ使用。
 #
 # 前提:
-#   - cognito-local コンテナが起動済みであること
+#   - cognito-local コンテナが起動済みであること（既定では自動起動しないため、
+#     先に以下を実行する）
+#       docker compose -f .devcontainer/docker-compose.yml --profile cognito up -d cognito-local
 #   - Docker CLI が使用可能であること（devcontainer 内 or ホストから実行）
 #
 # 使い方:
@@ -97,6 +99,12 @@ if curl -s --connect-timeout 2 "http://cognito-local:9229/" >/dev/null 2>&1; the
   ENDPOINT="http://cognito-local:9229"
 else
   ENDPOINT="http://localhost:9229"
+fi
+
+if ! curl -s --connect-timeout 2 "$ENDPOINT/" >/dev/null 2>&1; then
+  echo "ERROR: cognito-local (${ENDPOINT}) に接続できません。" >&2
+  echo "  先に起動してください: docker compose -f .devcontainer/docker-compose.yml --profile cognito up -d cognito-local" >&2
+  exit 1
 fi
 
 echo "=== BookFlow cognito-local provisioning ==="

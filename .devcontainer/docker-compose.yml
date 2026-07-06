@@ -56,8 +56,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      cognito-local:
-        condition: service_started
     command: sleep infinity
 
   postgres:
@@ -89,7 +87,11 @@ services:
   cognito-local:
     # バージョン固定: DB ファイル直接シード方式の互換性を維持するため digest で固定。
     # scripts/provision-cognito.sh はこのバージョンのファイルフォーマットを前提とする。
+    # 既定では起動しない（ロール別ログイン・保護エンドポイントの JWT 検証を使う場合のみ必要）。
+    # 起動する場合: docker compose -f .devcontainer/docker-compose.yml --profile cognito up -d cognito-local
     image: jagregory/cognito-local@sha256:a5ad30d01da5016a38535a717f6e1642d1b37f886a7b17e90b67f6e5ad134831
+    profiles:
+      - cognito
     ports:
       - "9229:9229"
     volumes:
