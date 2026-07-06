@@ -19,7 +19,7 @@ gray="\033[90m"
 # --- Extract fields ---
 cwd=$(echo "$input"          | jq -r '.cwd // empty')
 model_name=$(echo "$input"   | jq -r '.model.display_name // empty')
-used_pct=$(echo "$input"     | jq -r '.context_window.used_percentage // empty')
+used_pct=$(echo "$input"     | jq -r '.context_window.used_percentage // 0')
 tokens_used=$(echo "$input"  | jq -r '.context_window.tokens_used // empty')
 tokens_total=$(echo "$input" | jq -r '.context_window.tokens_total // empty')
 effort=$(echo "$input"       | jq -r '.effort.level // empty')
@@ -59,20 +59,23 @@ fmt_k() {
 fmt_reset() {
   local ts=$1
   [ -z "$ts" ] && return
-  local epoch ts_day now_day
-  export TZ="Asia/Tokyo"
+  local epoch jst_epoch ts_day now_epoch now_day
+  # zoneinfo DB（Asia/Tokyo）の有無やOS/コンテナのローカルタイムゾーン設定に依存させないため、
+  # UTC epoch に固定で+9時間（日本にはサマータイムがない）を加算してJSTを算出する。
   # ts は Unix epoch 秒（整数）か ISO 文字列のどちらでも受け付ける
   if [[ "$ts" =~ ^[0-9]+$ ]]; then
     epoch=$ts
   else
-    epoch=$(date -d "$ts" +%s 2>/dev/null) || return
+    epoch=$(date -u -d "$ts" +%s 2>/dev/null) || return
   fi
-  ts_day=$(date -d "@$epoch" "+%Y%m%d" 2>/dev/null)
-  now_day=$(date "+%Y%m%d")
+  jst_epoch=$(( epoch + 9*3600 ))
+  now_epoch=$(( $(date -u +%s) + 9*3600 ))
+  ts_day=$(date -u -d "@$jst_epoch" "+%Y%m%d" 2>/dev/null)
+  now_day=$(date -u -d "@$now_epoch" "+%Y%m%d" 2>/dev/null)
   if [ "$ts_day" = "$now_day" ]; then
-    date -d "@$epoch" "+%H:%M" 2>/dev/null
+    date -u -d "@$jst_epoch" "+%H:%M" 2>/dev/null
   else
-    date -d "@$epoch" "+%m/%d %H:%M" 2>/dev/null
+    date -u -d "@$jst_epoch" "+%m/%d %H:%M" 2>/dev/null
   fi
 }
 
