@@ -37,7 +37,7 @@ references:
 
 ### 推奨ホストスペック
 
-DevContainer では postgres / localstack / docs の各コンテナが開発コンテナと同時に起動します（cognito-local は既定では起動せず、ステップ 3 で必要な場合のみ手動起動します）。次のスペックを推奨します。
+DevContainer では postgres / localstack / cognito-local / docs の各コンテナが開発コンテナと同時に起動します。次のスペックを推奨します。
 
 | 項目 | 推奨値 | 備考 |
 |------|--------|------|
@@ -113,28 +113,19 @@ Windows では WSL リモートとして起動し、ウィンドウ左下に「W
 
 続いて、コマンドパレット（++ctrl+shift+p++）→ **"Dev Containers: Reopen in Container"** を実行します。
 
-- postgres / localstack / docs の各コンテナが自動起動します（バックエンドはコンテナとしては起動せず、ステップ 4 で開発コンテナ内から手動起動します）
-- cognito-local は既定では起動しません。ロール別ログイン（開発用ログイン）と、フロントエンドの Cognito 関連環境変数の発行に必要なため、ステップ 3 で手動起動します
+- postgres / localstack / cognito-local / docs の各コンテナが自動起動します（バックエンドはコンテナとしては起動せず、ステップ 4 で開発コンテナ内から手動起動します）
+- このとき `postCreate.sh` が `scripts/provision-cognito.sh` を自動実行し、cognito-local 用の **Pool ID / Client ID をターミナルに出力**します（次のステップで使うので控えておく）
 
 ## ステップ 3：フロントエンド環境変数の設定（初回のみ）
 
-DevContainer 内のターミナルで実行します。まず cognito-local を起動し、Pool ID / Client ID を発行します。
-
-```bash
-docker compose -f .devcontainer/docker-compose.yml --profile cognito up -d cognito-local
-bash scripts/provision-cognito.sh
-```
-
-出力された `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` の値を控えておきます。
-
-続いて `.env.local` を作成します。
+DevContainer 内のターミナルで実行します。
 
 ```bash
 cd frontend
 cp .env.local.example .env.local
 ```
 
-`.env.local` の以下の項目に、上記で控えた値を設定します。
+ステップ 2 で出力された値を `.env.local` の以下の項目に設定します。
 
 ```dotenv
 COGNITO_USER_POOL_ID=local_XXXXXXXX
@@ -146,7 +137,7 @@ COGNITO_CLIENT_ID=XXXXXXXXXXXXXXXXXXXXXXXXXX
     Better Auth の初期化エラー（`[BetterAuthError]: DOMAIN_AND_REGION_REQUIRED`）が発生し、`/` が 500 エラーになります。
 
 !!! tip "Pool ID / Client ID を見逃した場合"
-    出力を見逃した場合は、手動で再実行できます。
+    `postCreate.sh` の provisioning が失敗していた、または出力を見逃した場合は、手動で再実行できます。
 
     ```bash
     bash scripts/provision-cognito.sh
@@ -289,14 +280,12 @@ docker compose -f .devcontainer/docker-compose.yml up -d
 
 - `postgres:5432`：RDB（PostgreSQL 16）
 - `localstack:4566`：AWS モック（S3 / DynamoDB）
+- `cognito-local:9229`：Cognito モック
 - `docs:8000`：ドキュメントサイト
-
-`cognito-local:9229`（Cognito モック）は既定では起動しません。ロール別ログイン（開発用ログイン）とフロントエンドの Cognito 関連環境変数の発行に必要なため、次の手順で個別に起動します。
 
 ### 3. Cognito のセットアップ（初回のみ）
 
 ```bash
-docker compose -f .devcontainer/docker-compose.yml --profile cognito up -d cognito-local
 bash scripts/provision-cognito.sh
 ```
 

@@ -20,8 +20,9 @@ cd /workspace/backend
 # sh 経由で起動する（保険）。Permission denied による postCreate 失敗を防ぐ。
 sh ./gradlew dependencies -q
 
-echo "::: [4/4] cognito-local: 案内 :::"
-# cognito-local は既定では起動しないため、provisioning もここでは実行しない。
-# ロール別ログイン・保護エンドポイントの JWT 検証を使う場合のみ、手動で起動してから
-# scripts/provision-cognito.sh を実行する（Docs/guide/getting-started.md 参照）。
-echo "cognito-local は既定では起動しません。必要な場合は Docs/guide/getting-started.md の「ステップ 3」を参照してください。"
+echo "::: [4/4] cognito-local: ユーザー provisioning :::"
+# cognito-local にシードユーザーを登録する（冪等）。
+# 取得した Pool ID / Client ID を frontend/.env.local に設定してください。
+# （詳細は scripts/provision-cognito.sh を参照）
+cd /workspace
+bash scripts/provision-cognito.sh || echo "⚠ cognito-local provisioning スキップ（起動前または接続不可）"

@@ -148,7 +148,7 @@ references:
 ### DevContainer 起動時に `port is already allocated` で失敗する
 
 - **症状**: 起動時に `Bind for 0.0.0.0:5432 failed: port is already allocated` のようなエラーで失敗する。
-- **原因**: 本プロジェクトはホスト側のポート **3000（frontend）/ 5432（postgres）/ 4566（localstack）/ 8000（docs）** を使用する（cognito-local を手動起動した場合は **9229** も追加で使用する）。別プロジェクトのコンテナや、ホストに直接インストールしたサービス（ローカルの PostgreSQL 等）が同じポートを使っていると衝突する。
+- **原因**: 本プロジェクトはホスト側のポート **3000（frontend）/ 5432（postgres）/ 4566（localstack）/ 8000（docs）/ 9229（cognito-local）** を使用する。別プロジェクトのコンテナや、ホストに直接インストールしたサービス（ローカルの PostgreSQL 等）が同じポートを使っていると衝突する。
 - **解決策**:
     1. WSL2（またはコンテナ内）で `docker ps` を実行し、同じポートを公開している別コンテナがあれば `docker stop <コンテナ名>` で停止する
     2. コンテナ以外のプロセスは Windows 側 PowerShell で特定する：
@@ -161,10 +161,9 @@ references:
 ### ロール別ログイン（開発用ログイン）がエラーになる
 
 - **症状**: バックエンドは起動しているのに、サインイン画面のロール別ボタンでログインに失敗する。
-- **原因**: cognito-local コンテナが起動していない（既定では自動起動しません）。または User Pool・シードユーザーが provisioning されていない。あるいは `.env.local` の `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` が現在の Pool と一致していない。認証はポート 9229 で動く cognito-local コンテナが担う（9229 は Node.js のデバッグポートではありません）。
-- **解決策**: cognito-local を起動してから provisioning を再実行し、出力された Pool ID / Client ID を `frontend/.env.local` に反映して `pnpm dev` を再起動する。
+- **原因**: cognito-local の User Pool、シードユーザーが provisioning されていない。または `.env.local` の `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` が現在の Pool と一致していない。認証はポート 9229 で動く cognito-local コンテナが担う（9229 は Node.js のデバッグポートではありません）。
+- **解決策**: コンテナ内で provisioning を再実行し、出力された Pool ID / Client ID を `frontend/.env.local` に反映して `pnpm dev` を再起動する。
   ```bash
-  docker compose -f .devcontainer/docker-compose.yml --profile cognito up -d cognito-local
   cd /workspace && bash scripts/provision-cognito.sh
   ```
 
