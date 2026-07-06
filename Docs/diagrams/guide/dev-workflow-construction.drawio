@@ -37,13 +37,9 @@
         <mxCell id="9" value="Build and Test&#xa;&lt;b&gt;必須&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
           <mxGeometry x="350" y="700" width="200" height="60" as="geometry" />
         </mxCell>
-        <!-- メンターレビュー 第2ゲート（紫・菱形） -->
-        <mxCell id="10" value="メンターレビュー&#xa;（第2ゲート）" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;fontColor=#1E293B;" vertex="1" parent="1">
-          <mxGeometry x="330" y="830" width="240" height="90" as="geometry" />
-        </mxCell>
-        <!-- マージ（終了） -->
-        <mxCell id="11" value="マージ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#1E293B;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="370" y="990" width="160" height="50" as="geometry" />
+        <!-- マージ（終了、セルフレビュー後） -->
+        <mxCell id="11" value="セルフレビュー・マージ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#1E293B;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="830" width="200" height="55" as="geometry" />
         </mxCell>
         <!-- Edges -->
         <!-- Start → FD -->
@@ -96,22 +92,9 @@
         <mxCell id="21" value="全unit完了" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="8" target="9">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <!-- BT → G2 -->
-        <mxCell id="22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" edge="1" parent="1" source="9" target="10">
+        <!-- BT → マージ -->
+        <mxCell id="22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" edge="1" parent="1" source="9" target="11">
           <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <!-- G2 → Done（Approve） -->
-        <mxCell id="23" value="Approve" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="10" target="11">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <!-- G2 → CG（修正依頼） -->
-        <mxCell id="24" value="修正依頼" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="10" target="7">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="220" y="875" />
-              <mxPoint x="220" y="460" />
-            </Array>
-          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
