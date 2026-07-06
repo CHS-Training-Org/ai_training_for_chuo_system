@@ -20,22 +20,22 @@ references:
 
 ## 学習者向けガイド
 
-| ファイル | 目的 |
+| ガイド | 目的 |
 |---------|------|
-| [glossary.md](./glossary.md) | 用語集。ドメイン用語・プロジェクト技術用語・AI-DLC 開発プロセス用語の一覧 |
-| [curriculum.md](./curriculum.md) | 学習カリキュラム。学習パスマップ（新人・中堅）と必須ステップ課題 STEP-01〜05 の定義 |
-| [getting-started.md](./getting-started.md) | 環境構築・起動手順。STEP-01 の手順書。クローンから動作確認・初期データ投入まで |
-| [ai-tools-guide.md](./ai-tools-guide.md) | AI ツール活用ガイド。Claude Code のセットアップ・使い方・活用チェックリスト。STEP-03 の参照資料 |
-| [dev-workflow.md](./dev-workflow.md) | 開発ワークフロー。Issue 選択からブランチ・実装・PR・レビュー・マージまでの標準フロー |
-| [coding-conventions.md](./coding-conventions.md) | コーディング規約。フロントエンド・バックエンドの命名規則・Lint/Format 設定・テスト方針 |
-| [enhancement-catalog.md](./enhancement-catalog.md) | 選択課題カタログ。エンハンス課題を難易度・推定工数・対象レイヤー付きで一覧化 |
-| [review-criteria.md](./review-criteria.md) | 評価基準・レビュー観点。第 2 ゲートの完了条件チェックリストと新人/中堅別のレビュー観点表 |
-| [troubleshooting.md](./troubleshooting.md) | よくあるトラブルと解決策。DevContainer・依存インストール・起動・DB 等のエラーと対処法 |
+| [用語集](./glossary.md) | ドメイン用語・プロジェクト技術用語・AI-DLC 開発プロセス用語の一覧 |
+| [学習カリキュラム](./curriculum.md) | 学習パスマップ（新人・中堅）と必須ステップ課題 STEP-01〜05 の定義 |
+| [はじめに（環境構築・起動手順）](./getting-started.md) | STEP-01 の手順書。クローンから動作確認・初期データ投入まで |
+| [AI ツール活用ガイド（Claude Code）](./ai-tools-guide.md) | Claude Code のセットアップ・使い方・活用チェックリスト。STEP-03 の参照資料 |
+| [開発ワークフローガイド](./dev-workflow.md) | Issue 選択からブランチ・実装・PR・レビュー・マージまでの標準フロー |
+| [コーディング規約](./coding-conventions.md) | フロントエンド・バックエンドの命名規則・Lint/Format 設定・テスト方針 |
+| [選択課題カタログ](./enhancement-catalog.md) | エンハンス課題を難易度・推定工数・対象レイヤー付きで一覧化 |
+| [評価基準・レビュー観点](./review-criteria.md) | PR 提出前のセルフレビューで使う完了条件チェックリストと新人/中堅別のレビュー観点表 |
+| [トラブルシューティング](./troubleshooting.md) | DevContainer・依存インストール・起動・DB 等のエラーと対処法 |
 
 ## 運用・管理（メンター・管理者向け）
 
-| ファイル | 目的 |
+| ガイド | 目的 |
 |---------|------|
-| [operations-guide.md](./operations-guide.md) | 運用ガイド。役割分担（運用責任マトリクス）・質問サポートフロー・レビュー応答方針 |
-| [issue-registration.md](./issue-registration.md) | ラベル設計と課題 Issue 起票手順。ラベル体系・マッピング規則・起票フロー・label-sync 実行手順 |
-| [learning-effectiveness.md](./learning-effectiveness.md) | 学習効果測定（満足度アンケート様式・運用）。実施タイミング・提出方法・設問・集計フロー |
+| [運用ガイド](./operations-guide.md) | 役割分担（運用責任マトリクス）・質問サポートフロー・レビュー応答方針 |
+| [ラベル設計と課題 Issue 起票手順](./issue-registration.md) | ラベル体系・マッピング規則・起票フロー・label-sync 実行手順 |
+| [学習効果測定（満足度アンケート）](./learning-effectiveness.md) | 実施タイミング・提出方法・設問・集計フロー |
