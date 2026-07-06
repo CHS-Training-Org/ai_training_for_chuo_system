@@ -90,6 +90,7 @@ nav = [
       "decision/ADR-020-aidlc-engine-adoption.md",
       "decision/ADR-021-okf-frontmatter-adoption.md",
       "decision/ADR-022-wsl-container-future-adoption.md",
+      "decision/ADR-023-mentor-gate-removal.md",
     ] },
     { "Claude Code 設定" = [
       "claude/index.md",
