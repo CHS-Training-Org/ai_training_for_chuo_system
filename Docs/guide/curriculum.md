@@ -6,7 +6,7 @@ tags:
   - guide
   - curriculum
   - learning
-timestamp: 2026-06-16
+timestamp: 2026-07-06
 audience: 学習者（新人・中堅）・メンター
 references:
   - Docs/guide/getting-started.md
@@ -44,7 +44,7 @@ references:
 新人が最初に取り組む 5 つの課題です。**順序性があり**、前の STEP の完了を前提に次へ進みます。  
 各 STEP は GitHub Issue として起票して取り組みます（`.github/ISSUE_TEMPLATE/` の「必須課題（STEP）」テンプレートを使用）。
 
-各 STEP の「完了条件」は、その課題の**提出物**でもあります。完了条件を満たしたら PR を作成し、メンターのレビュー（第 2 ゲート）を受けてください。  
+各 STEP の「完了条件」は、その課題の**提出物**でもあります。完了条件を満たしたら PR を作成し、セルフレビューのうえ自分でマージしてください。  
 PR の進め方は [dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を参照してください。
 
 ---
@@ -71,12 +71,12 @@ PR の進め方は [dev-workflow.md §標準開発フロー](./dev-workflow.md#f
 | 推奨レベル | Beginner |
 | 推定工数 | 半日 |
 | AI 活用例 | Claude Code に [dev-workflow.md](./dev-workflow.md) を読み込ませ、標準フローを自分の言葉で要約させて理解を確認する |
-| 完了条件 | 下記の確認項目をすべて満たし、メンターに口頭またはコメントで説明できる |
+| 完了条件 | 下記の確認項目をすべて満たし、PR コメント等で自分の言葉で説明できる |
 
 実装に着手する前に、リポジトリの運用ルールを把握します。次の 4 点を確認してください。
 
-- **標準開発フロー**：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を読み、「ビジネス要求シート（Issue）選択 → ブランチ作成 → plan mode で計画提示 → メンター承認（第 1 ゲート）→ Spec-first で仕様更新 → 縦切り実装 → セルフレビュー → PR → メンターレビュー（第 2 ゲート）→ マージ」の流れと、**2 つの承認ゲート**の意味を説明できる。
-- **AI-DLC の考え方**：[dev-workflow.md §AI-DLC と BookFlow フローの対応](./dev-workflow.md#aidlc-mapping) を読み、plan-first の承認ゲート（plan mode で計画を合意してから実装する）の狙いを理解する。
+- **標準開発フロー**：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を読み、「ビジネス要求シート（Issue）選択 → ブランチ作成 → plan mode で計画提示・セルフ承認 → Spec-first で仕様更新 → 縦切り実装 → セルフレビュー → PR → セルフレビュー・マージ」という**自己完結の流れ**を説明できる。
+- **AI-DLC の考え方**：[dev-workflow.md §AI-DLC と BookFlow フローの対応](./dev-workflow.md#aidlc-mapping) を読み、plan-first（plan mode で計画に納得してから実装する）の狙いを理解する。
 - **ブランチの切り方**：[coding-conventions.md §コミット・PR 規約](./coding-conventions.md#commit-pr) に従い、`feature/<issue番号>-<short-desc>` 形式でブランチを作成できる。
 - **学習パスの選び方**：この[学習パスマップ](#path-map)から、自分のレベルに合った次の課題を選べる。
 

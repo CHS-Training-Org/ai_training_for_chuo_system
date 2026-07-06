@@ -8,7 +8,7 @@ tags:
   - e2e
   - testing
   - playwright
-timestamp: 2026-06-16
+timestamp: 2026-07-06
 audience: 学習者・メンター
 references:
   - Docs/spec/requirements.md
@@ -45,6 +45,7 @@ BookFlow の Playwright テストは `frontend/tests/e2e/example.spec.ts` の 1 
 
 ## 影響範囲
 
+- 推定工数：3〜5時間
 - 対象レイヤー：frontend
 - 更新が必要な spec：なし（テスト追加のみ。機能仕様に変更なし）
 

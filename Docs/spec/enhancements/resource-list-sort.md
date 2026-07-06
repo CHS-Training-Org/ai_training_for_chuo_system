@@ -7,7 +7,7 @@ tags:
   - enhancement
   - resource
   - sort
-timestamp: 2026-06-16
+timestamp: 2026-07-06
 audience: 学習者・メンター
 references:
   - Docs/spec/requirements.md
@@ -42,6 +42,7 @@ BookFlow のリソース一覧（`/resources`）は現在、登録日時（`crea
 
 ## 影響範囲
 
+- 推定工数：1〜2時間
 - 対象レイヤー：両方
 - 更新が必要な spec：
   - `api-spec.md` §`GET /api/resources`：`sort` クエリパラメータと有効値を追記

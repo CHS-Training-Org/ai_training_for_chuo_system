@@ -7,7 +7,7 @@ tags:
   - enhancement
   - reservation
   - draft
-timestamp: 2026-06-16
+timestamp: 2026-07-06
 audience: 学習者・メンター
 references:
   - Docs/spec/requirements.md
@@ -45,6 +45,7 @@ BookFlow の `reservations.status` に `DRAFT` ステータスが定義されて
 
 ## 影響範囲
 
+- 推定工数：半日〜1日
 - 対象レイヤー：両方
 - 更新が必要な spec：
   - `api-spec.md` §`POST /api/reservations`：`draft` フラグとステータス `DRAFT` での作成を追記；§`PUT /api/reservations/{id}`：`DRAFT` → `PENDING` 遷移を追記

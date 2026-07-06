@@ -7,7 +7,7 @@ tags:
   - enhancement
   - approval
   - workflow
-timestamp: 2026-06-17
+timestamp: 2026-07-06
 audience: 学習者・メンター
 references:
   - Docs/spec/requirements.md
@@ -47,6 +47,7 @@ BookFlow の承認フローは現在 1 段階固定です。`ApprovalService.cre
 
 ## 影響範囲
 
+- 推定工数：2〜3日
 - 対象レイヤー：両方（バックエンド中心）
 - 更新が必要な spec：
   - `api-spec.md` §`POST /api/reservations`：多段階承認での `approval_steps` 生成を追記；§`POST /api/approvals/{stepId}/approve` / §`POST /api/approvals/{stepId}/reject`：ステップ連鎖の挙動を追記

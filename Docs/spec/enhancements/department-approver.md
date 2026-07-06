@@ -7,7 +7,7 @@ tags:
   - enhancement
   - approver
   - department
-timestamp: 2026-06-16
+timestamp: 2026-07-06
 audience: 学習者・メンター
 references:
   - Docs/spec/requirements.md
@@ -45,6 +45,7 @@ references:
 
 ## 影響範囲
 
+- 推定工数：2〜3日
 - 対象レイヤー：両方
 - 更新が必要な spec：
   - `er-diagram.md`：部署×承認者の対応を保持するデータ構造（カラム追加 or 新テーブル）を追記
