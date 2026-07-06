@@ -183,4 +183,4 @@ Claude Code は起動時にリポジトリルートの [`CLAUDE.md`](https://git
     「AI が書いたから」は不具合の言い訳になりません。PR を出した時点で、そのコードの品質はあなたの責任です。
 
 PR には AI を活用した箇所の明記が**必須**です。  
-[`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md) の「AI ツールを使った箇所」欄に、plan mode で提示された計画、メンター承認の有無、補完や生成に使った箇所を記入してください（詳しい手順は [dev-workflow.md](./dev-workflow.md#flow) を参照）。
+[`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md) の「AI ツールを使った箇所」欄に、plan mode で提示された計画、補完や生成に使った箇所を記入してください（詳しい手順は [dev-workflow.md](./dev-workflow.md#flow) を参照）。

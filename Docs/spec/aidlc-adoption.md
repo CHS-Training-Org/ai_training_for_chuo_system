@@ -64,7 +64,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 |---|---|---|---|---|
 | `common/ascii-diagram-standards.md` | ASCII 図の文字種・整列規約 | `.claude/rules/aidlc-guardrails.md` §4 | rules 化（既存） | ドキュメント内の図表品質を保つための具体的な規約として有用 |
 | `common/content-validation.md` | ファイル作成前の Mermaid/ASCII 構文検証 | `.claude/rules/aidlc-guardrails.md` §3 | rules 化（既存） | 仕様ドキュメント（Mermaid 多用）の品質保証に直結 |
-| `common/depth-levels.md` | 問題の複雑さに応じた出力粒度の調整 | `.claude/rules/aidlc-guardrails.md` §2 | rules 化（既存） | plan-first ゲートでの計画粒度判断に有用 |
+| `common/depth-levels.md` | 問題の複雑さに応じた出力粒度の調整 | `.claude/rules/aidlc-guardrails.md` §2 | rules 化（既存） | plan-first での計画粒度判断に有用 |
 | `common/error-handling.md` | ワークフローエンジンのエラー処理・復旧手順 | `.aidlc-rule-details/common/error-handling.md`（翻案済み） | **エンジン採用（翻案・活性化）** | エンジン導入により前提（`aidlc-state.md` / `audit.md`）が揃った。状態ファイルパスを BookFlow 写像先に翻案済み |
 | `common/overconfidence-prevention.md` | 過信防止（不確実なら質問する） | `.claude/rules/aidlc-guardrails.md` §1 | rules 化（既存） | 「プロセスの厳格さは簡略化しない」方針と直結する中核的ガードレール |
 | `common/process-overview.md` | AI-DLC 3フェーズワークフローの技術参照（Mermaid 図含む） | `Docs/guide/dev-workflow.md` の写像表・標準フロー図 | **参照のみ（写像済み）** | フェーズ構造は `dev-workflow.md #aidlc-mapping` で写像済み（エンジン採用に更新）。重複再構成はしない |
@@ -82,7 +82,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 | `inception/reverse-engineering.md` | 既存コード解析（Brownfield のみ・条件付き） | `.aidlc-rule-details/inception/reverse-engineering.md`（翻案済み）+ 将来 `/reverse-engineering` スキル化 | **エンジン採用（翻案・活性化）** | 学習者向け STEP-05「既存機能読解」に直結（台帳「今後の候補」から実装済みに昇格） |
 | `inception/requirements-analysis.md` | 要件分析（必須・深さ適応型） | `.aidlc-rule-details/inception/requirements-analysis.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。成果は `Docs/spec/requirements.md` に統合 |
 | `inception/user-stories.md` | ユーザーストーリー作成（条件付き） | `.aidlc-rule-details/inception/user-stories.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。ユーザー影響のある機能開発時に実行 |
-| `inception/workflow-planning.md` | ワークフロー計画・ステージ EXECUTE/SKIP 判断（必須） | `.aidlc-rule-details/inception/workflow-planning.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。plan mode での実行計画提示＝第1ゲートの実体 |
+| `inception/workflow-planning.md` | ワークフロー計画・ステージ EXECUTE/SKIP 判断（必須） | `.aidlc-rule-details/inception/workflow-planning.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。plan mode での実行計画提示。学習者自身が `ExitPlanMode` で確認・承認する |
 | `inception/application-design.md` | コンポーネント・サービス設計（条件付き） | `.aidlc-rule-details/inception/application-design.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。新コンポーネント・サービスが必要な場合に実行 |
 | `inception/units-generation.md` | units of work 分解（条件付き） | `.aidlc-rule-details/inception/units-generation.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。複数ユニット分割が必要な場合に実行。分解結果は縦切り Issue に写像 |
 

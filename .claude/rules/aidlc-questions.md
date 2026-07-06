@@ -17,6 +17,6 @@ AI-DLC 本体は質問を専用ファイル（`*-questions.md`）に書く方式
 
 ## plan mode での運用
 
-- 計画承認の確認自体は `ExitPlanMode` で行う。「この計画でよいですか？」のようなテキスト質問は行わない（[`Docs/guide/dev-workflow.md` §3](../../Docs/guide/dev-workflow.md)、第1ゲート）。
+- 計画承認の確認自体は `ExitPlanMode` で行う。「この計画でよいですか？」のようなテキスト質問は行わない（[`Docs/guide/dev-workflow.md` §3](../../Docs/guide/dev-workflow.md)）。承認するのは学習者自身であり、メンターの承認は不要。
 - 要件・設計方針の選択肢が複数ありユーザー判断が必要な場合は、`AskUserQuestion` で計画提示前に解消する。
 - 1回の `AskUserQuestion` は最大4問。選択肢が3つ以上に分岐する場合は質問を分割する。

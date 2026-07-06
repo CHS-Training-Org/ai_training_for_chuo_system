@@ -33,9 +33,9 @@ references:
 | リポジトリ設定・ブランチ保護の設定・変更 | ◎ | — | — |
 | label-sync ワークフローの実行・ラベル管理 | ◎ | ○ | — |
 | 課題 Issue の起票・カタログの棚卸し | ○ | ◎ | — |
-| plan mode 計画の承認（第 1 ゲート） | — | ◎ | — |
-| PR レビュー・Approve（第 2 ゲート） | — | ◎ | — |
 | 学習者の質問・詰まりへのサポート | — | ◎ | — |
+| PR・Issue への任意コメント（ブロッキングではない） | — | ○ | — |
+| plan mode でのセルフ承認・PR のセルフレビュー＆マージ | — | — | ◎ |
 | feature ブランチでの開発・PR 作成 | — | — | ◎ |
 | main ブランチの保守 | ◎ | ○ | — |
 
@@ -43,7 +43,7 @@ references:
 
 **補足：**
 
-- ブランチ保護（Approve 1 名以上・必須 status check 2 つ）は GitHub の Settings で設定します。詳細は [dev-workflow.md §8 の admonition](./dev-workflow.md#flow) を参照してください。
+- ブランチ保護（必須 status check 2 つ。承認レビューは必須にしない）は GitHub の Settings で設定します。詳細は [dev-workflow.md §8 の admonition](./dev-workflow.md#flow) を参照してください。
 - label-sync の実行手順は [issue-registration.md §label-sync の実行](./issue-registration.md#label-sync) にあります。
 - 課題の起票手順は [issue-registration.md §起票手順](./issue-registration.md#howto) にあります。
 
@@ -83,20 +83,22 @@ Issue コメントで解決しない場合：
 
 ### 基本方針
 
-メンターは PR レビュー、Issue コメントへの応答を**可能な限り早く**返すことを努力目標とします。具体的な日数の SLA は設けません。
+PR のマージはメンターの承認を必要としません。学習者は [review-criteria.md](./review-criteria.md) のチェックリストで自分の PR をセルフレビューし、満たしていることを確認したら自分でマージします。
+
+メンターは Issue コメント・PR コメントへの応答を**可能な限り早く**返すことを努力目標としますが、これは質問対応・任意のフィードバックであり、マージの条件ではありません。具体的な日数の SLA は設けません。
 
 学習者は：
-- マージを急がず、レビュー中は別の学習ステップ（ドキュメント読み込み・次課題の仕様確認等）を並行して進める。
-- 応答が遅いと感じた場合は、Issue コメントで「レビューお願いします」とメンションして問題ありません。
+- セルフレビューが済んだらマージしてよく、メンターの反応を待つ必要はありません。
+- 判断に迷った点、相談したい設計上のトレードオフがあれば、PR テンプレートの「任意メモ（メンターへ・あれば）」に記入するか、Issue コメントで質問してください。
 
-### 第 2 ゲート（PR レビュー）の手順
+### セルフレビュー・マージの手順
 
-PR レビューの流れと完了条件は [dev-workflow.md §8](./dev-workflow.md#flow) を参照してください。  
-レビューの観点、評価基準は [review-criteria.md](./review-criteria.md) が真実の源です。本ページでは再掲しません。
+セルフレビューの流れと完了条件は [dev-workflow.md §8](./dev-workflow.md#flow) を参照してください。  
+セルフレビューの観点、評価基準は [review-criteria.md](./review-criteria.md) が真実の源です。本ページでは再掲しません。
 
 !!! note "メンター・リポジトリ管理者向け"
-    第 2 ゲートでは「CI green・セルフレビュー済み・Spec-first 遵守・PR テンプレート記入」の 4 点を Approve 前に確認してください（[review-criteria.md §評価基準](./review-criteria.md#completion-criteria)）。  
-    GitHub のブランチ保護で「Approve 1 名以上」が必須化されているため、承認なしではマージできません。
+    メンターは PR の Approve を求められません。質問への回答や、気になった点への任意コメントで学習者を支援してください。  
+    GitHub のブランチ保護では「Require approvals」を有効にしません（必須 status check のみで統制します）。
 
 ---
 
@@ -165,7 +167,7 @@ docker compose exec docs uv run zensical build
 ## 関連ドキュメント
 
 - 役割の名簿・ステークホルダー定義：[リポジトリ概要 §ステークホルダーと役割](../spec/overview.md#roles)
-- 標準開発フロー・ゲートの詳細：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow)
+- 標準開発フローの詳細：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow)
 - レビュー観点・評価基準：[review-criteria.md](./review-criteria.md)
 - ラベル体系・課題起票手順：[issue-registration.md](./issue-registration.md)
 - トラブルシューティング：[troubleshooting.md](./troubleshooting.md)

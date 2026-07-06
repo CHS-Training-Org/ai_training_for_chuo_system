@@ -119,9 +119,9 @@ bash scripts/provision-cognito.sh
 
 - **AI-DLC エンジン**：`.claude/rules/aidlc-core.md` が BookFlow 翻案版オーケストレーション。ソフトウェア開発要求に対して INCEPTION（要件分析・設計）→ CONSTRUCTION（実装・テスト）→ OPERATIONS（CI）の 3 フェーズを駆動する。plan mode 経由で発動し、各ステージで承認ゲートを挟む。
 - **Spec-first**：実装より先に `Docs/spec/` を更新する。これが真実の源。`/update-spec` スキルで更新対象を特定する。
-- **plan-first の承認ゲート**：plan mode でエンジンが INCEPTION フェーズを実行し Workflow Planning を提示 → メンター承認（第1ゲート）を得てから実装に進む。
+- **plan-first**：plan mode でエンジンが INCEPTION フェーズを実行し Workflow Planning を提示する。学習者自身が `ExitPlanMode` で計画に納得したことを示してから実装に進む（メンターの承認は不要）。
 - **縦切り実装**：フロントエンド・バックエンドにまたがる変更は機能単位でまとめて実装する（units of work = 縦切り Issue 単位）。
-- **PR**：`/draft-pr` スキルで下書きを生成し、AI 活用箇所を明記する。レビュー（第2ゲート）後にマージする。
+- **PR**：`/draft-pr` スキルで下書きを生成し、AI 活用箇所を明記する。PR テンプレートのセルフレビュー項目を満たしたら自分でマージする（メンターレビューは必須ではない。メンターは任意のタイミングで Issue・PR にコメントする）。
 - 検証は「よく使うコマンド」の lint・テストを実行する。
 - **思考ガードレール**：過信防止・出力粒度・コンテンツ検証・確認質問の様式は `.claude/rules/`（`aidlc-guardrails.md` / `aidlc-questions.md`）に定義する。
 - **AI-DLC 状態管理**：進捗トラッカーは `Docs/spec/aidlc-state.md`、監査ログは `Docs/spec/aidlc-audit.md`（追記専用）。
