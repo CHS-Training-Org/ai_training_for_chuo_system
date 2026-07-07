@@ -6,12 +6,12 @@ tags:
   - ai-dlc
   - audit
   - log
-timestamp: 2026-06-18
+timestamp: 2026-07-07
 ---
 
 # AI-DLC Audit Log
 
-> このファイルは AI-DLC エンジン（`.claude/rules/aidlc-core.md`）が管理する追記専用の監査ログ。
+> このファイルは AI-DLC エンジン（`.claude/skills/aidlc/SKILL.md`、`/aidlc` スキル）が管理する追記専用の監査ログ。
 > 上流の `aidlc-docs/audit.md` に相当（BookFlow 翻案：`Docs/spec/aidlc-audit.md`）。
 > **CRITICAL**: このファイルは常に追記のみ。上書き・再生成は禁止。
 

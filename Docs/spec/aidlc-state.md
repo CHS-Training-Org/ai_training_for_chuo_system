@@ -6,12 +6,12 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-06-18
+timestamp: 2026-07-07
 ---
 
 # AI-DLC State Tracking
 
-> このファイルは AI-DLC エンジン（`.claude/rules/aidlc-core.md`）が管理する進捗トラッカー。
+> このファイルは AI-DLC エンジン（`.claude/skills/aidlc/SKILL.md`、`/aidlc` スキル）が管理する進捗トラッカー。
 > 上流の `aidlc-docs/aidlc-state.md` に相当（BookFlow 翻案：`Docs/spec/aidlc-state.md`）。
 > エンジン動作中は自動更新される。新規プロジェクト開始前にこのテンプレートをリセットして使う。
 

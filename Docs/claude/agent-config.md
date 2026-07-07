@@ -8,7 +8,7 @@ tags:
   - rules
   - skills
   - hooks
-timestamp: 2026-06-21
+timestamp: 2026-07-07
 audience: 学習者・メンター
 references:
   - Docs/spec/aidlc-adoption.md
@@ -33,11 +33,11 @@ references:
 
 | ファイル | 目的 |
 |---------|------|
-| `aidlc-core.md` | BookFlow 標準開発ワークフロー（AI-DLC エンジン）。plan mode で発動し、INCEPTION → CONSTRUCTION → OPERATIONS の3フェーズを駆動する |
+| `aidlc-core.md` | AI-DLC 起動判断の薄いポインタ。`/aidlc` の明示起動、または「AI-DLC で進めて」等の意図指定を検知したときにだけ `aidlc` スキルを起動する。指定のない小修正・質問では起動しない |
 | `aidlc-guardrails.md` | AI 駆動開発のガードレール。過信防止・出力粒度調整・コンテンツ検証・ASCII 図規約を定義する |
 | `aidlc-questions.md` | 確認質問の様式。`AskUserQuestion`（要件確認）と `ExitPlanMode`（計画承認）の使い分けを規定する |
 
-各ルールの詳細実装は `.aidlc-rule-details/` 配下のステージファイルにあります（`aidlc-core.md` が参照するオンデマンド読み込み対象）。
+各ルールの詳細実装は `.aidlc-rule-details/` 配下のステージファイルにあります（`aidlc` スキルが起動時に参照するオンデマンド読み込み対象）。
 
 ---
 
@@ -49,6 +49,7 @@ references:
 
 | スキル | 呼び出し | 役割 |
 |-------|---------|------|
+| `aidlc` | `/aidlc`、または「AI-DLC で進めて」等の明示的な意図指定 | AI-DLC エンジン本体。BookFlow 標準開発ワークフロー（INCEPTION → CONSTRUCTION → OPERATIONS の3フェーズ・per-stage 承認ゲート・監査ログ）を駆動する。起動条件を満たさない小修正・質問では発動しない（`aidlc-core.md` が起動判断を担う） |
 | `update-spec` | `/update-spec` | `Docs/spec/`（requirements / screen-spec / api-spec / er-diagram）を Spec-first ルールに沿って更新・新規作成する。実装より**先**に起動するのが正解 |
 | `draft-pr` | `/draft-pr` | PR タイトル・本文を `.github/PULL_REQUEST_TEMPLATE.md` の様式で下書き生成する。コミット・push・PR 作成は行わない |
 | `drawio-skill` | `/drawio-skill` または「図を描いて」「ER図を作って」「アーキ図を書いて」などのトリガーで自動発動 | `.drawio` 図（アーキ図・ER図・フローチャート・UML など）を生成・編集する。draw.io CLI は使用せず、VSCode の `hediet.vscode-drawio` 拡張でレンダリング・エクスポートする。上流: [Agents365-ai/drawio-skill v1.14.0](https://github.com/Agents365-ai/drawio-skill/tree/v1.14.0)（MIT）の BookFlow 翻案 |

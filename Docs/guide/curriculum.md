@@ -6,7 +6,7 @@ tags:
   - guide
   - curriculum
   - learning
-timestamp: 2026-07-06
+timestamp: 2026-07-07
 audience: 学習者（新人・中堅）・メンター
 references:
   - Docs/guide/getting-started.md
@@ -16,36 +16,38 @@ references:
 
 # 学習カリキュラム
 
-このページは、BookFlow で学習を進める際の**学習パス**と、最初に取り組む**必須ステップ課題（STEP-01〜05）**を定義します。  
+このページは、BookFlow で学習を進める際の**学習パス**と、最初に取り組む**必須ステップ課題（STEP-01〜03）**を定義します。  
 必須ステップを終えたあとは、難易度別の選択課題へ進みます。どの課題に取り組むか迷ったら、まず下の[学習パスマップ](#path-map)を確認してください。
 
 ---
 
 ## 学習パスマップ { #path-map }
 
-学習者のレベルに応じて、2 つのパスを用意しています。新人は必須ステップを順番に進め、中堅は必須ステップを任意確認したうえで選択課題から始めます。
-
-![学習パスマップ](../diagrams/guide/curriculum-learning-path.drawio.svg)
+学習者のレベルに応じて、2 つのパスを用意しています。  
+STEP-01（環境構築）・STEP-02（リポジトリ運用・開発フロー理解）は、本リポジトリ固有の環境とプロセスであるため、新人・中堅を問わず全員が必須で実施します。  
+STEP-03（AI ツール導入・活用）は、Claude Code の基本操作の習得に加え、標準開発フロー（AI-DLC）を使わずに最初の選択課題を進め、使った場合との違いを体感するステップです。  
+スキップの余地があるのはこの STEP-03 のみで、Claude Code の基本操作と標準開発フロー（AI-DLC）の両方に既に習熟している場合に限り、任意確認で済ませられます。
 
 | パス | 進め方 |
 | ---- | ------ |
-| 新人向け | STEP-01 → 02 → 03 → 04 → 05 を**順番に必須**で実施 → Beginner レベルの選択課題へ |
-| 中堅向け | STEP-01〜03 を**任意確認**（環境構築・運用フロー・AI ツールに慣れていればスキップ可）→ Intermediate / Advanced の選択課題へ |
+| 新人向け | STEP-01 → 02 → 03 を**順番に必須**で実施 → Beginner レベルの選択課題へ |
+| 中堅向け | STEP-01 → 02 を**必須**で実施し、STEP-03（AI ツール導入・活用）のみ Claude Code の基本操作と標準開発フロー（AI-DLC）の両方に習熟していれば**任意確認・スキップ可** → Intermediate / Advanced の選択課題へ |
 
 難易度別の選択課題カタログ（Beginner / Intermediate / Advanced）は **[選択課題カタログ](./enhancement-catalog.md)** を参照してください。
 
-- **新人**は STEP-05 完了後に [Beginner の課題](./enhancement-catalog.md#beginner) から始めることを推奨します。
+- **新人**は STEP-03 完了後に [Beginner の課題](./enhancement-catalog.md#beginner) から始めることを推奨します。
 - **中堅**は [Intermediate / Advanced の課題](./enhancement-catalog.md#intermediate) から選んでください。
+- 選択課題に着手する際は、[コードベース理解ガイド](#codebase-understanding)を必要な範囲で参照してください。
 
 ---
 
 ## 必須ステップ課題 { #required-steps }
 
-新人が最初に取り組む 5 つの課題です。**順序性があり**、前の STEP の完了を前提に次へ進みます。  
-各 STEP は GitHub Issue として起票して取り組みます（`.github/ISSUE_TEMPLATE/` の「必須課題（STEP）」テンプレートを使用）。
+新人が最初に取り組む 3 つの課題です。**順序性があり**、前の STEP の完了を前提に次へ進みます。  
+各 STEP の「完了条件」を自己チェックしながら進めます。
 
-各 STEP の「完了条件」は、その課題の**提出物**でもあります。完了条件を満たしたら PR を作成し、セルフレビューのうえ自分でマージしてください。  
-PR の進め方は [dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を参照してください。
+文書化が必要な STEP の完了証跡は、各 STEP の「完了条件」の指示に従い、最初に着手する選択課題（エンハンス課題）の PR にまとめて記載してください。STEP ごとに個別の Issue や PR を作成する必要はありません。  
+選択課題の進め方は [dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を参照してください。
 
 ---
 
@@ -55,7 +57,7 @@ PR の進め方は [dev-workflow.md §標準開発フロー](./dev-workflow.md#f
 | ---- | ---- |
 | ゴール | DevContainer を起動し、ブラウザで BookFlow のダッシュボードにアクセスできる状態を作る |
 | 推奨レベル | Beginner |
-| 推定工数 | 半日 |
+| 推定工数 | 2 時間〜半日 |
 | AI 活用例 | 起動エラーが出たら、Claude Code にエラーメッセージを貼り付けて原因と対処法を尋ねる |
 | 完了条件 | [getting-started.md §動作確認](./getting-started.md) の手順で、`curl http://localhost:8080/actuator/health` が `{"status":"UP"}` を返し、`http://localhost:3000` でサインイン画面またはダッシュボードが表示される |
 
@@ -71,17 +73,17 @@ PR の進め方は [dev-workflow.md §標準開発フロー](./dev-workflow.md#f
 | 推奨レベル | Beginner |
 | 推定工数 | 半日 |
 | AI 活用例 | Claude Code に [dev-workflow.md](./dev-workflow.md) を読み込ませ、標準フローを自分の言葉で要約させて理解を確認する |
-| 完了条件 | 下記の確認項目をすべて満たし、PR コメント等で自分の言葉で説明できる |
+| 完了条件 | 下記の確認項目をすべて満たし、自分の言葉で説明できる（最初に着手する選択課題の PR に記載する） |
 
 実装に着手する前に、リポジトリの運用ルールを把握します。次の 4 点を確認してください。
 
-- **標準開発フロー**：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を読み、「ビジネス要求シート（Issue）選択 → ブランチ作成 → plan mode で計画提示・セルフ承認 → Spec-first で仕様更新 → 縦切り実装 → セルフレビュー → PR → セルフレビュー・マージ」という**自己完結の流れ**を説明できる。
-- **AI-DLC の考え方**：[dev-workflow.md §AI-DLC と BookFlow フローの対応](./dev-workflow.md#aidlc-mapping) を読み、plan-first（plan mode で計画に納得してから実装する）の狙いを理解する。
-- **ブランチの切り方**：[coding-conventions.md §コミット・PR 規約](./coding-conventions.md#commit-pr) に従い、`feature/<issue番号>-<short-desc>` 形式でブランチを作成できる。
+- **標準開発フロー**：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を読み、「ビジネス要求シート（Issue）選択 → ブランチ作成 → `/aidlc` 起動・plan mode で計画提示・セルフ承認 → Spec-first で仕様更新 → 縦切り実装 → セルフレビュー → PR → セルフレビュー・マージ」という**自己完結の流れ**を説明できる。
+- **AI-DLC の考え方**：[dev-workflow.md §AI-DLC と BookFlow フローの対応](./dev-workflow.md#aidlc-mapping) を読み、plan-first（`/aidlc` を起動して AI-DLC エンジンに計画を立てさせ、plan mode で計画に納得してから実装する）の狙いを理解する。
+- **ブランチの切り方**：[coding-conventions.md §共通方針](./coding-conventions.md#common) に従い、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 形式でブランチを作成できる。issue 番号は要件シートには記載されておらず、Issue を起票した時点で GitHub が採番するため、起票後に Issue の URL やタイトル横の表示で確認する。
 - **学習パスの選び方**：この[学習パスマップ](#path-map)から、自分のレベルに合った次の課題を選べる。
 
 !!! tip "実際に手を動かす"
-    読むだけでなく、`feature/<issue番号>-<short-desc>` 形式のブランチを実際に 1 本作成してみると、以降の STEP でそのまま使えます。
+    読むだけでなく、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 形式のブランチを実際に 1 本作成してみると、以降の STEP でそのまま使えます。
 
 ---
 
@@ -89,39 +91,25 @@ PR の進め方は [dev-workflow.md §標準開発フロー](./dev-workflow.md#f
 
 | 項目 | 内容 |
 | ---- | ---- |
-| ゴール | 本リポジトリの標準 AI ツールである Claude Code の特性を理解し、状況に応じて意図的に活用できるようになる |
+| ゴール | 本リポジトリの標準 AI ツールである Claude Code の特性を理解する。あわせて、Beginner の最初の選択課題を標準開発フロー（AI-DLC）を使わずに進め、後続課題で AI-DLC を使った場合との違いを体感できるようになる |
 | 推奨レベル | Beginner |
-| 推定工数 | 半日 |
-| AI 活用例 | [ai-tools-guide.md](./ai-tools-guide.md) を参照し、コードベース理解・仕様確認・影響範囲調査・テスト生成・エラー調査・plan mode の各場面で Claude Code を試す |
-| 完了条件 | [ai-tools-guide.md §活用チェックリスト（STEP-03 回答フォーム）](./ai-tools-guide.md#checklist) の 6 項目に回答を記入して PR を提出する |
+| 推定工数 | 半日〜1 日 |
+| AI 活用例 | [ai-tools-guide.md §AI-DLC を使わずに最初の選択課題を進める](./ai-tools-guide.md#checklist) の手順を実際に手を動かして試す |
+| 完了条件 | Beginner から選んだ最初の選択課題を、`/aidlc`（AI-DLC エンジン駆動）を使わずに Claude Code へ直接プロンプトして実装する。spec-first（先に `Docs/spec/` を更新する原則）とセルフレビューは AI-DLC を使う場合と同じく行う。完了後、AI-DLC なしで進めて感じた手間を短く振り返り、その選択課題の PR に記載する（後続課題で `/aidlc` を使った場合との対比の起点にする） |
 
 セットアップ、使い方、効果的なプロンプトの書き方、AI 利用ポリシーは [ai-tools-guide.md](./ai-tools-guide.md) を参照してください。
 
 ---
 
-## STEP-04：コードベース把握 { #step-04 }
+## コードベース理解ガイド（随時） { #codebase-understanding }
+
+必須ステップではありません。選択課題（エンハンス課題）に着手する前後で、必要な範囲だけ確認してください。
 
 | 項目 | 内容 |
 | ---- | ---- |
-| ゴール | BookFlow のコードを読んで、フロントエンド → BFF → バックエンド → DB の処理の流れを説明できる |
-| 推奨レベル | Beginner |
-| 推定工数 | 1日 |
-| AI 活用例 | Claude Code に「リソース一覧の処理フローを説明して」と尋ね、回答を手がかりに実コードを読み解く |
-| 完了条件 | リソース一覧表示のリクエストが、Next.js（画面）→ Server Actions（BFF）→ Spring Boot（API）→ PostgreSQL（DB）を辿る流れを、図またはコメントで説明して PR を提出する |
+| ゴール | 着手する機能について、フロントエンド → BFF → バックエンド → DB の処理の流れと、関連する既存テストの意図を説明できる |
+| 推奨タイミング | 選択課題に着手する直前、または実装中に必要になったタイミング |
+| AI 活用例 | Claude Code に「〇〇機能の処理フローを説明して」「このテストが検証していない境界値は？」と尋ね、回答を手がかりに実コードを読み解く |
+| 確認の目安 | 着手する選択課題の PR に、処理フローの説明やテスト意図のコメントを添える。このガイド専用の PR を別途起票する必要はない |
 
-STEP-05 と合わせて、コードを「全体像 → 個別機能」の順に読み解く読解ステップです。  
-アーキテクチャ全体像は [ARCHITECTURE.md](../ARCHITECTURE.md)、各レイヤーの責務は [coding-conventions.md](./coding-conventions.md) を参照してください。
-
----
-
-## STEP-05：既存機能読解 { #step-05 }
-
-| 項目 | 内容 |
-| ---- | ---- |
-| ゴール | 予約申請機能のユニットテストを読み、テストの意図と網羅範囲を説明できる |
-| 推奨レベル | Beginner |
-| 推定工数 | 半日 |
-| AI 活用例 | Claude Code に「このテストが検証していない境界値は？」と尋ね、テストの網羅範囲を確認する |
-| 完了条件 | 予約申請のサービス層テストに「テスト意図」のコメントを日本語で追記して PR を提出する |
-
-STEP-04 で把握した全体像をもとに、特定機能（予約申請）をテストの観点から読み解きます。テスト規約は [coding-conventions.md](./coding-conventions.md) を参照してください。
+アーキテクチャ全体像は [ARCHITECTURE.md](../ARCHITECTURE.md)、各レイヤーの責務とテスト規約は [coding-conventions.md](./coding-conventions.md) を参照してください。[標準開発フロー](./dev-workflow.md#flow) でブランチを作成したあと、実装に入る前に確認しておくと、その後の plan mode での計画が立てやすくなります。

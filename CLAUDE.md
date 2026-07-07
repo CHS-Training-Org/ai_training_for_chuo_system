@@ -108,7 +108,7 @@ bash scripts/provision-cognito.sh
 - **フロントエンド**: Server Components 優先。クライアント状態は Zustand で最小限に管理。
 - **バックエンド**: 4 レイヤーアーキテクチャ（domain / application / presentation / infrastructure）を厳守。
 - **コミット**: Conventional Commits（`feat:`, `fix:`, `docs:` 等）
-- **ブランチ**: `feature/<issue番号>-<short-desc>`
+- **ブランチ**: `feature/<GitHubユーザー名>/<issue番号>-<short-desc>`
 - **Docs frontmatter**：`Docs/` 配下の全 Markdown は OKF 準拠 frontmatter（`type` 必須）を持つ。スキーマ・`type` 語彙は `Docs/decision/ADR-021-okf-frontmatter-adoption.md` および `Docs/decision/README.md` を参照。
 
 ---
@@ -117,9 +117,9 @@ bash scripts/provision-cognito.sh
 
 本リポジトリは AWS Labs の **AI-DLC エンジン**（[`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)、VERSION 0.1.8）を **BookFlow の標準ワークフローとして採用**し、Claude Code を前提とした開発フローを実装しています。`AGENTS.md` は導入しません（Claude Code 専一）。
 
-- **AI-DLC エンジン**：`.claude/rules/aidlc-core.md` が BookFlow 翻案版オーケストレーション。ソフトウェア開発要求に対して INCEPTION（要件分析・設計）→ CONSTRUCTION（実装・テスト）→ OPERATIONS（CI）の 3 フェーズを駆動する。plan mode 経由で発動し、各ステージで承認ゲートを挟む。
+- **AI-DLC エンジン**：`.claude/skills/aidlc/SKILL.md`（`/aidlc` スキル）が BookFlow 翻案版オーケストレーション。ソフトウェア開発要求に対して INCEPTION（要件分析・設計）→ CONSTRUCTION（実装・テスト）→ OPERATIONS（CI）の 3 フェーズを駆動する。`/aidlc` の明示起動、または「AI-DLC で進めて」等の意図指定があったときに発動し（指定のない小修正・質問では発動しない）、各ステージで承認ゲートを挟む。
 - **Spec-first**：実装より先に `Docs/spec/` を更新する。これが真実の源。`/update-spec` スキルで更新対象を特定する。
-- **plan-first**：plan mode でエンジンが INCEPTION フェーズを実行し Workflow Planning を提示する。学習者自身が `ExitPlanMode` で計画に納得したことを示してから実装に進む（メンターの承認は不要）。
+- **plan-first**：`/aidlc` 起動時、plan mode でエンジンが INCEPTION フェーズを実行し Workflow Planning を提示する。学習者自身が `ExitPlanMode` で計画に納得したことを示してから実装に進む（メンターの承認は不要）。
 - **縦切り実装**：フロントエンド・バックエンドにまたがる変更は機能単位でまとめて実装する（units of work = 縦切り Issue 単位）。
 - **PR**：`/draft-pr` スキルで下書きを生成し、AI 活用箇所を明記する。PR テンプレートのセルフレビュー項目を満たしたら自分でマージする（メンターレビューは必須ではない。メンターは任意のタイミングで Issue・PR にコメントする）。
 - 検証は「よく使うコマンド」の lint・テストを実行する。
@@ -139,6 +139,6 @@ bash scripts/provision-cognito.sh
 - AI-DLC 採用台帳（32 ファイル全カバレッジ）: `Docs/spec/aidlc-adoption.md`
 - AI-DLC 採用転換 ADR: `Docs/decision/ADR-020-aidlc-engine-adoption.md`
 - OKF frontmatter 部分採用 ADR: `Docs/decision/ADR-021-okf-frontmatter-adoption.md`
-- AI-DLC 翻案版エンジンルール: `.claude/rules/aidlc-core.md`
+- AI-DLC エンジン本体（`/aidlc` スキル）: `.claude/skills/aidlc/SKILL.md`
 - AI-DLC 進捗トラッカー: `Docs/spec/aidlc-state.md`
 - AI-DLC 監査ログ: `Docs/spec/aidlc-audit.md`

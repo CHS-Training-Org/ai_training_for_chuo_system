@@ -10,11 +10,11 @@
           <mxGeometry x="240" y="20" width="280" height="55" as="geometry" />
         </mxCell>
         <!-- B: ブランチ作成 -->
-        <mxCell id="3" value="ブランチ作成&#xa;feature/&lt;issue番号&gt;-&lt;short-desc&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+        <mxCell id="3" value="ブランチ作成&#xa;feature/＜GitHubユーザー名＞/＜issue番号＞-＜short-desc＞" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
           <mxGeometry x="260" y="130" width="260" height="65" as="geometry" />
         </mxCell>
         <!-- C: AI-DLC INCEPTION -->
-        <mxCell id="4" value="Claude Code plan mode で&#xa;AI-DLC エンジンが INCEPTION フェーズを実行&#xa;（Workspace Detection → Requirements Analysis&#xa;→ Workflow Planning → セルフ承認）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+        <mxCell id="4" value="plan mode で /aidlc を起動&#xa;AI-DLC エンジンが INCEPTION フェーズを実行&#xa;（Workspace Detection → Requirements Analysis&#xa;→ Workflow Planning → セルフ承認）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
           <mxGeometry x="220" y="260" width="340" height="90" as="geometry" />
         </mxCell>
         <!-- D: Spec-first で仕様更新 -->
