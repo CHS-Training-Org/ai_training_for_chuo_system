@@ -119,7 +119,7 @@ bash scripts/provision-cognito.sh
 
 - **AI-DLC エンジン**：`.claude/skills/aidlc/SKILL.md`（`/aidlc` スキル）が BookFlow 翻案版オーケストレーション。ソフトウェア開発要求に対して INCEPTION（要件分析・設計）→ CONSTRUCTION（実装・テスト）→ OPERATIONS（CI）の 3 フェーズを駆動する。`/aidlc` の明示起動、または「AI-DLC で進めて」等の意図指定があったときに発動し（指定のない小修正・質問では発動しない）、各ステージで承認ゲートを挟む。
 - **Spec-first**：実装より先に `Docs/spec/` を更新する。これが真実の源。`/update-spec` スキルで更新対象を特定する。
-- **plan-first**：`/aidlc` 起動時、plan mode でエンジンが INCEPTION フェーズを実行し Workflow Planning を提示する。学習者自身が `ExitPlanMode` で計画に納得したことを示してから実装に進む（メンターの承認は不要）。
+- **plan-first**：`/aidlc` 起動時、通常（agent）モードでエンジンが INCEPTION フェーズを実行し Workflow Planning を提示する。学習者自身がチャットで計画に納得したことを示してから実装に進む（メンターの承認は不要）。
 - **縦切り実装**：フロントエンド・バックエンドにまたがる変更は機能単位でまとめて実装する（units of work = 縦切り Issue 単位）。
 - **PR**：`/draft-pr` スキルで下書きを生成し、AI 活用箇所を明記する。PR テンプレートのセルフレビュー項目を満たしたら自分でマージする（メンターレビューは必須ではない。メンターは任意のタイミングで Issue・PR にコメントする）。
 - 検証は「よく使うコマンド」の lint・テストを実行する。

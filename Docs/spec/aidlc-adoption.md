@@ -82,7 +82,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 | `inception/reverse-engineering.md` | 既存コード解析（Brownfield のみ・条件付き） | `.aidlc-rule-details/inception/reverse-engineering.md`（翻案済み）+ 将来 `/reverse-engineering` スキル化 | **エンジン採用（翻案・活性化）** | 学習者向け「コードベース理解ガイド」（[`curriculum.md#codebase-understanding`](../guide/curriculum.md#codebase-understanding)）に直結（台帳「今後の候補」から実装済みに昇格） |
 | `inception/requirements-analysis.md` | 要件分析（必須・深さ適応型） | `.aidlc-rule-details/inception/requirements-analysis.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。成果は `Docs/spec/requirements.md` に統合 |
 | `inception/user-stories.md` | ユーザーストーリー作成（条件付き） | `.aidlc-rule-details/inception/user-stories.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。ユーザー影響のある機能開発時に実行 |
-| `inception/workflow-planning.md` | ワークフロー計画・ステージ EXECUTE/SKIP 判断（必須） | `.aidlc-rule-details/inception/workflow-planning.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。plan mode での実行計画提示。学習者自身が `ExitPlanMode` で確認・承認する |
+| `inception/workflow-planning.md` | ワークフロー計画・ステージ EXECUTE/SKIP 判断（必須） | `.aidlc-rule-details/inception/workflow-planning.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。通常（agent）モードで実行計画を提示し、学習者自身がチャットで確認・承認する |
 | `inception/application-design.md` | コンポーネント・サービス設計（条件付き） | `.aidlc-rule-details/inception/application-design.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。新コンポーネント・サービスが必要な場合に実行 |
 | `inception/units-generation.md` | units of work 分解（条件付き） | `.aidlc-rule-details/inception/units-generation.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。複数ユニット分割が必要な場合に実行。分解結果は縦切り Issue に写像 |
 
@@ -95,7 +95,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 | `construction/nfr-design.md` | NFR パターン・論理コンポーネント設計（条件付き・ユニット別） | `.aidlc-rule-details/construction/nfr-design.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。NFR Requirements 実行時に続けて実行 |
 | `construction/infrastructure-design.md` | インフラ・デプロイアーキテクチャ設計（条件付き・ユニット別） | `.aidlc-rule-details/construction/infrastructure-design.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。BookFlow の Docker Compose / DevContainer 環境に対応 |
 | `construction/code-generation.md` | コード生成（必須・ユニット別。計画→生成の 2 段階） | `.aidlc-rule-details/construction/code-generation.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。Spec-first との統合：コード生成前に `Docs/spec/` 更新（`/update-spec` スキル） |
-| `construction/build-and-test.md` | ビルド・テスト手順生成（必須・全ユニット完了後） | `.aidlc-rule-details/construction/build-and-test.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。CI 品質ゲート（`ci-frontend` / `ci-backend`）に対応 |
+| `construction/build-and-test.md` | ビルド・テスト手順生成（必須・全ユニット完了後） | `.aidlc-rule-details/construction/build-and-test.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。CI 品質ゲート（`CI Frontend` / `CI Backend`）に対応 |
 
 ### operations（フェーズ3、1ファイル）
 

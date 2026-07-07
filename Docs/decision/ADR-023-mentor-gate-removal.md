@@ -34,7 +34,7 @@ ADR-020（AI-DLC エンジン完全採用）により、BookFlow は「plan mode
 
 **両ゲートを廃止し、学習者のセルフレビュー・セルフマージによる自己完結運用**を採用する。
 
-- **plan mode**：Workflow Planning 提示後、学習者自身が `ExitPlanMode` で計画に納得したことを示して実装に進む。メンターの承認は不要。
+- **Workflow Planning**：提示後、学習者自身がチャットで計画に納得したことを示して実装に進む。メンターの承認は不要。
 - **PR**：`review-criteria.md` のチェックリストを学習者自身がセルフレビューで満たしたら、自分でマージする。メンターの Approve は不要。
 - **メンターの役割**：承認者から、Issue・PR への**任意の**質問対応・コメント役に変わる（ブロッキングではない）。既存の「質問サポートフロー（Issue コメント優先）」はそのまま活用する。
 - **ブランチ保護**：必須 status check（`CI Frontend / ci`・`CI Backend / ci`）は維持し、「Require approvals」を無効化する（GitHub Settings での変更が必要。[操作手順](#branch-protection-handoff)参照）。
@@ -53,3 +53,11 @@ AI-DLC エンジン本体（`.claude/skills/aidlc/SKILL.md` と `.aidlc-rule-det
 - 「AI が書いたから」を言い訳にできない責任の所在（[ai-tools-guide.md](../guide/ai-tools-guide.md)）が、セルフマージにより一段と重くなる。AI 出力を無検証でマージする習慣がつくリスクは、[review-criteria.md](../guide/review-criteria.md) のセルフチェックで緩和する
 - メンターによる第三者レビューが保証されなくなるため、コードの誤りが早期に発見されない可能性がある。任意コメントの文化を促進する運用上の工夫は今後の課題とする
 - GitHub のブランチ保護設定（Require approvals の無効化）は本環境から実施できず、リポジトリオーナーへの申し送り事項となる（[operations-guide.md](../guide/operations-guide.md#roles)）
+
+## 追記（2026-07-08）— Workflow Planning の承認手段の訂正
+
+上記 Decision の「plan mode：… `ExitPlanMode` で計画に納得したことを示す」という記述は、AI-DLC の上流原本（`vendor/aidlc-rules/aws-aidlc-rules/core-workflow.md`）を確認した結果、事実と異なっていたため訂正する。
+
+上流原本は IDE・モード非依存で設計されており、Claude Code の plan mode を前提としない（各ステージは「明示的な承認を待つ」とだけ規定し、`plan mode` という語自体が vendored 全ファイルに一切登場しない）。したがって `/aidlc` は通常（agent）モードで起動し、Workflow Planning などの承認ステップは、エンジンが提示した内容に学習者がチャットで直接返答する形で行う。`ExitPlanMode` ツールは使わない。
+
+本追記は Decision 本文の該当箇所を合わせて修正した（廃止対象だった「2段階のメンター承認ゲート」という決定自体に変更はない）。関連する `.claude/skills/aidlc/SKILL.md` および `Docs/guide/dev-workflow.md` 等のガイド類も同時に修正した。

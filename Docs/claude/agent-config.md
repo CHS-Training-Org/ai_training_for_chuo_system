@@ -35,7 +35,7 @@ references:
 |---------|------|
 | `aidlc-core.md` | AI-DLC 起動判断の薄いポインタ。`/aidlc` の明示起動、または「AI-DLC で進めて」等の意図指定を検知したときにだけ `aidlc` スキルを起動する。指定のない小修正・質問では起動しない |
 | `aidlc-guardrails.md` | AI 駆動開発のガードレール。過信防止・出力粒度調整・コンテンツ検証・ASCII 図規約を定義する |
-| `aidlc-questions.md` | 確認質問の様式。`AskUserQuestion`（要件確認）と `ExitPlanMode`（計画承認）の使い分けを規定する |
+| `aidlc-questions.md` | 確認質問の様式。`AskUserQuestion`（要件確認）とチャットでの直接承認（計画承認）の使い分けを規定する |
 
 各ルールの詳細実装は `.aidlc-rule-details/` 配下のステージファイルにあります（`aidlc` スキルが起動時に参照するオンデマンド読み込み対象）。
 

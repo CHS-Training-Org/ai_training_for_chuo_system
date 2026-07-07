@@ -23,7 +23,7 @@ description: BookFlow の PR タイトル・本文を `.github/PULL_REQUEST_TEMP
 - **対応 Issue / ビジネス要求シート**：ブランチ名 `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` から Issue 番号を抽出して `Closes #<番号>` を記載する。ビジネス要求シート（`Docs/spec/enhancements/<課題>.md`）への言及がコミットメッセージや diff にあれば、そのパスをリンクとして補う。判別できない場合は空欄のまま残し、ユーザーに確認を促す。
 - **実装概要**：`git diff main...HEAD --stat` と主要なコミットメッセージから、何を変更したか（FE/BE どちらに触れたか含む）を簡潔にまとめる。
 - **AI ツールを使った箇所（必須）**：
-  - 「plan mode で提示された実装計画」「補完・解説・テスト／ドキュメント生成等で AI を使った箇所」は、このセッションでの作業内容から要約して埋めてよい。
+  - 「Workflow Planning で提示された実装計画」「補完・解説・テスト／ドキュメント生成等で AI を使った箇所」は、このセッションでの作業内容から要約して埋めてよい。
 - **Spec-first チェック**：`git log main..HEAD --oneline` の**先頭コミット**が `docs(spec): ...` 形式かを確認する。
   - 先頭が `docs(spec):` → 「仕様変更がある場合、仕様更新を PR の先頭コミットにした」にチェック。
   - `Docs/spec/` への変更が diff に一切ない → 「このPRに仕様変更はない」にチェック。
