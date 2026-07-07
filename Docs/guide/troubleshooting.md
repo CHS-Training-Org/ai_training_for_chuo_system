@@ -31,7 +31,7 @@ references:
 - **原因**: Rancher Desktop（Docker エンジン）が起動していない、または開発に使う WSL ディストロ（Ubuntu）に対して **WSL 統合が有効化されていない**。既定では Docker デーモンは Rancher Desktop 専用ディストロ内でのみ動くため、統合を有効にしないと Ubuntu 内に `/var/run/docker.sock` が現れない。
 - **解決策**:
     1. Windows 側で Rancher Desktop が起動していることを確認する
-    2. トレイアイコン → **Preferences → WSL → Integrations** で **Ubuntu** を ON にして **Apply**（Docker Desktop の場合は **Settings → Resources → WSL Integration**）
+    2. トレイアイコン → **Preferences → WSL → Integrations** で **Ubuntu** を ON にして **Apply**
     3. PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直す
     4. WSL2 ターミナルで `docker info` がエラーなく返れば OK。手順の詳細は [README「Windows ユーザー向け: WSL2 セットアップ」](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/README.md)を参照
 

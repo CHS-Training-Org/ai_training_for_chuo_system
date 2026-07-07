@@ -19,7 +19,7 @@ Proposed（2026-06-30）
 
 ## Context
 
-BookFlow の Windows 開発者は現在、DevContainer を起動するために **Rancher Desktop**（`dockerd (moby)` ランタイム）または Docker Desktop を使用する。どちらも別途インストールが必要な外部ツールであり、Rancher Desktop の WSL2 統合設定（Preferences → WSL → Integrations → Ubuntu を ON）という追加手順がセットアップの障壁になっている（[getting-started.md](../guide/getting-started.md) §OS 別の事前準備 参照）。
+BookFlow の Windows 開発者は現在、DevContainer を起動するために **Rancher Desktop**（`dockerd (moby)` ランタイム）を使用する。別途インストールが必要な外部ツールであり、WSL2 統合設定（Preferences → WSL → Integrations → Ubuntu を ON）という追加手順がセットアップの障壁になっている（[getting-started.md](../guide/getting-started.md) §OS 別の事前準備 参照）。
 
 2026 年 6 月、Microsoft が **WSL Container**（`wslc.exe`）のパブリックプレビューを発表した（[DevBlogs 記事](https://devblogs.microsoft.com/commandline/wsl-container-is-now-available-for-public-preview/)、[公式ドキュメント](https://learn.microsoft.com/en-us/windows/wsl/wsl-container)）。
 
@@ -28,7 +28,7 @@ BookFlow の Windows 開発者は現在、DevContainer を起動するために 
 | 項目 | 内容 |
 |------|------|
 | 提供形態 | WSL 本体に組み込み（`wsl --update` のみで取得可能） |
-| 別途インストール | **不要**。Rancher Desktop / Docker Desktop が不要になる |
+| 別途インストール | **不要**。Rancher Desktop が不要になる |
 | ファイルシステム | virtiofs 採用により Windows ↔ Linux のファイルアクセスが約 2 倍高速化 |
 | ネットワーク | consomme モードにより社内 VPN・プロキシ環境での互換性が向上 |
 | VS Code DevContainer | `0.462.0-pre-release` から `wslc` をコンテナプロバイダとして指定可能 |

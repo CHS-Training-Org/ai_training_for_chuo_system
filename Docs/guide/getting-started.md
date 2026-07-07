@@ -31,9 +31,10 @@ references:
 
 | ソフトウェア | 用途 | 備考 |
 |------------|------|------|
-| VS Code | エディタ | `Dev Containers` 拡張が必須。Windows では `WSL` 拡張も必須 |
-| Dev Containers 拡張 | コンテナ開発 | `ms-vscode-remote.remote-containers` |
-| Docker Engine | コンテナ実行 | Rancher Desktop（`dockerd (moby)` ランタイム）または Docker Desktop（RAM 8GB 以上割当） |
+| VS Code | エディタ | インストール方法は下記「OS 別の事前準備」参照。`Dev Containers` 拡張が必須。Windows では `WSL` 拡張も必須 |
+| Dev Containers 拡張 | コンテナ開発 | `ms-vscode-remote.remote-containers`。インストール方法は下記「OS 別の事前準備」参照 |
+| Docker Engine | コンテナ実行 | **Rancher Desktop**（`dockerd (moby)` ランタイム）を使用する。インストール方法は下記「OS 別の事前準備」参照 |
+| Git | リポジトリの clone | WSL2（Ubuntu）の既定イメージには含まれないため、別途インストールが必要（下記「OS 別の事前準備」参照） |
 
 ### 推奨ホストスペック
 
@@ -55,27 +56,52 @@ DevContainer では postgres / localstack / cognito-local / docs の各コンテ
         Windows 側（WSL2 からは `/mnt/c/...`）にソースを置くと、クロスファイルシステムアクセスによりファイル I/O が著しく遅くなり、ホットリロード（HMR / devtools）も効かなくなることがあります。  
         必ず WSL2 ネイティブファイルシステム（`/home/<user>/...`）に配置してください。
 
-    1. **WSL2 / Ubuntu のインストール**（PowerShell を管理者で実行）
+    1. **VS Code のインストール**（PowerShell を管理者で実行）
+
+        ```powershell
+        winget install -e --id Microsoft.VisualStudioCode
+        ```
+
+    2. **WSL2 / Ubuntu のインストール**（PowerShell を管理者で実行）
 
         ```powershell
         wsl --install -d Ubuntu
         ```
 
-    2. **VS Code 拡張のインストール**：`WSL`（`ms-vscode-remote.remote-wsl`）と `Dev Containers` を両方インストールします。
+    3. **Rancher Desktop のインストール**（PowerShell を管理者で実行）
 
-    3. **Docker Engine の WSL2 統合を有効化**（重要）：Rancher Desktop / Docker Desktop は既定では専用ディストロ内でのみ Docker デーモンが動きます。開発に使う `Ubuntu` ディストロに統合を有効化しないと `/var/run/docker.sock` が現れず、DevContainer 起動が失敗します。
+        ```powershell
+        winget install -e --id SUSE.RancherDesktop
+        ```
 
-        - **Rancher Desktop**: トレイアイコン → **Preferences → WSL → Integrations** → **`Ubuntu`** を **ON** → **Apply**
-        - **Docker Desktop**: **Settings → Resources → WSL Integration** → **`Ubuntu`** を **ON** → **Apply & Restart**
+        初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください（既定は `containerd` ですが、本リポジトリは `dockerd (moby)` を前提としています）。
 
-        反映後、PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直してください。確認：Ubuntu ターミナルで `docker ps` が権限エラーなく通れば OK です。
+    4. **Rancher Desktop の WSL2 統合を有効化**（重要）：Rancher Desktop は既定では専用ディストロ内でのみ Docker デーモンが動きます。開発に使う `Ubuntu` ディストロに統合を有効化しないと `/var/run/docker.sock` が現れず、DevContainer 起動が失敗します。
 
-    4. **WSL2 ターミナルに入る**（いずれかの方法）
+        トレイアイコン → **Preferences → WSL → Integrations** → **`Ubuntu`** を **ON** → **Apply**
+
+        反映後、PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直してください。  
+        Ubuntu ターミナルで `docker ps` が権限エラーなく通れば OK です。
+
+    5. **WSL2 ターミナルに入る**（いずれかの方法）
 
         - **Windows Terminal** を起動し、タブのドロップダウンから「Ubuntu」を選択（推奨）
         - スタートメニューで「Ubuntu」を検索して起動
         - PowerShell / コマンドプロンプトで `wsl`（ディストリ指定は `wsl -d Ubuntu`）
         - VS Code 統合ターミナルのドロップダウンで「Ubuntu (WSL)」を選択
+
+    6. **git のインストール**：`wsl --install` が作る Ubuntu イメージには git が含まれていないため、次のステップの `git clone` の前に入れておく必要があります。
+
+        ```bash
+        sudo apt-get update && sudo apt-get install -y git
+        ```
+
+    7. **VS Code 拡張のインストール**：手順1でインストールした VS Code の PATH は WSL2 側にも引き継がれるため、WSL2 のターミナルから `code` コマンドで拡張機能をインストールできます。
+
+        ```bash
+        code --install-extension ms-vscode-remote.remote-wsl
+        code --install-extension ms-vscode-remote.remote-containers
+        ```
 
     !!! tip "WSL2 ネイティブ FS 上にいるかの確認"
         プロンプトが `user@host:~$` 形式で、`pwd` が `/home/<user>/...` を返せば WSL2 ネイティブ FS 上です。  
@@ -83,11 +109,52 @@ DevContainer では postgres / localstack / cognito-local / docs の各コンテ
 
 === "macOS"
 
-    追加の事前準備は不要です。Docker Desktop または Rancher Desktop をインストールし、通常のターミナルでそのまま「ステップ 1」から実行できます。
+    1. **Rancher Desktop のインストール**：[rancherdesktop.io](https://rancherdesktop.io/) から dmg をダウンロードしてインストールしてください（Homebrew の `rancher` cask は Rancher Desktop 開発チームの公式メンテナンスではないため、公式サイトからのインストールを推奨します）。初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください。
+
+    2. **VS Code のインストール**
+
+        ```bash
+        brew install --cask visual-studio-code
+        ```
+
+    3. **VS Code 拡張のインストール**
+
+        ```bash
+        code --install-extension ms-vscode-remote.remote-containers
+        ```
+
+    4. **git の確認**：git が未インストールの場合、初回実行時に Xcode Command Line Tools のインストールを促すダイアログが出るので、指示に従ってインストールしてください（`git --version` で確認できます）。
 
 === "Linux"
 
-    追加の事前準備は不要です。Docker Engine をインストールし、通常のターミナルでそのまま「ステップ 1」から実行できます。
+    1. **Rancher Desktop のインストール**（Ubuntu / Debian 系、公式 apt リポジトリ経由）
+
+        ```bash
+        curl -s https://download.opensuse.org/repositories/isv:/Rancher:/stable/deb/Release.key | gpg --dearmor | sudo dd status=none of=/usr/share/keyrings/isv-rancher-stable-archive-keyring.gpg
+        echo 'deb [signed-by=/usr/share/keyrings/isv-rancher-stable-archive-keyring.gpg] https://download.opensuse.org/repositories/isv:/Rancher:/stable/deb/ ./' | sudo dd status=none of=/etc/apt/sources.list.d/isv-rancher-stable.list
+        sudo apt update
+        sudo apt install rancher-desktop
+        ```
+
+        初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください。
+
+    2. **VS Code のインストール**
+
+        ```bash
+        sudo snap install code --classic
+        ```
+
+    3. **VS Code 拡張のインストール**
+
+        ```bash
+        code --install-extension ms-vscode-remote.remote-containers
+        ```
+
+    4. **git のインストール**（未インストールの場合）
+
+        ```bash
+        sudo apt-get update && sudo apt-get install -y git
+        ```
 
 ---
 
