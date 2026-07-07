@@ -183,6 +183,26 @@ Windows では WSL リモートとして起動し、ウィンドウ左下に「W
 - postgres / localstack / cognito-local / docs の各コンテナが自動起動します（バックエンドはコンテナとしては起動せず、ステップ 4 で開発コンテナ内から手動起動します）
 - このとき `postCreate.sh` が `scripts/provision-cognito.sh` を自動実行し、cognito-local 用の **Pool ID / Client ID をターミナルに出力**します（次のステップで使うので控えておく）
 
+### 初回のツール認証（gh・Claude Code）
+
+DevContainer 内のターミナルで、`gh`（GitHub CLI）と Claude Code をそれぞれ初回のみ認証します。どちらも認証情報はコンテナ専用の named volume に保持されるため、以後コンテナを再作成してもログインし直す必要はありません。
+
+**GitHub CLI（gh）**
+
+```bash
+gh auth login
+```
+
+画面の指示に従って GitHub アカウントで認証してください。この認証は、以降の実習でブランチを push したり Issue / PR を作成する際に必要になります（`gh` 自体は `.devcontainer/devcontainer.json` の feature でインストール済みです）。
+
+**Claude Code**
+
+```bash
+claude
+```
+
+初回起動時はログイン（ブラウザ認証）を求められます。画面の指示に従って認証してください。詳細は [ai-tools-guide.md §セットアップ](./ai-tools-guide.md#setup) を参照してください。
+
 ## ステップ 3：フロントエンド環境変数の設定（初回のみ）
 
 DevContainer 内のターミナルで実行します。

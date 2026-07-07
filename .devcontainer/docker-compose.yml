@@ -40,6 +40,10 @@ services:
       - type: bind
         source: ${USERPROFILE:-$HOME}/.claude.json
         target: /root/.claude.json
+      # GitHub CLI（gh）の認証情報も claude-config と同じ理由でコンテナ専用の named volume に
+      # 隔離する。初回に一度だけ `gh auth login` が必要（以後はこの volume に保持され
+      # コンテナの再ビルドでも維持される）。
+      - gh-config:/root/.config/gh
     ports:
       - "3000:3000"
     environment:
@@ -132,3 +136,6 @@ volumes:
   # Claude Code の設定ディレクトリ(.claude)をホストと分離するための専用ボリューム。
   # 詳細は frontend サービスの claude-config マウントのコメントを参照。
   claude-config:
+  # GitHub CLI（gh）の認証情報を保持する専用ボリューム。詳細は frontend サービスの
+  # gh-config マウントのコメントを参照。
+  gh-config:
