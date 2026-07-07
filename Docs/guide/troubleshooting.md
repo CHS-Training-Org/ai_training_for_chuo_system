@@ -128,16 +128,24 @@ references:
 ### ロール別ログイン後に `/auth/signin` へリダイレクトされ続ける
 
 - **症状**: サインイン画面で MEMBER / APPROVER / ADMIN ボタンを押すと、ダッシュボードへ遷移できず再び `/auth/signin` に戻る。
-- **原因**: バックエンドが起動していないため、フロントエンドが `GET /api/users/me` を呼べずユーザー情報を取得できない。認証レイアウトがセッション未確認と判断してサインインへリダイレクトする。
-- **解決策**: VS Code の「Run and Debug」（++ctrl+shift+d++）→「**Backend**」で起動する。ターミナルから起動する場合は以下を実行する。
-  ```bash
-  cd backend && ./gradlew bootRun
-  ```
-  起動確認：
-  ```bash
-  curl http://localhost:8080/actuator/health
-  # {"status":"UP"} が返れば OK
-  ```
+- **原因**: 次のいずれかです。フロントエンドの認証レイアウトはユーザー情報取得の失敗を一律「未サインイン」として扱い `/auth/signin` へリダイレクトするため、症状だけでは区別できません。
+    1. バックエンドが起動していないため、フロントエンドが `GET /api/users/me` を呼べない。
+    2. バックエンドは起動しているが、初期データ（`scripts/seed.sql`）が投入されていない。バックエンドは Cognito トークンの `sub`（`users.cognito_sub`）でユーザーを検索するため、対応する行が無いと 401 を返す。この場合、ボタンを押した時点の Cognito 認証自体は成功している。
+- **解決策**:
+    - 原因 1（バックエンド未起動）の場合：VS Code の「Run and Debug」（++ctrl+shift+d++）→「**Backend**」で起動する。ターミナルから起動する場合は以下を実行する。
+
+      ```bash
+      cd backend && ./gradlew bootRun
+      ```
+
+      起動確認：
+
+      ```bash
+      curl http://localhost:8080/actuator/health
+      # {"status":"UP"} が返れば OK
+      ```
+
+    - 原因 2（初期データ未投入）の場合：[getting-started.md](./getting-started.md) の「ステップ 5：初期データ投入・動作確認」を実行してから、再度サインインする。
 
 ### `pnpm dev` / `bootRun` がポート使用中エラーになる
 
