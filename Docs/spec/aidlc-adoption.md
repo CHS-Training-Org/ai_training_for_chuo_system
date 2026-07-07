@@ -46,7 +46,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 | `aidlc-docs/aidlc-state.md` | `Docs/spec/aidlc-state.md` | 単一ファイル（ツリー新設なし）でセッション復元機構（`session-continuity.md`）が機能する |
 | `aidlc-docs/audit.md` | `Docs/spec/aidlc-audit.md` | 単一の追記専用ログファイル。並行ツリーの懸念なし。学習者の AI 利用記録と相補的 |
 | `aidlc-docs/<phase>/` 設計成果物 | `Docs/spec/aidlc-docs/<phase>/`（作業用）→ 永続成果は既存 `Docs/spec/` ファイルに統合 | aidlc-docs/ という**ツリー**は新設せず `Docs/spec/` 内の 1 サブディレクトリに限定 |
-| units of work 分解 | 縦切り課題 Issue（`feature/<issue番号>-<short-desc>` 単位） | 既存ブランチ命名・課題粒度と一致 |
+| units of work 分解 | 縦切り課題 Issue（`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 単位） | 既存ブランチ命名・課題粒度と一致 |
 
 ---
 
@@ -79,7 +79,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 | 上流ファイル | 役割 | BookFlow 反映先 | 採用状態 | 根拠 |
 |---|---|---|---|---|
 | `inception/workspace-detection.md` | ワークスペース検出・state 初期化（必須・最初） | `.aidlc-rule-details/inception/workspace-detection.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。`Docs/spec/aidlc-state.md` の初期化・Brownfield/Greenfield 判定 |
-| `inception/reverse-engineering.md` | 既存コード解析（Brownfield のみ・条件付き） | `.aidlc-rule-details/inception/reverse-engineering.md`（翻案済み）+ 将来 `/reverse-engineering` スキル化 | **エンジン採用（翻案・活性化）** | 学習者向け STEP-05「既存機能読解」に直結（台帳「今後の候補」から実装済みに昇格） |
+| `inception/reverse-engineering.md` | 既存コード解析（Brownfield のみ・条件付き） | `.aidlc-rule-details/inception/reverse-engineering.md`（翻案済み）+ 将来 `/reverse-engineering` スキル化 | **エンジン採用（翻案・活性化）** | 学習者向け「コードベース理解ガイド」（[`curriculum.md#codebase-understanding`](../guide/curriculum.md#codebase-understanding)）に直結（台帳「今後の候補」から実装済みに昇格） |
 | `inception/requirements-analysis.md` | 要件分析（必須・深さ適応型） | `.aidlc-rule-details/inception/requirements-analysis.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。成果は `Docs/spec/requirements.md` に統合 |
 | `inception/user-stories.md` | ユーザーストーリー作成（条件付き） | `.aidlc-rule-details/inception/user-stories.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。ユーザー影響のある機能開発時に実行 |
 | `inception/workflow-planning.md` | ワークフロー計画・ステージ EXECUTE/SKIP 判断（必須） | `.aidlc-rule-details/inception/workflow-planning.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。plan mode での実行計画提示。学習者自身が `ExitPlanMode` で確認・承認する |

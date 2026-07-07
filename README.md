@@ -47,4 +47,4 @@
 ## コントリビュート
 
 [`CONTRIBUTING.md`](CONTRIBUTING.md) を参照。  
-ブランチ命名規則：`feature/<issue番号>-<short-desc>`
+ブランチ命名規則：`feature/<GitHubユーザー名>/<issue番号>-<short-desc>`

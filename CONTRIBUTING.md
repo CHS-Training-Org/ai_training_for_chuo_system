@@ -5,10 +5,10 @@
 ## ブランチ命名規則
 
 ```
-feature/<issue番号>-<kebab-case の説明>
+feature/<GitHubユーザー名>/<issue番号>-<kebab-case の説明>
 ```
 
-**例**: `feature/42-add-tag-search`
+**例**: `feature/taro/42-add-tag-search`
 
 - `main` への直接 push は禁止。必ず PR 経由でマージする。
 - `main` からブランチを切って作業する（Fork 方式は採用しない）。
@@ -45,12 +45,12 @@ docs: README にクイックスタートを追記
 1. `main` から作業ブランチを作成する
    ```bash
    git checkout main && git pull
-   git checkout -b feature/<issue番号>-<説明>
+   git checkout -b feature/<GitHubユーザー名>/<issue番号>-<説明>
    ```
 2. 実装・コミットする
 3. PR を作成する（GitHub の PR テンプレートを埋める）
 4. CI（GitHub Actions）がグリーンになることを確認する
-5. メンターをレビュワーに指定してレビュー依頼する
+5. [セルフレビューチェックリスト](#セルフレビューチェックリスト)を満たしたら、自分で PR をマージする（メンターの承認は不要。[ADR-023](Docs/decision/ADR-023-mentor-gate-removal.md) 参照）
 
 ---
 
@@ -65,13 +65,14 @@ PR を出す前に以下を確認する。
 
 ---
 
-## メンターへのレビュー依頼
+## メンターのサポート（任意）
 
-1. PR の Reviewers に担当メンターを追加する
-2. PR 本文の「レビュー依頼コメント」欄に、特に見てほしいポイントを記載する
+メンターの承認はマージの条件ではない。メンターは Issue・PR に任意のタイミングでコメントする役割であり、レビュー依頼を出す・待つ必要はない（[ADR-023](Docs/decision/ADR-023-mentor-gate-removal.md) 参照）。
+
+TODO: `@claude` 等のメンションで自動 PR レビューを行わせる仕組みを導入予定だが、現時点では未実装。導入までは上記のセルフレビューのみで完結する。
 
 ---
 
 > **ブランチ保護について**:  
-> `main` ブランチは以下のルールで保護されている。  
-> 直接 push 禁止 / PR 必須 / CI 通過必須 / 最低 1 名のレビュー承認が必要
+> `main` ブランチは以下のルールで保護される。  
+> 直接 push 禁止 / PR 必須 / 必須 status check（`CI Frontend / ci`・`CI Backend / ci`）通過必須 / 承認レビューは必須にしない（`Require approvals` はオフ、CODEOWNERS 不使用）
