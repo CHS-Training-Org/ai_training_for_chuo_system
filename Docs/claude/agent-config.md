@@ -94,13 +94,16 @@ references:
 
 実際の設定値は `.claude/settings.local.json` を直接参照してください（個人環境で異なる場合があります）。
 
-### 言語・モデル設定
+### 言語・モデル設定 { #model-settings }
 
 `.claude/settings.json` で定義されています。
 
 | 設定 | 値 |
 |-----|---|
 | `language` | japanese |
+| `model` | sonnet |
 | `advisorModel` | opus |
 | `autoUpdatesChannel` | latest |
 | `theme` | auto |
+
+`model: sonnet` は対話セッションの既定モデルを Sonnet に固定する設定です。日常的な実装・修正では Sonnet を基本として使う方針（[ai-tools-guide.md §モデルの選択と使用量の管理](../guide/ai-tools-guide.md#model-and-usage)）を、リポジトリ設定として反映しています。`advisorModel` はこの既定とは独立しており、`advisor` ツール専用に Opus を指定するものです。
