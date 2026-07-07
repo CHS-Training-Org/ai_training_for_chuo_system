@@ -4,11 +4,7 @@
 
 ## ブランチ命名規則
 
-```
-feature/<GitHubユーザー名>/<issue番号>-<kebab-case の説明>
-```
-
-**例**: `feature/taro/42-add-tag-search`
+ブランチ命名規則は [`Docs/guide/coding-conventions.md` §共通方針](Docs/guide/coding-conventions.md#common) を参照してください。
 
 - `main` への直接 push は禁止。必ず PR 経由でマージする。
 - `main` からブランチを切って作業する（Fork 方式は採用しない）。

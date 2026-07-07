@@ -13,7 +13,7 @@
 
 ## 学習の始め方
 
-1. [`Docs/guide/getting-started.md`](Docs/guide/getting-started.md) を読む
+1. [`Docs/guide/curriculum.md`](Docs/guide/curriculum.md) の必須ステップ STEP-01〜03 を順に完了する（環境構築は [`Docs/guide/getting-started.md`](Docs/guide/getting-started.md) を参照）
 2. GitHub Issues の `[Level: Beginner]` タグが付いた課題から着手する
 3. [`CONTRIBUTING.md`](CONTRIBUTING.md) に従ってブランチを切り、PR を送る
 
@@ -47,4 +47,4 @@
 ## コントリビュート
 
 [`CONTRIBUTING.md`](CONTRIBUTING.md) を参照。  
-ブランチ命名規則：`feature/<GitHubユーザー名>/<issue番号>-<short-desc>`
+ブランチ命名規則は [`Docs/guide/coding-conventions.md` §共通方針](Docs/guide/coding-conventions.md#common) を参照してください。
