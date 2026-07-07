@@ -1,5 +1,5 @@
 -- BookFlow 初期データ (seed)
--- 用途：ローカル開発環境での動作確認・STEP-01 環境構築・STEP-04 テスト観点読解
+-- 用途：ローカル開発環境での動作確認・STEP-01 環境構築・コードベース理解ガイドのテスト観点読解
 -- 前提：PostgreSQL 16 専用（H2 非対応）。Flyway 対象外のため自動ロードされない。
 --       DevContainer 起動後に手動で psql から投入する（実行方法は Docs/guide/getting-started.md §初期データ投入 参照）
 -- 再実行：冒頭の DELETE で既存データをクリアしてから INSERT するため再実行可（冪等）
@@ -46,7 +46,7 @@ INSERT INTO resources (id, name, category, capacity, location, requires_approval
 -- 重複予約不変条件（§予約 RSVC-01）：
 --   status IN ('PENDING','APPROVED') の予約が同一リソース・重複時間帯に複数存在してはならない。
 --   → 2 件を別リソース（EQUIPMENT / ROOM）に分散することで不変条件を満たす。
--- STEP-04 テスト観点：同一リソース・重複時間帯での重複チェック検証には別途データを追加すること。
+-- コードベース理解ガイドのテスト観点：同一リソース・重複時間帯での重複チェック検証には別途データを追加すること。
 
 -- ① APPROVED 予約（requires_approval=false リソース上・approval_steps なし）
 INSERT INTO reservations (id, resource_id, requester_id, start_at, end_at, purpose, attendees_count, status) VALUES

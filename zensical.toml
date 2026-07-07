@@ -22,12 +22,13 @@ repo_name = "CHS-Training-Org/ai_training_for_chuo_system"
 
 nav = [
   { "ホーム" = "index.md" },
-  { "はじめる" = [
+  { "はじめに" = [
     "guide/index.md",
     "guide/glossary.md",
     "guide/curriculum.md",
     "guide/getting-started.md",
     "guide/ai-tools-guide.md",
+    "guide/claude-code-best-practices.md",
   ] },
   { "開発する" = [
     "guide/dev-workflow.md",
