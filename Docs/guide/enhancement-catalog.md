@@ -7,7 +7,7 @@ tags:
   - enhancement
   - catalog
 timestamp: 2026-07-07
-audience: 学習者（新人・中堅）・メンター
+audience: 学習者（若手・中堅以上）・メンター
 references:
   - Docs/guide/curriculum.md
   - Docs/spec/enhancements/index.md
@@ -26,14 +26,14 @@ references:
 
 ### 推定工数の目安
 
-推定工数は、**学習者が課題 Issue に着手してからセルフマージするまでの純粋な作業時間**（要件シート確認・plan mode でのセルフ承認・Spec-first 更新・実装・テスト・セルフレビューを含む）を指します。マージにメンターの承認は不要なため、承認待ちの時間は含みません。初めて `plan mode` や `/update-spec` を使う場合は、ツールの使い方に慣れるまでの時間が上乗せされることがあります。
+推定工数は、**学習者が課題 Issue に着手してからセルフマージするまでの純粋な作業時間**（要件シート確認・Workflow Planning でのセルフ承認・Spec-first 更新・実装・テスト・セルフレビューを含む）を指します。マージにメンターの承認は不要なため、承認待ちの時間は含みません。初めて `/aidlc` や `/update-spec` を使う場合は、ツールの使い方に慣れるまでの時間が上乗せされることがあります。
 
 ### 難易度の目安
 
 | 難易度 | 内容の目安 | 推奨される学習者 |
 |--------|-----------|----------------|
-| Beginner | フロントエンド中心の局所的な改善・追加。実装範囲が明確で影響が限定的 | 新人（STEP-03 完了後） |
-| Intermediate | フロントエンドとバックエンドにまたがる縦切り機能。設計判断が必要 | 新人（Beginner 完了後）・中堅 |
+| Beginner | フロントエンド中心の局所的な改善・追加。実装範囲が明確で影響が限定的 | 若手（STEP-03 完了後） |
+| Intermediate | フロントエンドとバックエンドにまたがる縦切り機能。設計判断が必要 | 若手（Beginner 完了後）・中堅 |
 | Advanced | 外部サービス連携・複雑な業務ロジック・ツールチェーン構築。設計とインフラの知識が必要 | 中堅以上 |
 
 ### 課題の進め方
@@ -42,7 +42,7 @@ references:
 
 1. 取り組む課題を決め、対応する**要件シート**（`Docs/spec/enhancements/<short-desc>.md`）を参照する
 2. `.github/ISSUE_TEMPLATE/` の「選択課題（エンハンス）」テンプレートから Issue を起票する
-3. `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` ブランチを切り、`/aidlc` を起動して **plan mode** で実装計画を作成し、`ExitPlanMode` で自分自身が承認して実装に進む
+3. `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` ブランチを切り、`/aidlc` を起動して実装計画を作成し、チャットで自分自身が承認して実装に進む
 4. **Spec-first** で仕様を更新してから実装する（`/update-spec` スキルを使う）
 5. PR を作成し `/draft-pr` で下書きを生成する。[review-criteria.md](./review-criteria.md) のチェックリストでセルフレビューし、満たしていることを確認したら自分でマージする
 
@@ -53,7 +53,7 @@ references:
 
 ## Beginner { #beginner }
 
-フロントエンド中心の局所的な改善、追加課題です。新人が STEP-03 完了後に最初に取り組むことを想定しています。着手前に [コードベース理解ガイド](./curriculum.md#codebase-understanding) を参照すると、実装対象の処理フローを把握しやすくなります。
+フロントエンド中心の局所的な改善、追加課題です。若手が STEP-03 完了後に最初に取り組むことを想定しています。着手前に [コードベース理解ガイド](./curriculum.md#codebase-understanding) を参照すると、実装対象の処理フローを把握しやすくなります。
 
 ここから選ぶ最初の 1 課題は、[curriculum.md §STEP-03](./curriculum.md#step-03) の完了条件に従い、標準開発フロー（AI-DLC）を使わずに進める学習課題を兼ねます。2 課題目以降は、下記の[課題の進め方](#catalog)のとおり標準開発フロー（AI-DLC）で進めてください。
 

@@ -7,7 +7,7 @@ tags:
   - troubleshooting
   - debug
 timestamp: 2026-06-12
-audience: 学習者（主に新人）
+audience: 学習者（主に若手）
 references:
   - Docs/guide/getting-started.md
 ---

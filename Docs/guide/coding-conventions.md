@@ -7,7 +7,7 @@ tags:
   - coding-conventions
   - style
 timestamp: 2026-06-13
-audience: 学習者（主に新人）
+audience: 学習者（主に若手）
 references:
   - Docs/decision/README.md
   - Docs/guide/ai-tools-guide.md

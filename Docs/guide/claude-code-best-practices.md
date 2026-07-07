@@ -7,7 +7,7 @@ tags:
   - ai-tools
   - claude-code
 timestamp: 2026-07-07
-audience: 学習者（主に新人）
+audience: 学習者（主に若手）
 references:
   - Docs/guide/ai-tools-guide.md
 ---
