@@ -28,7 +28,7 @@ body:
     id: prerequisites
     attributes:
       label: 前提条件
-      description: 着手前に完了しておくべき課題・必須課題（STEP）があれば記載してください。
+      description: 着手前に完了しておくべき課題（STEP-01〜03 の実施状況等）があれば記載してください。
     validations:
       required: false
   - type: textarea
