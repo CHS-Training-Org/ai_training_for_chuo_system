@@ -384,8 +384,14 @@
         </mxCell>
 
         <!-- departments.id -|o{ users.department_id -->
+        <!-- e1（自己参照ループ）と交差しないよう、ループの下を迂回するルートに変更 -->
         <mxCell id="e2" value="department_id" style="dashed=1;endArrow=ERmany;startArrow=ERmandOne;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="2r1" target="3r5">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="150" />
+              <mxPoint x="320" y="150" />
+            </Array>
+          </mxGeometry>
         </mxCell>
 
         <!-- resources.id -|o{ reservations.resource_id -->
@@ -416,12 +422,13 @@
         </mxCell>
 
         <!-- users.id -|o{ approval_steps.approver_id -->
-        <!-- waypoints を approval_steps と resources の間の縦ルートに修正 -->
+        <!-- e3（resources → reservations）と users-resources 間の隙間で交差するため、resources の外側（右上）を迂回するルートに変更 -->
         <mxCell id="e6" value="approver_id" style="dashed=1;endArrow=ERmany;startArrow=ERmandOne;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3r1" target="6r3">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="625" y="72" />
-              <mxPoint x="625" y="442" />
+              <mxPoint x="580" y="10" />
+              <mxPoint x="920" y="10" />
+              <mxPoint x="920" y="442.5" />
             </Array>
           </mxGeometry>
         </mxCell>
