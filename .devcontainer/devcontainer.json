@@ -11,7 +11,15 @@
   // initializeCommand はホストのシェルで実行される（WSL2/Linux/macOS は /bin/sh）。
   // そのため POSIX sh で記述する。Windows で開発する場合は WSL2 経由で起動すること
   // （README の「Windows ユーザー向け: WSL2 セットアップ」を参照）。
-  "initializeCommand": "[ -f \"$HOME/.claude.json\" ] || printf '{}' > \"$HOME/.claude.json\"",
+  //
+  // 2つの処理を `;` で連結している:
+  // (1) ~/.claude.json の空ファイル事前生成（型衝突回避。上のコメント参照）。
+  // (2) Rancher Desktop / WSL2 の bind mount 残骸を掃除する（scripts/clean-devcontainer-mounts.sh）。
+  //     Rancher バックエンドが異常終了すると docker-mounts 配下に「非空の proxy ディレクトリ」の
+  //     残骸が残り、次回 `docker compose up` が munger の rmdir 失敗（"directory not empty"）で
+  //     起動できなくなる。スクリプトが非空の残骸のみを安全に削除する（判別ロジックの詳細と
+  //     安全性はスクリプト内コメント参照）。Rancher Desktop 以外では no-op。`|| true` で起動を止めない。
+  "initializeCommand": "[ -f \"$HOME/.claude.json\" ] || printf '{}' > \"$HOME/.claude.json\"; sh \"${localWorkspaceFolder}/scripts/clean-devcontainer-mounts.sh\" || true",
   "features": {
     "ghcr.io/devcontainers/features/java:1": { "version": "25" },
     "ghcr.io/devcontainers/features/node:2.0.0": { "version": "24" },
