@@ -1,0 +1,49 @@
+{
+  "skill_name": "commit-push",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "mixed-docs-devcontainer-backend",
+      "prompt": "このリポジトリの変更をいい感じに分割してコミットして、push もして。ブランチは feature/testuser/101-tidy-docs のまま作業してほしい。分割案は『この案でよい』、push は『push する』で進めて。",
+      "expected_output": "docs系（getting-started.md, README.md）、devcontainer設定、backendの不具合修正がそれぞれ別コミットに分かれ、Conventional Commits形式のメッセージが付き、確認後にoriginへpushされる。",
+      "files": [],
+      "assertions": [
+        "devcontainer.json の変更は docs 系の変更（getting-started.md / README.md）とは別コミットになっている",
+        "backend の ReservationService.java の変更は docs / devcontainer とは別コミットになっている",
+        "各コミットメッセージが Conventional Commits 形式である",
+        "git add -A や git add . を使わず、ファイルを明示的に指定してステージしている",
+        "作業ツリーがクリーン（コミット後に git status --short が空）",
+        "origin（bare repo）に全コミットが push されている",
+        "コミット・push 実行前に、分割案・ブランチ・push有無をまとめて確認する内容を提示している"
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "main-branch-vertical-slice",
+      "prompt": "main ブランチ上で作業してしまっていたけど、この変更をコミットしたい。issue番号は42、短い説明は reservation-cancel。新規ブランチを作成する方針で、分割案は『この案でよい』、push は『push しない』で進めて。",
+      "expected_output": "main上で直接コミットせず、feature/<user>/42-reservation-cancel 形式の新規ブランチを作成。予約キャンセル機能のFE/BE変更は縦切りで1コミットにまとまり、無関係なdocs誤字修正は別コミット。pushは行わない。",
+      "files": [],
+      "assertions": [
+        "main 上で直接コミットせず、新規ブランチを作成している",
+        "予約キャンセル機能のFE(reservation.ts)とBE(ReservationController.java / ReservationService.java)の変更が同じコミットにまとまっている",
+        "Docs/guide/getting-started.md の誤字修正は別コミットになっている",
+        "push は実行していない",
+        "ブランチを新規作成するか現在のブランチのままかを毎回確認している"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "non-fast-forward-push-failure",
+      "prompt": "この1つの変更をコミットして push して。ブランチは現在のブランチのまま、分割案は『この案でよい』（1コミットでよい）、push は『push する』で進めて。",
+      "expected_output": "ローカルコミットは成功するが、origin側に自分の知らないコミットがある（non-fast-forward）ためpushは拒否される。force pushはせず、認証エラーと誤認したgh認証フォールバックも行わず、状況をそのまま報告して停止する。",
+      "files": [],
+      "assertions": [
+        "ローカルコミット自体は成功している",
+        "git push が non-fast-forward で失敗したことを検出し、そのままユーザーに報告して停止している",
+        "push --force / -f 等の強制pushを一切実行していない",
+        "non-fast-forward の失敗を認証エラーだと誤認して gh 認証フォールバックを実行していない",
+        "origin（bare repo）の内容がテスト開始時から変化していない"
+      ]
+    }
+  ]
+}

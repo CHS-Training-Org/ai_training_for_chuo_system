@@ -49,9 +49,11 @@ references:
 
 | スキル | 呼び出し | 役割 |
 |-------|---------|------|
+| `create-issue` | `/create-issue`、または「issueを起票して」「課題issueを立てたい」等 | GitHub Issue を対話形式で聞き取り、テンプレート様式の本文を組み立てて `gh issue create` で実際に起票する。選択課題（エンハンス）と汎用 Issue の2種別に対応する |
 | `aidlc` | `/aidlc`、または「AI-DLC で進めて」等の明示的な意図指定 | AI-DLC エンジン本体。BookFlow 標準開発ワークフロー（INCEPTION → CONSTRUCTION → OPERATIONS の3フェーズ・per-stage 承認ゲート・監査ログ）を駆動する。起動条件を満たさない小修正・質問では発動しない（`aidlc-core.md` が起動判断を担う） |
 | `update-spec` | `/update-spec` | `Docs/spec/`（requirements / screen-spec / api-spec / er-diagram）を Spec-first ルールに沿って更新・新規作成する。実装より**先**に起動するのが正解 |
-| `draft-pr` | `/draft-pr` | PR タイトル・本文を `.github/PULL_REQUEST_TEMPLATE.md` の様式で下書き生成する。コミット・push・PR 作成は行わない |
+| `commit-push` | `/commit-push`、または「差分をコミットして」「いい感じに分割してコミットして」等 | 差分を意味のある単位に分割し、ブランチ・分割内容・push有無をまとめて確認したうえで `git commit`（複数回）・`git push` を実行する |
+| `create-pr` | `/create-pr` | PR タイトル・本文を `.github/PULL_REQUEST_TEMPLATE.md` の様式で組み立てる。head/base ブランチと、下書きのみか `gh pr create` で実際に作成するかを実行前にまとめて確認する。コミットの分割・push は `commit-push` の役割 |
 | `drawio-skill` | `/drawio-skill` または「図を描いて」「ER図を作って」「アーキ図を書いて」などのトリガーで自動発動 | `.drawio` 図（アーキ図・ER図・フローチャート・UML など）を生成・編集する。draw.io CLI は使用せず、VSCode の `hediet.vscode-drawio` 拡張でレンダリング・エクスポートする。上流: [Agents365-ai/drawio-skill v1.14.0](https://github.com/Agents365-ai/drawio-skill/tree/v1.14.0)（MIT）の BookFlow 翻案 |
 
 > **Spec-first 運用**: コードを書く前に `/update-spec` を起動し、仕様書を更新してからコード実装に進む（[dev-workflow.md §3](../guide/dev-workflow.md) 参照）。

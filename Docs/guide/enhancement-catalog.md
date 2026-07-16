@@ -44,7 +44,7 @@ references:
 2. `.github/ISSUE_TEMPLATE/` の「選択課題（エンハンス）」テンプレートから Issue を起票する
 3. `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` ブランチを切り、`/aidlc` を起動して実装計画を作成し、チャットで自分自身が承認して実装に進む
 4. **Spec-first** で仕様を更新してから実装する（`/update-spec` スキルを使う）
-5. PR を作成し `/draft-pr` で下書きを生成する。[review-criteria.md](./review-criteria.md) のチェックリストでセルフレビューし、満たしていることを確認したら自分でマージする
+5. `/create-pr` で PR を作成する。[review-criteria.md](./review-criteria.md) のチェックリストでセルフレビューし、満たしていることを確認したら自分でマージする
 
 !!! note "ラベルについて"
     課題 Issue には `難易度：初級` / `難易度：中級` / `難易度：上級` のラベルがメンターから付与されます（ラベル体系の詳細は [issue-registration.md](./issue-registration.md) を参照）。

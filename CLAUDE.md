@@ -121,7 +121,7 @@ bash scripts/provision-cognito.sh
 - **Spec-first**：実装より先に `Docs/spec/` を更新する。これが真実の源。`/update-spec` スキルで更新対象を特定する。
 - **plan-first**：`/aidlc` 起動時、通常（agent）モードでエンジンが INCEPTION フェーズを実行し Workflow Planning を提示する。学習者自身がチャットで計画に納得したことを示してから実装に進む（メンターの承認は不要）。
 - **縦切り実装**：フロントエンド・バックエンドにまたがる変更は機能単位でまとめて実装する（units of work = 縦切り Issue 単位）。
-- **PR**：`/draft-pr` スキルで下書きを生成し、AI 活用箇所を明記する。PR テンプレートのセルフレビュー項目を満たしたら自分でマージする（メンターレビューは必須ではない。メンターは任意のタイミングで Issue・PR にコメントする）。
+- **PR**：`/create-pr` スキルで本文を組み立て、確認のうえ作成する（AI 活用箇所を明記する）。コミットの分割・push は `/commit-push` スキルの役割。PR テンプレートのセルフレビュー項目を満たしたら自分でマージする（メンターレビューは必須ではない。メンターは任意のタイミングで Issue・PR にコメントする）。
 - 検証は「よく使うコマンド」の lint・テストを実行する。
 - **思考ガードレール**：過信防止・出力粒度・コンテンツ検証・確認質問の様式は `.claude/rules/`（`aidlc-guardrails.md` / `aidlc-questions.md`）に定義する。
 - **AI-DLC 状態管理**：進捗トラッカーは `Docs/spec/aidlc-state.md`、監査ログは `Docs/spec/aidlc-audit.md`（追記専用）。

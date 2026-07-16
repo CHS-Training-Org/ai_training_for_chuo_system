@@ -148,7 +148,7 @@ CI（`CI Frontend` / `CI Backend`）は機械的な品質ゲートです。
 ### 7. PR を作成する
 
 [`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md) の様式に沿って PR を作成します。  
-`/draft-pr` スキルを使うと、現在のブランチの差分からテンプレートに沿った PR タイトル、本文の下書きを生成できます。
+`/create-pr` スキルを使うと、head/base ブランチと下書きのみか実際に作成するかを確認したうえで、テンプレートに沿った PR タイトル・本文を組み立て、`gh pr create` で作成できます。実際に作成する場合、head ブランチの push は事前に済ませておく必要があります（`/commit-push` スキル参照）。
 
 ### 8. セルフレビュー・マージ
 
