@@ -7,7 +7,7 @@
 
 ## 環境構築
 
-手順の詳細（DevContainer・手動セットアップ・OS 別の事前準備）は **[はじめに（環境構築・起動手順）](Docs/guide/getting-started.md)** を参照してください。
+手順の詳細（DevContainer・手動セットアップ・OS 別の事前準備）は **[環境構築・起動手順](Docs/guide/getting-started.md)** を参照してください。
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 type: guide
-title: はじめに（環境構築・起動手順）
+title: 環境構築・起動手順
 description: DevContainer を使った BookFlow の環境構築と初回起動手順
 tags:
   - guide
@@ -13,7 +13,7 @@ references:
   - Docs/guide/ai-tools-guide.md
 ---
 
-# はじめに（環境構築・起動手順）
+# 環境構築・起動手順
 
 このガイドは STEP-01「環境構築」の手順書です。DevContainer を使って BookFlow のローカル開発環境を構築し、動作確認するまでの全手順を記載しています。
 

@@ -24,7 +24,7 @@ references:
 |---------|------|
 | [用語集](./glossary.md) | ドメイン用語・プロジェクト技術用語・AI-DLC 開発プロセス用語の一覧 |
 | [学習カリキュラム](./curriculum.md) | 学習パスマップ（若手・中堅）と必須ステップ課題 STEP-01〜03 の定義 |
-| [はじめに（環境構築・起動手順）](./getting-started.md) | STEP-01 の手順書。クローンから動作確認・初期データ投入まで |
+| [環境構築・起動手順](./getting-started.md) | STEP-01 の手順書。クローンから動作確認・初期データ投入まで |
 | [AI ツール活用ガイド（Claude Code）](./ai-tools-guide.md) | Claude Code のセットアップ・使い方・活用チェックリスト。STEP-03 の参照資料 |
 | [Claude Code ベストプラクティス](./claude-code-best-practices.md) | 公式ドキュメントのベストプラクティスから抜粋した、コンテキスト管理・検証・CLAUDE.md の書き方等の実践的なテクニック |
 | [開発ワークフローガイド](./dev-workflow.md) | Issue 選択からブランチ・実装・PR・レビュー・マージまでの標準フロー |
