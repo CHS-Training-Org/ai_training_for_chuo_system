@@ -33,6 +33,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "MS-CEINTL.vscode-language-pack-ja",
         // Java 関連は Extension Pack for Java に集約。redhat.java / vscode-java-test /
         // vscode-gradle 等を内包するため、個別指定で起きる「依存先(redhat.java)が未インストール」
         // のインストール順序レースを回避できる。
