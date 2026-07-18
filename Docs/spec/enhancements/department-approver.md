@@ -24,6 +24,12 @@ references:
 
 `departments` テーブルには `parent_id` による階層構造がすでに定義されており、`users` テーブルは `department_id` で部署に紐づいています。本課題では管理者が部署ごとに承認者を割り当て、予約申請時に申請者の部署に対応した承認者へ自動ルーティングする機能を実装します。これはユースケース UC-05（承認フロー）の拡張で、`ApprovalService` のコメント「部署別ルーティングは拡張課題」に対応します。
 
+## 依存関係
+
+- 前提課題：なし（ベースシステムの既存承認フロー・`departments` 階層構造のみに依存）
+- 競合する課題：[多段階承認フロー](./multi-step-approval.md)。両課題とも `ApprovalService.createStep()`（`backend/.../application/ApprovalService.java`）を別方向に拡張するため、並行着手は非推奨。一方を完成させてからもう一方に着手する。
+- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](./e2e-test-coverage.md) で承認ルーティングのリグレッションをカバーするとよい。
+
 ## 要件
 
 | # | 要件 |
@@ -52,12 +58,6 @@ references:
   - `api-spec.md`：部署承認者設定の CRUD エンドポイントを新セクションとして追記
   - `screen-spec.md`：管理画面に部署承認者設定 UI を追記
   - `requirements.md` §DEPT：承認者割り当て要件を追記
-
-## 依存関係
-
-- 前提課題：なし（ベースシステムの既存承認フロー・`departments` 階層構造のみに依存）
-- 競合する課題：[多段階承認フロー](./multi-step-approval.md)。両課題とも `ApprovalService.createStep()`（`backend/.../application/ApprovalService.java`）を別方向に拡張するため、並行着手は非推奨。一方を完成させてからもう一方に着手する。
-- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](./e2e-test-coverage.md) で承認ルーティングのリグレッションをカバーするとよい。
 
 ## AI 活用ポイント
 

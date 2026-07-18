@@ -24,6 +24,14 @@ BookFlow の `reservations.status` に `DRAFT` ステータスが定義されて
 
 フォーム入力途中の予約を `DRAFT` として保存し、後から再編集・正式申請できる機能を追加することで、複雑な予約（目的・参加人数の確認が必要な場合など）をゆっくり準備できるようになります。これはユースケース UC-03（予約申請・管理）の拡張にあたります。
 
+## 依存関係
+
+- 前提課題：なし（`reservations.status` の `DRAFT` は既存スキーマの CHECK 制約に定義済み）
+- 競合する課題：
+  - [繰り返し予約](./recurring-reservation.md)。両課題とも `POST /api/reservations` と予約申請フォーム（`/reservations/new`）を変更するため、並行着手は非推奨。
+  - [予約一覧のフィルタ拡張](./reservation-list-filter.md)。両課題とも予約一覧画面（`/reservations`）のタブ・フィルタと `GET /api/reservations` を変更するため、同時並行ではマージ競合の可能性がある。
+- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](./e2e-test-coverage.md) を行うとよい。
+
 ## 要件
 
 | # | 要件 |
@@ -51,14 +59,6 @@ BookFlow の `reservations.status` に `DRAFT` ステータスが定義されて
   - `api-spec.md` §`POST /api/reservations`：`draft` フラグとステータス `DRAFT` での作成を追記；§`PUT /api/reservations/{id}`：`DRAFT` → `PENDING` 遷移を追記
   - `screen-spec.md` §`/reservations/new`：「下書き保存」ボタンを追記；§`/reservations`：`DRAFT` タブ・フィルタを追記；§`/reservations/{id}`：下書き時の操作（再編集・正式申請）を追記
   - `requirements.md` §予約ステータス遷移：`DRAFT` 遷移パターンを追記
-
-## 依存関係
-
-- 前提課題：なし（`reservations.status` の `DRAFT` は既存スキーマの CHECK 制約に定義済み）
-- 競合する課題：
-  - [繰り返し予約](./recurring-reservation.md)。両課題とも `POST /api/reservations` と予約申請フォーム（`/reservations/new`）を変更するため、並行着手は非推奨。
-  - [予約一覧のフィルタ拡張](./reservation-list-filter.md)。両課題とも予約一覧画面（`/reservations`）のタブ・フィルタと `GET /api/reservations` を変更するため、同時並行ではマージ競合の可能性がある。
-- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](./e2e-test-coverage.md) を行うとよい。
 
 ## AI 活用ポイント
 

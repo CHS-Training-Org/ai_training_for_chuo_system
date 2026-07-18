@@ -24,6 +24,12 @@ BookFlow のリソース一覧（`/resources`）は現在、登録日時（`crea
 
 リソース名のアルファベット順や定員の大きい順で探したいケースがあるため、並び替え選択機能を追加します。Spring Data の `Pageable`（`Sort`）を活用すれば、最小限のコード変更でサーバーサイドソートを実現できます。
 
+## 依存関係
+
+- 前提課題：[リソース一覧の検索・フィルタ追加](./resource-list-filter.md)。本課題の受入条件「カテゴリ・期間フィルタやキーワード検索との組み合わせでもソートが適用される」は、キーワード検索機能（前提課題の成果物）が存在しないと検証できないため。
+- 競合する課題：なし（前提課題を完了させてから着手するため、実質的に並行着手にはならない。両課題とも `GET /api/resources` と同一の `ResourceFilterForm.tsx` を変更するが、順序が固定されるため衝突しない）
+- 推奨着手順序：前提課題の完了後、本課題に着手する。後続として [OpenAPI クライアント自動生成](./openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
+
 ## 要件
 
 | # | 要件 |
@@ -47,12 +53,6 @@ BookFlow のリソース一覧（`/resources`）は現在、登録日時（`crea
 - 更新が必要な spec：
   - `api-spec.md` §`GET /api/resources`：`sort` クエリパラメータと有効値を追記
   - `screen-spec.md` §`/resources`：フィルタフォームにソート選択 UI を追記
-
-## 依存関係
-
-- 前提課題：なし（ベースシステムの既存 `GET /api/resources`・`ResourceFilterForm.tsx` のみに依存）
-- 競合する課題：[リソース一覧の検索・フィルタ追加](./resource-list-filter.md)。両課題とも `GET /api/resources` と同一の `ResourceFilterForm.tsx` を変更するため、並行着手は非推奨。
-- 推奨着手順序：[リソース一覧の検索・フィルタ追加](./resource-list-filter.md) を**先に着手**するとよい。本課題の受入条件（「キーワード検索との組み合わせでもソートが適用される」）がフィルタ課題のキーワード検索機能を前提としているため。後続として [OpenAPI クライアント自動生成](./openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
 
 ## AI 活用ポイント
 
