@@ -27,8 +27,10 @@ body:
   - type: textarea
     id: prerequisites
     attributes:
-      label: 前提条件
-      description: 着手前に完了しておくべき課題（STEP-01〜03 の実施状況等）があれば記載してください。
+      label: 依存関係
+      description: |
+        STEP-01〜03 等、着手前に完了しておくべき前提条件があれば記載してください。
+        あわせて、ビジネス要求シートの「依存関係」節（前提課題・競合する課題・推奨着手順序）があれば記載してください。
     validations:
       required: false
   - type: textarea
@@ -43,7 +45,7 @@ body:
   - type: textarea
     id: ai-hints
     attributes:
-      label: AI活用ヒント
+      label: AI活用ポイント
       description: Claude Code の plan mode や `/update-spec` スキル等、活用が想定される場面のヒントがあれば記載してください。
     validations:
       required: false
