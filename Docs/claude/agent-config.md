@@ -51,7 +51,7 @@ references:
 | スキル | 呼び出し | 役割 |
 |-------|---------|------|
 | `create-issue` | `/create-issue`、または「issueを起票して」「課題issueを立てたい」等 | GitHub Issue を対話形式で聞き取り、テンプレート様式の本文を組み立てて `gh issue create` で実際に起票する。選択課題（エンハンス）と汎用 Issue の2種別に対応する |
-| `aidlc` | `/aidlc`、または「AI-DLC で進めて」等の明示的な意図指定 | AI-DLC エンジン本体。BookFlow 標準開発ワークフロー（INCEPTION → CONSTRUCTION → OPERATIONS の3フェーズ・per-stage 承認ゲート・監査ログ）を駆動する。起動条件を満たさない小修正・質問では発動しない（`aidlc-core.md` が起動判断を担う）。エンジン開始前の Pre-flight で、ブランチ作成し忘れを検知して確認する（新規ワークフロー開始時のみ・レジューム時はスキップ） |
+| `aidlc` | `/aidlc`、または「AI-DLC で進めて」等の明示的な意図指定 | AI-DLC エンジン本体。BookFlow 標準開発ワークフロー（INCEPTION → CONSTRUCTION → OPERATIONS の3フェーズ・per-stage 承認ゲート・監査ログ）を駆動する。起動条件を満たさない小修正・質問では発動しない（`aidlc-core.md` が起動判断を担う）。特別な指示がない限り `Docs/spec/enhancements/` 配下のビジネス要求シートをタスクの既定の源として扱う。エンジン開始前の Pre-flight で、新規ワークフロー開始時のみ（レジューム時はスキップ）対象エンハンス課題を特定し、ブランチ作成し忘れを検知した場合は short-desc・Issue 番号（`gh issue list` 検索。失敗時は手動確認）から組み立てたブランチ名を提案し、承認を得てから作成する |
 | `update-spec` | `/update-spec` | `Docs/spec/`（requirements / screen-spec / api-spec / er-diagram）を Spec-first ルールに沿って更新・新規作成する。実装より**先**に起動するのが正解 |
 | `commit-push` | `/commit-push`、または「差分をコミットして」「いい感じに分割してコミットして」等 | 差分を意味のある単位に分割し、ブランチ・分割内容・push有無をまとめて確認したうえで `git commit`（複数回）・`git push` を実行する |
 | `create-pr` | `/create-pr` | PR タイトル・本文を `.github/PULL_REQUEST_TEMPLATE.md` の様式で組み立てる。head/base ブランチと、下書きのみか `gh pr create` で実際に作成するかを実行前にまとめて確認する。コミットの分割・push は `commit-push` の役割 |
