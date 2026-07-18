@@ -8,7 +8,7 @@ tags:
   - rules
   - skills
   - hooks
-timestamp: 2026-07-07
+timestamp: 2026-07-18
 audience: 学習者・メンター
 references:
   - Docs/spec/aidlc-adoption.md
@@ -36,6 +36,7 @@ references:
 | `aidlc-core.md` | AI-DLC 起動判断の薄いポインタ。`/aidlc` の明示起動、または「AI-DLC で進めて」等の意図指定を検知したときにだけ `aidlc` スキルを起動する。指定のない小修正・質問では起動しない |
 | `aidlc-guardrails.md` | AI 駆動開発のガードレール。過信防止・出力粒度調整・コンテンツ検証・ASCII 図規約を定義する |
 | `aidlc-questions.md` | 確認質問の様式。`AskUserQuestion`（要件確認）とチャットでの直接承認（計画承認）の使い分けを規定する |
+| `agent-config-sync.md` | AI-DLC 非依存の横断ルール。`.claude/rules/` `.claude/skills/*/SKILL.md` `.claude/settings.json` のいずれかを変更したら、同じ変更でこの台帳（本ページ）も追従させる |
 
 各ルールの詳細実装は `.aidlc-rule-details/` 配下のステージファイルにあります（`aidlc` スキルが起動時に参照するオンデマンド読み込み対象）。
 
@@ -50,7 +51,7 @@ references:
 | スキル | 呼び出し | 役割 |
 |-------|---------|------|
 | `create-issue` | `/create-issue`、または「issueを起票して」「課題issueを立てたい」等 | GitHub Issue を対話形式で聞き取り、テンプレート様式の本文を組み立てて `gh issue create` で実際に起票する。選択課題（エンハンス）と汎用 Issue の2種別に対応する |
-| `aidlc` | `/aidlc`、または「AI-DLC で進めて」等の明示的な意図指定 | AI-DLC エンジン本体。BookFlow 標準開発ワークフロー（INCEPTION → CONSTRUCTION → OPERATIONS の3フェーズ・per-stage 承認ゲート・監査ログ）を駆動する。起動条件を満たさない小修正・質問では発動しない（`aidlc-core.md` が起動判断を担う） |
+| `aidlc` | `/aidlc`、または「AI-DLC で進めて」等の明示的な意図指定 | AI-DLC エンジン本体。BookFlow 標準開発ワークフロー（INCEPTION → CONSTRUCTION → OPERATIONS の3フェーズ・per-stage 承認ゲート・監査ログ）を駆動する。起動条件を満たさない小修正・質問では発動しない（`aidlc-core.md` が起動判断を担う）。エンジン開始前の Pre-flight で、ブランチ作成し忘れを検知して確認する（新規ワークフロー開始時のみ・レジューム時はスキップ） |
 | `update-spec` | `/update-spec` | `Docs/spec/`（requirements / screen-spec / api-spec / er-diagram）を Spec-first ルールに沿って更新・新規作成する。実装より**先**に起動するのが正解 |
 | `commit-push` | `/commit-push`、または「差分をコミットして」「いい感じに分割してコミットして」等 | 差分を意味のある単位に分割し、ブランチ・分割内容・push有無をまとめて確認したうえで `git commit`（複数回）・`git push` を実行する |
 | `create-pr` | `/create-pr` | PR タイトル・本文を `.github/PULL_REQUEST_TEMPLATE.md` の様式で組み立てる。head/base ブランチと、下書きのみか `gh pr create` で実際に作成するかを実行前にまとめて確認する。コミットの分割・push は `commit-push` の役割 |
