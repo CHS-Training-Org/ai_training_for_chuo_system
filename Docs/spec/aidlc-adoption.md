@@ -35,6 +35,8 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 発火は `/aidlc` 明示起動または「AI-DLC で進める」等の意図指定時のみ（常時 OVERRIDES ではない）。  
 これによりスキル内で硬い per-stage 意味論（承認ゲート、成果物生成、監査ログ記録）が保持され、台帳の「活性化」主張が実行時に履行される。常時読込の `aidlc-core.md` は薄いポインタに縮小。
 
+**2026-07-16 Pre-flight ブランチ確認追加**: `/aidlc` 起動時、エンジン開始（Workspace Detection）より前に BookFlow 独自の前置き処理として、ブランチ作成し忘れを検知して確認する処理を追加。上流ステージ定義（`.aidlc-rule-details/` 配下）には変更なし。
+
 ---
 
 ## 状態管理の写像 { #state-mapping }

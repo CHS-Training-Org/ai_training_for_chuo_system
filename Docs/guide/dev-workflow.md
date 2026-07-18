@@ -100,6 +100,9 @@ AI-DLC Operations の実体は CI 品質ゲート（`CI Frontend` / `CI Backend`
 
 [coding-conventions.md §共通方針](./coding-conventions.md#common) の規約に従い、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` の形式でブランチを作成します。
 
+!!! note "作り忘れた場合"
+    ブランチを作成し忘れたまま `/aidlc` を起動しても、エンジン起動前の Pre-flight 処理が `main`/`master` 上にいることを検知し、Issue 番号と短い説明を確認したうえで自動的に feature ブランチを作成してからワークフローを開始します（詳細は [`.claude/skills/aidlc/SKILL.md`](../../.claude/skills/aidlc/SKILL.md) の Pre-flight 節を参照）。
+
 !!! tip "コードベースを読み解くタイミング"
     実装に入る前に対象機能のコードを読み解いておくと、次の Workflow Planning での計画が立てやすくなります。読み方の目安は [curriculum.md §コードベース理解ガイド](./curriculum.md#codebase-understanding) を参照してください。
 
