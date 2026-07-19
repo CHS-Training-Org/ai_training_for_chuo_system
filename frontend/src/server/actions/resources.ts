@@ -17,6 +17,7 @@ import type { CreateResourceInput, UpdateResourceInput } from "@/lib/schemas/res
 
 interface ListResourcesParams {
   category?: string;
+  keyword?: string;
   from?: string;
   to?: string;
   page?: number;
@@ -37,6 +38,7 @@ export async function listResourcesAction(params?: ListResourcesParams) {
   const client = createApiClient(getAccessToken);
   const queryParams: Record<string, string> = {};
   if (params?.category) queryParams.category = params.category;
+  if (params?.keyword) queryParams.keyword = params.keyword;
   if (params?.from) queryParams.from = params.from;
   if (params?.to) queryParams.to = params.to;
   if (params?.page !== undefined) queryParams.page = String(params.page);
