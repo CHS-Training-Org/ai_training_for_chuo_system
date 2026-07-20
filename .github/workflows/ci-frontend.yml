@@ -29,7 +29,12 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # frontend/pnpm-workspace.yaml の storeDir: /pnpm-store は devcontainer 専用設計
+        # （named volume を /pnpm-store にマウントする前提。.devcontainer/docker-compose.yml 参照）。
+        # GitHub Actions の ubuntu-latest ランナーには /pnpm-store が存在せず、非 root ユーザーは
+        # ルート直下への mkdir 権限を持たないため EACCES で失敗する。CI 実行時のみ書き込み可能な
+        # runner.temp 配下へ store-dir を上書きし、devcontainer 側の設定はそのまま維持する。
+        run: pnpm install --frozen-lockfile --store-dir "${{ runner.temp }}/pnpm-store"
 
       - name: Lint
         run: pnpm lint
