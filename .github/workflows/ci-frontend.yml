@@ -22,7 +22,9 @@ jobs:
       # 環境変数 PNPM_CONFIG_STORE_DIR で上書きできる（.npmrc では上書きできない・CLI引数は
       # コマンドごとに指定が必要なためジョブ全体に効く環境変数を使う）。devcontainer側の設定は
       # そのまま維持する。
-      PNPM_CONFIG_STORE_DIR: ${{ runner.temp }}/pnpm-store
+      # 注: ジョブレベルの env では runner コンテキストは参照できないため github.workspace を使う
+      # （checkout先の兄弟ディレクトリに置き、ワークスペース内を汚さない）。
+      PNPM_CONFIG_STORE_DIR: ${{ github.workspace }}/../pnpm-store
 
     steps:
       - uses: actions/checkout@v4
