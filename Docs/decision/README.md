@@ -145,6 +145,7 @@ Accepted（YYYY-MM-DD）
 | [ADR-020](./ADR-020-aidlc-engine-adoption.md) | AI-DLC エンジン完全採用 | Accepted |
 | [ADR-021](./ADR-021-okf-frontmatter-adoption.md) | OKF 準拠 frontmatter 部分採用 | Accepted |
 | [ADR-023](./ADR-023-mentor-gate-removal.md) | 運用プロセス：承認ゲート廃止・セルフ完結運用への移行 | Accepted |
+| [ADR-024](./ADR-024-ai-first-review-adoption.md) | AI一次レビュー（検討A）の採用 | Accepted |
 
 ### 開発環境（ADR-022〜）
 
