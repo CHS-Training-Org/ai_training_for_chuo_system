@@ -10,18 +10,18 @@ import org.springframework.web.servlet.HandlerInterceptor;
 /**
  * JWT は有効だが {@code users} テーブルに未登録のユーザーを全 API エンドポイントで弾くインターセプター。
  *
- * <p>{@link CurrentUserArgumentResolver} は {@link CurrentUser} アノテーション付き引数を持つエンドポイントのみで
- * DB 照合を行うため、{@code @CurrentUser} を持たないエンドポイント（{@code GET /api/resources} 等）では
- * 未登録ユーザーが通過していた。本インターセプターは {@code /api/**}（{@code /api/auth/signout} を除く）
- * 全エンドポイントで JWT の {@code sub} を users テーブルと照合し、未登録の場合は
- * {@link UnregisteredUserException} をスローして {@code GlobalExceptionHandler} に 401 処理を委ねる。
+ * <p>{@link CurrentUserArgumentResolver} は {@link CurrentUser} アノテーション付き引数を持つエンドポイントのみで DB
+ * 照合を行うため、{@code @CurrentUser} を持たないエンドポイント（{@code GET /api/resources} 等）では
+ * 未登録ユーザーが通過していた。本インターセプターは {@code /api/**}（{@code /api/auth/signout} を除く） 全エンドポイントで JWT の {@code
+ * sub} を users テーブルと照合し、未登録の場合は {@link UnregisteredUserException} をスローして {@code
+ * GlobalExceptionHandler} に 401 処理を委ねる。
  *
- * <p>Spring MVC の {@link HandlerInterceptor} は Spring Security の JWT 認証フィルターより後に実行されるため、
- * このタイミングで {@link JwtAuthenticationToken} が利用可能。投げる {@link UnregisteredUserException} は
+ * <p>Spring MVC の {@link HandlerInterceptor} は Spring Security の JWT 認証フィルターより後に実行されるため、 このタイミングで
+ * {@link JwtAuthenticationToken} が利用可能。投げる {@link UnregisteredUserException} は
  * {@code @RestControllerAdvice} で捕捉できる。
  *
- * <p>api-spec.md §認証方式：「JWT は有効だが {@code users} テーブルに未登録のユーザーの場合も
- * {@code 401 Unauthorized}（{@code code: UNAUTHORIZED}）を返す」（全エンドポイント共通保証）。
+ * <p>api-spec.md §認証方式：「JWT は有効だが {@code users} テーブルに未登録のユーザーの場合も {@code 401 Unauthorized}（{@code
+ * code: UNAUTHORIZED}）を返す」（全エンドポイント共通保証）。
  */
 public class RegisteredUserInterceptor implements HandlerInterceptor {
 

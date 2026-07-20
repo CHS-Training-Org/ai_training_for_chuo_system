@@ -16,8 +16,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * com.example.bookflow.infrastructure.security.CurrentUser} アノテーション付き Controller 引数に {@link
  * com.example.bookflow.domain.User} を注入できるようにする。
  *
- * <p>{@link RegisteredUserInterceptor} を登録し、{@code @CurrentUser} を持たないエンドポイントでも
- * JWT 未登録ユーザーを 401 で弾く（api-spec.md §認証方式の「全エンドポイント」保証）。
+ * <p>{@link RegisteredUserInterceptor} を登録し、{@code @CurrentUser} を持たないエンドポイントでも JWT 未登録ユーザーを 401
+ * で弾く（api-spec.md §認証方式の「全エンドポイント」保証）。
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
