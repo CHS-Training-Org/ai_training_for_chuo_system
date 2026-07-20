@@ -24,10 +24,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * com.example.bookflow.presentation.dto.UserResponse} が返ることを確認する。
  *
  * <p>{@link UserController#list} は {@code @CurrentUser} を使用しないが、{@link
- * com.example.bookflow.infrastructure.security.RegisteredUserInterceptor} が全エンドポイントで
- * JWT {@code sub} を {@code users} テーブルと照合するため、各 {@code @WithMock*} アノテーションの
- * デフォルト sub（"test-admin-sub" / "test-member-sub" / "test-approver-sub"）を持つユーザーも
- * シードする必要がある（api-spec.md §認証方式の「全エンドポイント」保証に対応）。
+ * com.example.bookflow.infrastructure.security.RegisteredUserInterceptor} が全エンドポイントで JWT {@code
+ * sub} を {@code users} テーブルと照合するため、各 {@code @WithMock*} アノテーションの デフォルト sub（"test-admin-sub" /
+ * "test-member-sub" / "test-approver-sub"）を持つユーザーも シードする必要がある（api-spec.md §認証方式の「全エンドポイント」保証に対応）。
  *
  * <p>テスト命名規約（ADR-018）: {@code methodName_condition_expectedBehavior}
  */
@@ -39,13 +38,22 @@ class UserControllerTest extends BaseControllerTest {
       UUID.fromString("71000000-0000-0000-0000-000000000002");
   private static final UUID APPROVER_USER_ID =
       UUID.fromString("71000000-0000-0000-0000-000000000003");
-  /** @WithMockAdmin（sub="test-admin-sub"）用の認証ユーザー */
+
+  /**
+   * @WithMockAdmin（sub="test-admin-sub"）用の認証ユーザー
+   */
   private static final UUID ADMIN_AUTH_USER_ID =
       UUID.fromString("71000000-0000-0000-0000-000000000004");
-  /** @WithMockMember（sub="test-member-sub"）用の認証ユーザー（MEMBER_USER_ID と兼用） */
+
+  /**
+   * @WithMockMember（sub="test-member-sub"）用の認証ユーザー（MEMBER_USER_ID と兼用）
+   */
   private static final UUID MEMBER_AUTH_USER_ID =
       UUID.fromString("71000000-0000-0000-0000-000000000005");
-  /** @WithMockApprover（sub="test-approver-sub"）用の認証ユーザー（APPROVER_USER_ID と兼用） */
+
+  /**
+   * @WithMockApprover（sub="test-approver-sub"）用の認証ユーザー（APPROVER_USER_ID と兼用）
+   */
   private static final UUID APPROVER_AUTH_USER_ID =
       UUID.fromString("71000000-0000-0000-0000-000000000006");
 
@@ -56,8 +64,8 @@ class UserControllerTest extends BaseControllerTest {
   /**
    * 各テスト前に Department → User×5 の順でシードデータを挿入する（FK 制約順）。
    *
-   * <p>一覧確認用ユーザー（MEMBER_USER_ID, APPROVER_USER_ID）と
-   * RegisteredUserInterceptor 照合用ユーザー（ADMIN/MEMBER/APPROVER AUTH）を分けて登録する。
+   * <p>一覧確認用ユーザー（MEMBER_USER_ID, APPROVER_USER_ID）と RegisteredUserInterceptor
+   * 照合用ユーザー（ADMIN/MEMBER/APPROVER AUTH）を分けて登録する。
    */
   @BeforeEach
   void insertSeedData() {

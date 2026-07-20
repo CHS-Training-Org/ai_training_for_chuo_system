@@ -14,6 +14,17 @@ jobs:
     defaults:
       run:
         working-directory: frontend
+    env:
+      # frontend/pnpm-workspace.yaml の storeDir: /pnpm-store は devcontainer 専用設計
+      # （named volume を /pnpm-store にマウントする前提。.devcontainer/docker-compose.yml 参照）。
+      # GitHub Actions の ubuntu-latest ランナーには /pnpm-store が存在せず、非 root ユーザーは
+      # ルート直下への mkdir 権限を持たないため EACCES で失敗する。pnpm-workspace.yaml の設定は
+      # 環境変数 PNPM_CONFIG_STORE_DIR で上書きできる（.npmrc では上書きできない・CLI引数は
+      # コマンドごとに指定が必要なためジョブ全体に効く環境変数を使う）。devcontainer側の設定は
+      # そのまま維持する。
+      # 注: ジョブレベルの env では runner コンテキストは参照できないため github.workspace を使う
+      # （checkout先の兄弟ディレクトリに置き、ワークスペース内を汚さない）。
+      PNPM_CONFIG_STORE_DIR: ${{ github.workspace }}/../pnpm-store
 
     steps:
       - uses: actions/checkout@v4

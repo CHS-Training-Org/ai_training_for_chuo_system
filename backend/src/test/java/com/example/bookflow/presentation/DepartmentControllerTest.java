@@ -29,6 +29,7 @@ class DepartmentControllerTest extends BaseControllerTest {
   // ---- テスト用固定 ID（70xxxxxx プレフィックスで他テストと分離）----
   private static final UUID ROOT_DEPT_ID = UUID.fromString("70000000-0000-0000-0000-000000000001");
   private static final UUID CHILD_DEPT_ID = UUID.fromString("70000000-0000-0000-0000-000000000002");
+
   /** RegisteredUserInterceptor が参照する認証済みユーザー（@WithMockMember の sub に一致） */
   private static final UUID AUTH_USER_ID = UUID.fromString("70000000-0000-0000-0000-000000000010");
 
