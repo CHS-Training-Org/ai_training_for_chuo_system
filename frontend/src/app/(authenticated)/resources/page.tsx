@@ -83,7 +83,9 @@ export default async function ResourcesPage({
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base">{resource.name}</CardTitle>
                     <div className="flex shrink-0 gap-1">
-                      <Badge variant="secondary">{RESOURCE_CATEGORY_LABELS[resource.category]}</Badge>
+                      <Badge variant="secondary">
+                        {RESOURCE_CATEGORY_LABELS[resource.category]}
+                      </Badge>
                       {!resource.isActive && (
                         <Badge variant="outline" className="text-muted-foreground">
                           無効

@@ -14,11 +14,7 @@ import { ReservationEditForm } from "./ReservationEditForm";
  *
  * リソースの変更は不可（api-spec.md PUT /api/reservations/{id} L654 準拠）。
  */
-export default async function ReservationEditPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ReservationEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [reservation, profile] = await Promise.all([
     getReservationAction(id),
