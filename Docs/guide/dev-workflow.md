@@ -157,6 +157,8 @@ CI（`CI Frontend` / `CI Backend`）は機械的な品質ゲートです。
 
 [review-criteria.md §評価基準](./review-criteria.md#completion-criteria) のチェックリストで自分の PR をセルフレビューし、満たしていることを確認したら自分でマージします。メンターレビューは必須ではありません。メンターは任意のタイミングで Issue・PR にコメントすることがあります。
 
+PR に `@claude pr-review` とコメントすると、AI 一次レビューが得られます（[review-criteria.md §AI 一次レビューとの対応](./review-criteria.md#ai-review)、[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)）。これは任意の参考コメントであり、マージをブロックしません。
+
 !!! note "メンター・リポジトリ管理者向け"
     GitHub の Settings → Branches でブランチ保護ルールを設定する場合、必須 status check には `CI Frontend / ci`、`CI Backend / ci` を指定してください。承認レビューは必須にしません（「Require approvals」はオフ）。  
     本リポジトリでは CODEOWNERS は使用しません。

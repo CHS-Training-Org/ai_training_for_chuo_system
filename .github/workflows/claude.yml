@@ -12,11 +12,12 @@ on:
 
 jobs:
   claude:
-    # @claude を含むイベントのみ起動（無駄な実行・課金を防ぐ）
+    # @claude を含むイベントのみ起動（無駄な実行・課金を防ぐ）。「@claude pr-review」は claude-review ジョブの専管とし、二重起動を避ける
+    # （Issue コメントでは pull_request が null になるため、PR コメントのときだけ除外する。plain Issue に「@claude pr-review」と書かれた場合はこの claude ジョブが処理する）
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && !(github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude pr-review'))) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude pr-review')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && !contains(github.event.review.body, '@claude pr-review')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
     permissions:
@@ -36,3 +37,52 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+  claude-review:
+    # 「@claude pr-review」というPRコメントでのみ起動するAI一次レビュー専用ジョブ（ADR-024）。非ブロッキングの参考コメントで、コード変更・コミットは行わない
+    if: |
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude pr-review')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude pr-review')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude pr-review'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # コードの変更・コミットは行わない
+      pull-requests: write # レビューコメント投稿のみ
+      id-token: write # OIDC（必須権限）
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            この PR を一次レビューしてください。BookFlow は AI-DLC エンジンを通してエンハンス課題を進め、
+            仕様・テスト・ドキュメント・コードを同一の実行でまとめて生成し、同一 PR でコミットする運用です。
+            一般的なバグ・スタイル検出ではなく、以下の3観点でレビューし、`gh pr comment` で
+            日本語のレビューコメントを1件投稿してください（`Docs/guide/review-criteria.md` §レビュー観点表 参照）。
+
+            1. 要求整合性チェック：PR本文の「対応 Issue / ビジネス要求シート」欄からリンクされている
+               `Docs/spec/enhancements/<課題>.md` の要件表・受入条件と、PR の差分を比較してください。
+               要件 ID ごとに対応する変更があるか、受入条件が実際の差分内容で裏付けられるかを確認してください。
+               シートがリンクされていない場合は「シート未リンクのため整合性チェックを省略」と明記し、
+               憶測で整合していると判定しないでください。
+
+            2. 実装と非機能部分の整合性チェック：コード変更に対応するテストコードの変更（新規・修正）が
+               存在し、新しい振る舞いを実際に検証しているかを確認してください。既存テストの微修正だけで
+               新規ロジックが未検証になっていないか確認してください。コード変更が仕様（`Docs/spec/`）や
+               ADR の前提を変えている場合、対応するドキュメント更新が同一 PR に含まれているかも確認してください。
+
+            3. 理解度チェックのための質問：PR の変更内容について、学習者が自分で説明できるはずの
+               設計判断・境界値・エラーハンドリングを2〜4問、質問として投稿してください。
+
+            このレビューはセルフレビューを補助する参考コメントであり、マージをブロックするものでは
+            ありません。回答を強制する書き方にしないでください。コードの変更・コミットは行わないでください。
+          claude_args: |
+            --model claude-opus-4-8
+            --effort high
+            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)"
