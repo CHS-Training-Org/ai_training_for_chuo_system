@@ -12,11 +12,12 @@ on:
 
 jobs:
   claude:
-    # @claude を含むイベントのみ起動（無駄な実行・課金を防ぐ）。「@claude review」は claude-review ジョブの専管とし、二重起動を避ける
+    # @claude を含むイベントのみ起動（無駄な実行・課金を防ぐ）。「@claude pr-review」は claude-review ジョブの専管とし、二重起動を避ける
+    # （Issue コメントでは pull_request が null になるため、PR コメントのときだけ除外する。plain Issue に「@claude pr-review」と書かれた場合はこの claude ジョブが処理する）
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude review')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude review')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && !contains(github.event.review.body, '@claude review')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && !(github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude pr-review'))) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude pr-review')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && !contains(github.event.review.body, '@claude pr-review')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
     permissions:
@@ -38,15 +39,16 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
   claude-review:
-    # 「@claude review」というPRコメントでのみ起動するAI一次レビュー専用ジョブ（ADR-024）。非ブロッキングの参考コメントで、コード変更・コミットは行わない
+    # 「@claude pr-review」というPRコメントでのみ起動するAI一次レビュー専用ジョブ（ADR-024）。非ブロッキングの参考コメントで、コード変更・コミットは行わない
     if: |
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude review')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude review')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude review'))
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude pr-review')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude pr-review')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude pr-review'))
     runs-on: ubuntu-latest
     permissions:
       contents: read # コードの変更・コミットは行わない
       pull-requests: write # レビューコメント投稿のみ
+      id-token: write # OIDC（必須権限）
 
     steps:
       - uses: actions/checkout@v4
@@ -81,4 +83,6 @@ jobs:
             このレビューはセルフレビューを補助する参考コメントであり、マージをブロックするものでは
             ありません。回答を強制する書き方にしないでください。コードの変更・コミットは行わないでください。
           claude_args: |
+            --model claude-opus-4-8
+            --effort high
             --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)"

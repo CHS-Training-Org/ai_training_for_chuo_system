@@ -35,7 +35,7 @@ references:
 | 課題 Issue の起票・カタログの棚卸し | ○ | ◎ | — |
 | 学習者の質問・詰まりへのサポート | — | ◎ | — |
 | PR・Issue への任意コメント（ブロッキングではない） | — | ○ | — |
-| `@claude review` によるAI一次レビューの起動（任意、非ブロッキング） | — | — | ◎ |
+| `@claude pr-review` によるAI一次レビューの起動（任意、非ブロッキング） | — | — | ◎ |
 | Workflow Planning でのセルフ承認・PR のセルフレビュー＆マージ | — | — | ◎ |
 | feature ブランチでの開発・PR 作成 | — | — | ◎ |
 | main ブランチの保守 | ◎ | ○ | — |
@@ -91,7 +91,7 @@ PR のマージはメンターの承認を必要としません。学習者は [
 学習者は：
 - セルフレビューが済んだらマージしてよく、メンターの反応を待つ必要はありません。
 - 判断に迷った点、相談したい設計上のトレードオフがあれば、PR テンプレートの「任意メモ（メンターへ・あれば）」に記入するか、Issue コメントで質問してください。
-- PR に `@claude review` とコメントすると、AI 一次レビューが得られます（[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)）。これは任意の参考コメントであり、マージの条件ではありません。
+- PR に `@claude pr-review` とコメントすると、AI 一次レビューが得られます（[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)）。これは任意の参考コメントであり、マージの条件ではありません。
 
 ### セルフレビュー・マージの手順
 
@@ -106,7 +106,7 @@ PR のマージはメンターの承認を必要としません。学習者は [
 
 ## AI 一次レビュー { #ai-review }
 
-検討 A（AI 一次レビュー）は [ADR-024](../decision/ADR-024-ai-first-review-adoption.md) で決着済みです。学習者が PR に `@claude review` とコメントすると、`.github/workflows/claude.yml` の `claude-review` ジョブが起動し、[review-criteria.md §レビュー観点表](./review-criteria.md#review-rubric) に対応する3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）でレビューコメントを1件投稿します。
+検討 A（AI 一次レビュー）は [ADR-024](../decision/ADR-024-ai-first-review-adoption.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、`.github/workflows/claude.yml` の `claude-review` ジョブが起動し、[review-criteria.md §レビュー観点表](./review-criteria.md#review-rubric) に対応する3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）でレビューコメントを1件投稿します。
 
 - PR 作成時の自動起動、レビュアー指定による起動は採用していません。コスト面（Actions 実行）と、GitHub の仕様上「レビュアーに Claude を指定する」操作自体が実現できないためです。
 - レビューは PR コメントとして投稿されるのみで、必須 status check には含みません。マージの条件にはなりません（[§レビュー・応答方針](#response-policy)）。
