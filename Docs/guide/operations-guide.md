@@ -106,7 +106,7 @@ PR のマージはメンターの承認を必要としません。学習者は [
 
 ## AI 一次レビュー { #ai-review }
 
-検討 A（AI 一次レビュー）は [ADR-024](../decision/ADR-024-ai-first-review-adoption.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、`.github/workflows/claude.yml` の `claude-review` ジョブが起動し、[review-criteria.md §レビュー観点表](./review-criteria.md#review-rubric) に対応する3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）でレビューコメントを1件投稿します。
+検討 A（AI 一次レビュー）は [ADR-024](../decision/ADR-024-ai-first-review-adoption.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、`.github/workflows/claude.yml` の `claude-review` ジョブが起動し、`.github/workflows/references/pr-review-rubric.md` に定義された3観点（要求整合性・実装と非機能部分の整合性・理解度チェック、[review-criteria.md §レビュー観点表](./review-criteria.md#review-rubric) にも対応表を掲載）でレビューコメントを1件投稿します。
 
 - PR 作成時の自動起動、レビュアー指定による起動は採用していません。コスト面（Actions 実行）と、GitHub の仕様上「レビュアーに Claude を指定する」操作自体が実現できないためです。
 - レビューは PR コメントとして投稿されるのみで、必須 status check には含みません。マージの条件にはなりません（[§レビュー・応答方針](#response-policy)）。
