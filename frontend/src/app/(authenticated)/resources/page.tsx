@@ -10,6 +10,7 @@ import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 interface SearchParams {
   category?: string;
+  keyword?: string;
   from?: string;
   to?: string;
   page?: string;
@@ -32,6 +33,7 @@ export default async function ResourcesPage({
 
   const resources = await listResourcesAction({
     category: params.category,
+    keyword: params.keyword,
     from: params.from,
     to: params.to,
     page: params.page ? Number(params.page) : 0,
@@ -56,6 +58,7 @@ export default async function ResourcesPage({
       {/* フィルタフォーム */}
       <ResourceFilterForm
         defaultCategory={params.category}
+        defaultKeyword={params.keyword}
         defaultFrom={params.from}
         defaultTo={params.to}
       />

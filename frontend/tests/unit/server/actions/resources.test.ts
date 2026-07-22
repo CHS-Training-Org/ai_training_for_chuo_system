@@ -52,6 +52,12 @@ describe("listResourcesAction", () => {
     expect(result.content).toHaveLength(1);
   });
 
+  it("正常時: keywordパラメータを渡せる", async () => {
+    // MSW がクエリパラメータを受け取っても同じレスポンスを返す（絞り込みロジックの検証はBE側）
+    const result = await listResourcesAction({ keyword: "会議室" });
+    expect(result.content).toHaveLength(1);
+  });
+
   it("401 時: ApiClientError をスローする", async () => {
     server.use(
       http.get("/api/backend/resources", () => {

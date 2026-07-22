@@ -37,6 +37,8 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000010");
   private static final UUID INACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000011");
+  private static final UUID KEYWORD_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000012");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -92,6 +94,19 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
 
+    // keyword検索テスト用：名称に「会議室」を含まず、descriptionにのみ一致語を含む
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        KEYWORD_RESOURCE_ID,
+        "スタジオB",
+        "EQUIPMENT",
+        false,
+        true,
+        "Projector included for presentations",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(
         "INSERT INTO reservations"
@@ -113,6 +128,7 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -169,6 +185,68 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsMatchingResourceOnly() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議室").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingDescriptionCaseInsensitive_returnsMatchingResource()
+      throws Exception {
+    // description は "Projector included..."。小文字 "projector" で大文字小文字を区別せず一致する（RES-02）
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "projector").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordAndCategory_appliesAndCondition() throws Exception {
+    // "第1会議室" はkeywordに一致するがcategoryはROOMのため、EQUIPMENTでは0件（RES-04: AND条件）
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議室")
+                .param("category", "EQUIPMENT")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withEmptyKeyword_returnsAllResourcesAsIfUnspecified() throws Exception {
+    // BR-04: 空文字はキーワード条件を解除する（既存動作と同一）
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withNonMatchingKeyword_returnsEmptyContent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "存在しないキーワードxyz")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.content").isEmpty());
   }
 
   @Test
