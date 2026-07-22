@@ -60,8 +60,12 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          show_full_output: true # TODO: コメント未投稿の原因診断用。確認後に削除する
           prompt: |
+            レビュー対象の PR 番号は #${{ github.event.issue.number || github.event.pull_request.number }} です。
+            現在のチェックアウトは main のため、`gh pr view` / `gh pr diff` / `gh pr comment` は必ずこの番号を
+            指定して実行してください（番号なしでは対象 PR を特定できません。git branch や gh pr list による
+            探索、env の参照は不要です）。
+
             この PR を一次レビューしてください。BookFlow は AI-DLC エンジンを通してエンハンス課題を進め、
             仕様・テスト・ドキュメント・コードを同一の実行でまとめて生成し、同一 PR でコミットする運用です。
             一般的なバグ・スタイル検出ではなく、以下の3観点でレビューし、`gh pr comment` で
