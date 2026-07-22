@@ -60,6 +60,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: true # TODO: レビュー機構の精査用。確認後に削除する
           prompt: |
             レビュー対象の PR 番号は #${{ github.event.issue.number || github.event.pull_request.number }} です。
             現在のチェックアウトは main のため、`gh pr view` / `gh pr diff` / `gh pr comment` は必ずこの番号を
