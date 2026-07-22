@@ -44,6 +44,8 @@ Accepted（2026-07-20）
 
 実装は`.github/workflows/claude.yml`に既存の`claude`ジョブ（汎用`@claude`メンション）とは別の`claude-review`ジョブを追加する形で行う。`claude-review`ジョブの権限は`contents: read`・`pull-requests: write`のみとし、コード変更・コミットを行わせない。
 
+観点の本文は`.github/workflows/references/pr-review-rubric.md`に切り出し、`prompt`にはこのファイルを読んで従うよう指示するのみとする。観点の改訂をワークフローYAMLの変更から分離するためである。このファイルは`main`から読み込まれる（`actions/checkout`の仕様上、レビュー対象PRの差分ではなく`main`がチェックアウトされる）ため、レビュー対象のPR側でこの内容を書き換えて判定を誘導することはできない。`Docs/`配下ではなく`.github/`配下に置くのは、Zensicalのドキュメントサイト（`docs_dir = "Docs"`）のビルド対象に含めず、学習者の目に意図せず触れないようにするためである。
+
 ## Consequences
 
 **ポジティブ**：
