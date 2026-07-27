@@ -6,7 +6,7 @@ tags:
   - guide
   - ai-tools
   - claude-code
-timestamp: 2026-07-07
+timestamp: 2026-07-27
 audience: 学習者（主に若手）
 references:
   - Docs/guide/coding-conventions.md
@@ -233,7 +233,7 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 !!! danger "AI 生成コードを無検証でコミットしない"
     生成されたコードは必ず自分で読み、動作確認（テスト実行、画面確認）をしてからコミットしてください。  
     理解できないコードをそのままコミットするわけにはいきません。  
-    PR に `@claude pr-review` とコメントすると、この確認を助ける理解度チェックの質問が得られます（[dev-workflow.md §8](./dev-workflow.md#flow)、[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)）。
+    PR に `@claude pr-review` とコメントすると、この確認を助ける理解度チェックの質問が得られます。質問に答えられるかはタスク完了の判定にも含まれます（[dev-workflow.md §8](./dev-workflow.md#flow)、[ADR-025](../decision/ADR-025-ai-review-completion-gate.md)）。
 
 ### 責任とPRでの明記
 

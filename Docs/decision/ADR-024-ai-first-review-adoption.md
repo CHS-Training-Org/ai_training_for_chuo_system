@@ -7,7 +7,7 @@ tags:
   - review
   - ai
   - ci
-timestamp: 2026-07-20
+timestamp: 2026-07-27
 ---
 
 # ADR-024 — AI一次レビュー（検討A）の採用
@@ -42,7 +42,12 @@ Accepted（2026-07-20）
 - **静的解析（GHAS/CodeQL）は不採用**とする。学習用スコープ外と判断し、検討A案2が前提としていたGHAS/CodeQL導入は行わない。両ガイドの前方互換メモにあるGHAS・CodeQLの記載は削除する。
 - **非ブロッキング**：レビューはPRコメントとして投稿するのみで、必須status checkには加えない。ADR-023のセルフ完結運用を維持する。
 
-実装は`.github/workflows/claude.yml`に既存の`claude`ジョブ（汎用`@claude`メンション）とは別の`claude-review`ジョブを追加する形で行う。`claude-review`ジョブの権限は`contents: read`・`pull-requests: write`のみとし、コード変更・コミットを行わせない。
+!!! note "この項目は ADR-025 で改訂済み"
+    上記「非ブロッキング」の項目のうち、AIレビューを参考コメントと位置づける部分は [ADR-025](./ADR-025-ai-review-completion-gate.md) で改訂しました。現在は3観点すべてがOKかつCI greenのとき、実施者のタスクを完了とする判定機構として運用しています（required status checkを導入しない点は変わりません）。本ADRの他の決定（トリガー方式・3観点の構成・GHAS/CodeQL不採用）はそのまま有効です。
+
+実装は`.github/workflows/claude.yml`に既存の`claude`ジョブ（汎用`@claude`メンション）とは別の`claude-review`ジョブを追加する形で行う。`claude-review`ジョブには書き込み権限を`pull-requests: write`（コメント投稿）に限り、`contents: read`としてコード変更・コミットを行わせない（OIDC認証に必要な`id-token: write`と、CI結果を参照するための`actions: read`は後に追加した。後者は[ADR-025](./ADR-025-ai-review-completion-gate.md)の決定に伴うもの）。
+
+観点の本文は`.github/workflows/references/pr-review-rubric/`配下に、前提と判定の枠組み（`00-context.md`）・観点ごと（`01`〜`03`）・出力の様式（`04-output-format.md`）のファイルに分けて切り出し、`prompt`にはこれらのファイルを読んで従うよう指示するのみとする。観点の改訂をワークフローYAMLの変更から分離するためであり、観点ごとにファイルを分けるのは、個別の観点を独立した判定単位として扱うためである（判定単位としての運用は[ADR-025](./ADR-025-ai-review-completion-gate.md)で決めた）。これらのファイルは`main`から読み込まれる（`actions/checkout`の仕様上、レビュー対象PRの差分ではなく`main`がチェックアウトされる）ため、レビュー対象のPR側でこの内容を書き換えて判定を誘導することはできない。`Docs/`配下ではなく`.github/`配下に置くのは、Zensicalのドキュメントサイト（`docs_dir = "Docs"`）のビルド対象に含めず、学習者の目に意図せず触れないようにするためである。
 
 ## Consequences
 

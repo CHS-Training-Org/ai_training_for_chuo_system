@@ -6,7 +6,7 @@ tags:
   - guide
   - operations
   - management
-timestamp: 2026-06-17
+timestamp: 2026-07-27
 audience: メンター・リポジトリ管理者
 references:
   - Docs/spec/overview.md
@@ -35,7 +35,7 @@ references:
 | 課題 Issue の起票・カタログの棚卸し | ○ | ◎ | — |
 | 学習者の質問・詰まりへのサポート | — | ◎ | — |
 | PR・Issue への任意コメント（ブロッキングではない） | — | ○ | — |
-| `@claude pr-review` によるAI一次レビューの起動（任意、非ブロッキング） | — | — | ◎ |
+| `@claude pr-review` によるAIレビューの起動（タスク完了判定） | — | — | ◎ |
 | Workflow Planning でのセルフ承認・PR のセルフレビュー＆マージ | — | — | ◎ |
 | feature ブランチでの開発・PR 作成 | — | — | ◎ |
 | main ブランチの保守 | ◎ | ○ | — |
@@ -91,7 +91,7 @@ PR のマージはメンターの承認を必要としません。学習者は [
 学習者は：
 - セルフレビューが済んだらマージしてよく、メンターの反応を待つ必要はありません。
 - 判断に迷った点、相談したい設計上のトレードオフがあれば、PR テンプレートの「任意メモ（メンターへ・あれば）」に記入するか、Issue コメントで質問してください。
-- PR に `@claude pr-review` とコメントすると、AI 一次レビューが得られます（[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)）。これは任意の参考コメントであり、マージの条件ではありません。
+- PR に `@claude pr-review` とコメントすると、AI レビューが得られます（[§AI レビュー](#ai-review)）。3 観点すべてが OK になることがタスク完了の条件です。
 
 ### セルフレビュー・マージの手順
 
@@ -104,12 +104,16 @@ PR のマージはメンターの承認を必要としません。学習者は [
 
 ---
 
-## AI 一次レビュー { #ai-review }
+## AI レビュー { #ai-review }
 
-検討 A（AI 一次レビュー）は [ADR-024](../decision/ADR-024-ai-first-review-adoption.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、`.github/workflows/claude.yml` の `claude-review` ジョブが起動し、[review-criteria.md §レビュー観点表](./review-criteria.md#review-rubric) に対応する3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）でレビューコメントを1件投稿します。
+AI レビューの採用は [ADR-024](../decision/ADR-024-ai-first-review-adoption.md)、タスク完了判定としての位置づけは [ADR-025](../decision/ADR-025-ai-review-completion-gate.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、`.github/workflows/claude.yml` の `claude-review` ジョブが起動し、`.github/workflows/references/pr-review-rubric/` に定義された3観点（要求整合性・実装と非機能部分の整合性・理解度チェック、[review-criteria.md §レビュー観点表](./review-criteria.md#review-rubric) にも対応表を掲載）で判定します。
 
+- 出力は観点ごとに1件、最後にサマリを1件の計4件のコメントです。サマリに判定表と総合判定が載ります。
+- 各観点の判定は `OK`・`NG`・`判定不能` の3値です。ビジネス要求シートが未リンクの場合や PR 本文の該当欄が未記入の場合は、`OK` ではなく `判定不能` になります。
+- 3観点すべてが `OK` で、かつ CI green のとき総合判定が「完了」になります。これがタスク完了の条件です。
+- 観点3（理解度チェック）は2ラウンド方式です。1回目は質問の提示にとどまり `判定不能（未回答）` となります。学習者が PR コメントで回答して再度 `@claude pr-review` すると判定されます。
+- 総合判定はタスク完了の条件ですが、必須 status check には含めません。マージは学習者自身が行います（[§レビュー・応答方針](#response-policy)、[ADR-023](../decision/ADR-023-mentor-gate-removal.md)）。
 - PR 作成時の自動起動、レビュアー指定による起動は採用していません。コスト面（Actions 実行）と、GitHub の仕様上「レビュアーに Claude を指定する」操作自体が実現できないためです。
-- レビューは PR コメントとして投稿されるのみで、必須 status check には含みません。マージの条件にはなりません（[§レビュー・応答方針](#response-policy)）。
 - 静的解析（GHAS・CodeQL）は学習用スコープ外のため採用していません。
 
 ---
@@ -175,4 +179,5 @@ docker compose exec docs uv run zensical build
 - ラベル体系・課題起票手順：[issue-registration.md](./issue-registration.md)
 - トラブルシューティング：[troubleshooting.md](./troubleshooting.md)
 - 学習効果測定（満足度アンケート）：[learning-effectiveness.md](./learning-effectiveness.md)
-- AI 一次レビュー採用の意思決定：[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)
+- AI レビュー採用の意思決定：[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)
+- AI レビューをタスク完了判定に格上げした意思決定：[ADR-025](../decision/ADR-025-ai-review-completion-gate.md)

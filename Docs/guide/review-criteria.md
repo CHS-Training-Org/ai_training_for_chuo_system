@@ -6,7 +6,7 @@ tags:
   - guide
   - review
   - criteria
-timestamp: 2026-07-06
+timestamp: 2026-07-27
 audience: 学習者・メンター
 references:
   - Docs/guide/dev-workflow.md
@@ -31,6 +31,7 @@ PR を提出する前に、以下の項目をすべて自分で確認してく�
 - [ ] **セルフレビュー済み**：PR 作成者が [coding-conventions.md §コミット・PR 規約](./coding-conventions.md#commit-pr) のセルフレビューを実施している。
 - [ ] **Spec-first 遵守**：仕様変更が伴う場合、[spec/index.md §レビュー観点（メンター向け）](../spec/index.md#review-mentor) の観点で仕様差分を先にレビューしている。
 - [ ] **PR テンプレート記入**：[`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md) の必須項目（対応 Issue リンク・Spec-first チェック・AI 活用箇所）がすべて記入されている。
+- [ ] **AI レビューの総合判定が「完了」**：`@claude pr-review` によるレビューで3観点すべてが `OK` になっている（[§AI レビューとの対応](#ai-review)）。観点3は質問への回答が必要なため、少なくとも2回のやり取りを要します。
 
 ---
 
@@ -53,17 +54,21 @@ PR を提出する前に、以下の項目をすべて自分で確認してく�
 
 ---
 
-## AI 一次レビューとの対応 { #ai-review }
+## AI レビューとの対応 { #ai-review }
 
-検討 A（AI 一次レビュー）は [ADR-024](../decision/ADR-024-ai-first-review-adoption.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、以下の3観点でレビューコメントが1件投稿されます（実装は `.github/workflows/claude.yml` の `claude-review` ジョブ、運用は [operations-guide.md §AI 一次レビュー](./operations-guide.md#ai-review) を参照）。
+AI レビューの採用は [ADR-024](../decision/ADR-024-ai-first-review-adoption.md)、タスク完了判定としての位置づけは [ADR-025](../decision/ADR-025-ai-review-completion-gate.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、以下の3観点で判定されます（実装は `.github/workflows/claude.yml` の `claude-review` ジョブ、判定基準の定義本体は `.github/workflows/references/pr-review-rubric/`、運用は [operations-guide.md §AI レビュー](./operations-guide.md#ai-review) を参照）。
 
 | AI レビューの観点 | 対応する評価基準・観点 |
 |---|---|
-| 要求整合性チェック | §評価基準の「受入条件」「Spec-first 遵守」、§レビュー観点表の「動作確認」 |
-| 実装と非機能部分の整合性チェック | §レビュー観点表の「テスト妥当性」 |
-| 理解度チェックのための質問 | §レビュー観点表の「AI 活用の適切さ」 |
+| 観点1 要求整合性 | §評価基準の「受入条件」「Spec-first 遵守」、§レビュー観点表の「動作確認」 |
+| 観点2 実装と非機能部分の整合性 | §レビュー観点表の「テスト妥当性」 |
+| 観点3 理解度チェック | §レビュー観点表の「AI 活用の適切さ」 |
 
-このAIレビューは学習者のセルフレビューを補助する参考コメントであり、マージをブロックするものではありません。静的解析（GHAS・CodeQL）は学習用スコープ外のため採用していません。
+出力は観点ごとに1件、最後にサマリを1件の計4件のコメントです。各観点の判定は `OK`・`NG`・`判定不能` の3値で、ビジネス要求シートが未リンクの場合や PR 本文の該当欄が未記入の場合は `判定不能` になります。3観点すべてが `OK` で、かつ CI green のとき総合判定が「完了」になり、これがタスク完了の条件です。
+
+観点3は2ラウンド方式です。1回目のレビューは質問の提示にとどまり `判定不能（未回答）` となるため、質問に PR コメントで回答してから再度 `@claude pr-review` とコメントしてください。
+
+総合判定はタスク完了の条件ですが、必須 status check には含めません。マージは学習者自身が行います。静的解析（GHAS・CodeQL）は学習用スコープ外のため採用していません。
 
 ---
 
@@ -75,4 +80,5 @@ PR を提出する前に、以下の項目をすべて自分で確認してく�
 - AI 利用ポリシー：[ai-tools-guide.md §AI 利用ポリシー](./ai-tools-guide.md#prohibited)
 - AI ガードレール：[.claude/rules/aidlc-guardrails.md](../../.claude/rules/aidlc-guardrails.md)
 - 運用ガイド（役割分担・サポートフロー・応答方針）：[operations-guide.md](./operations-guide.md)
-- AI 一次レビュー採用の意思決定：[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)
+- AI レビュー採用の意思決定：[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)
+- AI レビューをタスク完了判定に格上げした意思決定：[ADR-025](../decision/ADR-025-ai-review-completion-gate.md)

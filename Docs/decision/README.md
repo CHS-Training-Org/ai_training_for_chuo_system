@@ -6,7 +6,7 @@ tags:
   - adr
   - decision
   - guide
-timestamp: 2026-06-18
+timestamp: 2026-07-27
 audience: メンター・リポジトリ管理者・学習者
 references:
   - Docs/spec/overview.md
@@ -146,6 +146,7 @@ Accepted（YYYY-MM-DD）
 | [ADR-021](./ADR-021-okf-frontmatter-adoption.md) | OKF 準拠 frontmatter 部分採用 | Accepted |
 | [ADR-023](./ADR-023-mentor-gate-removal.md) | 運用プロセス：承認ゲート廃止・セルフ完結運用への移行 | Accepted |
 | [ADR-024](./ADR-024-ai-first-review-adoption.md) | AI一次レビュー（検討A）の採用 | Accepted |
+| [ADR-025](./ADR-025-ai-review-completion-gate.md) | AIレビューをタスク完了判定に格上げ | Accepted |
 
 ### 開発環境（ADR-022〜）
 

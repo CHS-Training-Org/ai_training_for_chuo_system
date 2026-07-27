@@ -39,7 +39,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
   claude-review:
-    # 「@claude pr-review」というPRコメントでのみ起動するAI一次レビュー専用ジョブ（ADR-024）。非ブロッキングの参考コメントで、コード変更・コミットは行わない
+    # 「@claude pr-review」というPRコメントでのみ起動するAIレビュー専用ジョブ（ADR-024・ADR-025）。3観点すべてOKでタスク完了とする判定機構だが、required status check ではなくコード変更・コミットも行わない
     if: |
       (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude pr-review')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude pr-review')) ||
@@ -49,6 +49,7 @@ jobs:
       contents: read # コードの変更・コミットは行わない
       pull-requests: write # レビューコメント投稿のみ
       id-token: write # OIDC（必須権限）
+      actions: read # CI 結果の参照（前提条件 CI green の判定）
 
     steps:
       - uses: actions/checkout@v4
@@ -63,32 +64,23 @@ jobs:
           show_full_output: true # TODO: レビュー機構の精査用。確認後に削除する
           prompt: |
             レビュー対象の PR 番号は #${{ github.event.issue.number || github.event.pull_request.number }} です。
-            現在のチェックアウトは main のため、`gh pr view` / `gh pr diff` / `gh pr comment` は必ずこの番号を
-            指定して実行してください（番号なしでは対象 PR を特定できません。git branch や gh pr list による
-            探索、env の参照は不要です）。
+            現在のチェックアウトは main のため、`gh pr view` / `gh pr diff` / `gh pr checks` / `gh pr comment`
+            は必ずこの番号を指定して実行してください（番号なしでは対象 PR を特定できません。git branch や
+            gh pr list による探索、env の参照は不要です）。
 
-            この PR を一次レビューしてください。BookFlow は AI-DLC エンジンを通してエンハンス課題を進め、
-            仕様・テスト・ドキュメント・コードを同一の実行でまとめて生成し、同一 PR でコミットする運用です。
-            一般的なバグ・スタイル検出ではなく、以下の3観点でレビューし、`gh pr comment` で
-            日本語のレビューコメントを1件投稿してください（`Docs/guide/review-criteria.md` §レビュー観点表 参照）。
+            この PR をレビューしてください。前提・判定の枠組み・観点・出力の様式は
+            `.github/workflows/references/pr-review-rubric/` 配下の次の5ファイルに定義されているので、
+            まず Read でこれら全てを読み、そこに書かれている内容に従ってレビューしてください。
 
-            1. 要求整合性チェック：PR本文の「対応 Issue / ビジネス要求シート」欄からリンクされている
-               `Docs/spec/enhancements/<課題>.md` の要件表・受入条件と、PR の差分を比較してください。
-               要件 ID ごとに対応する変更があるか、受入条件が実際の差分内容で裏付けられるかを確認してください。
-               シートがリンクされていない場合は「シート未リンクのため整合性チェックを省略」と明記し、
-               憶測で整合していると判定しないでください。
+            - 00-context.md（前提・判定値の定義・使える情報源・ラウンドの判定）
+            - 01-requirement-consistency.md（観点1: 要求整合性チェック）
+            - 02-implementation-consistency.md（観点2: 実装と非機能部分の整合性チェック）
+            - 03-comprehension-check.md（観点3: 理解度チェック）
+            - 04-output-format.md（出力の様式・投稿順序・サマリの様式）
 
-            2. 実装と非機能部分の整合性チェック：コード変更に対応するテストコードの変更（新規・修正）が
-               存在し、新しい振る舞いを実際に検証しているかを確認してください。既存テストの微修正だけで
-               新規ロジックが未検証になっていないか確認してください。コード変更が仕様（`Docs/spec/`）や
-               ADR の前提を変えている場合、対応するドキュメント更新が同一 PR に含まれているかも確認してください。
-
-            3. 理解度チェックのための質問：PR の変更内容について、学習者が自分で説明できるはずの
-               設計判断・境界値・エラーハンドリングを2〜4問、質問として投稿してください。
-
-            このレビューはセルフレビューを補助する参考コメントであり、マージをブロックするものでは
-            ありません。回答を強制する書き方にしないでください。コードの変更・コミットは行わないでください。
+            観点ごとに1件、最後にサマリを1件、`gh pr comment` を計4回呼んで投稿します。
+            1件のコメントにまとめないでください。
           claude_args: |
             --model claude-opus-4-8
             --effort high
-            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)"
+            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*),Bash(gh pr comment:*)"
