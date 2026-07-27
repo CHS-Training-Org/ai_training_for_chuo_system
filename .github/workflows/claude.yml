@@ -39,7 +39,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
   claude-review:
-    # 「@claude pr-review」というPRコメントでのみ起動するAI一次レビュー専用ジョブ（ADR-024）。非ブロッキングの参考コメントで、コード変更・コミットは行わない
+    # 「@claude pr-review」というPRコメントでのみ起動するAIレビュー専用ジョブ（ADR-024・ADR-025）。3観点すべてOKでタスク完了とする判定機構だが、required status check ではなくコード変更・コミットも行わない
     if: |
       (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude pr-review')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude pr-review')) ||
@@ -49,6 +49,7 @@ jobs:
       contents: read # コードの変更・コミットは行わない
       pull-requests: write # レビューコメント投稿のみ
       id-token: write # OIDC（必須権限）
+      actions: read # CI 結果の参照（前提条件 CI green の判定）
 
     steps:
       - uses: actions/checkout@v4
@@ -60,16 +61,26 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: true # TODO: レビュー機構の精査用。確認後に削除する
           prompt: |
             レビュー対象の PR 番号は #${{ github.event.issue.number || github.event.pull_request.number }} です。
-            現在のチェックアウトは main のため、`gh pr view` / `gh pr diff` / `gh pr comment` は必ずこの番号を
-            指定して実行してください（番号なしでは対象 PR を特定できません。git branch や gh pr list による
-            探索、env の参照は不要です）。
+            現在のチェックアウトは main のため、`gh pr view` / `gh pr diff` / `gh pr checks` / `gh pr comment`
+            は必ずこの番号を指定して実行してください（番号なしでは対象 PR を特定できません。git branch や
+            gh pr list による探索、env の参照は不要です）。
 
-            この PR を一次レビューしてください。レビュー観点・出力方針は
-            `.github/workflows/references/pr-review-rubric.md` に定義されているので、まずこのファイルを
-            Read で読み、そこに書かれている内容に従ってレビューしてください。
+            この PR をレビューしてください。前提・判定の枠組み・観点・出力の様式は
+            `.github/workflows/references/pr-review-rubric/` 配下の次の5ファイルに定義されているので、
+            まず Read でこれら全てを読み、そこに書かれている内容に従ってレビューしてください。
+
+            - 00-context.md（前提・判定値の定義・使える情報源・ラウンドの判定）
+            - 01-requirement-consistency.md（観点1: 要求整合性チェック）
+            - 02-implementation-consistency.md（観点2: 実装と非機能部分の整合性チェック）
+            - 03-comprehension-check.md（観点3: 理解度チェック）
+            - 04-output-format.md（出力の様式・投稿順序・サマリの様式）
+
+            観点ごとに1件、最後にサマリを1件、`gh pr comment` を計4回呼んで投稿します。
+            1件のコメントにまとめないでください。
           claude_args: |
             --model claude-opus-4-8
             --effort high
-            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)"
+            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*),Bash(gh pr comment:*)"
