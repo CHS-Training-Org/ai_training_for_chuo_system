@@ -8,7 +8,21 @@
 - ADR フォーマット：[`Docs/decision/README.md`](decision/README.md)
 - Mermaid・ASCII 図の構文規約：[`.claude/rules/aidlc-guardrails.md`](../.claude/rules/aidlc-guardrails.md) §3・§4
 
+ただしファイルの追加・削除に伴うナビゲーションの同期は、書く作業と同時に発生して漏らしやすいため、次節の確認手順として本ファイルに含める。
+
 > 出典：[k16shikano 氏の gist「日本語技術文書の文章規範」](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d) を BookFlow 向けに採用したもの。
+
+---
+
+## ファイルを追加・削除したときの同期確認
+
+`Docs/` 配下にファイルを追加または削除したときは、**同じ変更の中で**次の3点を確認する。ページを作ってもナビゲーションに載せ忘れると、サイトから辿れないページができる。実際にこの漏れが繰り返し起きている。
+
+- **`zensical.toml` の `nav`**：ADR のようにファイルを個別に列挙している箇所があるため、追加したページを対応する位置に記載する。削除した場合は該当行を消す。列挙ではなくディレクトリ単位で拾っている箇所もあるので、追加先がどちらの扱いなのかを `zensical.toml` を開いて確かめる。
+- **同じディレクトリの一覧表**：[`Docs/decision/README.md`](decision/README.md) の ADR 一覧、[`Docs/spec/enhancements/index.md`](spec/enhancements/index.md) のシート一覧のように、ディレクトリ内のファイルを表にまとめているページがある。該当すれば行を追加または削除する。
+- **参照元のリンク**：削除するときは、そのファイルへのリンクが他のページに残っていないかを確認する。
+
+ファイル名の変更は追加と削除の両方に相当するため、上記をいずれも確認する。
 
 ---
 
