@@ -6,7 +6,7 @@ tags:
   - guide
   - workflow
   - ai-dlc
-timestamp: 2026-07-07
+timestamp: 2026-07-27
 audience: 学習者（主に若手）
 references:
   - Docs/guide/ai-tools-guide.md
@@ -157,7 +157,11 @@ CI（`CI Frontend` / `CI Backend`）は機械的な品質ゲートです。
 
 [review-criteria.md §評価基準](./review-criteria.md#completion-criteria) のチェックリストで自分の PR をセルフレビューし、満たしていることを確認したら自分でマージします。メンターレビューは必須ではありません。メンターは任意のタイミングで Issue・PR にコメントすることがあります。
 
-PR に `@claude pr-review` とコメントすると、AI 一次レビューが得られます（[review-criteria.md §AI 一次レビューとの対応](./review-criteria.md#ai-review)、[ADR-024](../decision/ADR-024-ai-first-review-adoption.md)）。これは任意の参考コメントであり、マージをブロックしません。
+PR に `@claude pr-review` とコメントすると、AI レビューが3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）で判定します。3観点すべてが OK で、かつ CI green のとき総合判定が「完了」になり、これがタスク完了の条件です（[review-criteria.md §AI レビューとの対応](./review-criteria.md#ai-review)、[ADR-025](../decision/ADR-025-ai-review-completion-gate.md)）。
+
+観点3（理解度チェック）は質問への回答を評価するため、少なくとも2回のやり取りが必要です。1回目のレビューで提示された質問に PR コメントで回答し、再度 `@claude pr-review` とコメントしてください。
+
+総合判定はタスク完了の条件ですが、必須 status check には含めません。マージは自分で行います。
 
 !!! note "メンター・リポジトリ管理者向け"
     GitHub の Settings → Branches でブランチ保護ルールを設定する場合、必須 status check には `CI Frontend / ci`、`CI Backend / ci` を指定してください。承認レビューは必須にしません（「Require approvals」はオフ）。  
