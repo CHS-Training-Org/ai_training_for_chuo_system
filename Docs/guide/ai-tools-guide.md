@@ -233,7 +233,7 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 !!! danger "AI 生成コードを無検証でコミットしない"
     生成されたコードは必ず自分で読み、動作確認（テスト実行、画面確認）をしてからコミットしてください。  
     理解できないコードをそのままコミットするわけにはいきません。  
-    PR に `@claude pr-review` とコメントすると、この確認を助ける理解度チェックの質問が得られます。質問に答えられるかはタスク完了の判定にも含まれます（[dev-workflow.md §8](./dev-workflow.md#flow)、[ADR-025](../decision/ADR-025-ai-review-completion-gate.md)）。
+    PR に `@claude pr-review` とコメントすると、この確認を助ける理解度チェックの4択問題が得られます。回答すると、正誤にかかわらず全問の解説が返ります。**誤答してもタスク完了は妨げられません**が、誤答した事実は PR コメントに記録として残ります（[dev-workflow.md §8](./dev-workflow.md#flow)、[ADR-026](../decision/ADR-026-comprehension-check-quiz-format.md)）。
 
 ### 責任とPRでの明記
 
