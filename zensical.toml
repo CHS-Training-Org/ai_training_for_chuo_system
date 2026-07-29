@@ -94,6 +94,7 @@ nav = [
       "decision/ADR-023-mentor-gate-removal.md",
       "decision/ADR-024-ai-first-review-adoption.md",
       "decision/ADR-025-ai-review-completion-gate.md",
+      "decision/ADR-026-comprehension-check-quiz-format.md",
     ] },
     { "Claude Code 設定" = [
       "claude/index.md",
