@@ -44,6 +44,12 @@ jobs:
       (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude pr-review')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude pr-review')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude pr-review'))
+    # 同一PRに対する多重起動を直列化する。並走すると両方が同じラウンド番号を算出し、
+    # 同じラウンドのコメントが二重投稿される。投稿途中でのキャンセルは 4 件のコメントが
+    # 揃わない状態を生むため、cancel-in-progress は false（後続を待機させる）とする
+    concurrency:
+      group: claude-review-${{ github.event.issue.number || github.event.pull_request.number }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       contents: read # コードの変更・コミットは行わない
