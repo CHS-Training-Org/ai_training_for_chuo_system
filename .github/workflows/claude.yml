@@ -67,6 +67,15 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ツール呼び出しとその結果を Actions ログに出す。ルーブリックを改訂したとき、
+          # 意図した判定手順を踏んだかを確認する唯一の手段になるため既定で true とする
+          # （実際に、権限拒否が7件記録された実行の原因をこのフラグなしでは追えなかった）。
+          # 一時的な診断フラグではなく意図した既定値であり、TODO として削除しない。
+          # モデルの挙動は変わらないためレビュー自体の API 料金には影響しないが、
+          # Actions のログ量は増える。料金または実行速度への影響が確認された場合に false へ切り替える。
+          # ログには差分・PR 本文・コメントが展開される。いずれもリポジトリ閲覧権限があれば
+          # 見られる内容であり、このジョブは secrets を出力に含めない。
+          show_full_output: true
           prompt: |
             レビュー対象の PR 番号は #${{ github.event.issue.number || github.event.pull_request.number }} です。
             現在のチェックアウトは main のため、`gh pr view` / `gh pr diff` / `gh pr checks` / `gh pr comment`
