@@ -8,7 +8,7 @@ tags:
   - resource
   - search
   - filter
-timestamp: 2026-07-06
+timestamp: 2026-07-30
 audience: 学習者・メンター
 references:
   - Docs/spec/requirements.md
@@ -28,8 +28,8 @@ BookFlow のリソース一覧画面（`/resources`）には、カテゴリ選�
 ## 依存関係
 
 - 前提課題：なし（ベースシステムの既存 `GET /api/resources`・`ResourceFilterForm.tsx` のみに依存）
-- 競合する課題：なし（[リソース一覧のソート順選択](./resource-list-sort.md) は本課題を前提課題とするため、本課題の完了後に着手される。実質的に並行着手にはならない）
-- 推奨着手順序：本課題（キーワード検索）を**先に着手**するとよい。後続として [リソース一覧のソート順選択](./resource-list-sort.md)（本課題の完了を前提とする）・[OpenAPI クライアント自動生成](./openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
+- 競合する課題：[リソース一覧のソート順選択](./resource-list-sort.md)。両課題とも `GET /api/resources` と同一の `ResourceFilterForm.tsx` を変更するため、並行着手は非推奨。ソート課題が先行実装されるため、本課題は着手時にソート済みの `GET /api/resources`・`ResourceFilterForm.tsx` を前提として整合させること。
+- 推奨着手順序：[リソース一覧のソート順選択](./resource-list-sort.md) の完了後に本課題（キーワード検索）に着手する。後続として [OpenAPI クライアント自動生成](./openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
 
 ## 要件
 
