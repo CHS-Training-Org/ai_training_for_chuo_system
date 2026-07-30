@@ -118,9 +118,23 @@ export const handlers = [
     return HttpResponse.json(MOCK_USER_RESPONSE);
   }),
 
-  // リソース一覧
-  http.get("/api/backend/resources", () => {
-    return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+  // リソース一覧（keyword はクエリパラメータの転送先検証のため name/description に対する部分一致でフィルタする）
+  http.get("/api/backend/resources", ({ request }) => {
+    const keyword = new URL(request.url).searchParams.get("keyword");
+    if (!keyword) {
+      return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+    }
+    const lowerKeyword = keyword.toLowerCase();
+    const content = MOCK_RESOURCE_LIST_RESPONSE.content.filter(
+      (resource) =>
+        resource.name.toLowerCase().includes(lowerKeyword) ||
+        resource.description?.toLowerCase().includes(lowerKeyword),
+    );
+    return HttpResponse.json({
+      ...MOCK_RESOURCE_LIST_RESPONSE,
+      content,
+      totalElements: content.length,
+    });
   }),
 
   // リソース詳細

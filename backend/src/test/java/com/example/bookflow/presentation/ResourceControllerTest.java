@@ -251,6 +251,24 @@ class ResourceControllerTest extends BaseControllerTest {
 
   @Test
   @WithMockMember
+  void list_withKeywordAndTimeRange_appliesKeywordFilterOnAvailabilityPath() throws Exception {
+    // from/to は既存予約（10:00〜12:00）と重複しない範囲（隣接・非重複）を指定し、時間フィルタ単独では
+    // ACTIVE_RESOURCE_ID が除外されないことを保証したうえで、keyword="スタジオ" が期間フィルタ経路
+    // （listWithAvailabilityFilter → fetchAllCandidates）でも効くことを確認する（RES-04）。
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("from", "2025-06-02T08:00:00")
+                .param("to", "2025-06-02T10:00:00")
+                .param("keyword", "スタジオ")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
   void list_fromOnlyWithoutTo_returns400ValidationError() throws Exception {
     // from だけ指定・to なし → 同時指定必須違反 → 400 VALIDATION_ERROR
     mockMvc
