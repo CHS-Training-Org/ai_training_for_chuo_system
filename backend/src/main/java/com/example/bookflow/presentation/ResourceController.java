@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -65,7 +66,8 @@ public class ResourceController {
    * @param category カテゴリフィルタ（任意）
    * @param from 空き確認の開始日時（任意・to と同時指定）
    * @param to 空き確認の終了日時（任意・from と同時指定）
-   * @param pageable ページネーション（デフォルト: size=20）
+   * @param pageable ページネーション（デフォルト: size=20, sort=createdAt,asc。{@code
+   *     sort=name|capacity|createdAt,asc|desc} で並び替え可能）
    * @param currentUser 認証済みユーザー（ロール判定に使用）
    * @return {@link ResourceResponse} のページ
    */
@@ -74,7 +76,8 @@ public class ResourceController {
       @RequestParam(required = false) ResourceCategory category,
       @RequestParam(required = false) LocalDateTime from,
       @RequestParam(required = false) LocalDateTime to,
-      @PageableDefault(size = 20) Pageable pageable,
+      @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC)
+          Pageable pageable,
       @CurrentUser User currentUser) {
     // from / to は同時指定必須（api-spec.md §リソース一覧 参照）
     if ((from == null) != (to == null)) {

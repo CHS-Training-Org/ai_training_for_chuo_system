@@ -37,3 +37,17 @@ export const RESOURCE_CATEGORY_LABELS: Record<string, string> = {
   EQUIPMENT: "備品",
   VEHICLE: "社用車",
 };
+
+/**
+ * リソース一覧の並び替え選択肢（api-spec.md §`GET /api/resources` の `sort` 準拠）。
+ *
+ * `value` は `GET /api/resources?sort=...` にそのまま渡す。デフォルトは先頭の `createdAt,asc`。
+ */
+export const RESOURCE_SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: "createdAt,asc", label: "登録日時が古い順" },
+  { value: "createdAt,desc", label: "登録日時が新しい順" },
+  { value: "name,asc", label: "名称順（昇順）" },
+  { value: "name,desc", label: "名称順（降順）" },
+  { value: "capacity,asc", label: "定員が少ない順" },
+  { value: "capacity,desc", label: "定員が多い順" },
+];
