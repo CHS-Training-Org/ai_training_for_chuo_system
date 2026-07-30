@@ -147,6 +147,7 @@ Accepted（YYYY-MM-DD）
 | [ADR-023](./ADR-023-mentor-gate-removal.md) | 運用プロセス：承認ゲート廃止・セルフ完結運用への移行 | Accepted |
 | [ADR-024](./ADR-024-ai-first-review-adoption.md) | AI一次レビュー（検討A）の採用 | Accepted |
 | [ADR-025](./ADR-025-ai-review-completion-gate.md) | AIレビューをタスク完了判定に格上げ | Accepted |
+| [ADR-026](./ADR-026-comprehension-check-quiz-format.md) | 理解度チェックを4択化し完了条件から誤答を外す | Accepted |
 
 ### 開発環境（ADR-022〜）
 

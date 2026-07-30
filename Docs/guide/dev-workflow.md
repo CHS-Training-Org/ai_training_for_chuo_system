@@ -157,9 +157,9 @@ CI（`CI Frontend` / `CI Backend`）は機械的な品質ゲートです。
 
 [review-criteria.md §評価基準](./review-criteria.md#completion-criteria) のチェックリストで自分の PR をセルフレビューし、満たしていることを確認したら自分でマージします。メンターレビューは必須ではありません。メンターは任意のタイミングで Issue・PR にコメントすることがあります。
 
-PR に `@claude pr-review` とコメントすると、AI レビューが3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）で判定します。3観点すべてが OK で、かつ CI green のとき総合判定が「完了」になり、これがタスク完了の条件です（[review-criteria.md §AI レビューとの対応](./review-criteria.md#ai-review)、[ADR-025](../decision/ADR-025-ai-review-completion-gate.md)）。
+PR に `@claude pr-review` とコメントすると、AI レビューが3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）で判定します。**観点1・観点2が OK、CI green、かつ観点3が確定している**とき総合判定が「完了」になり、これがタスク完了の条件です（[review-criteria.md §AI レビューとの対応](./review-criteria.md#ai-review)、[ADR-025](../decision/ADR-025-ai-review-completion-gate.md)、[ADR-026](../decision/ADR-026-comprehension-check-quiz-format.md)）。観点3の誤答は完了を妨げません。
 
-観点3（理解度チェック）は質問への回答を評価するため、少なくとも2回のやり取りが必要です。1回目のレビューで提示された質問に PR コメントで回答し、再度 `@claude pr-review` とコメントしてください。
+観点3（理解度チェック）は3〜5問の4択で、回答の評価に少なくとも2回のやり取りが必要です。1回目のレビューで出題されたら、「問番号＋選んだ選択肢＋選んだ理由を一文」の形式（例：`1-B。理由は…`）で PR の**会話コメント**に回答し、再度 `@claude pr-review` とコメントしてください。2回目で判定と、正誤にかかわらず全問の解説が返ります。
 
 総合判定はタスク完了の条件ですが、必須 status check には含めません。マージは自分で行います。
 
