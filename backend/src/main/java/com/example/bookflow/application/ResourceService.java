@@ -7,6 +7,7 @@ import com.example.bookflow.domain.ReservationStatus;
 import com.example.bookflow.domain.Resource;
 import com.example.bookflow.domain.ResourceCategory;
 import com.example.bookflow.domain.ResourceRepository;
+import com.example.bookflow.domain.ResourceSpecifications;
 import com.example.bookflow.presentation.dto.CreateResourceRequest;
 import com.example.bookflow.presentation.dto.OccupiedSlot;
 import com.example.bookflow.presentation.dto.ResourceResponse;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +67,7 @@ public class ResourceService {
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
+   * @param keyword リソース名・説明文への部分一致検索（null・空文字の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
    * @param pageable ページネーション
    * @return {@link ResourceResponse} のページ
@@ -74,30 +77,20 @@ public class ResourceService {
       ResourceCategory category,
       LocalDateTime from,
       LocalDateTime to,
+      String keyword,
       boolean isAdmin,
       Pageable pageable) {
     if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+      return listWithAvailabilityFilter(category, from, to, keyword, isAdmin, pageable);
     }
-    return listPaginated(category, isAdmin, pageable);
+    return listPaginated(category, keyword, isAdmin, pageable);
   }
 
   /** from/to 指定なし：通常ページネーション。 */
   private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
-    Page<Resource> page;
-    if (isAdmin) {
-      page =
-          category != null
-              ? resourceRepository.findByCategory(category, pageable)
-              : resourceRepository.findAll(pageable);
-    } else {
-      page =
-          category != null
-              ? resourceRepository.findByCategoryAndIsActiveTrue(category, pageable)
-              : resourceRepository.findByIsActiveTrue(pageable);
-    }
-    return page.map(ResourceResponse::from);
+      ResourceCategory category, String keyword, boolean isAdmin, Pageable pageable) {
+    Specification<Resource> spec = buildSpecification(category, keyword, isAdmin);
+    return resourceRepository.findAll(spec, pageable).map(ResourceResponse::from);
   }
 
   /**
@@ -109,10 +102,11 @@ public class ResourceService {
       ResourceCategory category,
       LocalDateTime from,
       LocalDateTime to,
+      String keyword,
       boolean isAdmin,
       Pageable pageable) {
     // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    List<Resource> candidates = fetchAllCandidates(category, keyword, isAdmin);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -138,16 +132,33 @@ public class ResourceService {
     return new PageImpl<>(content, pageable, total);
   }
 
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
-    if (isAdmin) {
-      return category != null
-          ? resourceRepository.findByCategory(category)
-          : resourceRepository.findAll();
-    } else {
-      return category != null
-          ? resourceRepository.findByCategoryAndIsActiveTrue(category)
-          : resourceRepository.findByIsActiveTrue();
+  private List<Resource> fetchAllCandidates(
+      ResourceCategory category, String keyword, boolean isAdmin) {
+    Specification<Resource> spec = buildSpecification(category, keyword, isAdmin);
+    return resourceRepository.findAll(spec);
+  }
+
+  /**
+   * {@code category} / {@code isActive} / {@code keyword} を AND 合成した {@link Specification} を組み立てる。
+   *
+   * <p>各条件は該当する入力が null（または keyword は空文字）の場合、合成対象から除外される。
+   */
+  private Specification<Resource> buildSpecification(
+      ResourceCategory category, String keyword, boolean isAdmin) {
+    // 条件なし（常に真）から開始し、該当する条件だけを AND 合成する。
+    Specification<Resource> spec = (root, query, cb) -> cb.conjunction();
+    Specification<Resource> categorySpec = ResourceSpecifications.hasCategory(category);
+    if (categorySpec != null) {
+      spec = spec.and(categorySpec);
     }
+    if (!isAdmin) {
+      spec = spec.and(ResourceSpecifications.isActive());
+    }
+    Specification<Resource> keywordSpec = ResourceSpecifications.keywordMatches(keyword);
+    if (keywordSpec != null) {
+      spec = spec.and(keywordSpec);
+    }
+    return spec;
   }
 
   // ---------------------------------------------------------------------------

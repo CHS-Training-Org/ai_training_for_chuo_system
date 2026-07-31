@@ -17,10 +17,13 @@ timestamp: 2026-07-07
 
 ## Project Information
 
-- **Project Type**: [Greenfield/Brownfield]
-- **Start Date**: [ISO 8601 timestamp]
-- **Current Stage**: [INCEPTION - Workspace Detection]
+- **Project Type**: Brownfield
+- **Start Date**: 2026-07-19T00:32:58Z
+- **Current Stage**: INCEPTION - Requirements Analysis
 - **Workspace Root**: /workspace
+- **Target Enhancement**: [resource-list-filter.md](enhancements/resource-list-filter.md)（リソース一覧の検索・フィルタ追加）
+- **Existing Code**: Yes（frontend: Next.js/pnpm、backend: Spring Boot/Gradle）
+- **Reverse Engineering Needed**: Yes（過去の RE 成果物なし。ただし既存の `Docs/ARCHITECTURE.md`・`Docs/spec/*.md` がシステム全体像を documentation 済みのため、depth-levels.md の「Available Context: 既存ドキュメント」要因に基づき最小深度で実行する）
 
 ## Code Location Rules
 
@@ -32,30 +35,30 @@ timestamp: 2026-07-07
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | — | — |
-| Resiliency Baseline | — | — |
-| Property-Based Testing | — | — |
+| Security Baseline | No | Requirements Analysis |
+| Resiliency Baseline | No | Requirements Analysis |
+| Property-Based Testing | No | Requirements Analysis |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [ ] Workspace Detection
-- [ ] Reverse Engineering（Brownfield の場合）
-- [ ] Requirements Analysis
-- [ ] User Stories（条件付き）
-- [ ] Workflow Planning
-- [ ] Application Design（条件付き）
-- [ ] Units Generation（条件付き）
+- [x] Workspace Detection
+- [x] Reverse Engineering（最小深度・Resourceドメインスコープ、承認済み）
+- [x] Requirements Analysis（Minimal深度、承認済み）
+- [x] User Stories — SKIP（理由: execution-plan.md 参照）
+- [x] Workflow Planning（承認待ち）
+- [x] Application Design — SKIP（理由: execution-plan.md 参照）
+- [x] Units Generation — SKIP（単一ユニット `resource-list-filter` として Construction へ）
 
-### CONSTRUCTION PHASE
+### CONSTRUCTION PHASE（ユニット: resource-list-filter）
 
-- [ ] Functional Design（条件付き、ユニット別）
-- [ ] NFR Requirements（条件付き、ユニット別）
-- [ ] NFR Design（条件付き、ユニット別）
-- [ ] Infrastructure Design（条件付き、ユニット別）
-- [ ] Code Generation（必須、ユニット別）
-- [ ] Build and Test（必須）
+- [x] Functional Design — EXECUTE（Specification導入で確定、承認済み）
+- [ ] NFR Requirements — SKIP
+- [ ] NFR Design — SKIP
+- [ ] Infrastructure Design — SKIP
+- [x] Code Generation（必須、承認済み）
+- [x] Build and Test（必須、承認済み）
 
 ### OPERATIONS PHASE
 
@@ -63,7 +66,7 @@ timestamp: 2026-07-07
 
 ## Current Status
 
-- **Lifecycle Phase**: [INCEPTION/CONSTRUCTION/OPERATIONS]
-- **Current Stage**: [Stage Name]
-- **Next Stage**: [Next stage to execute]
-- **Status**: [In Progress/Complete/Waiting for Approval]
+- **Lifecycle Phase**: INCEPTION
+- **Current Stage**: OPERATIONS（CI、BookFlow翻案によりpush/PR時に自動実行）
+- **Next Stage**: なし（ワークフロー完了）
+- **Status**: Complete

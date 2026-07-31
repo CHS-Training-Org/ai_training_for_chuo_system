@@ -2,6 +2,7 @@ package com.example.bookflow.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -32,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * {@link ResourceService} 単体テスト（ADR-018 準拠・Mockito）。
@@ -197,32 +199,36 @@ class ResourceServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void list_memberWithoutFilter_returnsActiveOnly() {
-      when(resourceRepository.findByIsActiveTrue(pageable))
+      when(resourceRepository.findAll(any(Specification.class), eq(pageable)))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void list_adminWithoutFilter_returnsAllIncludingInactive() {
-      when(resourceRepository.findAll(pageable))
+      when(resourceRepository.findAll(any(Specification.class), eq(pageable)))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, true, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, true, pageable);
 
       assertThat(result.getContent()).hasSize(2);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void list_memberWithTimeFilterAndOccupied_excludesOccupiedResource() {
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
-      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+      when(resourceRepository.findAll(any(Specification.class)))
+          .thenReturn(java.util.List.of(activeResource));
 
       // 完全重複する予約が存在する
       Reservation occupying =
@@ -235,17 +241,19 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, null, false, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void list_memberWithTimeFilterAndAdjacentReservation_includesResource() {
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
-      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+      when(resourceRepository.findAll(any(Specification.class)))
+          .thenReturn(java.util.List.of(activeResource));
 
       // 隣接（to == 既存開始）→ 非重複なので除外しない
       Reservation adjacent =
@@ -254,9 +262,36 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void list_withKeyword_passesThroughToRepositoryAndReturnsResult() {
+      // ResourceServiceは条件合成をResourceSpecificationsに委譲するのみ。
+      // 実際のSQL述語としての正しさ（name/description一致・大文字小文字無視）は
+      // ResourceControllerTest（H2結合テスト）で検証する。
+      when(resourceRepository.findAll(any(Specification.class), eq(pageable)))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, "会議室", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void list_withBlankKeyword_behavesSameAsNoKeyword() {
+      // BR-04: 空文字（トリム後）はキーワード条件を適用しない
+      when(resourceRepository.findAll(any(Specification.class), eq(pageable)))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
+
+      Page<ResourceResponse> result = resourceService.list(null, null, null, "  ", true, pageable);
+
+      assertThat(result.getContent()).hasSize(2);
     }
   }
 

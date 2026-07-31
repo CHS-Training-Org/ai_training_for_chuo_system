@@ -52,6 +52,19 @@ describe("listResourcesAction", () => {
     expect(result.content).toHaveLength(1);
   });
 
+  it("正常時: keywordパラメータがクエリへ転送され、一致するリソースのみ返る", async () => {
+    // MSW ハンドラが keyword クエリで絞り込むため、BFF 層が転送していることの検証になる
+    const result = await listResourcesAction({ keyword: "会議室" });
+    expect(result.content).toHaveLength(1);
+  });
+
+  it("正常時: keywordパラメータがクエリへ転送され、一致しない場合は空になる", async () => {
+    // BFF 層が keyword をクエリへ転送していなければ MSW ハンドラは絞り込めず content が1件のまま返るため、
+    // この転送行が削除されると本テストは失敗する
+    const result = await listResourcesAction({ keyword: "存在しないキーワードxyz" });
+    expect(result.content).toHaveLength(0);
+  });
+
   it("401 時: ApiClientError をスローする", async () => {
     server.use(
       http.get("/api/backend/resources", () => {
