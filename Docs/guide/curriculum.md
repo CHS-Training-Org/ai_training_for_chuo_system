@@ -47,7 +47,7 @@ STEP-03（AI ツール導入・活用）は、Claude Code の基本操作の習�
 各 STEP の「完了条件」を自己チェックしながら進めます。
 
 文書化が必要な STEP の完了証跡は、各 STEP の「完了条件」の指示に従い、最初に着手する選択課題（エンハンス課題）の PR にまとめて記載してください。STEP ごとに個別の Issue や PR を作成する必要はありません。  
-選択課題の進め方は [dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を参照してください。
+選択課題の進め方は [dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を参照してください。選択課題は PR に `@claude pr-review` とコメントして AI レビューを受け、総合判定が「完了」になることがタスク完了の条件です（[review-criteria.md §AI レビューとの対応](./review-criteria.md#ai-review)）。
 
 ---
 
@@ -73,9 +73,10 @@ STEP-03（AI ツール導入・活用）は、Claude Code の基本操作の習�
 | AI 活用例 | Claude Code に [dev-workflow.md](./dev-workflow.md) を読み込ませ、標準フローを自分の言葉で要約させて理解を確認する |
 | 完了条件 | 下記の確認項目をすべて満たし、自分の言葉で説明できる（最初に着手する選択課題の PR に記載する） |
 
-実装に着手する前に、リポジトリの運用ルールを把握します。次の 4 点を確認してください。
+実装に着手する前に、リポジトリの運用ルールを把握します。次の 5 点を確認してください。
 
-- **標準開発フロー**：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を読み、「ビジネス要求シート（Issue）選択 → ブランチ作成 → `/aidlc` 起動・計画提示・チャットでセルフ承認 → Spec-first で仕様更新 → 縦切り実装 → セルフレビュー → PR → セルフレビュー・マージ」という**自己完結の流れ**を説明できる。
+- **標準開発フロー**：[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) を読み、「ビジネス要求シート（Issue）選択 → ブランチ作成 → `/aidlc` 起動・計画提示・チャットでセルフ承認 → Spec-first で仕様更新 → 縦切り実装 → セルフレビュー → PR → `@claude pr-review` で AI レビュー → セルフレビュー・マージ」という**自己完結の流れ**を説明できる。
+- **AI レビューの位置づけ**：[review-criteria.md §AI レビューとの対応](./review-criteria.md#ai-review) を読み、AI レビューの総合判定が「完了」になることがタスク完了の条件であること、観点3（理解度チェック）は4択への回答が必要で少なくとも2回のやり取りを要することを理解する。
 - **AI-DLC の考え方**：[dev-workflow.md §AI-DLC と BookFlow フローの対応](./dev-workflow.md#aidlc-mapping) を読み、plan-first（`/aidlc` を起動して AI-DLC エンジンに計画を立てさせ、提示された計画に納得してから実装する）の狙いを理解する。
 - **ブランチの切り方**：[coding-conventions.md §共通方針](./coding-conventions.md#common) に従い、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 形式でブランチを作成できる。issue 番号は要件シートには記載されておらず、Issue を起票した時点で GitHub が採番するため、起票後に Issue の URL やタイトル横の表示で確認する。
 - **学習パスの選び方**：この[学習パスマップ](#path-map)から、自分のレベルに合った次の課題を選べる。
