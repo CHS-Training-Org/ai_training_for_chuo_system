@@ -167,7 +167,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 
 | メソッド | パス | 概要 | 権限 |
 |--------|------|------|------|
-| GET | `/api/resources` | リソース一覧（カテゴリ・空き日時でフィルタ可） | 全ロール |
+| GET | `/api/resources` | リソース一覧（カテゴリ・キーワード・空き日時でフィルタ可） | 全ロール |
 | POST | `/api/resources` | リソース登録 | ADMIN |
 | GET | `/api/resources/{id}` | リソース詳細 | 全ロール |
 | PUT | `/api/resources/{id}` | リソース更新 | ADMIN |
@@ -273,12 +273,13 @@ Authorization: Bearer <JWT>
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
+| `keyword` | string | ❌ | リソース名または説明文に部分一致するキーワード検索（大文字・小文字を区別しない） |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
-> `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
+> `keyword` は省略時に検索条件を適用せず、既存と同様の全件取得を行う。`from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。`category` / `keyword` / `from`-`to` はすべて AND 条件で組み合わせられる。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
 
 #### レスポンス（200 OK）
 
