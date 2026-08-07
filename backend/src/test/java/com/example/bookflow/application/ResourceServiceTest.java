@@ -36,20 +36,16 @@ import org.springframework.data.domain.Pageable;
 /**
  * {@link ResourceService} 単体テスト（ADR-018 準拠・Mockito）。
  *
- * <p>
- * カテゴリ 4 で導入する初の Mockito 単体テスト。業務ルールを単体で検証する。 テスト命名規約（ADR-018）: {@code
+ * <p>カテゴリ 4 で導入する初の Mockito 単体テスト。業務ルールを単体で検証する。 テスト命名規約（ADR-018）: {@code
  * methodName_condition_expectedBehavior}
  */
 @ExtendWith(MockitoExtension.class)
 class ResourceServiceTest {
 
-  @Mock
-  private ResourceRepository resourceRepository;
-  @Mock
-  private ReservationRepository reservationRepository;
+  @Mock private ResourceRepository resourceRepository;
+  @Mock private ReservationRepository reservationRepository;
 
-  @InjectMocks
-  private ResourceService resourceService;
+  @InjectMocks private ResourceService resourceService;
 
   // ---------------------------------------------------------------------------
   // テストヘルパー：リフレクションでエンティティのフィールドを設定する
@@ -58,19 +54,18 @@ class ResourceServiceTest {
   /**
    * {@link Resource} エンティティのフィールドをリフレクションで設定するヘルパー。
    *
-   * <p>
-   * Resource は protected コンストラクタを持ち、create ファクトリ外で生成できないため リフレクションを使用する（テスト専用）。
+   * <p>Resource は protected コンストラクタを持ち、create ファクトリ外で生成できないため リフレクションを使用する（テスト専用）。
    */
   private static Resource makeResource(
-      UUID id, String name, ResourceCategory category, boolean isActive) {
+      UUID id, String name, ResourceCategory category, boolean isActive, String description) {
     try {
-      Resource r = new Resource() {
-      };
+      Resource r = new Resource() {};
       setField(r, "id", id);
       setField(r, "name", name);
       setField(r, "category", category);
       setField(r, "isActive", isActive);
       setField(r, "requiresApproval", false);
+      setField(r, "description", description);
       setField(r, "createdAt", LocalDateTime.of(2025, 4, 1, 9, 0));
       return r;
     } catch (Exception e) {
@@ -85,8 +80,7 @@ class ResourceServiceTest {
       LocalDateTime end,
       ReservationStatus status) {
     try {
-      Reservation rv = new Reservation() {
-      };
+      Reservation rv = new Reservation() {};
       setField(rv, "id", id);
       setField(rv, "resource", resource);
       setField(rv, "startAt", start);
@@ -100,8 +94,7 @@ class ResourceServiceTest {
 
   private static void setField(Object obj, String name, Object value) throws Exception {
     Class<?> clazz = obj.getClass().getSuperclass(); // actual class (not anonymous)
-    if (clazz == Object.class)
-      clazz = obj.getClass();
+    if (clazz == Object.class) clazz = obj.getClass();
     Field field;
     try {
       field = clazz.getDeclaredField(name);
@@ -126,8 +119,8 @@ class ResourceServiceTest {
     void overlaps_fullyContained_returnsTrue() {
       // 既存予約が確認範囲を完全包含
       assertThat(
-          ResourceService.overlaps(
-              base, base.plusHours(4), base.plusHours(1), base.plusHours(3)))
+              ResourceService.overlaps(
+                  base, base.plusHours(4), base.plusHours(1), base.plusHours(3)))
           .isTrue();
     }
 
@@ -135,8 +128,8 @@ class ResourceServiceTest {
     void overlaps_partialOverlapStart_returnsTrue() {
       // 既存予約の後半が確認範囲の前半と重複
       assertThat(
-          ResourceService.overlaps(
-              base, base.plusHours(2), base.plusHours(1), base.plusHours(3)))
+              ResourceService.overlaps(
+                  base, base.plusHours(2), base.plusHours(1), base.plusHours(3)))
           .isTrue();
     }
 
@@ -144,8 +137,8 @@ class ResourceServiceTest {
     void overlaps_partialOverlapEnd_returnsTrue() {
       // 既存予約の前半が確認範囲の後半と重複
       assertThat(
-          ResourceService.overlaps(
-              base.plusHours(1), base.plusHours(3), base, base.plusHours(2)))
+              ResourceService.overlaps(
+                  base.plusHours(1), base.plusHours(3), base, base.plusHours(2)))
           .isTrue();
     }
 
@@ -160,8 +153,8 @@ class ResourceServiceTest {
     void overlaps_adjacentEnd_returnsFalse() {
       // 既存予約の終了 == 確認範囲の開始（隣接・非重複）
       assertThat(
-          ResourceService.overlaps(
-              base, base.plusHours(1), base.plusHours(1), base.plusHours(2)))
+              ResourceService.overlaps(
+                  base, base.plusHours(1), base.plusHours(1), base.plusHours(2)))
           .isFalse();
     }
 
@@ -169,8 +162,8 @@ class ResourceServiceTest {
     void overlaps_adjacentStart_returnsFalse() {
       // 既存予約の開始 == 確認範囲の終了（隣接・非重複）
       assertThat(
-          ResourceService.overlaps(
-              base.plusHours(2), base.plusHours(3), base, base.plusHours(2)))
+              ResourceService.overlaps(
+                  base.plusHours(2), base.plusHours(3), base, base.plusHours(2)))
           .isFalse();
     }
 
@@ -178,8 +171,8 @@ class ResourceServiceTest {
     void overlaps_discrete_returnsFalse() {
       // 既存予約と確認範囲が離散（重ならない）
       assertThat(
-          ResourceService.overlaps(
-              base, base.plusHours(1), base.plusHours(2), base.plusHours(3)))
+              ResourceService.overlaps(
+                  base, base.plusHours(1), base.plusHours(2), base.plusHours(3)))
           .isFalse();
     }
   }
@@ -193,15 +186,26 @@ class ResourceServiceTest {
 
     private static final UUID ACTIVE_ID = UUID.randomUUID();
     private static final UUID INACTIVE_ID = UUID.randomUUID();
+    private static final UUID PROJECTOR_ACTIVE_ID = UUID.randomUUID();
+    private static final UUID PROJECTOR_INACTIVE_ID = UUID.randomUUID();
     private final Pageable pageable = PageRequest.of(0, 20);
 
     private Resource activeResource;
     private Resource inactiveResource;
+    private Resource projectorResource1;
+    private Resource projectorResource2;
 
     @BeforeEach
     void setUp() {
-      activeResource = makeResource(ACTIVE_ID, "第1会議室", ResourceCategory.ROOM, true);
-      inactiveResource = makeResource(INACTIVE_ID, "旧備品A", ResourceCategory.EQUIPMENT, false);
+      activeResource =
+          makeResource(ACTIVE_ID, "第1会議室", ResourceCategory.ROOM, true, "第1会議室、プロジェクターあり");
+      inactiveResource =
+          makeResource(INACTIVE_ID, "旧備品A", ResourceCategory.EQUIPMENT, false, "旧備品A、使用不可");
+      projectorResource1 =
+          makeResource(PROJECTOR_ACTIVE_ID, "プロジェクター", ResourceCategory.EQUIPMENT, true, "プロジェクター");
+      projectorResource2 =
+          makeResource(
+              PROJECTOR_INACTIVE_ID, "旧プロジェクター", ResourceCategory.EQUIPMENT, false, "旧プロジェクター");
     }
 
     @Test
@@ -233,12 +237,13 @@ class ResourceServiceTest {
       when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
 
       // 完全重複する予約が存在する
-      Reservation occupying = makeReservation(
-          UUID.randomUUID(),
-          activeResource,
-          from.minusHours(1),
-          to.plusHours(1),
-          ReservationStatus.PENDING);
+      Reservation occupying =
+          makeReservation(
+              UUID.randomUUID(),
+              activeResource,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.PENDING);
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
@@ -255,8 +260,9 @@ class ResourceServiceTest {
       when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
 
       // 隣接（to == 既存開始）→ 非重複なので除外しない
-      Reservation adjacent = makeReservation(
-          UUID.randomUUID(), activeResource, to, to.plusHours(2), ReservationStatus.APPROVED);
+      Reservation adjacent =
+          makeReservation(
+              UUID.randomUUID(), activeResource, to, to.plusHours(2), ReservationStatus.APPROVED);
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
@@ -268,24 +274,30 @@ class ResourceServiceTest {
     @Test
     void list_memberWithKeywordFilter_returnsActive() {
       when(resourceRepository.findByCategoryAndKeywordAndIsActiveTrue(null, "プロジェクター", pageable))
-          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource, projectorResource1)));
 
-      Page<ResourceResponse> result = resourceService.list(null, "プロジェクター", null, null, false, pageable);
+      Page<ResourceResponse> result =
+          resourceService.list(null, "プロジェクター", null, null, false, pageable);
 
-      assertThat(result.getContent()).hasSize(1);
-      assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
+      assertThat(result.getContent()).hasSize(2);
+      assertThat(result.getContent().get(0).description()).contains("プロジェクター");
+      assertThat(result.getContent().get(1).name()).isEqualTo("プロジェクター");
     }
 
     @Test
     void list_adminWithKeywordFilter_returnsIncludingInactive() {
       when(resourceRepository.findByCategoryAndKeyword(null, "プロジェクター", pageable))
-          .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
+          .thenReturn(
+              new PageImpl<>(
+                  java.util.List.of(activeResource, projectorResource1, projectorResource2)));
 
-      Page<ResourceResponse> result = resourceService.list(null, "プロジェクター", null, null, true, pageable);
+      Page<ResourceResponse> result =
+          resourceService.list(null, "プロジェクター", null, null, true, pageable);
 
-      assertThat(result.getContent()).hasSize(2);
-      assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
-      assertThat(result.getContent().get(1).id()).isEqualTo(INACTIVE_ID);
+      assertThat(result.getContent()).hasSize(3);
+      assertThat(result.getContent().get(0).description()).contains("プロジェクター");
+      assertThat(result.getContent().get(1).name()).isEqualTo("プロジェクター");
+      assertThat(result.getContent().get(2).name()).isEqualTo("旧プロジェクター");
     }
 
     @Test
@@ -294,21 +306,24 @@ class ResourceServiceTest {
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
       when(resourceRepository.findByCategoryAndKeywordAndIsActiveTrue(null, "プロジェクター"))
-          .thenReturn(java.util.List.of(activeResource));
+          .thenReturn(java.util.List.of(activeResource, projectorResource1));
 
       // 完全重複する予約が存在する
-      Reservation occupying = makeReservation(
-          UUID.randomUUID(),
-          activeResource,
-          from.minusHours(1),
-          to.plusHours(1),
-          ReservationStatus.APPROVED);
+      Reservation occupying =
+          makeReservation(
+              UUID.randomUUID(),
+              activeResource,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.APPROVED);
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, "プロジェクター", from, to, false, pageable);
+      Page<ResourceResponse> result =
+          resourceService.list(null, "プロジェクター", from, to, false, pageable);
 
-      assertThat(result.getContent()).isEmpty();
+      assertThat(result.getContent()).hasSize(1);
+      assertThat(result.getContent().get(0).name()).isEqualTo("プロジェクター");
     }
 
     @Test
@@ -317,21 +332,25 @@ class ResourceServiceTest {
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
       when(resourceRepository.findByCategoryAndKeyword(null, "プロジェクター"))
-          .thenReturn(java.util.List.of(activeResource));
+          .thenReturn(java.util.List.of(activeResource, projectorResource1, projectorResource2));
 
       // 完全重複する予約が存在する
-      Reservation occupying = makeReservation(
-          UUID.randomUUID(),
-          activeResource,
-          from.minusHours(1),
-          to.plusHours(1),
-          ReservationStatus.APPROVED);
+      Reservation occupying =
+          makeReservation(
+              UUID.randomUUID(),
+              activeResource,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.APPROVED);
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, "プロジェクター", from, to, true, pageable);
+      Page<ResourceResponse> result =
+          resourceService.list(null, "プロジェクター", from, to, true, pageable);
 
-      assertThat(result.getContent()).isEmpty();
+      assertThat(result.getContent()).hasSize(2);
+      assertThat(result.getContent().get(0).name()).isEqualTo("プロジェクター");
+      assertThat(result.getContent().get(1).name()).isEqualTo("旧プロジェクター");
     }
   }
 
@@ -345,7 +364,7 @@ class ResourceServiceTest {
     @Test
     void get_existingId_returnsResourceResponse() {
       UUID id = UUID.randomUUID();
-      Resource resource = makeResource(id, "第1会議室", ResourceCategory.ROOM, true);
+      Resource resource = makeResource(id, "第1会議室", ResourceCategory.ROOM, true, "");
       when(resourceRepository.findById(id)).thenReturn(Optional.of(resource));
 
       ResourceResponse response = resourceService.get(id);
@@ -376,7 +395,7 @@ class ResourceServiceTest {
 
     @BeforeEach
     void setUp() {
-      resource = makeResource(resourceId, "第1会議室", ResourceCategory.ROOM, true);
+      resource = makeResource(resourceId, "第1会議室", ResourceCategory.ROOM, true, "");
       // lenient: availability_nonExistentResourceId テストでは resourceId の stub は不使用
       lenient().when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
     }
@@ -399,12 +418,13 @@ class ResourceServiceTest {
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
       UUID reservationId = UUID.randomUUID();
 
-      Reservation overlapping = makeReservation(
-          reservationId,
-          resource,
-          from.minusHours(1),
-          to.plusHours(1),
-          ReservationStatus.APPROVED);
+      Reservation overlapping =
+          makeReservation(
+              reservationId,
+              resource,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.APPROVED);
       when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
           .thenReturn(java.util.List.of(overlapping));
 
@@ -420,8 +440,9 @@ class ResourceServiceTest {
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
       // 隣接（end == from）→ 重複なし
-      Reservation adjacent = makeReservation(
-          UUID.randomUUID(), resource, from.minusHours(2), from, ReservationStatus.PENDING);
+      Reservation adjacent =
+          makeReservation(
+              UUID.randomUUID(), resource, from.minusHours(2), from, ReservationStatus.PENDING);
       when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
@@ -436,8 +457,9 @@ class ResourceServiceTest {
       when(resourceRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
       assertThatThrownBy(
-          () -> resourceService.availability(
-              nonExistentId, LocalDateTime.now(), LocalDateTime.now().plusHours(1)))
+              () ->
+                  resourceService.availability(
+                      nonExistentId, LocalDateTime.now(), LocalDateTime.now().plusHours(1)))
           .isInstanceOf(ResourceNotFoundException.class);
     }
   }
