@@ -57,7 +57,7 @@ class ResourceServiceTest {
    * <p>Resource は protected コンストラクタを持ち、create ファクトリ外で生成できないため リフレクションを使用する（テスト専用）。
    */
   private static Resource makeResource(
-      UUID id, String name, ResourceCategory category, boolean isActive) {
+      UUID id, String name, ResourceCategory category, boolean isActive, String description) {
     try {
       Resource r = new Resource() {};
       setField(r, "id", id);
@@ -65,6 +65,7 @@ class ResourceServiceTest {
       setField(r, "category", category);
       setField(r, "isActive", isActive);
       setField(r, "requiresApproval", false);
+      setField(r, "description", description);
       setField(r, "createdAt", LocalDateTime.of(2025, 4, 1, 9, 0));
       return r;
     } catch (Exception e) {
@@ -185,15 +186,26 @@ class ResourceServiceTest {
 
     private static final UUID ACTIVE_ID = UUID.randomUUID();
     private static final UUID INACTIVE_ID = UUID.randomUUID();
+    private static final UUID PROJECTOR_ACTIVE_ID = UUID.randomUUID();
+    private static final UUID PROJECTOR_INACTIVE_ID = UUID.randomUUID();
     private final Pageable pageable = PageRequest.of(0, 20);
 
     private Resource activeResource;
     private Resource inactiveResource;
+    private Resource projectorResource1;
+    private Resource projectorResource2;
 
     @BeforeEach
     void setUp() {
-      activeResource = makeResource(ACTIVE_ID, "第1会議室", ResourceCategory.ROOM, true);
-      inactiveResource = makeResource(INACTIVE_ID, "旧備品A", ResourceCategory.EQUIPMENT, false);
+      activeResource =
+          makeResource(ACTIVE_ID, "第1会議室", ResourceCategory.ROOM, true, "第1会議室、プロジェクターあり");
+      inactiveResource =
+          makeResource(INACTIVE_ID, "旧備品A", ResourceCategory.EQUIPMENT, false, "旧備品A、使用不可");
+      projectorResource1 =
+          makeResource(PROJECTOR_ACTIVE_ID, "プロジェクター", ResourceCategory.EQUIPMENT, true, "プロジェクター");
+      projectorResource2 =
+          makeResource(
+              PROJECTOR_INACTIVE_ID, "旧プロジェクター", ResourceCategory.EQUIPMENT, false, "旧プロジェクター");
     }
 
     @Test
@@ -201,7 +213,7 @@ class ResourceServiceTest {
       when(resourceRepository.findByIsActiveTrue(pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
@@ -212,7 +224,7 @@ class ResourceServiceTest {
       when(resourceRepository.findAll(pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, true, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, true, pageable);
 
       assertThat(result.getContent()).hasSize(2);
     }
@@ -235,7 +247,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, from, to, false, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }
@@ -254,9 +266,91 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, from, to, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithKeywordFilter_returnsActive() {
+      when(resourceRepository.findByCategoryAndKeywordAndIsActiveTrue(null, "プロジェクター", pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource, projectorResource1)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, "プロジェクター", null, null, false, pageable);
+
+      assertThat(result.getContent()).hasSize(2);
+      assertThat(result.getContent().get(0).description()).contains("プロジェクター");
+      assertThat(result.getContent().get(1).name()).isEqualTo("プロジェクター");
+    }
+
+    @Test
+    void list_adminWithKeywordFilter_returnsIncludingInactive() {
+      when(resourceRepository.findByCategoryAndKeyword(null, "プロジェクター", pageable))
+          .thenReturn(
+              new PageImpl<>(
+                  java.util.List.of(activeResource, projectorResource1, projectorResource2)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, "プロジェクター", null, null, true, pageable);
+
+      assertThat(result.getContent()).hasSize(3);
+      assertThat(result.getContent().get(0).description()).contains("プロジェクター");
+      assertThat(result.getContent().get(1).name()).isEqualTo("プロジェクター");
+      assertThat(result.getContent().get(2).name()).isEqualTo("旧プロジェクター");
+    }
+
+    @Test
+    void list_memberWithKeywordAndTimeFilter_returnsActive() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.findByCategoryAndKeywordAndIsActiveTrue(null, "プロジェクター"))
+          .thenReturn(java.util.List.of(activeResource, projectorResource1));
+
+      // 完全重複する予約が存在する
+      Reservation occupying =
+          makeReservation(
+              UUID.randomUUID(),
+              activeResource,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.APPROVED);
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of(occupying));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, "プロジェクター", from, to, false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+      assertThat(result.getContent().get(0).name()).isEqualTo("プロジェクター");
+    }
+
+    @Test
+    void list_adminWithKeywordAndTimeFilter_returnsIncludingInactive() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.findByCategoryAndKeyword(null, "プロジェクター"))
+          .thenReturn(java.util.List.of(activeResource, projectorResource1, projectorResource2));
+
+      // 完全重複する予約が存在する
+      Reservation occupying =
+          makeReservation(
+              UUID.randomUUID(),
+              activeResource,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.APPROVED);
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of(occupying));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, "プロジェクター", from, to, true, pageable);
+
+      assertThat(result.getContent()).hasSize(2);
+      assertThat(result.getContent().get(0).name()).isEqualTo("プロジェクター");
+      assertThat(result.getContent().get(1).name()).isEqualTo("旧プロジェクター");
     }
   }
 
@@ -270,7 +364,7 @@ class ResourceServiceTest {
     @Test
     void get_existingId_returnsResourceResponse() {
       UUID id = UUID.randomUUID();
-      Resource resource = makeResource(id, "第1会議室", ResourceCategory.ROOM, true);
+      Resource resource = makeResource(id, "第1会議室", ResourceCategory.ROOM, true, "");
       when(resourceRepository.findById(id)).thenReturn(Optional.of(resource));
 
       ResourceResponse response = resourceService.get(id);
@@ -301,7 +395,7 @@ class ResourceServiceTest {
 
     @BeforeEach
     void setUp() {
-      resource = makeResource(resourceId, "第1会議室", ResourceCategory.ROOM, true);
+      resource = makeResource(resourceId, "第1会議室", ResourceCategory.ROOM, true, "");
       // lenient: availability_nonExistentResourceId テストでは resourceId の stub は不使用
       lenient().when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
     }

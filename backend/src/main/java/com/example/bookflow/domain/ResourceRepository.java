@@ -43,17 +43,77 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   /** 有効リソース全件を返す（from/to フィルタ用）。 */
   List<Resource> findByIsActiveTrue();
 
-  /** 有効リソースをカテゴリで絞り込んでページネーションで返す。 */
-  Page<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category, Pageable pageable);
+  /**
+   * 有効リソースをカテゴリで絞り込み、リソース名・説明にキーワードが部分一致するものをページネーションで返す。
+   *
+   * @param category
+   * @param keyword
+   * @param pageable
+   * @return
+   */
+  @Query(
+      "SELECT r FROM Resource r "
+          + "WHERE r.isActive = true "
+          + "AND (:category IS NULL OR r.category = :category) "
+          + "AND (:keyword IS NULL OR :keyword = '' "
+          + "OR LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+          + "OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+  Page<Resource> findByCategoryAndKeywordAndIsActiveTrue(
+      @Param("category") ResourceCategory category,
+      @Param("keyword") String keyword,
+      Pageable pageable);
 
-  /** 有効リソースをカテゴリで絞り込んで全件返す（from/to フィルタ用）。 */
-  List<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category);
+  /**
+   * 有効リソースをカテゴリで絞り込み、リソース名・説明にキーワードが部分一致するものを全件返す（from/to フィルタ用）。
+   *
+   * @param category
+   * @param keyword
+   * @return
+   */
+  @Query(
+      "SELECT r FROM Resource r "
+          + "WHERE r.isActive = true "
+          + "AND (:category IS NULL OR r.category = :category) "
+          + "AND (:keyword IS NULL OR :keyword = '' "
+          + "OR LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+          + "OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+  List<Resource> findByCategoryAndKeywordAndIsActiveTrue(
+      @Param("category") ResourceCategory category, @Param("keyword") String keyword);
 
   // ---- ADMIN 用（inactive 含む）----
 
-  /** リソースをカテゴリで絞り込んでページネーションで返す（inactive 含む）。 */
-  Page<Resource> findByCategory(ResourceCategory category, Pageable pageable);
+  /**
+   * リソースをカテゴリで絞り込み、リソース名・説明にキーワードが部分一致するものをページネーションで返す（inactive 含む）。
+   *
+   * @param category
+   * @param keyword
+   * @param pageable
+   * @return
+   */
+  @Query(
+      "SELECT r FROM Resource r "
+          + "WHERE (:category IS NULL OR r.category = :category) "
+          + "AND (:keyword IS NULL OR :keyword = '' "
+          + "OR LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+          + "OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+  Page<Resource> findByCategoryAndKeyword(
+      @Param("category") ResourceCategory category,
+      @Param("keyword") String keyword,
+      Pageable pageable);
 
-  /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
-  List<Resource> findByCategory(ResourceCategory category);
+  /**
+   * リソースをカテゴリで絞り込み、リソース名・説明にキーワードが部分一致するものを全件返す（inactive 含む）。
+   *
+   * @param category
+   * @param keyword
+   * @return
+   */
+  @Query(
+      "SELECT r FROM Resource r "
+          + "WHERE (:category IS NULL OR r.category = :category) "
+          + "AND (:keyword IS NULL OR :keyword = '' "
+          + "OR LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+          + "OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+  List<Resource> findByCategoryAndKeyword(
+      @Param("category") ResourceCategory category, @Param("keyword") String keyword);
 }

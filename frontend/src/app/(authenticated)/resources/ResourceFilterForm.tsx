@@ -16,6 +16,7 @@ import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 interface ResourceFilterFormProps {
   defaultCategory?: string;
+  defaultKeyword?: string;
   defaultFrom?: string;
   defaultTo?: string;
 }
@@ -28,6 +29,7 @@ interface ResourceFilterFormProps {
  */
 export function ResourceFilterForm({
   defaultCategory,
+  defaultKeyword,
   defaultFrom,
   defaultTo,
 }: ResourceFilterFormProps) {
@@ -42,10 +44,12 @@ export function ResourceFilterForm({
       const params = new URLSearchParams();
 
       const category = data.get("category") as string;
+      const keyword = data.get("keyword") as string;
       const from = data.get("from") as string;
       const to = data.get("to") as string;
 
       if (category && category !== "ALL") params.set("category", category);
+      if (keyword) params.set("keyword", keyword);
       if (from) params.set("from", from);
       if (to) params.set("to", to);
 
@@ -76,6 +80,12 @@ export function ResourceFilterForm({
               <SelectItem value="VEHICLE">{RESOURCE_CATEGORY_LABELS.VEHICLE}</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* キーワード */}
+        <div className="space-y-1">
+          <Label htmlFor="keyword">キーワード</Label>
+          <Input id="keyword" name="keyword" defaultValue={defaultKeyword ?? ""} />
         </div>
 
         {/* 開始日時 */}

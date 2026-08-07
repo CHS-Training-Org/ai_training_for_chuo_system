@@ -39,6 +39,8 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000011");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
+  private static final UUID PROJECTOR_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000013");
 
   private static final LocalDateTime RESERVATION_START = LocalDateTime.of(2025, 6, 2, 10, 0);
   private static final LocalDateTime RESERVATION_END = LocalDateTime.of(2025, 6, 2, 12, 0);
@@ -74,13 +76,14 @@ class ResourceControllerTest extends BaseControllerTest {
 
     // Resources（active + inactive）
     jdbcTemplate.update(
-        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
-            + " VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
         ACTIVE_RESOURCE_ID,
         "第1会議室",
         "ROOM",
         false,
         true,
+        "第1会議室、プロジェクターあり",
         LocalDateTime.of(2025, 4, 1, 9, 0));
     jdbcTemplate.update(
         "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
@@ -90,6 +93,16 @@ class ResourceControllerTest extends BaseControllerTest {
         "EQUIPMENT",
         false,
         false,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        PROJECTOR_RESOURCE_ID,
+        "プロジェクター",
+        "EQUIPMENT",
+        false,
+        true,
+        "プロジェクター、第1会議室に設置",
         LocalDateTime.of(2025, 4, 1, 9, 0));
 
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
@@ -113,6 +126,7 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", PROJECTOR_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -197,6 +211,47 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
   }
 
+  @Test
+  @WithMockMember
+  void list_onlyKeyword_returnResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "プロジェクター").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_CategoryAndKeyword_returnResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "ROOM")
+                .param("keyword", "プロジェクター")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_KeywordAndTime_returnResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "プロジェクター")
+                .param("from", "2025-06-02T09:00:00")
+                .param("to", "2025-06-02T11:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
+  }
+
   // ---------------------------------------------------------------------------
   // POST /api/resources — 登録
   // ---------------------------------------------------------------------------
@@ -206,16 +261,16 @@ class ResourceControllerTest extends BaseControllerTest {
   void create_adminWithValidRequest_returns201WithResourceResponse() throws Exception {
     String body =
         """
-        {
-          "name": "新会議室",
-          "category": "ROOM",
-          "capacity": 10,
-          "location": "4F",
-          "requiresApproval": false,
-          "isActive": true,
-          "description": "新しい会議室"
-        }
-        """;
+                                {
+                                  "name": "新会議室",
+                                  "category": "ROOM",
+                                  "capacity": 10,
+                                  "location": "4F",
+                                  "requiresApproval": false,
+                                  "isActive": true,
+                                  "description": "新しい会議室"
+                                }
+                                """;
 
     mockMvc
         .perform(post("/api/resources").contentType(MediaType.APPLICATION_JSON).content(body))
@@ -232,13 +287,13 @@ class ResourceControllerTest extends BaseControllerTest {
   void create_memberRequest_returns403Forbidden() throws Exception {
     String body =
         """
-        {
-          "name": "不正リソース",
-          "category": "ROOM",
-          "requiresApproval": false,
-          "isActive": true
-        }
-        """;
+                                {
+                                  "name": "不正リソース",
+                                  "category": "ROOM",
+                                  "requiresApproval": false,
+                                  "isActive": true
+                                }
+                                """;
 
     mockMvc
         .perform(post("/api/resources").contentType(MediaType.APPLICATION_JSON).content(body))
@@ -291,16 +346,16 @@ class ResourceControllerTest extends BaseControllerTest {
   void update_adminWithValidRequest_returns200WithUpdatedResource() throws Exception {
     String body =
         """
-        {
-          "name": "第1会議室（改装後）",
-          "category": "ROOM",
-          "capacity": 12,
-          "location": "3F",
-          "requiresApproval": false,
-          "isActive": true,
-          "description": "改装済み"
-        }
-        """;
+                                {
+                                  "name": "第1会議室（改装後）",
+                                  "category": "ROOM",
+                                  "capacity": 12,
+                                  "location": "3F",
+                                  "requiresApproval": false,
+                                  "isActive": true,
+                                  "description": "改装済み"
+                                }
+                                """;
 
     mockMvc
         .perform(
@@ -317,13 +372,13 @@ class ResourceControllerTest extends BaseControllerTest {
   void update_memberRequest_returns403Forbidden() throws Exception {
     String body =
         """
-        {
-          "name": "不正更新",
-          "category": "ROOM",
-          "requiresApproval": false,
-          "isActive": true
-        }
-        """;
+                                {
+                                  "name": "不正更新",
+                                  "category": "ROOM",
+                                  "requiresApproval": false,
+                                  "isActive": true
+                                }
+                                """;
 
     mockMvc
         .perform(
