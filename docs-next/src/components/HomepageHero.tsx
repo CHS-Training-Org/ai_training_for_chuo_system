@@ -1,28 +1,6 @@
 import React from 'react';
 import Link from '@docusaurus/Link';
-import clsx from 'clsx';
 import styles from './HomepageHero.module.css';
-
-const readers = [
-  {
-    who: '学習者',
-    detail: 'プログラミングの基礎があれば、フルスタック開発と AI エージェントの経験は問いません。STEP-01 から順に進めます。',
-    to: '/getting-started',
-    linkLabel: 'STEP-01：環境構築',
-  },
-  {
-    who: 'メンター',
-    detail: 'PR の Approve は求められません。質問への回答と、気になった点への任意コメントで学習者を支援します。',
-    to: '/operations/operations-guide',
-    linkLabel: '運用ガイド（レビュー・応答方針）',
-  },
-  {
-    who: 'リポジトリ管理者',
-    detail: 'ドキュメントサイトの公開、CI、Issue ラベルの整備を担います。',
-    to: '/operations/issue-registration',
-    linkLabel: 'Issue 起票とラベル整備',
-  },
-];
 
 const startingPoints = [
   {
@@ -63,18 +41,12 @@ export default function HomepageHero() {
           Claude Code による AI 駆動開発を身につける社内チュートリアルです。
         </p>
 
-        <div className={styles.primaryCtaWrap}>
-          <Link className={clsx(styles.cta, styles.ctaPrimary)} to="/getting-started">
-            STEP-01：環境構築から始める
-          </Link>
-        </div>
-
         <div className={styles.sections}>
           <section className={styles.card}>
-            <h2>なぜこのリポジトリがあるのか</h2>
+            <h2>なぜこのリポジトリがあるのか（Why）</h2>
             <p>
               ソフトウェア開発では、<strong>AI エージェント</strong>（指示を受けてコードを読み書きするツール。このリポジトリでは Claude Code を使います）を前提とした進め方が広がっています。
-              AI エージェントを使って開発できる人材が求められる場面も増えています。
+              それに伴い、AI エージェントを使って開発できる人材が求められる場面が増えています。
             </p>
             <p>
               とはいえ、AI エージェントを触ったことがなければ、何から始めればいいのか分かりません。
@@ -88,34 +60,20 @@ export default function HomepageHero() {
           </section>
 
           <section className={styles.card}>
-            <h2>学習を終えたときにできること</h2>
+            <h2>学習を終えたときにできること（What）</h2>
+            <p>AI 駆動開発を自分ひとりで回せるようになります。</p>
             <ul>
-              <li>予約サービスに機能を 1 つ追加し、仕様の更新から実装、テスト、PR、マージまでを自分で完結させる</li>
-              <li><code>/aidlc</code> に計画を立てさせ、提示された計画に納得してから実装に入る</li>
-              <li>実装より先に <code>Docs/spec/</code> を更新する</li>
-              <li>Next.js 15 の Server Actions から Spring Boot 4 の 4 レイヤー、PostgreSQL まで縦に貫いて変更する</li>
-              <li><code>@claude pr-review</code> で AI レビューを受け、要求整合性、実装と非機能の整合性、理解度チェックの 3 観点を通す</li>
-              <li>最初の 1 課題はあえて <code>/aidlc</code> を使わずに進め、後続で使ったときの差を自分の言葉で説明する</li>
+              <li>画面からデータベースまでまたがる機能を、計画から実装、レビュー、マージまで自分ひとりで仕上げられる</li>
+              <li>AI エージェントに渡す情報を組み立て、意図した成果が出るように指示を出せる</li>
+              <li>AI が出した計画や仕様、コードの誤りに気づき、自分で直せる</li>
+              <li>どこまで AI エージェントに任せ、どこから自分で判断するのかを線引きできる</li>
+              <li>最初の 1 課題は AI-DLC を使わずに進めるため、エンジンが何を代行しているのかを対比で説明できる</li>
+              <li>BookFlow で身につけた進め方を、別のコードベースでも再現できる</li>
             </ul>
           </section>
 
           <section className={styles.card}>
-            <h2>想定する読者</h2>
-            <ul className={styles.readerList}>
-              {readers.map((reader) => (
-                <li key={reader.who} className={styles.readerItem}>
-                  <strong className={styles.readerWho}>{reader.who}</strong>
-                  <span className={styles.readerDetail}>{reader.detail}</span>
-                  <Link to={reader.to} className={styles.readerLink}>
-                    {reader.linkLabel} →
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section className={styles.card}>
-            <h2>始め方</h2>
+            <h2>始め方（How）</h2>
             <div className={styles.startGrid}>
               {startingPoints.map((point) => (
                 <div key={point.situation} className={styles.startBranch}>
@@ -130,6 +88,10 @@ export default function HomepageHero() {
                 </div>
               ))}
             </div>
+            <p className={styles.startNote}>
+              メンターとリポジトリ管理者は <Link to="/operations/operations-guide">運用ガイド</Link> へ。
+              Claude Code に読ませる <Link to="/reference/claude-code">設定台帳</Link> も用意しています。
+            </p>
           </section>
         </div>
       </div>

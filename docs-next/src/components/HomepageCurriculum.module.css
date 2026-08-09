@@ -22,7 +22,7 @@
 
 .description {
   font-size: 1rem;
-  color: var(--bf-muted-foreground);
+  color: var(--bf-foreground);
   line-height: 1.7;
   margin: 0;
 }
@@ -97,7 +97,7 @@
 
 .cardDescription {
   font-size: 0.875rem;
-  color: var(--bf-muted-foreground);
+  color: var(--bf-foreground);
   line-height: 1.7;
   margin: 0 0 1rem;
   flex: 1;
