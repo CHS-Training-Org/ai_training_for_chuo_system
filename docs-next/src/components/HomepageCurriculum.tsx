@@ -1,53 +1,53 @@
 import React from 'react';
 import Link from '@docusaurus/Link';
-import clsx from 'clsx';
 import styles from './HomepageCurriculum.module.css';
 
-const curriculumItems = [
+const requiredSteps = [
   {
-    level: 'Level 1',
-    title: '基礎・環境構築',
-    description: 'DevContainer での環境構築から、リポジトリ運用ルール、AI ツールの基本操作まで。全員必須の STEP-01〜03 をカバー。',
+    step: 'STEP-01',
+    title: '環境構築',
+    goal: 'DevContainer を起動し、ブラウザで BookFlow のダッシュボードにアクセスできる状態を作る。',
     icon: '🛠',
     path: '/getting-started',
     color: 'var(--bf-primary)',
-    steps: ['STEP-01: 環境構築', 'STEP-02: 開発フロー理解', 'STEP-03: AI ツール活用'],
+    checkpoints: ['DevContainer 起動', 'バックエンドの health が UP', 'サインイン画面の表示'],
   },
   {
-    level: 'Level 2',
-    title: '仕様理解・Spec-first',
-    description: '要件定義・画面仕様・API 仕様・ER 図を読み解き、実装前に仕様を更新する Spec-first の流れを習得。',
-    icon: '📋',
-    path: '/requirements',
+    step: 'STEP-02',
+    title: 'リポジトリ運用・開発フローの理解',
+    goal: 'ブランチの切り方と標準開発フロー、AI レビューの位置づけを理解し、実装を始められる状態を作る。',
+    icon: '🔄',
+    path: '/develop/dev-workflow',
     color: '#16A34A',
-    steps: ['要件定義', '画面仕様', 'API 仕様', 'ER 図'],
+    checkpoints: ['標準開発フローを説明できる', 'AI レビューの完了条件を理解する', 'ブランチを 1 本作成する'],
   },
   {
-    level: 'Level 3',
-    title: '実装・縦切り開発',
-    description: 'フロントエンド→BFF→バックエンド→DB の縦切りで機能を実装。Server Actions、Spring Boot、PostgreSQL を実践。',
-    icon: '💻',
-    path: '/dev-workflow',
+    step: 'STEP-03',
+    title: 'AI ツール導入・活用',
+    goal: 'Claude Code の特性を理解する。最初の選択課題をあえて /aidlc を使わずに進め、使った場合との差を体感する。',
+    icon: '🤖',
+    path: '/ai-tools-guide',
     color: '#D97706',
-    steps: ['ブランチ戦略', '縦切り実装', 'Server Actions', 'テスト戦略'],
+    checkpoints: ['Claude Code のセットアップ', '/aidlc なしで 1 課題を完了', '感じた手間を PR に記載'],
   },
+];
+
+const afterSteps = [
   {
-    level: 'Level 4',
-    title: '選択課題・エンハンス',
-    description: '難易度別（Beginner/Intermediate/Advanced）のエンハンス課題から選択。繰り返し予約・カレンダー・帳票など実務機能を追加。',
+    title: '選択課題（Beginner / Intermediate / Advanced）',
+    goal: 'カタログから課題を選び、Spec-first で仕様を更新してから、フロントエンドからデータベースまで縦切りで実装する。',
     icon: '🚀',
-    path: '/enhancement-catalog',
+    path: '/develop/enhancement-catalog',
     color: '#DC2626',
-    steps: ['Beginner 課題', 'Intermediate 課題', 'Advanced 課題', 'PR・レビュー'],
+    note: '必須ステップの完了後',
   },
   {
-    level: 'Level 5',
-    title: '運用・振り返り',
-    description: '運用ガイド、Issue 起票、学習効果測定。AI レビューとの向き合い方、継続的なスキル向上の仕組み。',
-    icon: '📈',
-    path: '/operations-guide',
+    title: 'コードベース理解ガイド',
+    goal: '着手する機能について、処理の流れと既存テストの意図を説明できるようにする。',
+    icon: '📖',
+    path: '/curriculum',
     color: '#7C3AED',
-    steps: ['運用ガイド', 'Issue 起票', '学習効果測定', '振り返り'],
+    note: '随時・必須ではない',
   },
 ];
 
@@ -56,34 +56,52 @@ export default function HomepageCurriculum() {
     <section className={styles.section} aria-labelledby="curriculum-heading">
       <div className={styles.container}>
         <header className={styles.header}>
-          <h2 id="curriculum-heading" className={styles.title}>学習カリキュラム（5 レベル）</h2>
+          <h2 id="curriculum-heading" className={styles.title}>必須ステップと選択課題</h2>
           <p className={styles.description}>
-            初めての方は Level 1 から順に、経験者は興味のあるレベルから始めてください。<br />
-            各レベルの完了を目安に、次のレベルへ進みましょう。
+            STEP-01 と STEP-02 は全員が必須で、順番に進めます。<br />
+            STEP-03 は Claude Code の基本操作と標準開発フローの両方に習熟している場合に限り、任意確認で済ませられます。
           </p>
         </header>
-        
+
         <div className={styles.grid}>
-          {curriculumItems.map((item) => (
+          {requiredSteps.map((item) => (
             <article key={item.path} className={styles.card} style={{ '--card-color': item.color }}>
               <div className={styles.cardHeader}>
                 <span className={styles.icon} aria-hidden="true">{item.icon}</span>
                 <div>
-                  <span className={styles.level}>{item.level}</span>
+                  <span className={styles.level}>{item.step}</span>
                   <h3 className={styles.cardTitle}>{item.title}</h3>
                 </div>
               </div>
-              <p className={styles.cardDescription}>{item.description}</p>
+              <p className={styles.cardDescription}>{item.goal}</p>
               <ul className={styles.steps}>
-                {item.steps.map((step, i) => (
-                  <li key={i} className={styles.step}>
+                {item.checkpoints.map((checkpoint) => (
+                  <li key={checkpoint} className={styles.step}>
                     <span className={styles.stepDot} style={{ backgroundColor: item.color }} />
-                    {step}
+                    {checkpoint}
                   </li>
                 ))}
               </ul>
               <Link to={item.path} className={styles.cardLink}>
-                このレベルを始める →
+                この STEP を進める →
+              </Link>
+            </article>
+          ))}
+        </div>
+
+        <div className={styles.grid}>
+          {afterSteps.map((item) => (
+            <article key={item.path} className={styles.card} style={{ '--card-color': item.color }}>
+              <div className={styles.cardHeader}>
+                <span className={styles.icon} aria-hidden="true">{item.icon}</span>
+                <div>
+                  <span className={styles.level}>{item.note}</span>
+                  <h3 className={styles.cardTitle}>{item.title}</h3>
+                </div>
+              </div>
+              <p className={styles.cardDescription}>{item.goal}</p>
+              <Link to={item.path} className={styles.cardLink}>
+                詳しく見る →
               </Link>
             </article>
           ))}

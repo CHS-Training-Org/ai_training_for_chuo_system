@@ -1,4 +1,5 @@
 import React from 'react';
+import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import HomepageHero from '@site/src/components/HomepageHero';
 import HomepageCurriculum from '@site/src/components/HomepageCurriculum';
@@ -36,77 +37,74 @@ const techStack = {
   ],
 };
 
+const whenStuck = [
+  {
+    icon: '🔧',
+    label: 'トラブルシューティング',
+    detail: 'DevContainer が起動しない、ポートが衝突する、ロール別ログインが失敗する',
+    to: '/develop/troubleshooting',
+  },
+  {
+    icon: '📐',
+    label: 'コーディング規約',
+    detail: '4 レイヤーの責務、命名、テストの書き方に迷ったとき',
+    to: '/develop/coding-conventions',
+  },
+  {
+    icon: '✅',
+    label: 'レビュー基準',
+    detail: 'セルフレビューで何を見るか、AI レビューの 3 観点が何を判定するか',
+    to: '/develop/review-criteria',
+  },
+  {
+    icon: '🏗',
+    label: 'アーキテクチャ',
+    detail: '各レイヤーがどの AWS サービスに対応し、ローカルでは何に置き換わるか',
+    to: '/architecture',
+  },
+];
+
 export default function Home() {
   return (
-    <div className={styles.root}>
-      <HomepageHero />
-      
-      <main className={styles.main} role="main">
-        <HomepageCurriculum />
-        
-        <section className={styles.techStackSection} aria-labelledby="tech-stack-heading">
-          <div className={styles.container}>
-            <h2 id="tech-stack-heading" className={styles.sectionTitle}>技術スタック</h2>
-            <p className={styles.sectionDescription}>
-              実務で使われるモダンなスタックで構成されています。詳細は <Link to="/overview">リポジトリ概要</Link> と <Link to="/architecture">アーキテクチャ</Link> を参照してください。
-            </p>
-            <div className={styles.techStackGrid}>
-              {Object.entries(techStack).map(([category, items]) => (
-                <TechStackGrid key={category} category={category} items={items} />
-              ))}
+    <Layout
+      title="AI 駆動開発チュートリアル"
+      description="施設・備品予約サービス BookFlow に機能を足しながら、Claude Code を使った開発の進め方を身につける社内チュートリアル">
+      <div className={styles.root}>
+        <main className={styles.main} role="main">
+          <HomepageHero />
+
+          <HomepageCurriculum />
+
+          <section className={styles.quickLinks} aria-labelledby="when-stuck-heading">
+            <div className={styles.container}>
+              <h2 id="when-stuck-heading" className={styles.sectionTitle}>詰まったときに開くもの</h2>
+              <div className={styles.linksGrid}>
+                {whenStuck.map((item) => (
+                  <Link key={item.to} to={item.to} className={clsx(styles.linkCard, styles.linkCardSecondary)}>
+                    <span className={styles.linkIcon}>{item.icon}</span>
+                    <span className={styles.linkText}>{item.label}</span>
+                    <span className={styles.linkDetail}>{item.detail}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-        
-        <section className={styles.quickLinks} aria-labelledby="quick-links-heading">
-          <div className={styles.container}>
-            <h2 id="quick-links-heading" className={styles.sectionTitle}>クイックリンク</h2>
-            <div className={styles.linksGrid}>
-              <Link to="/curriculum" className={clsx(styles.linkCard, styles.linkCardPrimary)}>
-                <span className={styles.linkIcon}>📚</span>
-                <span className={styles.linkText}>学習カリキュラム</span>
-              </Link>
-              <Link to="/getting-started" className={clsx(styles.linkCard, styles.linkCardSecondary)}>
-                <span className={styles.linkIcon}>🛠</span>
-                <span className={styles.linkText}>環境構築手順</span>
-              </Link>
-              <Link to="/requirements" className={clsx(styles.linkCard, styles.linkCardSecondary)}>
-                <span className={styles.linkIcon}>📋</span>
-                <span className={styles.linkText}>要件定義</span>
-              </Link>
-              <Link to="/dev-workflow" className={clsx(styles.linkCard, styles.linkCardSecondary)}>
-                <span className={styles.linkIcon}>🔄</span>
-                <span className={styles.linkText}>開発ワークフロー</span>
-              </Link>
-              <Link to="/enhancement-catalog" className={clsx(styles.linkCard, styles.linkCardSecondary)}>
-                <span className={styles.linkIcon}>🚀</span>
-                <span className={styles.linkText}>選択課題カタログ</span>
-              </Link>
-              <Link to="/architecture" className={clsx(styles.linkCard, styles.linkCardSecondary)}>
-                <span className={styles.linkIcon}>🏗</span>
-                <span className={styles.linkText}>アーキテクチャ</span>
-              </Link>
-              <Link to="/adr" className={clsx(styles.linkCard, styles.linkCardSecondary)}>
-                <span className={styles.linkIcon}>📝</span>
-                <span className={styles.linkText}>設計判断 (ADR)</span>
-              </Link>
-              <Link to="/troubleshooting" className={clsx(styles.linkCard, styles.linkCardSecondary)}>
-                <span className={styles.linkIcon}>🔧</span>
-                <span className={styles.linkText}>トラブルシューティング</span>
-              </Link>
+          </section>
+
+          <section className={styles.techStackSection} aria-labelledby="tech-stack-heading">
+            <div className={styles.container}>
+              <h2 id="tech-stack-heading" className={styles.sectionTitle}>技術スタック</h2>
+              <p className={styles.sectionDescription}>
+                各レイヤーの責務と選定理由は <Link to="/architecture">アーキテクチャ</Link> と <Link to="/reference/adr">設計判断（ADR）</Link> に記録しています。
+              </p>
+              <div className={styles.techStackGrid}>
+                {Object.entries(techStack).map(([category, items]) => (
+                  <TechStackGrid key={category} category={category} items={items} />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      </main>
-      
-      <footer className={styles.footer}>
-        <p>
-          BookFlow ドキュメントサイト &copy; {new Date().getFullYear()} 中央システム
-        </p>
-        <p>
-          Built with Docusaurus · <Link to="https://github.com/CHS-Training-Org/ai_training_for_chuo_system">GitHub Repository</Link>
-        </p>
-      </footer>
-    </div>
+          </section>
+        </main>
+      </div>
+    </Layout>
   );
 }

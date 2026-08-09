@@ -172,11 +172,7 @@ const config: Config = {
             },
             {
               label: 'ADR 一覧',
-              to: '/adr',
-            },
-            {
-              label: '設計書',
-              to: '/design',
+              to: '/reference/adr',
             },
           ],
         },
