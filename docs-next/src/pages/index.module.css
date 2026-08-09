@@ -1,0 +1,134 @@
+.root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3rem;
+  width: 100%;
+}
+
+.techStackSection {
+  margin: 3rem 0;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--bf-foreground);
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+
+.sectionDescription {
+  font-size: 0.9375rem;
+  color: var(--bf-muted-foreground);
+  text-align: center;
+  margin: 0 0 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.techStackGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.quickLinks {
+  margin: 3rem 0;
+  padding: 2rem;
+  background: var(--bf-muted);
+  border-radius: 12px;
+}
+
+.linksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.linkCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1rem;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
+  border: 1px solid var(--bf-border);
+}
+
+.linkCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--bf-shadow-md);
+  text-decoration: none;
+}
+
+.linkCardPrimary {
+  background: var(--bf-primary);
+  color: #fff;
+  border-color: var(--bf-primary);
+}
+
+.linkCardPrimary:hover {
+  background: var(--bf-primary-dark);
+  border-color: var(--bf-primary-dark);
+}
+
+.linkCardSecondary {
+  background: var(--bf-card);
+  color: var(--bf-foreground);
+}
+
+.linkCardSecondary:hover {
+  background: var(--bf-muted);
+}
+
+.linkIcon {
+  font-size: 1.5rem;
+}
+
+.linkText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.footer {
+  text-align: center;
+  padding: 2rem;
+  background: var(--bf-muted);
+  border-top: 1px solid var(--bf-border);
+  margin-top: auto;
+}
+
+.footer p {
+  margin: 0.25rem 0;
+  font-size: 0.8125rem;
+  color: var(--bf-muted-foreground);
+}
+
+.footer a {
+  color: var(--bf-primary);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 0 1rem 2rem;
+  }
+  .linksGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

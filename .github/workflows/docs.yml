@@ -1,14 +1,11 @@
-name: Deploy Docs to GitHub Pages
+name: Deploy Docusaurus docs-next to GitHub Pages
 
 on:
   push:
-    branches: [master, main]
+    branches: [main]
     paths:
-      - "Docs/**"
-      - "zensical.toml"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/docs.yml"
+      - 'docs-next/**'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -17,28 +14,41 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: 'pages'
   cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: astral-sh/setup-uv@v5
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          enable-cache: true
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: docs-next/package-lock.json
 
       - name: Install dependencies
-        run: uv sync
+        working-directory: docs-next
+        run: npm ci
 
-      - name: Build docs
-        run: uv run zensical build
+      - name: Generate last_updated from git log
+        working-directory: docs-next
+        run: node scripts/gen-last-updated.mjs
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Build Docusaurus
+        working-directory: docs-next
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: docs-next/build
 
   deploy:
     needs: build

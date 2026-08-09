@@ -1,16 +1,16 @@
 ---
-type: index
+sidebar_position: 999
 title: ADR（Architecture Decision Records）ガイド
 description: BookFlow における ADR の命名規則・フォーマット・起票プロセスと全 ADR の一覧
 tags:
   - adr
   - decision
   - guide
-timestamp: 2026-07-27
 audience: メンター・リポジトリ管理者・学習者
 references:
-  - Docs/spec/overview.md
+  - ../overview.md
   - Docs/spec/index.md
+last_updated: '2026-08-01T11:56:18+09:00'
 ---
 
 # ADR（Architecture Decision Records）ガイド
@@ -113,45 +113,45 @@ Accepted（YYYY-MM-DD）
 
 | # | テーマ | Status |
 |---|--------|--------|
-| [ADR-001](./ADR-001-frontend-package-manager.md) | パッケージマネージャ | Accepted |
-| [ADR-002](./ADR-002-frontend-styling.md) | スタイリング | Accepted |
-| [ADR-003](./ADR-003-frontend-ui-components.md) | UI コンポーネントライブラリ | Accepted |
-| [ADR-004](./ADR-004-frontend-data-fetching.md) | データ取得戦略 | Accepted |
-| [ADR-005](./ADR-005-frontend-form-library.md) | フォームライブラリ | Accepted |
-| [ADR-006](./ADR-006-frontend-validation.md) | バリデーション | Accepted |
-| [ADR-007](./ADR-007-frontend-client-state.md) | クライアント状態管理 | Accepted |
-| [ADR-008](./ADR-008-frontend-auth-client.md) | 認証クライアント | Accepted |
-| [ADR-009](./ADR-009-frontend-test-strategy.md) | テスト戦略 | Accepted |
-| [ADR-010](./ADR-010-frontend-lint-format.md) | Lint / Format | Accepted |
+| [ADR-001](../ADR-001-frontend-package-manager) | パッケージマネージャ | Accepted |
+| [ADR-002](../ADR-002-frontend-styling) | スタイリング | Accepted |
+| [ADR-003](../ADR-003-frontend-ui-components) | UI コンポーネントライブラリ | Accepted |
+| [ADR-004](../ADR-004-frontend-data-fetching) | データ取得戦略 | Accepted |
+| [ADR-005](../ADR-005-frontend-form-library) | フォームライブラリ | Accepted |
+| [ADR-006](../ADR-006-frontend-validation) | バリデーション | Accepted |
+| [ADR-007](../ADR-007-frontend-client-state) | クライアント状態管理 | Accepted |
+| [ADR-008](../ADR-008-frontend-auth-client) | 認証クライアント | Accepted |
+| [ADR-009](../ADR-009-frontend-test-strategy) | テスト戦略 | Accepted |
+| [ADR-010](../ADR-010-frontend-lint-format) | Lint / Format | Accepted |
 
 ### バックエンド（ADR-011〜019）
 
 | # | テーマ | Status |
 |---|--------|--------|
-| [ADR-011](./ADR-011-backend-build-tool.md) | ビルドツール | Accepted |
-| [ADR-012](./ADR-012-backend-orm.md) | データアクセス（ORM） | Accepted |
-| [ADR-013](./ADR-013-backend-db-migration.md) | DB マイグレーション | Accepted |
-| [ADR-014](./ADR-014-backend-validation.md) | バリデーション | Accepted |
-| [ADR-015](./ADR-015-backend-api-docs.md) | API ドキュメント | Accepted |
-| [ADR-016](./ADR-016-backend-auth.md) | 認証・認可 | Accepted |
-| [ADR-017](./ADR-017-backend-logging.md) | ロギング戦略 | Accepted |
-| [ADR-018](./ADR-018-backend-test-strategy.md) | テスト戦略 | Accepted |
-| [ADR-019](./ADR-019-backend-code-quality.md) | コード品質ツール | Accepted |
+| [ADR-011](../ADR-011-backend-build-tool) | ビルドツール | Accepted |
+| [ADR-012](../ADR-012-backend-orm) | データアクセス（ORM） | Accepted |
+| [ADR-013](../ADR-013-backend-db-migration) | DB マイグレーション | Accepted |
+| [ADR-014](../ADR-014-backend-validation) | バリデーション | Accepted |
+| [ADR-015](../ADR-015-backend-api-docs) | API ドキュメント | Accepted |
+| [ADR-016](../ADR-016-backend-auth) | 認証・認可 | Accepted |
+| [ADR-017](../ADR-017-backend-logging) | ロギング戦略 | Accepted |
+| [ADR-018](../ADR-018-backend-test-strategy) | テスト戦略 | Accepted |
+| [ADR-019](../ADR-019-backend-code-quality) | コード品質ツール | Accepted |
 
 ### AI・ドキュメント（ADR-020〜）
 
 | # | テーマ | Status |
 |---|--------|--------|
-| [ADR-020](./ADR-020-aidlc-engine-adoption.md) | AI-DLC エンジン完全採用 | Accepted |
-| [ADR-021](./ADR-021-okf-frontmatter-adoption.md) | OKF 準拠 frontmatter 部分採用 | Accepted |
-| [ADR-023](./ADR-023-mentor-gate-removal.md) | 運用プロセス：承認ゲート廃止・セルフ完結運用への移行 | Accepted |
-| [ADR-024](./ADR-024-ai-first-review-adoption.md) | AI一次レビュー（検討A）の採用 | Accepted |
-| [ADR-025](./ADR-025-ai-review-completion-gate.md) | AIレビューをタスク完了判定に格上げ | Accepted |
-| [ADR-026](./ADR-026-comprehension-check-quiz-format.md) | 理解度チェックを4択化し完了条件から誤答を外す | Accepted |
-| [ADR-027](./ADR-027-docusaurus-migration.md) | ドキュメントサイトを Zensical から Docusaurus に移行 | Proposed |
+| [ADR-020](../ADR-020-aidlc-engine-adoption) | AI-DLC エンジン完全採用 | Accepted |
+| [ADR-021](../ADR-021-okf-frontmatter-adoption) | OKF 準拠 frontmatter 部分採用 | Accepted |
+| [ADR-023](../ADR-023-mentor-gate-removal) | 運用プロセス：承認ゲート廃止・セルフ完結運用への移行 | Accepted |
+| [ADR-024](../ADR-024-ai-first-review-adoption) | AI一次レビュー（検討A）の採用 | Accepted |
+| [ADR-025](../ADR-025-ai-review-completion-gate) | AIレビューをタスク完了判定に格上げ | Accepted |
+| [ADR-026](../ADR-026-comprehension-check-quiz-format) | 理解度チェックを4択化し完了条件から誤答を外す | Accepted |
+| [ADR-027](../ADR-027-docusaurus-migration) | ドキュメントサイトを Zensical から Docusaurus に移行 | Proposed |
 
 ### 開発環境（ADR-022〜）
 
 | # | テーマ | Status |
 |---|--------|--------|
-| [ADR-022](./ADR-022-wsl-container-future-adoption.md) | WSL Container（wslc）の将来採用 | Proposed |
+| [ADR-022](../ADR-022-wsl-container-future-adoption) | WSL Container（wslc）の将来採用 | Proposed |
