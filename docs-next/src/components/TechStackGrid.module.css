@@ -1,18 +1,10 @@
-.section {
-  margin: 1.5rem 0;
-}
-
 .categoryLabel {
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--bf-muted-foreground);
-  margin: 1.25rem 0 0.5rem;
-}
-
-.categoryLabel:first-child {
-  margin-top: 0;
+  margin: 0 0 0.5rem;
 }
 
 .grid {

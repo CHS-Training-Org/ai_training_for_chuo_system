@@ -6,16 +6,16 @@ const startingPoints = [
   {
     situation: 'はじめて触る',
     steps: [
-      { label: 'STEP-01：環境構築', to: '/getting-started' },
-      { label: 'STEP-02：開発フローの理解', to: '/develop/dev-workflow' },
-      { label: 'STEP-03：AI ツール活用', to: '/ai-tools-guide' },
+      { label: '環境構築', to: '/getting-started' },
+      { label: '開発フローの理解', to: '/develop/dev-workflow' },
+      { label: 'AI ツール活用', to: '/ai-tools-guide' },
     ],
   },
   {
-    situation: '環境ができている',
+    situation: '必須ステップを終えた',
     steps: [
       { label: '選択課題カタログから Beginner を選ぶ', to: '/develop/enhancement-catalog' },
-      { label: '標準開発フローを確認する', to: '/develop/dev-workflow' },
+      { label: '標準開発フローを見直す', to: '/develop/dev-workflow' },
     ],
   },
   {
@@ -23,7 +23,6 @@ const startingPoints = [
     steps: [
       { label: '用語集', to: '/glossary' },
       { label: '仕様書インデックス', to: '/spec-index' },
-      { label: '設計判断（ADR）', to: '/reference/adr' },
     ],
   },
 ];

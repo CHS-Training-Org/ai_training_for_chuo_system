@@ -34,10 +34,20 @@
   margin-right: auto;
 }
 
+.techStackDescription {
+  font-size: 0.9375rem;
+  color: var(--bf-foreground);
+  text-align: center;
+  margin: 0 0 2rem;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .techStackGrid {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .quickLinks {

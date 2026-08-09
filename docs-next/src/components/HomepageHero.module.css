@@ -116,7 +116,7 @@
 .startSituation {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--bf-primary);
+  color: var(--bf-foreground);
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--bf-border);
 }

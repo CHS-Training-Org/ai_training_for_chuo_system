@@ -1,5 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
+import { useBaseUrlUtils } from '@docusaurus/useBaseUrl';
 import styles from './TechStackGrid.module.css';
 
 interface TechStackItem {
@@ -14,6 +15,7 @@ interface TechStackGridProps {
 }
 
 export default function TechStackGrid({ category, items }: TechStackGridProps) {
+  const { withBaseUrl } = useBaseUrlUtils();
   return (
     <section className={styles.section} aria-labelledby={`${category}-heading`}>
       <h3 id={`${category}-heading`} className={styles.categoryLabel}>{category}</h3>
@@ -21,7 +23,7 @@ export default function TechStackGrid({ category, items }: TechStackGridProps) {
         {items.map((item) => (
           <div key={item.name} className={styles.card} role="listitem">
             <img
-              src={item.logo}
+              src={withBaseUrl(item.logo)}
               alt={item.alt}
               className={styles.logo}
               loading="lazy"

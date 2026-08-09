@@ -93,7 +93,7 @@ export default function Home() {
           <section className={styles.techStackSection} aria-labelledby="tech-stack-heading">
             <div className={styles.container}>
               <h2 id="tech-stack-heading" className={styles.sectionTitle}>技術スタック</h2>
-              <p className={styles.sectionDescription}>
+              <p className={styles.techStackDescription}>
                 各レイヤーの責務と選定理由は <Link to="/architecture">アーキテクチャ</Link> と <Link to="/reference/adr">設計判断（ADR）</Link> に記録しています。
               </p>
               <div className={styles.techStackGrid}>
