@@ -64,7 +64,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ## 用語定義
 
-ドメイン用語の定義は [用語集](../../glossary.md) に集約しました。
+ドメイン用語の定義は [用語集](./glossary.md) に集約しました。
 
 ---
 
@@ -364,13 +364,13 @@ AND end_at > :startAt
 | 重複予約防止 | 同一リソース・同一時間帯の `status IN ('PENDING', 'APPROVED')` 予約の重複申請を 409 Conflict で拒否する（アプリ層排他制御） |
 | エラーレスポンス形式 | 全 API のエラーは `{ "code": "...", "message": "..." }` 形式の JSON で返却する |
 | ページネーション | 一覧系 API は page/size 方式（page 0 始まり・デフォルト size=20）で返却する |
-| ロギング / 可観測性 | 受信 HTTP リクエストをログ出力する（クエリストリングは含む・ヘッダ／ペイロード除外）。出力形式はプロファイルで切替（`prod`=JSON 構造化 / `!prod`=ANSI 色付きテキスト）。詳細は [ADR-017](../../reference/adr/ADR-017-backend-logging.md) |
+| ロギング / 可観測性 | 受信 HTTP リクエストをログ出力する（クエリストリングは含む・ヘッダ／ペイロード除外）。出力形式はプロファイルで切替（`prod`=JSON 構造化 / `!prod`=ANSI 色付きテキスト）。詳細は [ADR-017](./reference/adr/ADR-017-backend-logging.md) |
 
 ---
 
 ## 技術マッピング
 
-[ARCHITECTURE.md](../../architecture.md) の標準アーキテクチャ各レイヤーと BookFlow での実装の対応。
+[ARCHITECTURE.md](./architecture.md) の標準アーキテクチャ各レイヤーと BookFlow での実装の対応。
 
 | ARCHITECTURE.md のレイヤー | BookFlow での実装 |
 |--------------------------|----------------|

@@ -98,7 +98,7 @@ AI-DLC Operations の実体は CI 品質ゲート（`CI Frontend` / `CI Backend`
 [coding-conventions.md §共通方針](../develop/coding-conventions.md#common) の規約に従い、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` の形式でブランチを作成します。
 
 :::note 作り忘れた場合
-    ブランチを作成し忘れたまま `/aidlc` を起動しても、エンジン起動前の Pre-flight 処理が `main`/`master` 上にいることを検知します。取り組む対象のビジネス要求シート（`Docs/spec/enhancements/`）を特定できれば、short-desc とファイル名・GitHub Issue 検索から Issue 番号を推測してブランチ名を提案するので、内容を確認して承認するだけで済みます（推測できない場合は Issue 番号と短い説明を直接確認します）。ブランチはこの提案の承認後に自動作成され、ワークフローが始まります（詳細は [`.claude/skills/aidlc/SKILL.md`](../../.claude/skills/aidlc/SKILL.md) の Pre-flight 節を参照）。
+    ブランチを作成し忘れたまま `/aidlc` を起動しても、エンジン起動前の Pre-flight 処理が `main`/`master` 上にいることを検知します。取り組む対象のビジネス要求シート（`Docs/spec/enhancements/`）を特定できれば、short-desc とファイル名・GitHub Issue 検索から Issue 番号を推測してブランチ名を提案するので、内容を確認して承認するだけで済みます（推測できない場合は Issue 番号と短い説明を直接確認します）。ブランチはこの提案の承認後に自動作成され、ワークフローが始まります（詳細は [`.claude/skills/aidlc/SKILL.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/skills/aidlc/SKILL.md) の Pre-flight 節を参照）。
 
 :::
 :::tip コードベースを読み解くタイミング
@@ -149,14 +149,14 @@ CI（`CI Frontend` / `CI Backend`）は機械的な品質ゲートです。
 
 ### 7. PR を作成する
 
-[`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md) の様式に沿って PR を作成します。  
+[`.github/PULL_REQUEST_TEMPLATE.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.github/PULL_REQUEST_TEMPLATE.md) の様式に沿って PR を作成します。  
 `/create-pr` スキルを使うと、head/base ブランチと下書きのみか実際に作成するかを確認したうえで、テンプレートに沿った PR タイトル・本文を組み立て、`gh pr create` で作成できます。実際に作成する場合、head ブランチの push は事前に済ませておく必要があります（`/commit-push` スキル参照）。
 
 ### 8. セルフレビュー・マージ
 
 [review-criteria.md §評価基準](../develop/review-criteria.md#completion-criteria) のチェックリストで自分の PR をセルフレビューし、満たしていることを確認したら自分でマージします。メンターレビューは必須ではありません。メンターは任意のタイミングで Issue・PR にコメントすることがあります。
 
-PR に `@claude pr-review` とコメントすると、AI レビューが3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）で判定します。**観点1・観点2が OK、CI green、かつ観点3が確定している**とき総合判定が「完了」になり、これがタスク完了の条件です（[review-criteria.md §AI レビューとの対応](../develop/review-criteria.md#ai-review)、[ADR-025](../../reference/adr/ADR-025-ai-review-completion-gate.md)、[ADR-026](../../reference/adr/ADR-026-comprehension-check-quiz-format.md)）。観点3の誤答は完了を妨げません。
+PR に `@claude pr-review` とコメントすると、AI レビューが3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）で判定します。**観点1・観点2が OK、CI green、かつ観点3が確定している**とき総合判定が「完了」になり、これがタスク完了の条件です（[review-criteria.md §AI レビューとの対応](../develop/review-criteria.md#ai-review)、[ADR-025](../reference/adr/ADR-025-ai-review-completion-gate.md)、[ADR-026](../reference/adr/ADR-026-comprehension-check-quiz-format.md)）。観点3の誤答は完了を妨げません。
 
 観点3（理解度チェック）は3〜5問の4択で、回答の評価に少なくとも2回のやり取りが必要です。1回目のレビューで出題されたら、「問番号＋選んだ選択肢＋選んだ理由を一文」の形式（例：`1-B。理由は…`）で PR の**会話コメント**に回答し、再度 `@claude pr-review` とコメントしてください。2回目で判定と、正誤にかかわらず全問の解説が返ります。
 

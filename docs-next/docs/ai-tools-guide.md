@@ -66,7 +66,7 @@ claude             # 対話セッションを開始
 :::
 :::warning コンテナ起動が `.claude.json` 関連で失敗する場合
     マウント元の `~/.claude.json` はコンテナ初回起動時に自動生成されます（`devcontainer.json` の `initializeCommand`）。  
-    起動に失敗する場合は [troubleshooting.md §AI ツール関連](../develop/troubleshooting.md#ai-tools) を参照してください。
+    起動に失敗する場合は [troubleshooting.md §AI ツール関連](./develop/troubleshooting.md#ai-tools) を参照してください。
 
 :::
 ---
@@ -129,7 +129,7 @@ Claude Code は複数のモデルから選んで実行できます。モデル�
 | Haiku | 最も高速で低コストだが、推論力は限定的で、単純なタスク向き | 定型的な小タスク、サブエージェントへの委譲 |
 
 本リポジトリでは、**Sonnet を基本モデルとする方針**を採ります。日常的な実装や修正のほとんどは Sonnet の精度で足り、Opus に比べて応答時間とコストを抑えられるためです。  
-`.claude/settings.json` の `model: sonnet` がこの方針を対話セッションの既定として反映しており、学習者が個別に切り替えない限り Sonnet が使われます（`advisorModel: opus` は `advisor` ツール専用の指定で、この既定とは別に扱われます。[agent-config.md §言語・モデル設定](../../reference/claude-code/agent-config.md#model-settings)参照）。
+`.claude/settings.json` の `model: sonnet` がこの方針を対話セッションの既定として反映しており、学習者が個別に切り替えない限り Sonnet が使われます（`advisorModel: opus` は `advisor` ツール専用の指定で、この既定とは別に扱われます。[agent-config.md §言語・モデル設定](./reference/claude-code/agent-config.md#model-settings)参照）。
 
 ### モデルを切り替える
 
@@ -137,7 +137,7 @@ Claude Code は複数のモデルから選んで実行できます。モデル�
 基本モデル（Sonnet）から恒久的に変更したい場合は `/config` から設定します（設定は `settings.json` の `model` キーに保存されます）。
 
 :::tip Opus に切り替える場面
-    STEP-03 のように既存パターンをなぞる実装では Sonnet で十分ですが、AI-DLC の INCEPTION フェーズ（[dev-workflow.md](../develop/dev-workflow.md)）のように設計方針そのものを検討する場面では、Opus に切り替えると精度が上がることがあります。切り替えはそのタスクに限った一時的な操作とし、終わったら Sonnet に戻します。
+    STEP-03 のように既存パターンをなぞる実装では Sonnet で十分ですが、AI-DLC の INCEPTION フェーズ（[dev-workflow.md](./develop/dev-workflow.md)）のように設計方針そのものを検討する場面では、Opus に切り替えると精度が上がることがあります。切り替えはそのタスクに限った一時的な操作とし、終わったら Sonnet に戻します。
 
 :::
 `/fast` コマンドは Opus の応答を高速化します。トークン消費量自体が増えるわけではなく、応答時間を短縮する代わりに追加の利用枠を消費する仕組みなので、常用せず必要な場面に絞って使います。
@@ -152,7 +152,7 @@ Claude Code のサブスクリプション（Claude Pro プランと Max プラ�
 スキルやサブエージェント、プラグイン、MCP サーバーごとの割合で表示します。
 
 :::note 本リポジトリの statusline での確認
-    `.claude/scripts/statusline-command.sh` は、5時間と7日のレートリミットを JST 表示で画面下部に常時表示する設定になっています（[agent-config.md §その他の設定](../../reference/claude-code/agent-config.md#other-config)）。  
+    `.claude/scripts/statusline-command.sh` は、5時間と7日のレートリミットを JST 表示で画面下部に常時表示する設定になっています（[agent-config.md §その他の設定](./reference/claude-code/agent-config.md#other-config)）。  
     `/usage` を都度実行しなくても残量を把握できます。
 
 :::
@@ -191,12 +191,12 @@ Claude Code のサブスクリプション（Claude Pro プランと Max プラ�
     AI の誤り（ハルシネーション）に気づきやすくなります。
 
 :::
-さらに実践的なテクニック（検証の与え方、コンテキスト管理、よくある失敗パターンなど）は [claude-code-best-practices.md](../claude-code-best-practices.md) を参照してください。
+さらに実践的なテクニック（検証の与え方、コンテキスト管理、よくある失敗パターンなど）は [claude-code-best-practices.md](./claude-code-best-practices.md) を参照してください。
 
 ---
 
 ## AI-DLC を使わずに最初の選択課題を進める（STEP-03）
-STEP-03 では、[Beginner の課題](../develop/enhancement-catalog.md#beginner) から選んだ最初の 1 課題を、**AI-DLC エンジン**（`/aidlc` が起動する INCEPTION フェーズ・承認ゲート・段階的な CONSTRUCTION フェーズの自動オーケストレーション）を使わずに進めます。  
+STEP-03 では、[Beginner の課題](./develop/enhancement-catalog.md#beginner) から選んだ最初の 1 課題を、**AI-DLC エンジン**（`/aidlc` が起動する INCEPTION フェーズ・承認ゲート・段階的な CONSTRUCTION フェーズの自動オーケストレーション）を使わずに進めます。  
 狙いは、エンジンが計画・段階分割・承認ゲートを代行してくれる価値を、後続課題で AI-DLC を使ったときとの対比で体感することです。
 
 AI-DLC エンジンを使わないことは、Claude Code を使わないことを意味しません。コード補完・設計相談・生成コードの相棒としては、この STEP でも通常どおり Claude Code を使います。  
@@ -204,11 +204,11 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 
 進め方は次のとおりです。
 
-1. [coding-conventions.md §共通方針](../develop/coding-conventions.md#common) の規約に従い、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` ブランチを作成する
+1. [coding-conventions.md §共通方針](./develop/coding-conventions.md#common) の規約に従い、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` ブランチを作成する
 2. 選んだ課題の要件シート（`Docs/spec/enhancements/<short-desc>.md`）を読み、変更が仕様に及ぶ範囲を `/update-spec` スキルで先に `Docs/spec/` に反映する
 3. `/aidlc` は起動せず、Claude Code に実装したい内容を直接プロンプトする。実装順序や確認のタイミングは、エンジンの Workflow Planning に頼らず自分で組み立てる
 4. 生成されたコードは必ず自分で読み、テスト実行・画面確認をしてからコミットする
-5. `/create-pr` で PR を作成する。[review-criteria.md](../develop/review-criteria.md) のチェックリストでセルフレビューし、満たしていることを確認したら自分でマージする
+5. `/create-pr` で PR を作成する。[review-criteria.md](./develop/review-criteria.md) のチェックリストでセルフレビューし、満たしていることを確認したら自分でマージする
 
 完了したら、AI-DLC なしで進めて手間だった点（段取り、仕様との整合、レビューの負荷など）を短く振り返り、その選択課題の PR に記載してください。後続の選択課題で `/aidlc` を使ったときに、この振り返りが対比の基準になります。
 
@@ -222,11 +222,11 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 | `@claude pr-review` | AI レビュー | PR を3観点で判定してコメントする。**コードの変更はしない** |
 | `@claude`（`pr-review` を伴わない） | 汎用の Claude | 質問への回答、調査、修正コミットまで行える |
 
-**`@claude pr-review` は AI レビュー専用**です。タスク完了の判定に使うもので、この用途では Claude にコードを触らせません（[review-criteria.md §AI レビューとの対応](../develop/review-criteria.md#ai-review)）。
+**`@claude pr-review` は AI レビュー専用**です。タスク完了の判定に使うもので、この用途では Claude にコードを触らせません（[review-criteria.md §AI レビューとの対応](./develop/review-criteria.md#ai-review)）。
 
 **`@claude` だけを書いた場合は汎用の Claude が応答します。** 「このエラーの原因を教えて」「このテストを追加して」のように、Issue・PR 上で相談したいときに使います。こちらはコミットまで行えるため、生成された変更は必ず自分で読んでから扱ってください。
 
-どちらも投稿してから応答まで**数分から15分程度**かかります。すぐに反応がなくても失敗ではないので、同じコメントを連投せずに待ってください（連投しても同一 PR に対する AI レビューは順番待ちになるだけです）。応答がないまま長時間経過した場合の確認手順は [troubleshooting.md §AI レビュー関連](../develop/troubleshooting.md#ai-review-trouble) を参照してください。
+どちらも投稿してから応答まで**数分から15分程度**かかります。すぐに反応がなくても失敗ではないので、同じコメントを連投せずに待ってください（連投しても同一 PR に対する AI レビューは順番待ちになるだけです）。応答がないまま長時間経過した場合の確認手順は [troubleshooting.md §AI レビュー関連](./develop/troubleshooting.md#ai-review-trouble) を参照してください。
 
 ## AI 利用ポリシー
 本リポジトリにおける AI ツール（Claude Code）の利用範囲と責任分担を定めます。STEP-03 に限らず、全課題に適用される恒久的なルールです。
@@ -250,7 +250,7 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 :::danger AI 生成コードを無検証でコミットしない
     生成されたコードは必ず自分で読み、動作確認（テスト実行、画面確認）をしてからコミットしてください。  
     理解できないコードをそのままコミットするわけにはいきません。  
-    PR に `@claude pr-review` とコメントすると、この確認を助ける理解度チェックの4択問題が得られます。回答すると、正誤にかかわらず全問の解説が返ります。**誤答してもタスク完了は妨げられません**が、誤答した事実は PR コメントに記録として残ります（[dev-workflow.md §8](../develop/dev-workflow.md#flow)、[ADR-026](../../reference/adr/ADR-026-comprehension-check-quiz-format.md)）。
+    PR に `@claude pr-review` とコメントすると、この確認を助ける理解度チェックの4択問題が得られます。回答すると、正誤にかかわらず全問の解説が返ります。**誤答してもタスク完了は妨げられません**が、誤答した事実は PR コメントに記録として残ります（[dev-workflow.md §8](./develop/dev-workflow.md#flow)、[ADR-026](./reference/adr/ADR-026-comprehension-check-quiz-format.md)）。
 
 :::
 ### 責任とPRでの明記
@@ -260,4 +260,4 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 
 :::
 PR には AI を活用した箇所の明記が**必須**です。  
-[`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md) の「AI ツールを使った箇所」欄に、AI に提示させた計画（Workflow Planning、または `/aidlc` を使わない場合は plan mode）、補完や生成に使った箇所を記入してください（詳しい手順は [dev-workflow.md](../develop/dev-workflow.md#flow) を参照）。
+[`.github/PULL_REQUEST_TEMPLATE.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.github/PULL_REQUEST_TEMPLATE.md) の「AI ツールを使った箇所」欄に、AI に提示させた計画（Workflow Planning、または `/aidlc` を使わない場合は plan mode）、補完や生成に使った箇所を記入してください（詳しい手順は [dev-workflow.md](./develop/dev-workflow.md#flow) を参照）。

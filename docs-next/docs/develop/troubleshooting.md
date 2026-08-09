@@ -192,7 +192,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 ### Flyway の `Migration checksum mismatch` で起動に失敗する
 
 - **症状**: `bootRun` が `Validate failed: ... Migration checksum mismatch for migration version 001` のようなエラーで停止する。
-- **原因**: 適用済みのマイグレーションファイル（`backend/src/main/resources/db/migration/V001__create_initial_schema.sql` 等）を変更した。Flyway は適用時のチェックサムを DB に記録しており、ファイルが書き換わると検証エラーになる。**コミット済みマイグレーションファイルの変更は禁止**（[ADR-013](../../reference/adr/ADR-013-backend-db-migration.md) / [coding-conventions.md](../develop/coding-conventions.md)）。
+- **原因**: 適用済みのマイグレーションファイル（`backend/src/main/resources/db/migration/V001__create_initial_schema.sql` 等）を変更した。Flyway は適用時のチェックサムを DB に記録しており、ファイルが書き換わると検証エラーになる。**コミット済みマイグレーションファイルの変更は禁止**（[ADR-013](../reference/adr/ADR-013-backend-db-migration.md) / [coding-conventions.md](../develop/coding-conventions.md)）。
 - **解決策**: `git restore` 等でマイグレーションファイルを変更前に戻す。スキーマを変更したい場合は新しいバージョンのファイル（`V002__<snake_case>.sql`）を追加する。学習用に DB ごと作り直して構わない場合は、次項のリセット手順でも解消できる。
 
 ### DB を初期状態に戻したい（リセット）

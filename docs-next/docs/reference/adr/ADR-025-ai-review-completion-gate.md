@@ -32,7 +32,7 @@ Accepted（2026-07-27）
 
 **理解度チェックの判定方法**：観点3は質問を投げる観点であり、質問を生成できたこと自体は学習者の理解を意味しない。判定するには回答を読む必要がある。
 
-**CI結果の扱い**：[review-criteria.md](../../review-criteria.md) の評価基準はCI greenを完了条件に挙げているが、`claude-review`ジョブは`actions: read`権限を持たずCI結果を参照できなかった。CIが落ちている状態でタスク完了と判定するのは筋が通らない。
+**CI結果の扱い**：[review-criteria.md](../../develop/review-criteria.md) の評価基準はCI greenを完了条件に挙げているが、`claude-review`ジョブは`actions: read`権限を持たずCI結果を参照できなかった。CIが落ちている状態でタスク完了と判定するのは筋が通らない。
 
 ## Decision
 

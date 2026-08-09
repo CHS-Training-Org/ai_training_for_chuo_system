@@ -80,7 +80,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 | 上流ファイル | 役割 | BookFlow 反映先 | 採用状態 | 根拠 |
 |---|---|---|---|---|
 | `inception/workspace-detection.md` | ワークスペース検出・state 初期化（必須・最初） | `.aidlc-rule-details/inception/workspace-detection.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。`Docs/spec/aidlc-state.md` の初期化・Brownfield/Greenfield 判定 |
-| `inception/reverse-engineering.md` | 既存コード解析（Brownfield のみ・条件付き） | `.aidlc-rule-details/inception/reverse-engineering.md`（翻案済み）+ 将来 `/reverse-engineering` スキル化 | **エンジン採用（翻案・活性化）** | 学習者向け「コードベース理解ガイド」（[`curriculum.md#codebase-understanding`](../../curriculum.md#codebase-understanding)）に直結（台帳「今後の候補」から実装済みに昇格） |
+| `inception/reverse-engineering.md` | 既存コード解析（Brownfield のみ・条件付き） | `.aidlc-rule-details/inception/reverse-engineering.md`（翻案済み）+ 将来 `/reverse-engineering` スキル化 | **エンジン採用（翻案・活性化）** | 学習者向け「コードベース理解ガイド」（[`curriculum.md#codebase-understanding`](./curriculum.md#codebase-understanding)）に直結（台帳「今後の候補」から実装済みに昇格） |
 | `inception/requirements-analysis.md` | 要件分析（必須・深さ適応型） | `.aidlc-rule-details/inception/requirements-analysis.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。成果は `Docs/spec/requirements.md` に統合 |
 | `inception/user-stories.md` | ユーザーストーリー作成（条件付き） | `.aidlc-rule-details/inception/user-stories.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。ユーザー影響のある機能開発時に実行 |
 | `inception/workflow-planning.md` | ワークフロー計画・ステージ EXECUTE/SKIP 判断（必須） | `.aidlc-rule-details/inception/workflow-planning.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。通常（agent）モードで実行計画を提示し、学習者自身がチャットで確認・承認する |
@@ -134,10 +134,10 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 
 ## 関連リンク
 
-- BookFlow の標準フロー・フェーズ詳細: [`Docs/guide/dev-workflow.md`](../../dev-workflow.md)
+- BookFlow の標準フロー・フェーズ詳細: [`Docs/guide/dev-workflow.md`](./develop/dev-workflow.md)
 - 取り込み案の検討記録: [`Docs/plan/aidlc-overview.html`](../plan/aidlc-overview.html)
 - 採用転換 ADR: [`Docs/decision/`](../../reference/adr/)（ADR-020 参照）
-- vendored スナップショットの出典: [`vendor/aidlc-rules/PROVENANCE.md`](../../vendor/aidlc-rules/PROVENANCE.md)
+- vendored スナップショットの出典: [`vendor/aidlc-rules/PROVENANCE.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/vendor/aidlc-rules/PROVENANCE.md)
 - BookFlow 翻案済みステージファイル: [`.aidlc-rule-details/`](../../.aidlc-rule-details/)
-- 状態トラッカー: [`Docs/spec/aidlc-state.md`](../aidlc-state.md)
-- 監査ログ: [`Docs/spec/aidlc-audit.md`](../aidlc-audit.md)
+- 状態トラッカー: [`Docs/spec/aidlc-state.md`](./aidlc-state.md)
+- 監査ログ: [`Docs/spec/aidlc-audit.md`](./aidlc-audit.md)

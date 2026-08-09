@@ -72,7 +72,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 | `end_at` | `TIMESTAMP` | NOT NULL / CHECK (`end_at > start_at`) | 利用終了日時 |
 | `purpose` | `VARCHAR(255)` | NOT NULL | 利用目的 |
 | `attendees_count` | `INTEGER` | NULL 可 | 参加人数 |
-| `status` | `VARCHAR(20)` | NOT NULL / CHECK (`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`) | **DB DEFAULT なし**（アプリ層で設定）。`DRAFT` はベース実装では未使用（拡張課題用の予約値。[requirements.md](../requirements.md) の「予約申請」セクション参照） |
+| `status` | `VARCHAR(20)` | NOT NULL / CHECK (`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`) | **DB DEFAULT なし**（アプリ層で設定）。`DRAFT` はベース実装では未使用（拡張課題用の予約値。[requirements.md](./requirements.md) の「予約申請」セクション参照） |
 | `created_at` | `TIMESTAMP` | NOT NULL / DEFAULT CURRENT_TIMESTAMP | |
 | `updated_at` | `TIMESTAMP` | NOT NULL / DEFAULT CURRENT_TIMESTAMP | |
 

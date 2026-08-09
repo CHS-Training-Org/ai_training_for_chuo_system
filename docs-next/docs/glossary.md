@@ -23,7 +23,7 @@ BookFlow のドキュメントを読み進める上で登場する用語をま�
 ## ドメイン用語
 
 BookFlow の業務ドメイン（施設・備品予約 + 承認ワークフロー）に関する用語です。  
-詳細は [requirements.md §用語定義](../../spec/requirements.md#用語定義) を参照してください。
+詳細は [requirements.md §用語定義](./requirements.md#用語定義) を参照してください。
 
 | 用語 | 定義 |
 |------|------|
@@ -39,7 +39,7 @@ BookFlow の業務ドメイン（施設・備品予約 + 承認ワークフロ�
 
 ## プロジェクト・技術用語
 
-本リポジトリの学習環境、技術スタックに関する用語です。詳細は [overview.md](../../spec/overview.md) を参照してください。
+本リポジトリの学習環境、技術スタックに関する用語です。詳細は [overview.md](./overview.md) を参照してください。
 
 | 用語 | 説明 |
 |------|------|
@@ -57,7 +57,7 @@ BookFlow の業務ドメイン（施設・備品予約 + 承認ワークフロ�
 ## AI-DLC・開発プロセス用語
 
 本リポジトリが標準ワークフローとして採用する AI-DLC エンジンおよび開発プロセスに関する用語です。  
-詳細は [dev-workflow.md](../develop/dev-workflow.md) と `.claude/skills/aidlc/SKILL.md` を参照してください。
+詳細は [dev-workflow.md](./develop/dev-workflow.md) と `.claude/skills/aidlc/SKILL.md` を参照してください。
 
 | 用語 | 説明 |
 |------|------|
@@ -68,6 +68,6 @@ BookFlow の業務ドメイン（施設・備品予約 + 承認ワークフロ�
 | **units of work** | CONSTRUCTION で並行実行可能な作業単位。BookFlow では縦切り課題 Issue（`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 単位）に対応する |
 | **縦切り実装** | フロントエンド・バックエンドなど複数レイヤーにまたがる変更を機能単位でまとめて実装する方針 |
 | **Spec-first** | 実装より先に `Docs/spec/` を更新し、それを真実の源とする原則 |
-| **セルフレビュー・マージ** | PR テンプレートのチェックリストを学習者自身が満たしたうえでマージする運用。メンターの承認は不要（[ADR-023](../../reference/adr/ADR-023-mentor-gate-removal.md) 参照） |
-| **ADR（Architecture Decision Record）** | 技術選定・設計上の重要な意思決定を記録するドキュメント。`Docs/decision/` に格納（[decision/README.md](../../reference/adr/README.md) 参照） |
-| **OKF（Open Knowledge Format）** | Markdown + YAML frontmatter で知識メタデータを表現するベンダー中立フォーマット。BookFlow は frontmatter 規律のみを採用（[ADR-021](../../reference/adr/ADR-021-okf-frontmatter-adoption.md) 参照） |
+| **セルフレビュー・マージ** | PR テンプレートのチェックリストを学習者自身が満たしたうえでマージする運用。メンターの承認は不要（[ADR-023](./reference/adr/ADR-023-mentor-gate-removal.md) 参照） |
+| **ADR（Architecture Decision Record）** | 技術選定・設計上の重要な意思決定を記録するドキュメント。`Docs/decision/` に格納（[decision/README.md](./reference/adr/README.md) 参照） |
+| **OKF（Open Knowledge Format）** | Markdown + YAML frontmatter で知識メタデータを表現するベンダー中立フォーマット。BookFlow は frontmatter 規律のみを採用（[ADR-021](./reference/adr/ADR-021-okf-frontmatter-adoption.md) 参照） |

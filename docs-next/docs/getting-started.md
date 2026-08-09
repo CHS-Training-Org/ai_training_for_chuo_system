@@ -202,7 +202,7 @@ gh auth login
 claude
 ```
 
-初回起動時はログイン（ブラウザ認証）を求められます。画面の指示に従って認証してください。詳細は [ai-tools-guide.md §セットアップ](../ai-tools-guide.md#setup) を参照してください。
+初回起動時はログイン（ブラウザ認証）を求められます。画面の指示に従って認証してください。詳細は [ai-tools-guide.md §セットアップ](./ai-tools-guide.md#setup) を参照してください。
 
 ## ステップ 3：フロントエンド環境変数の設定（初回のみ）
 
@@ -264,7 +264,7 @@ VS Code の「Run and Debug」（<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>�
 :::
 ## ステップ 5：初期データ投入・動作確認
 
-ロール別ログイン（開発用ログイン）は、バックエンドが Cognito トークンの `sub` で `users` テーブルを検索する仕組みのため、初期データを投入する前に試すとサインイン画面へのリダイレクトを繰り返します（原因は [troubleshooting.md](../develop/troubleshooting.md#startup) 参照）。先に初期データを投入してから、起動確認に進みます。
+ロール別ログイン（開発用ログイン）は、バックエンドが Cognito トークンの `sub` で `users` テーブルを検索する仕組みのため、初期データを投入する前に試すとサインイン画面へのリダイレクトを繰り返します（原因は [troubleshooting.md](./develop/troubleshooting.md#startup) 参照）。先に初期データを投入してから、起動確認に進みます。
 
 ### 初期データ投入
 
@@ -340,7 +340,7 @@ docker exec -i <postgres コンテナ名> psql -U bookflow -d bookflow \
 | 承認待ち（`/approvals`） | 1 件（第1会議室の申請） |
 
 :::warning サインインが `/auth/signin` に戻ってしまう場合
-    上記の初期データ投入を先に済ませたか確認してください。原因の切り分けは [troubleshooting.md](../develop/troubleshooting.md#startup) を参照してください。
+    上記の初期データ投入を先に済ませたか確認してください。原因の切り分けは [troubleshooting.md](./develop/troubleshooting.md#startup) を参照してください。
 
 :::
 ---
@@ -461,15 +461,15 @@ claude
 
 ## よくあるトラブル
 
-詰まったときは [troubleshooting.md](../develop/troubleshooting.md) を参照してください。代表的な症状と参照先：
+詰まったときは [troubleshooting.md](./develop/troubleshooting.md) を参照してください。代表的な症状と参照先：
 
 | 症状 | 参照先 |
 |------|--------|
-| DevContainer の起動が失敗する・極端に遅い | [troubleshooting.md §DevContainer・Docker 関連](../develop/troubleshooting.md#devcontainer) |
-| `pnpm install` / Gradle の依存解決が失敗する | [troubleshooting.md §依存インストール関連](../develop/troubleshooting.md#install) |
-| `pnpm dev` / `./gradlew bootRun` が起動しない・ポート競合 | [troubleshooting.md §起動・接続エラー](../develop/troubleshooting.md#startup) |
-| 認証後に `/auth/signin` へ戻され続ける | バックエンド未起動、または初期データ未投入が原因（[troubleshooting.md §起動・接続エラー](../develop/troubleshooting.md#startup)参照） |
+| DevContainer の起動が失敗する・極端に遅い | [troubleshooting.md §DevContainer・Docker 関連](./develop/troubleshooting.md#devcontainer) |
+| `pnpm install` / Gradle の依存解決が失敗する | [troubleshooting.md §依存インストール関連](./develop/troubleshooting.md#install) |
+| `pnpm dev` / `./gradlew bootRun` が起動しない・ポート競合 | [troubleshooting.md §起動・接続エラー](./develop/troubleshooting.md#startup) |
+| 認証後に `/auth/signin` へ戻され続ける | バックエンド未起動、または初期データ未投入が原因（[troubleshooting.md §起動・接続エラー](./develop/troubleshooting.md#startup)参照） |
 | `[BetterAuthError]: DOMAIN_AND_REGION_REQUIRED` で 500 エラー | `.env.local` 未設定が原因（ステップ 3 参照） |
-| DB 接続エラー・Flyway マイグレーション失敗 | [troubleshooting.md §DB・マイグレーション関連](../develop/troubleshooting.md#database) |
-| Claude Code が動かない・コンテナ起動が `.claude.json` で失敗する | [troubleshooting.md §AI ツール関連](../develop/troubleshooting.md#ai-tools) |
-| `@claude pr-review` に反応がない・観点3の回答が読み取られない | [troubleshooting.md §AI レビュー関連](../develop/troubleshooting.md#ai-review-trouble) |
+| DB 接続エラー・Flyway マイグレーション失敗 | [troubleshooting.md §DB・マイグレーション関連](./develop/troubleshooting.md#database) |
+| Claude Code が動かない・コンテナ起動が `.claude.json` で失敗する | [troubleshooting.md §AI ツール関連](./develop/troubleshooting.md#ai-tools) |
+| `@claude pr-review` に反応がない・観点3の回答が読み取られない | [troubleshooting.md §AI レビュー関連](./develop/troubleshooting.md#ai-review-trouble) |

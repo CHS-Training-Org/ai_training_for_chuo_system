@@ -15,7 +15,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 # コーディング規約
 
-BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../../reference/adr/README.md) に、API、画面の**仕様**は [Docs/spec/](../../spec/index.md) に書かれています。  
+BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../reference/adr/README.md) に、API、画面の**仕様**は [Docs/spec/](../spec-index.md) に書かれています。  
 本書は「実装時に迷わないためのルールと実例」に絞っています。
 
 :::tip 最大の規約は「既存コードに合わせる」
@@ -55,7 +55,7 @@ git checkout -b feature/<GitHubユーザー名>/<issue番号>-<short-desc>
 
 ## フロントエンド規約
 
-参照 ADR：[001 pnpm](../../reference/adr/ADR-001-frontend-package-manager.md) / [002 Tailwind](../../reference/adr/ADR-002-frontend-styling.md) / [003 shadcn/ui](../../reference/adr/ADR-003-frontend-ui-components.md) / [004 データ取得](../../reference/adr/ADR-004-frontend-data-fetching.md) / [005 フォーム](../../reference/adr/ADR-005-frontend-form-library.md) / [006 Zod](../../reference/adr/ADR-006-frontend-validation.md) / [007 Zustand](../../reference/adr/ADR-007-frontend-client-state.md) / [008 Better Auth](../../reference/adr/ADR-008-frontend-auth-client.md) / [009 テスト](../../reference/adr/ADR-009-frontend-test-strategy.md) / [010 oxlint/oxfmt](../../reference/adr/ADR-010-frontend-lint-format.md)
+参照 ADR：[001 pnpm](../reference/adr/ADR-001-frontend-package-manager.md) / [002 Tailwind](../reference/adr/ADR-002-frontend-styling.md) / [003 shadcn/ui](../reference/adr/ADR-003-frontend-ui-components.md) / [004 データ取得](../reference/adr/ADR-004-frontend-data-fetching.md) / [005 フォーム](../reference/adr/ADR-005-frontend-form-library.md) / [006 Zod](../reference/adr/ADR-006-frontend-validation.md) / [007 Zustand](../reference/adr/ADR-007-frontend-client-state.md) / [008 Better Auth](../reference/adr/ADR-008-frontend-auth-client.md) / [009 テスト](../reference/adr/ADR-009-frontend-test-strategy.md) / [010 oxlint/oxfmt](../reference/adr/ADR-010-frontend-lint-format.md)
 
 ### ディレクトリ責務
 
@@ -124,7 +124,7 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
 
 ## バックエンド規約
 
-参照 ADR：[011 Gradle](../../reference/adr/ADR-011-backend-build-tool.md) / [012 Spring Data JPA](../../reference/adr/ADR-012-backend-orm.md) / [013 Flyway](../../reference/adr/ADR-013-backend-db-migration.md) / [014 バリデーション](../../reference/adr/ADR-014-backend-validation.md) / [015 OpenAPI](../../reference/adr/ADR-015-backend-api-docs.md) / [016 認証](../../reference/adr/ADR-016-backend-auth.md) / [017 ロギング](../../reference/adr/ADR-017-backend-logging.md) / [018 テスト](../../reference/adr/ADR-018-backend-test-strategy.md) / [019 コード品質](../../reference/adr/ADR-019-backend-code-quality.md)
+参照 ADR：[011 Gradle](../reference/adr/ADR-011-backend-build-tool.md) / [012 Spring Data JPA](../reference/adr/ADR-012-backend-orm.md) / [013 Flyway](../reference/adr/ADR-013-backend-db-migration.md) / [014 バリデーション](../reference/adr/ADR-014-backend-validation.md) / [015 OpenAPI](../reference/adr/ADR-015-backend-api-docs.md) / [016 認証](../reference/adr/ADR-016-backend-auth.md) / [017 ロギング](../reference/adr/ADR-017-backend-logging.md) / [018 テスト](../reference/adr/ADR-018-backend-test-strategy.md) / [019 コード品質](../reference/adr/ADR-019-backend-code-quality.md)
 
 ### 4 層アーキテクチャ（厳守）
 
@@ -173,7 +173,7 @@ public record ResourceResponse(
 
 - 業務エラーは `application/exception/` のカスタム例外（`BusinessException`・`ResourceNotFoundException` 等）を throw する
 - HTTP ステータスへの変換は `presentation/exception/GlobalExceptionHandler`（`@RestControllerAdvice`）に**一元化**する。Controller / Service で try-catch して独自レスポンスを作らない
-- エラーコードは `application/exception/ErrorCode.java` の定数を使う。ステータス・エラーコードの対応は [api-spec.md](../../spec/api-spec.md) §共通が正
+- エラーコードは `application/exception/ErrorCode.java` の定数を使う。ステータス・エラーコードの対応は [api-spec.md](../api-spec.md) §共通が正
 
 ### データアクセス・マイグレーション
 
@@ -249,7 +249,7 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 
 ## テスト規約
 
-参照 ADR：[009 FE テスト戦略](../../reference/adr/ADR-009-frontend-test-strategy.md) / [018 BE テスト戦略](../../reference/adr/ADR-018-backend-test-strategy.md)
+参照 ADR：[009 FE テスト戦略](../reference/adr/ADR-009-frontend-test-strategy.md) / [018 BE テスト戦略](../reference/adr/ADR-018-backend-test-strategy.md)
 
 | | フロントエンド | バックエンド |
 |---|---|---|

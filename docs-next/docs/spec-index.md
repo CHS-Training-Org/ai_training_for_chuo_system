@@ -23,13 +23,13 @@ BookFlow の実装仕様を正確に記述します。学習者が機能を理�
 
 | ファイル | 目的 | 対象読者 |
 |---------|------|---------|
-| [overview.md](../overview.md) | リポジトリ概要。本リポジトリの目的・対象者・ゴール・ステークホルダー役割・用語集を定義 | 全員 |
-| [requirements.md](../requirements.md) | 要件定義。機能要件・非機能要件・ロール権限・ステータス遷移を定義 | 学習者・メンター |
-| [screen-spec.md](../screen-spec.md) | 画面仕様書。全 10 画面のレイアウト・操作・バリデーションを定義 | 学習者・メンター |
-| [api-spec.md](../api-spec.md) | REST API 仕様書。エンドポイント・リクエスト/レスポンス・シーケンス図を定義 | 学習者・メンター |
-| [er-diagram.md](../er-diagram.md) | ER 図（Mermaid）。データモデル・テーブル定義・リレーションを定義 | 学習者・メンター |
-| [enhancements/](../spec/enhancements/index.md) | エンハンス課題のビジネス要求シート集。配置規約・原則を定義 | 学習者・メンター |
-| [aidlc-adoption.md](../aidlc-adoption.md) | AI-DLC 採用台帳。AWS Labs AI-DLC から取り込んだ要素・反映先・状態・上流同期手順を管理（BookFlow 機能仕様ではなく上流参照の管理台帳） | メンター |
+| [overview.md](./overview.md) | リポジトリ概要。本リポジトリの目的・対象者・ゴール・ステークホルダー役割・用語集を定義 | 全員 |
+| [requirements.md](./requirements.md) | 要件定義。機能要件・非機能要件・ロール権限・ステータス遷移を定義 | 学習者・メンター |
+| [screen-spec.md](./screen-spec.md) | 画面仕様書。全 10 画面のレイアウト・操作・バリデーションを定義 | 学習者・メンター |
+| [api-spec.md](./api-spec.md) | REST API 仕様書。エンドポイント・リクエスト/レスポンス・シーケンス図を定義 | 学習者・メンター |
+| [er-diagram.md](./er-diagram.md) | ER 図（Mermaid）。データモデル・テーブル定義・リレーションを定義 | 学習者・メンター |
+| [enhancements/](./spec/enhancements/index.md) | エンハンス課題のビジネス要求シート集。配置規約・原則を定義 | 学習者・メンター |
+| [aidlc-adoption.md](./aidlc-adoption.md) | AI-DLC 採用台帳。AWS Labs AI-DLC から取り込んだ要素・反映先・状態・上流同期手順を管理（BookFlow 機能仕様ではなく上流参照の管理台帳） | メンター |
 
 ---
 
@@ -62,14 +62,14 @@ BookFlow の実装仕様を正確に記述します。学習者が機能を理�
 
 ### 関連リンク
 
-- コミット・PR 規約: [coding-conventions.md §コミット・PR 規約](../../coding-conventions.md#commit-pr)
-- Claude Code の使い方: [ai-tools-guide.md](../../ai-tools-guide.md)
+- コミット・PR 規約: [coding-conventions.md §コミット・PR 規約](./develop/coding-conventions.md#commit-pr)
+- Claude Code の使い方: [ai-tools-guide.md](./ai-tools-guide.md)
 
 ---
 
 ## OpenAPI / Swagger UI の参照方法
 
-バックエンドは Springdoc OpenAPI（[ADR-015](../../reference/adr/ADR-015-backend-api-docs.md)）により、実装コードから OpenAPI ドキュメントを自動生成している。  
+バックエンドは Springdoc OpenAPI（[ADR-015](./reference/adr/ADR-015-backend-api-docs.md)）により、実装コードから OpenAPI ドキュメントを自動生成している。  
 バックエンド起動中に以下の URL で参照できる（いずれも認証不要）。
 
 | URL | 内容 |
@@ -88,9 +88,9 @@ bash scripts/provision-cognito.sh --jwt hanako.tanaka@example.com   # JWT が標
 
 ### 位置づけと既知の制限
 
-**正式な API 仕様は [api-spec.md](../api-spec.md)**。OpenAPI 出力はアノテーション最小の自動生成であり、以下の点で実際の API と表示が異なる。
+**正式な API 仕様は [api-spec.md](./api-spec.md)**。OpenAPI 出力はアノテーション最小の自動生成であり、以下の点で実際の API と表示が異なる。
 
 - `currentUser` / `user` / `pageable` がクエリパラメータとして表示されるが、**実際には送信不要**（`@CurrentUser`（認証プリンシパル）と `Pageable` の引数が springdoc に解決されず漏れているもの。ページネーションの実パラメータは `page` / `size`）
 - エラーレスポンス（400〜500）が全エンドポイントに一律表示されるが、各エンドポイントで実際に返るステータス・エラーコードは api-spec.md の記載が正
-- 日時の `format: date-time` はオフセット付き（RFC 3339）を示唆するが、実際のワイヤー形式はオフセットなしのローカル日時（[api-spec.md §共通 日時フォーマット](../api-spec.md#datetime-format)参照）
+- 日時の `format: date-time` はオフセット付き（RFC 3339）を示唆するが、実際のワイヤー形式はオフセットなしのローカル日時（[api-spec.md §共通 日時フォーマット](./api-spec.md#datetime-format)参照）
 - `status` / `category` / `role` の enum 値は OpenAPI に現れない（DTO が string 型のため）。許容値は api-spec.md を参照

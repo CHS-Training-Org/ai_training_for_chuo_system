@@ -24,7 +24,7 @@ ADR-020（AI-DLC エンジン完全採用）により、BookFlow は「plan mode
 
 このゲートを前提に、選択課題（エンハンス課題）の推定工数は「学習者が着手からマージまでに要する経過時間（ゲート待ち込み）」として定義していた。ところが、実際に学習者がある Beginner 課題（`Docs/spec/enhancements/resource-list-sort.md` 相当）に取り組んだところ、申告された所要時間は約1時間だった。標準フロー（ビジネス要求シート確認 → ブランチ作成 → plan mode → Spec-first 仕様更新 → 実装 → テスト → PR 作成）の各ステップを分解して積み上げても、ゲート待ちを除いた実作業時間は概ね50〜60分であり、実測値とほぼ一致した。
 
-この分析により、工数見積りを「半日」「1週間以上」といった単位に押し上げていた主要因は、実装作業そのものではなく、SLA を設けていないメンターの承認待ち時間（[operations-guide.md §レビュー・応答方針](../../operations-guide.md#response-policy)）であることが判明した。承認ゲートという運用自体を見直す契機となった。
+この分析により、工数見積りを「半日」「1週間以上」といった単位に押し上げていた主要因は、実装作業そのものではなく、SLA を設けていないメンターの承認待ち時間（[operations-guide.md §レビュー・応答方針](../../operations/operations-guide.md#response-policy)）であることが判明した。承認ゲートという運用自体を見直す契機となった。
 
 | 候補 | 学習者の作業速度 | メンター負荷 | フィードバックの機会 |
 |------|------|------|------|
@@ -52,9 +52,9 @@ AI-DLC エンジン本体（`.claude/skills/aidlc/SKILL.md` と `.aidlc-rule-det
 - メンターの負荷が「全件承認」から「任意サポート」に下がり、より多くの学習者を並行して支援しやすくなる
 
 **留意点**：
-- 「AI が書いたから」を言い訳にできない責任の所在（[ai-tools-guide.md](../../ai-tools-guide.md)）が、セルフマージにより一段と重くなる。AI 出力を無検証でマージする習慣がつくリスクは、[review-criteria.md](../../review-criteria.md) のセルフチェックで緩和する
+- 「AI が書いたから」を言い訳にできない責任の所在（[ai-tools-guide.md](../../ai-tools-guide.md)）が、セルフマージにより一段と重くなる。AI 出力を無検証でマージする習慣がつくリスクは、[review-criteria.md](../../develop/review-criteria.md) のセルフチェックで緩和する
 - メンターによる第三者レビューが保証されなくなるため、コードの誤りが早期に発見されない可能性がある。任意コメントの文化を促進する運用上の工夫は今後の課題とする
-- GitHub のブランチ保護設定（Require approvals の無効化）は本環境から実施できず、リポジトリオーナーへの申し送り事項となる（[operations-guide.md](../../operations-guide.md#roles)）
+- GitHub のブランチ保護設定（Require approvals の無効化）は本環境から実施できず、リポジトリオーナーへの申し送り事項となる（[operations-guide.md](../../operations/operations-guide.md#roles)）
 
 ## 追記（2026-07-08）— Workflow Planning の承認手段の訂正
 

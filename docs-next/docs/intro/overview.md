@@ -34,8 +34,8 @@ last_updated: '2026-08-01T11:56:18+09:00'
 | セクション | 概要 | 対象読者 |
 |-----------|------|---------|
 | [ガイド (Guide)](../index.md) | カリキュラム・環境構築・AI ツール・開発フロー・規約・トラブル | 学習者 |
-| [仕様 (Spec)](../../spec/index.md) | 要件・画面・API・ER などの実装仕様（真実の源） | 学習者・メンター |
-| [リポジトリ概要](../../spec/overview.md) | 本リポジトリの目的・対象者・ステークホルダー役割・用語集 | 全員 |
+| [仕様 (Spec)](../spec-index.md) | 要件・画面・API・ER などの実装仕様（真実の源） | 学習者・メンター |
+| [リポジトリ概要](../overview.md) | 本リポジトリの目的・対象者・ステークホルダー役割・用語集 | 全員 |
 | [アーキテクチャ](../architecture.md) | AWS 標準アーキテクチャと全体構成図 | メンター・管理者 |
 | [設計判断 (ADR)](../reference/adr/README.md) | 技術選定・設計上の意思決定の記録 | メンター・学習者 |
 | [Claude Code 設定](../reference/claude-code/index.md) | Rules・Skills・Hooks など Claude Code の設定資産一覧 | 学習者・メンター |
@@ -78,4 +78,4 @@ last_updated: '2026-08-01T11:56:18+09:00'
   </div>
 </div>
 
-詳細は [リポジトリ概要](../../spec/overview.md) と [アーキテクチャ](../architecture.md) を参照してください。
+詳細は [リポジトリ概要](../overview.md) と [アーキテクチャ](../architecture.md) を参照してください。

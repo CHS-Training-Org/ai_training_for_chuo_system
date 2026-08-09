@@ -17,15 +17,15 @@ last_updated: '2026-08-01T11:56:18+09:00'
 # 運用ガイド
 
 このページは、BookFlow チュートリアルを**日常的に運営する上での役割分担、サポートフロー、応答方針**を一元化します。  
-役割の名簿（誰が何者か）は [リポジトリ概要 §ステークホルダーと役割](../../spec/overview.md#roles) が真実の源。  
+役割の名簿（誰が何者か）は [リポジトリ概要 §ステークホルダーと役割](../overview.md#roles) が真実の源。  
 レビューの観点、評価基準は [review-criteria.md](../develop/review-criteria.md) が真実の源。本ページはそれらを運用の視点から接続します。
 
-> **用語の統一**：本ガイドでは「オーナー」と「リポジトリ管理者」は同一アクターを指します（[リポジトリ概要 §役割](../../spec/overview.md#roles)：リポジトリ設定管理を担う「リポジトリオーナー」）。以下では「オーナー（リポジトリ管理者）」と表記します。
+> **用語の統一**：本ガイドでは「オーナー」と「リポジトリ管理者」は同一アクターを指します（[リポジトリ概要 §役割](../overview.md#roles)：リポジトリ設定管理を担う「リポジトリオーナー」）。以下では「オーナー（リポジトリ管理者）」と表記します。
 
 ---
 
 ## 役割分担（運用責任マトリクス）
-役割の定義は [リポジトリ概要 §ステークホルダーと役割](../../spec/overview.md#roles) を参照してください。以下は**運用上の責務**に絞った一覧です。
+役割の定義は [リポジトリ概要 §ステークホルダーと役割](../overview.md#roles) を参照してください。以下は**運用上の責務**に絞った一覧です。
 
 | 責務 | オーナー（リポジトリ管理者） | メンター | 学習者 |
 |------|:---:|:---:|:---:|
@@ -104,14 +104,14 @@ PR のマージはメンターの承認を必要としません。学習者は [
 ---
 
 ## AI レビュー
-AI レビューの採用は [ADR-024](../../reference/adr/ADR-024-ai-first-review-adoption.md)、タスク完了判定としての位置づけは [ADR-025](../../reference/adr/ADR-025-ai-review-completion-gate.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、`.github/workflows/claude.yml` の `claude-review` ジョブが起動し、`.github/workflows/references/pr-review-rubric/` に定義された3観点（要求整合性・実装と非機能部分の整合性・理解度チェック、[review-criteria.md §レビュー観点表](../develop/review-criteria.md#review-rubric) にも対応表を掲載）で判定します。
+AI レビューの採用は [ADR-024](../reference/adr/ADR-024-ai-first-review-adoption.md)、タスク完了判定としての位置づけは [ADR-025](../reference/adr/ADR-025-ai-review-completion-gate.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、`.github/workflows/claude.yml` の `claude-review` ジョブが起動し、`.github/workflows/references/pr-review-rubric/` に定義された3観点（要求整合性・実装と非機能部分の整合性・理解度チェック、[review-criteria.md §レビュー観点表](../develop/review-criteria.md#review-rubric) にも対応表を掲載）で判定します。
 
 - 出力は観点ごとに1件、最後にサマリを1件の計4件のコメントです。サマリに判定表と総合判定が載ります。観点3が確定している実行では観点3のコメントを投稿せず3件になります（再判定しないため、解説を含む長文の複製を避ける）。
 - 観点1・観点2 の判定は `OK`・`NG`・`判定不能` の3値です。ビジネス要求シートが未リンクの場合や PR 本文の該当欄が未記入の場合は、`OK` ではなく `判定不能` になります。「既存テストが引き続き pass する」のように CI の結果でしか確認できない受入条件は、CI green が OK であれば充足として扱います。
-- 観点3 だけは3値ではなく**状態**（`未回答` / `全問正解` / `誤答N問・解説済み`）で表示されます。**観点1・観点2 が `OK`、CI green が `OK`、かつ観点3が確定しているとき**に総合判定が「完了」になります。これがタスク完了の条件です。**観点3の誤答は完了を妨げません**（[ADR-026](../../reference/adr/ADR-026-comprehension-check-quiz-format.md)）。誤答はコードの欠陥ではなく理解度であり修正して解消できないためですが、誤答した事実は記録として残ります。メンターはこの記録から、学習者が自分のコードを読んでいたかを判断できます。
+- 観点3 だけは3値ではなく**状態**（`未回答` / `全問正解` / `誤答N問・解説済み`）で表示されます。**観点1・観点2 が `OK`、CI green が `OK`、かつ観点3が確定しているとき**に総合判定が「完了」になります。これがタスク完了の条件です。**観点3の誤答は完了を妨げません**（[ADR-026](../reference/adr/ADR-026-comprehension-check-quiz-format.md)）。誤答はコードの欠陥ではなく理解度であり修正して解消できないためですが、誤答した事実は記録として残ります。メンターはこの記録から、学習者が自分のコードを読んでいたかを判断できます。
 - 観点3（理解度チェック）は3〜5問の4択です。1回目は出題にとどまり `未回答` となります。学習者が「問番号＋選択肢＋理由を一文」の形式で PR の会話コメントに回答して再度 `@claude pr-review` すると、判定と**正誤にかかわらず全問の解説**が返ります。誤答した問を別の問題に差し替えて再検証することはしません。
 - 観点3 は確定後に再判定・再出題しません。確定後にコミットが追加された場合はサマリにその事実が添えられ、結果が変更前のコードに対するものであることが示されます。学習者が改めて受け直したい場合は、観点3のコメントを削除して再実行すると未出題として扱われます。
-- 総合判定はタスク完了の条件ですが、必須 status check には含めません。マージは学習者自身が行います（[§レビュー・応答方針](#response-policy)、[ADR-023](../../reference/adr/ADR-023-mentor-gate-removal.md)）。
+- 総合判定はタスク完了の条件ですが、必須 status check には含めません。マージは学習者自身が行います（[§レビュー・応答方針](#response-policy)、[ADR-023](../reference/adr/ADR-023-mentor-gate-removal.md)）。
 - PR 作成時の自動起動、レビュアー指定による起動は採用していません。コスト面（Actions 実行）と、GitHub の仕様上「レビュアーに Claude を指定する」操作自体が実現できないためです。
 - ジョブの `show_full_output` は既定で `true` です。ツール呼び出しとその結果が Actions ログに残るため、ルーブリックを改訂したときに意図した判定手順を踏んだかを確認できます。モデルの挙動は変わらないためレビュー自体の API 料金には影響しませんが、ログ量は増えます。料金または実行速度への影響が確認された場合に `false` へ切り替えます。
 - 静的解析（GHAS・CodeQL）は学習用スコープ外のため採用していません。
@@ -173,11 +173,11 @@ docker compose exec docs uv run zensical build
 
 ## 関連ドキュメント
 
-- 役割の名簿・ステークホルダー定義：[リポジトリ概要 §ステークホルダーと役割](../../spec/overview.md#roles)
+- 役割の名簿・ステークホルダー定義：[リポジトリ概要 §ステークホルダーと役割](../overview.md#roles)
 - 標準開発フローの詳細：[dev-workflow.md §標準開発フロー](../develop/dev-workflow.md#flow)
 - レビュー観点・評価基準：[review-criteria.md](../develop/review-criteria.md)
 - ラベル体系・課題起票手順：[issue-registration.md](../operations/issue-registration.md)
 - トラブルシューティング：[troubleshooting.md](../develop/troubleshooting.md)
 - 学習効果測定（満足度アンケート）：[learning-effectiveness.md](../operations/learning-effectiveness.md)
-- AI レビュー採用の意思決定：[ADR-024](../../reference/adr/ADR-024-ai-first-review-adoption.md)
-- AI レビューをタスク完了判定に格上げした意思決定：[ADR-025](../../reference/adr/ADR-025-ai-review-completion-gate.md)
+- AI レビュー採用の意思決定：[ADR-024](../reference/adr/ADR-024-ai-first-review-adoption.md)
+- AI レビューをタスク完了判定に格上げした意思決定：[ADR-025](../reference/adr/ADR-025-ai-review-completion-gate.md)

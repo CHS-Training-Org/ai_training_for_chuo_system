@@ -15,7 +15,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 # Claude Code ベストプラクティス
 
 このガイドは、Claude Code 公式サイトの「[ベストプラクティス](https://code.claude.com/docs/ja/best-practices)」から、学習者にとって特に有用な部分を抜粋し整理したものです。  
-セットアップや基本操作、プロンプトの3原則は [ai-tools-guide.md](../ai-tools-guide.md) で扱っているため、このガイドはそれを読んだうえで一段深く使いこなすための補足として位置づけます。
+セットアップや基本操作、プロンプトの3原則は [ai-tools-guide.md](./ai-tools-guide.md) で扱っているため、このガイドはそれを読んだうえで一段深く使いこなすための補足として位置づけます。
 
 原文にはセッションの並列運用やチームでの大規模運用を前提にした内容も含まれますが、そうした範囲はここでは取り上げません。
 
@@ -153,4 +153,4 @@ Claude の出力がうまくいったときは、何が効いたのか（プロ�
 ## 関連リンク
 
 - [Claude Code のベストプラクティス（公式・日本語）](https://code.claude.com/docs/ja/best-practices)
-- [AI ツール活用ガイド（Claude Code）](../ai-tools-guide.md)
+- [AI ツール活用ガイド（Claude Code）](./ai-tools-guide.md)

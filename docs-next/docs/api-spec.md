@@ -531,7 +531,7 @@ Authorization: Bearer <JWT>
 | `endAt` | TIMESTAMP | 利用終了日時 |
 | `purpose` | string | 利用目的 |
 | `attendeesCount` | integer / null | 参加人数 |
-| `status` | string | `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`（DB の CHECK 制約には `DRAFT` も定義されているがベース実装では未使用。[er-diagram.md](../er-diagram.md) 参照） |
+| `status` | string | `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`（DB の CHECK 制約には `DRAFT` も定義されているがベース実装では未使用。[er-diagram.md](./er-diagram.md) 参照） |
 | `createdAt` | TIMESTAMP | 申請日時 |
 | `updatedAt` | TIMESTAMP | 最終更新日時 |
 
@@ -568,7 +568,7 @@ Content-Type: application/json
 #### レスポンス（201 Created）
 
 - `requires_approval = false` の場合：`status = "APPROVED"`（即時確定）
-- `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`・`step_order = 1`）を 1 件生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](../requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
+- `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`・`step_order = 1`）を 1 件生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](./requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
 
 ```json
 {

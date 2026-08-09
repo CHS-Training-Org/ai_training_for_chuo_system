@@ -31,13 +31,13 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 シートは **背景／依存関係／要件／受入条件／影響範囲／AI 活用ポイント** の 6 節構成です。**依存関係**節は、他のエンハンス課題との前提・競合・推奨着手順序を記述し、複数の学習者が並行着手する際のマージ競合や、着手可否に関わる情報を早い段階で把握できるようにする節のため、背景の直後に配置します。
 
-テンプレート本体・記述規約は [`spec-conventions.md`](../../../.claude/skills/update-spec/references/spec-conventions.md) の「enhancements/\<課題\>.md — ビジネス要求シートのテンプレート」を参照してください。新規シートを作成する際は Claude Code の `/update-spec` スキルを使います。
+テンプレート本体・記述規約は [`spec-conventions.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/skills/update-spec/references/spec-conventions.md) の「enhancements/\<課題\>.md — ビジネス要求シートのテンプレート」を参照してください。新規シートを作成する際は Claude Code の `/update-spec` スキルを使います。
 
 対応する GitHub Issue は `.github/ISSUE_TEMPLATE/` の「選択課題（エンハンス）」テンプレートから起票し、本シートへのリンクを記入します。
 
 ## シート一覧
 
-選択課題の一覧（難易度・推定工数・対象レイヤー）は [選択課題カタログ](../../guide/enhancement-catalog.md) を参照してください。
+選択課題の一覧（難易度・推定工数・対象レイヤー）は [選択課題カタログ](../../develop/enhancement-catalog.md) を参照してください。
 
 各課題のビジネス要求シートは、4.3 で `enhancements/<short-desc>.md` として作成し、下表に追記します。
 
