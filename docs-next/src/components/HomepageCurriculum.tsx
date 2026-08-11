@@ -24,7 +24,7 @@ const requiredSteps = [
   {
     step: 'STEP-03',
     title: 'AI ツール導入・活用',
-    goal: 'Claude Code の特性を理解する。最初の選択課題をあえて /aidlc を使わずに進め、使った場合との差を体感する。',
+    goal: 'Claude Code の特性を理解する。最初の Beginner 課題をあえて /aidlc を使わずに進め、使った場合との差を体感する。',
     icon: '🤖',
     path: '/ai-tools-guide',
     color: '#D97706',
@@ -34,20 +34,20 @@ const requiredSteps = [
 
 const afterSteps = [
   {
-    title: '選択課題（Beginner / Intermediate / Advanced）',
-    goal: 'カタログから課題を選び、Spec-first で仕様を更新してから、フロントエンドからデータベースまで縦切りで実装する。',
+    title: '初級課題（AI-DLC を使う）',
+    goal: 'STEP-03 とは別の Beginner 課題を、今度は標準開発フロー（AI-DLC）に沿って実装し、エンジンが何を代行しているかを対比で捉える。',
     icon: '🚀',
-    path: '/develop/enhancement-catalog',
+    path: '/develop/enhancement-catalog#beginner',
     color: '#DC2626',
-    note: '必須ステップの完了後',
+    note: '必須・2〜3 時間',
   },
   {
-    title: 'コードベース理解ガイド',
-    goal: '着手する機能について、処理の流れと既存テストの意図を説明できるようにする。',
-    icon: '📖',
-    path: '/curriculum',
+    title: '中級課題（AI-DLC を使う）',
+    goal: 'カタログから Intermediate 課題を選び、フロントエンドからデータベースまで縦切りで実装する。',
+    icon: '🏔',
+    path: '/develop/enhancement-catalog#intermediate',
     color: '#7C3AED',
-    note: '随時・必須ではない',
+    note: '必須・4〜7 時間',
   },
 ];
 
@@ -56,10 +56,10 @@ export default function HomepageCurriculum() {
     <section className={styles.section} aria-labelledby="curriculum-heading">
       <div className={styles.container}>
         <header className={styles.header}>
-          <h2 id="curriculum-heading" className={styles.title}>必須ステップと選択課題</h2>
+          <h2 id="curriculum-heading" className={styles.title}>必須課題の全体像</h2>
           <p className={styles.description}>
-            STEP-01 と STEP-02 は全員が必須で、順番に進めます。<br />
-            STEP-03 は Claude Code の基本操作と標準開発フローの両方に習熟している場合に限り、任意確認で済ませられます。
+            学習パスは 1 本です。経験年数やレベルによる分岐はなく、全員が同じ順序で進めます。<br />
+            STEP-01 から中級課題まで、目安は合計 15〜21 時間です。
           </p>
         </header>
 

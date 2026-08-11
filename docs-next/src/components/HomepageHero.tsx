@@ -14,7 +14,7 @@ const startingPoints = [
   {
     situation: '必須ステップを終えた',
     steps: [
-      { label: '選択課題カタログから Beginner を選ぶ', to: '/develop/enhancement-catalog' },
+      { label: 'カタログから Beginner 課題を選ぶ', to: '/develop/enhancement-catalog#beginner' },
       { label: '標準開発フローを見直す', to: '/develop/dev-workflow' },
     ],
   },
@@ -42,7 +42,7 @@ export default function HomepageHero() {
 
         <div className={styles.sections}>
           <section className={styles.card}>
-            <h2>なぜこのリポジトリがあるのか（Why）</h2>
+            <h2>なぜこのリポジトリを作ったか（Why）</h2>
             <p>
               ソフトウェア開発では、<strong>AI エージェント</strong>（指示を受けてコードを読み書きするツール。このリポジトリでは Claude Code を使います）を前提とした進め方が広がっています。
               それに伴い、AI エージェントを使って開発できる人材が求められる場面が増えています。
@@ -88,7 +88,7 @@ export default function HomepageHero() {
               ))}
             </div>
             <p className={styles.startNote}>
-              メンターとリポジトリ管理者は <Link to="/operations/operations-guide">運用ガイド</Link> へ。
+              運営者は <Link to="/operations/operations-guide">運用ガイド</Link> へ。
               Claude Code に読ませる <Link to="/reference/claude-code">設定台帳</Link> も用意しています。
             </p>
           </section>
