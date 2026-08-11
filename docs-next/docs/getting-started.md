@@ -6,7 +6,7 @@ tags:
   - guide
   - getting-started
   - setup
-audience: 学習者（主に若手）
+audience: 学習者
 references:
   - ../develop/troubleshooting.md
   - ../ai-tools-guide.md

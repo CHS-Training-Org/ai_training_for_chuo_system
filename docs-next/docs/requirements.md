@@ -6,7 +6,7 @@ tags:
   - spec
   - requirements
   - functional
-audience: 学習者・メンター
+audience: 学習者・運営者
 references:
   - ../er-diagram.md
   - ../api-spec.md

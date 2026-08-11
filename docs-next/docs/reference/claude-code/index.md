@@ -6,7 +6,7 @@ tags:
   - claude
   - agent-config
   - index
-audience: 学習者・メンター
+audience: 学習者・運営者
 references:
   - ../aidlc-adoption.md
   - ../develop/dev-workflow.md
@@ -26,4 +26,4 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 | ファイル | 目的 | 対象読者 |
 |---------|------|---------|
-| [agent-config.md](../agent-config) | Rules・Skills・Hooks・その他設定の一覧と呼び出し方 | 学習者・メンター |
+| [agent-config.md](../agent-config) | Rules・Skills・Hooks・その他設定の一覧と呼び出し方 | 学習者・運営者 |

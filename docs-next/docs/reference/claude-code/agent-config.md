@@ -8,7 +8,7 @@ tags:
   - rules
   - skills
   - hooks
-audience: 学習者・メンター
+audience: 学習者・運営者
 references:
   - ../aidlc-adoption.md
   - ../develop/dev-workflow.md
@@ -55,7 +55,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 | `create-pr` | `/create-pr` | PR タイトル・本文を `.github/PULL_REQUEST_TEMPLATE.md` の様式で組み立てる。head/base ブランチと、下書きのみか `gh pr create` で実際に作成するかを実行前にまとめて確認する。コミットの分割・push は `commit-push` の役割 |
 | `drawio-skill` | `/drawio-skill` または「図を描いて」「ER図を作って」「アーキ図を書いて」などのトリガーで自動発動 | `.drawio` 図（アーキ図・ER図・フローチャート・UML など）を生成・編集する。draw.io CLI は使用せず、VSCode の `hediet.vscode-drawio` 拡張でレンダリング・エクスポートする。上流: [Agents365-ai/drawio-skill v1.14.0](https://github.com/Agents365-ai/drawio-skill/tree/v1.14.0)（MIT）の BookFlow 翻案 |
 
-> **Spec-first 運用**: コードを書く前に `/update-spec` を起動し、仕様書を更新してからコード実装に進む（[dev-workflow.md §3](../../develop/dev-workflow.md) 参照）。
+> **Spec-first 運用**: コードを書く前に `/update-spec` を起動し、仕様書を更新してからコード実装に進む（[仕様を更新する](../../develop/dev-workflow.md#flow) 参照）。
 
 ### 公式プラグイン（`enabledPlugins` で有効化）
 

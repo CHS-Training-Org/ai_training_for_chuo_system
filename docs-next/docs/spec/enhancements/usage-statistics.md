@@ -7,7 +7,7 @@ tags:
   - enhancement
   - statistics
   - analytics
-audience: 学習者・メンター
+audience: 学習者・運営者
 references:
   - ../requirements.md
   - ../spec/enhancements/index.md

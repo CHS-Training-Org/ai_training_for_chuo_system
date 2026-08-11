@@ -63,3 +63,11 @@ AI-DLC エンジン本体（`.claude/skills/aidlc/SKILL.md` と `.aidlc-rule-det
 上流原本は IDE・モード非依存で設計されており、Claude Code の plan mode を前提としない（各ステージは「明示的な承認を待つ」とだけ規定し、`plan mode` という語自体が vendored 全ファイルに一切登場しない）。したがって `/aidlc` は通常（agent）モードで起動し、Workflow Planning などの承認ステップは、エンジンが提示した内容に学習者がチャットで直接返答する形で行う。`ExitPlanMode` ツールは使わない。
 
 本追記は Decision 本文の該当箇所を合わせて修正した（廃止対象だった「2段階のメンター承認ゲート」という決定自体に変更はない）。関連する `.claude/skills/aidlc/SKILL.md` および `Docs/guide/dev-workflow.md` 等のガイド類も同時に修正した。
+
+## 追記（2026-08-11）— マージ先を `main` から個人トランクブランチへ変更
+
+上記 Decision の「PR：... 自分でマージする」は `main` へのセルフマージを前提としていたが、[ADR-030](./ADR-030-personal-trunk-branch-strategy.md) によりマージ先を学習者ごとの個人トランクブランチ（`learner/<GitHubユーザー名>/main`）に変更した。学習者がセルフレビューでマージするという運用自体（plan-first・承認ゲート廃止）は変わらない。背景・詳細は ADR-030 を参照。
+
+## 追記（2026-08-11）— 「メンター」「リポジトリオーナー」を「運営者」に統合
+
+本チュートリアルには「メンター」「リポジトリオーナー」という区別された役職者は存在しない。上記 Decision・Consequences が「メンター」と呼んでいた役割（任意の質問対応・コードフィードバック）と、[overview.md](../../overview.md#roles) が「リポジトリオーナー」と呼んでいた役割（リポジトリ設定管理）は、単一の「運営者」が兼務する。質問対応は GitHub Issue コメントではなく Teams を一次窓口とする（[operations-guide.md §質問サポートフロー](../../operations/operations-guide.md#support)）。承認ゲートを置かないという本 ADR の決定自体に変更はない。現行のドキュメントは以後この呼称に統一する。

@@ -6,7 +6,7 @@ tags:
   - spec
   - api
   - rest
-audience: 学習者・メンター
+audience: 学習者・運営者
 references:
   - ../requirements.md
   - ../er-diagram.md

@@ -6,7 +6,7 @@ tags:
   - spec
   - er-diagram
   - data-model
-audience: 学習者・メンター
+audience: 学習者・運営者
 references:
   - ../requirements.md
   - backend/src/main/resources/db/migration/V001__create_initial_schema.sql

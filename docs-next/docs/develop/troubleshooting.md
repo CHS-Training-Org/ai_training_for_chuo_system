@@ -1,12 +1,12 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 title: トラブルシューティング
 description: 環境構築・起動・開発中によく発生するエラーの原因と対処法
 tags:
   - guide
   - troubleshooting
   - debug
-audience: 学習者（主に若手）
+audience: 学習者
 references:
   - ../getting-started.md
 last_updated: '2026-08-01T11:56:18+09:00'

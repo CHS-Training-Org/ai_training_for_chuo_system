@@ -6,7 +6,7 @@ tags:
   - guide
   - ai-tools
   - claude-code
-audience: 学習者（主に若手）
+audience: 学習者
 references:
   - ../ai-tools-guide.md
 last_updated: '2026-08-01T11:56:18+09:00'
