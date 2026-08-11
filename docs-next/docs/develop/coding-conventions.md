@@ -1,14 +1,15 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 title: コーディング規約
 description: BookFlow の命名規則・ファイル構成・コミット規約・テスト規約を定めたコーディング標準
 tags:
   - guide
   - coding-conventions
   - style
-audience: 学習者（主に若手）
+audience: 学習者
 references:
   - ../reference/adr/README.md
+  - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
   - ../ai-tools-guide.md
 last_updated: '2026-08-01T11:56:18+09:00'
 ---
@@ -25,20 +26,40 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 :::
 ---
 
-## 共通方針
+## 共通方針 \{#common}
 | 項目 | ルール |
 |------|--------|
-| ブランチ命名 | `feature/<GitHubユーザー名>/<issue番号>-<short-desc>`（例：`feature/taro/42-resource-detail`） |
+| トランクブランチ命名 | `learner/<GitHubユーザー名>/main`（例：`learner/taro/main`）。学習者ごとに 1 本だけ持つ個人の作業基点 |
+| フィーチャーブランチ命名 | `feature/<GitHubユーザー名>/<issue番号>-<short-desc>`（例：`feature/taro/42-resource-detail`） |
 | コミット | Conventional Commits 形式（詳細は[§コミット・PR 規約](#commit-pr)） |
 | 言語 | コメント・コミットメッセージ・ドキュメントは日本語で書いてよい（識別子は英語） |
 | 仕様の扱い | `Docs/spec/` が真実の源。仕様と実装が食い違ったら仕様を確認し、必要なら仕様の更新を先に行う |
 
-同じ選択課題（カタログ項目）に複数の学習者が着手すると、各自が別の Issue を起票するため issue 番号自体は重複しません。ただし番号だけでは `git branch -a` や GitHub の branch 一覧から誰の作業か判別できないため、先頭に GitHub ユーザー名を入れて担当者を明示します。
+`main` は誰からもマージされません。完了した課題は各自のトランクブランチに積み上げます（トランクを導入した理由は [ADR-030](../reference/adr/ADR-030-personal-trunk-branch-strategy.md) を参照）。同じ選択課題（カタログ項目）に複数の学習者が着手しても、各自のトランクブランチが独立しているため衝突しません。Issue はカタログ課題ごとに運営者が起票済みの共通の 1 つを参照するため、同じ課題を選んだ学習者同士は Issue 番号が同じになります。番号だけでは `git branch -a` や GitHub の branch 一覧から誰の作業か判別できないため、先頭に GitHub ユーザー名を入れて担当者を明示します。
 
-ブランチは `main` から次のコマンドで作成します。
+### 作業ブランチの作成 \{#feature-branch}
+
+ブランチは 2 種類あります。**トランクブランチ**（`learner/<GitHubユーザー名>/main`）は学習者ごとに 1 本だけ持つ個人の作業基点で、`main` の代わりにマージ先になります。**フィーチャーブランチ**（`feature/<GitHubユーザー名>/<issue番号>-<short-desc>`）は課題ごとに作成する作業用ブランチで、自分のトランクブランチから切り、実装が終わったら自分のトランクブランチへマージします。どちらも先頭に `<GitHubユーザー名>` が必要なのは、複数の学習者が同時に作業するため、名前だけでは重複や判別ができないからです。
+
+### トランクブランチの作成（初回のみ） \{#trunk-branch}
+
+学習を始める前に、自分のトランクブランチを 1 本だけ作成します。
+
+**GitHub の画面から作成する場合**：リポジトリのブランチ一覧画面で `main` を選択し、ブランチ名の入力欄に `learner/<GitHubユーザー名>/main` と入力して作成します。
+
+**コマンドで作成する場合**：
 
 ```bash
 git checkout main
+git pull
+git checkout -b learner/<GitHubユーザー名>/main
+git push -u origin learner/<GitHubユーザー名>/main
+```
+
+以降のフィーチャーブランチは、`main` ではなく自分のトランクブランチから作成します。
+
+```bash
+git checkout learner/<GitHubユーザー名>/main
 git pull
 git checkout -b feature/<GitHubユーザー名>/<issue番号>-<short-desc>
 ```
@@ -236,7 +257,7 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 ### コミットの粒度
 
 **1 コミット 1 関心事**が原則です。「機能追加」と「無関係なリファクタ」が混ざっていたら分割してください。  
-レビュアー（メンター）がコミット単位で差分を追える状態が目標です。
+レビュアー（運営者）がコミット単位で差分を追える状態が目標です。
 
 ### PR 提出前のセルフレビュー
 

@@ -6,9 +6,10 @@ tags:
   - ai-dlc
   - adoption
   - vendor
-audience: メンター・学習者
+audience: 運営者・学習者
 references:
   - ../develop/dev-workflow.md
+  - ../develop/aidlc-guide.md
   - Docs/plan/aidlc-overview.html
   - Docs/plan/PHASE4_AI_DRIVEN_DEV_TASKS.md
 last_updated: '2026-08-01T11:56:18+09:00'

@@ -1,141 +1,109 @@
 ---
 sidebar_position: 1
 title: 開発ワークフローガイド
-description: AI-DLC エンジンを前提とした BookFlow の標準開発フロー（INCEPTION→CONSTRUCTION→OPERATIONS）
+description: Issue 着手からマージまでの BookFlow 標準開発フロー（8 ステップ）
 tags:
   - guide
   - workflow
-  - ai-dlc
-audience: 学習者（主に若手）
+audience: 学習者
 references:
+  - ./aidlc-guide.md
+  - ./coding-conventions.md
   - ../ai-tools-guide.md
-  - Docs/guide/coding-conventions.md
+  - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
   - Docs/spec/index.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-08-12T00:00:00+09:00'
 ---
 
 # 開発ワークフローガイド
 
-このガイドは、学習課題（Issue）に着手してから完了するまでの **BookFlow 標準フロー** を示します。  
-フローは AWS Labs の **AI-DLC**（AI Development Life Cycle、[`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)）の 3 フェーズ・全ステージ・承認ゲートを **BookFlow の標準ワークフローとして採用**したものです。  
-独立した `aidlc-docs/` 並行ツリーは作らず、作業用成果物は `Docs/spec/aidlc-docs/` に集約し、状態管理は `Docs/spec/` に統合しています。
+このガイドは、学習課題（Issue）に着手してから完了するまでの **BookFlow の標準開発フロー** を示します。  
+実装計画の立案から実装までは、原則として AI-DLC エンジンが支援します（例外は各ステップ内で明記）。エンジン自体の仕組みや起動条件は [AI-DLC ガイド](./aidlc-guide.md) を参照してください。
 
 ---
 
-## AI-DLC エンジンと BookFlow フロー
-AI-DLC は Inception（WHAT/WHY）/ Construction（HOW）/ Operations の 3 フェーズと、**各ステージでの承認ゲート**を柱とする開発方法論です。  
-BookFlow では AI-DLC エンジン（`.claude/skills/aidlc/SKILL.md`）を **標準ワークフローとして教えています**。エンジンは `/aidlc` の明示起動、または「AI-DLC で進めて」等の意図指定があったときにのみ発動します。
-
-### BookFlow 統合の要点
-
-| AI-DLC の要素 | BookFlow での実体 |
-|---|---|
-| Inception（WHAT/WHY） | `/aidlc` 起動後、通常（agent）モードでエンジンが Workspace Detection → Requirements Analysis → Workflow Planning を実行 |
-| ビジネス要求シート / Requirements | エンジンの Requirements Analysis 成果 → `Docs/spec/requirements.md` に統合 / `Docs/spec/enhancements/` のシート |
-| units of work（並行可能な作業単位） | 縦切り課題 Issue ＝ `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 単位 |
-| plan-first のセルフ承認 | `/aidlc` 起動時、エンジンが Workflow Planning を提示 → 学習者自身がチャットで計画に納得したことを示してから実装に進む |
-| Construction（HOW） | エンジンの per-unit ループ（設計 → Code Generation）→ Spec-first 仕様更新 → 縦切り実装 |
-| Build and Test | エンジンの Build and Test ステージ ＋ CI 品質ゲート（lint・テスト） |
-| Operations | CI 品質ゲート（`CI Frontend` / `CI Backend`）にスコープを維持 |
-| `aidlc-state.md`（進捗トラッカー） | `Docs/spec/aidlc-state.md` に写像 |
-| `audit.md`（監査ログ） | `Docs/spec/aidlc-audit.md` に写像（追記専用） |
-| `aidlc-docs/` 成果物ツリー | `Docs/spec/aidlc-docs/`（作業用）+ 既存 `Docs/spec/` ファイル（永続成果物） |
-
-`AGENTS.md` は導入せず、AI ツールとの連携点は `CLAUDE.md` に一元化しています。
-
----
-
-## AI-DLC 3フェーズの詳細
-### INCEPTION フェーズ（WHAT/WHY）
-
-![INCEPTION フェーズ](/diagrams/guide/dev-workflow-inception.drawio.svg)
-
-| ステージ | 実行 | 役割 |
-|---|---|---|
-| Workspace Detection | 必須 | ワークスペース分析・Brownfield/Greenfield 判定・`aidlc-state.md` 初期化 |
-| Reverse Engineering | Brownfield のみ | 既存コード解析・設計文書生成（[コードベース理解ガイド](../curriculum.md#codebase-understanding) に対応） |
-| Requirements Analysis | 必須 | 要件分析（Minimal/Standard/Comprehensive の深さ適応型） |
-| User Stories | 条件付き | ユーザーストーリー・受入条件の策定（ユーザー影響がある変更に実行） |
-| Workflow Planning | 必須 | 実行計画・後続ステージの EXECUTE/SKIP 判断 |
-| Application Design | 条件付き | コンポーネント・メソッド・サービス設計（新コンポーネントが必要な場合） |
-| Units Generation | 条件付き | units of work 分解（複数ユニット・複雑な分割が必要な場合） |
-
-### CONSTRUCTION フェーズ（HOW）
-
-![CONSTRUCTION フェーズ](/diagrams/guide/dev-workflow-construction.drawio.svg)
-
-| ステージ | 実行 | 役割 |
-|---|---|---|
-| Functional Design | 条件付き | 技術非依存のビジネスロジック設計（新データモデル・複雑なロジックに実行） |
-| NFR Requirements | 条件付き | 非機能要件・技術スタック選定（パフォーマンス・セキュリティ・スケーラビリティ） |
-| NFR Design | 条件付き | NFR パターン・論理コンポーネント設計（NFR Requirements 実行時に続けて実行） |
-| Infrastructure Design | 条件付き | インフラ・デプロイアーキテクチャ設計（インフラ変更が必要な場合） |
-| Code Generation | 必須 | コード生成の 2 段階：Part 1（計画・承認）→ Part 2（実行） |
-| Build and Test | 必須 | ビルド・テスト手順の生成と検証 |
-
-### OPERATIONS フェーズ
-
-AI-DLC Operations の実体は CI 品質ゲート（`CI Frontend` / `CI Backend`）です。将来のデプロイ自動化、監視は別タスクで扱います。
-
----
-
-## 標準開発フロー
+## 標準開発フロー \{#flow}
 ![標準開発フロー](/diagrams/guide/dev-workflow-standard.drawio.svg)
 
-計画段階（Workflow Planning）・実装完了段階（PR）のそれぞれで、学習者自身がセルフチェックしてから次に進みます。メンターは必須の承認者ではなく、Issue・PR への任意のコメントで支援します。
+計画段階（Workflow Planning）・実装完了段階（PR）のそれぞれで、学習者自身がセルフチェックしてから次に進みます。  
+運営者は必須の承認者ではなく、Teams での質問対応で支援します。
 
----
+### 1. 取り組む課題を選ぶ
 
-## 各ステップの解説
+[選択課題カタログ](../develop/enhancement-catalog.md#catalog)から、自分の STEP の難易度に合う課題を選びます。各課題には**ビジネス要求シート**（`Docs/spec/enhancements/<short-desc>.md`。背景・依存関係・要件・受入条件・影響範囲・AI 活用ポイントの6節で実装対象を定義する文書）があります。
 
-### 1. ビジネス要求シート（Issue）を選択する
+対応する GitHub Issue はカタログ課題ごとに運営者が起票済みです。GitHub の Issues 一覧から、選んだ課題名で検索して見つけてください。受入条件はビジネス要求シート側が真実の源です。
 
-取り組む課題を Issue から選びます。Issue にはビジネス要求シート（背景、依存関係、要件、受入条件、影響範囲、AI 活用ポイント）への参照が含まれます。  
-受入条件はシート側が真実の源です。
+### 2. フィーチャーブランチを作成する
 
-### 2. ブランチを作成する
+自分のトランクブランチ（`learner/<GitHubユーザー名>/main`）から、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` の形式でブランチを作成します。  
+手順は [作業ブランチの作成](../develop/coding-conventions.md#feature-branch) を参照してください。
 
-[coding-conventions.md §共通方針](../develop/coding-conventions.md#common) の規約に従い、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` の形式でブランチを作成します。
+:::note[トランクブランチが未作成の場合]
 
-:::note 作り忘れた場合
-    ブランチを作成し忘れたまま `/aidlc` を起動しても、エンジン起動前の Pre-flight 処理が `main`/`master` 上にいることを検知します。取り組む対象のビジネス要求シート（`Docs/spec/enhancements/`）を特定できれば、short-desc とファイル名・GitHub Issue 検索から Issue 番号を推測してブランチ名を提案するので、内容を確認して承認するだけで済みます（推測できない場合は Issue 番号と短い説明を直接確認します）。ブランチはこの提案の承認後に自動作成され、ワークフローが始まります（詳細は [`.claude/skills/aidlc/SKILL.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/skills/aidlc/SKILL.md) の Pre-flight 節を参照）。
-
-:::
-:::tip コードベースを読み解くタイミング
-    実装に入る前に対象機能のコードを読み解いておくと、次の Workflow Planning での計画が立てやすくなります。読み方の目安は [curriculum.md §コードベース理解ガイド](../curriculum.md#codebase-understanding) を参照してください。
+最初の課題に着手する前に、`main` から自分のトランクブランチを 1 回だけ作成しておく必要があります。手順は [トランクブランチの作成](../develop/coding-conventions.md#trunk-branch) を参照してください。
 
 :::
-### 3. `/aidlc` を起動して AI-DLC エンジンに INCEPTION フェーズを実行させる
 
-通常（agent）モードのまま、ビジネス要求シートの内容を伝えたうえで、`/aidlc` を起動する（または「AI-DLC で進めて」と明示的に伝える）と、AI-DLC エンジン（`.claude/skills/aidlc/SKILL.md`）が発動します。AI-DLC の指定がない小修正・質問では発動しません。plan mode への切り替えは不要です。  
-発動すると、エンジンは以下を自動実行します：
+:::note[作り忘れた場合]
 
-1. **Workspace Detection**: ワークスペース分析・`Docs/spec/aidlc-state.md` を初期化
-2. **Requirements Analysis**: 要件を整理（深さはエンジンが適応的に判断）
-3. **Workflow Planning**: 実行すべき CONSTRUCTION ステージを判断し、実行計画を提示
+作り忘れたまま `/aidlc` を起動しても、エンジン起動前の事前確認（Pre-flight）がブランチ名を推測・提案するので、確認して承認するだけで済みます（詳細は [`.claude/skills/aidlc/SKILL.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/skills/aidlc/SKILL.md) の Pre-flight 節を参照）。
 
-計画の内容を自分で確認し、納得したらチャットでその旨を伝えて承認し、実装に進みます。メンターの承認は不要です。計画に問題があればこの段階で修正します。  
-Claude Code の基本操作は [ai-tools-guide.md](../ai-tools-guide.md) を参照してください。
+:::
 
-### 4. Spec-first で仕様を更新する
+:::tip[コードベースを読み解くタイミング]
 
-実装より先に `Docs/spec/` を更新します。  
-エンジンの Requirements Analysis、Application Design の成果を既存の `Docs/spec/requirements.md`、`Docs/spec/screen-spec.md`、`Docs/spec/api-spec.md`、`Docs/spec/er-diagram.md` に統合します。  
-`/update-spec` スキルを使うと更新対象の特定から表記規約のチェックまで案内されます。
+実装に入る前に対象機能のコードを読み解いておくと、次の Workflow Planning での計画が立てやすくなります。読み方の目安は [コードベース理解ガイド](../curriculum.md#codebase-understanding) を参照してください。
 
-仕様更新は実装と同一 PR で提出します。実装コミットに同梱してもよいし、独立した `docs(spec): ...` コミットに分けてもよい（分ける場合は PR の先頭コミットにします）。
+:::
 
-### 5. AI-DLC CONSTRUCTION フェーズで設計・実装する
+### 3. `/aidlc` を起動する
 
-エンジンの Workflow Planning で決定した CONSTRUCTION ステージ（Functional Design / NFR Requirements / NFR Design / Infrastructure Design / Code Generation）を実行します。  
-各ステージで成果物を提示し、**2択（Request Changes / Continue）**で学習者自身が確認したうえで次へ進みます。
+通常（agent）モードのまま、ビジネス要求シートの内容を伝えたうえで、`/aidlc` を起動する（または「AI-DLC で進めて」と明示的に伝える）と、AI-DLC エンジンが発動し、実行計画（Workflow Planning）を提示します。AI-DLC の指定がない小修正・質問では発動しません。plan mode への切り替えは不要です。  
+エンジンが内部で何を行うかは [AI-DLC ガイド](./aidlc-guide.md) を参照してください。
+
+計画の内容を自分で確認し、納得したらチャットでその旨を伝えて承認し、実装に進みます。運営者の承認は不要です。計画に問題があればこの段階で修正します。  
+Claude Code の基本操作は [AI ツール活用ガイド](../ai-tools-guide.md) を参照してください。
+
+:::warning[STEP-03 は例外]
+
+STEP-03（初級課題1回目）は AI-DLC を使わずに進めるため、このステップは行いません。詳しくは [STEP-03](../curriculum.md#step-03) を参照してください。
+
+:::
+
+### 4. 仕様を更新する
+
+`/aidlc` は INCEPTION フェーズの成果を `Docs/spec/aidlc-docs/` に生成するだけで、既存の仕様書（要件定義 `requirements.md`、画面仕様書 `screen-spec.md`、API 仕様書 `api-spec.md`、ER 図 `er-diagram.md`。いずれも `Docs/spec/` 配下）への統合は自動で行われません。  
+`/update-spec` スキルを使って統合します。
+
+Spec-first が求めるのは、**コードを生成する前に仕様書が更新されていること**です。設計より先に書くことは求めていません。そのため、仕様を書けるだけの情報が揃うタイミングは変更の内容によって変わります。
+
+- **既存のテーブルと API の範囲で収まる変更**  
+ここまでの計画の内容だけで仕様書を書き切れます。ステップ 4 のうちに更新を終え、ステップ 5 に進みます。
+- **新しいテーブルやカラムの追加、複雑な業務ルールを含む変更**  
+カラムの定義や API エンドポイントの詳細は、ステップ 5 の設計作業の中で確定します。  
+ステップ 4 では `requirements.md` と `screen-spec.md` の更新にとどめ、`er-diagram.md` と `api-spec.md` の詳細はステップ 5 の設計が確定したあとに更新します。
+
+:::note[コミットのタイミング]
+
+仕様更新は実装と同一 PR で提出します。実装に同梱しても、独立したコミットに分けてもよいです（分ける場合は、最初の仕様更新を PR の先頭コミットにします）。
+
+:::
+
+### 5. 設計・実装する
+
+INCEPTION フェーズで計画した設計ステージを必要な範囲だけ実行し、コード生成へ進みます。  
+各ステージで成果物を提示し、**2択（Request Changes / Continue）** で確認したうえで次へ進みます。設計ステージの内訳は [AI-DLC ガイド](./aidlc-guide.md) を参照してください。
+
+設計の中でデータモデルや API の詳細が確定した場合は、コード生成に進む前に `/update-spec` をもう一度実行し、確定した内容を ER 図（`er-diagram.md`）と API 仕様書（`api-spec.md`）に反映します（ステップ 4 参照）。
 
 フロントエンド、バックエンドなど複数レイヤーにまたがる変更は、機能単位（縦切り）でまとめて実装します。  
-実装中の規約は [coding-conventions.md](../develop/coding-conventions.md) に従ってください。
+実装は [コーディング規約](../develop/coding-conventions.md) に沿って `/aidlc` が行います。  
+生成されたコードがこの規約に沿っているかは、次のステップのセルフレビューで確認します。
 
-### 6. Build and Test ステージと CI を通す
+### 6. ビルド・テストを通す
 
-エンジンの Build and Test ステージでビルド・テスト手順を生成し、以下のコマンドで検証します：
+`/aidlc` がビルド・テスト手順を生成します。以下のコマンドで検証してください。
 
 ```bash
 # フロントエンド
@@ -150,34 +118,36 @@ CI（`CI Frontend` / `CI Backend`）は機械的な品質ゲートです。
 ### 7. PR を作成する
 
 [`.github/PULL_REQUEST_TEMPLATE.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.github/PULL_REQUEST_TEMPLATE.md) の様式に沿って PR を作成します。  
-`/create-pr` スキルを使うと、head/base ブランチと下書きのみか実際に作成するかを確認したうえで、テンプレートに沿った PR タイトル・本文を組み立て、`gh pr create` で作成できます。実際に作成する場合、head ブランチの push は事前に済ませておく必要があります（`/commit-push` スキル参照）。
+**base ブランチは自分のトランクブランチ**（`learner/<GitHubユーザー名>/main`）です。`main` 宛に PR を作成しないでください。
 
-### 8. セルフレビュー・マージ
+PR を作成するにはブランチへの push が事前に済んでいる必要があります。修正差分のコミット・push は `/commit-push` スキルで行えます。分割単位・コミットメッセージ案・push有無を確認したうえで実行します。
 
-[review-criteria.md §評価基準](../develop/review-criteria.md#completion-criteria) のチェックリストで自分の PR をセルフレビューし、満たしていることを確認したら自分でマージします。メンターレビューは必須ではありません。メンターは任意のタイミングで Issue・PR にコメントすることがあります。
+`/create-pr` スキルを使うと、テンプレートに沿ったタイトル・本文を組み立て、PR 作成まで実行します。
 
-PR に `@claude pr-review` とコメントすると、AI レビューが3観点（要求整合性・実装と非機能部分の整合性・理解度チェック）で判定します。**観点1・観点2が OK、CI green、かつ観点3が確定している**とき総合判定が「完了」になり、これがタスク完了の条件です（[review-criteria.md §AI レビューとの対応](../develop/review-criteria.md#ai-review)、[ADR-025](../reference/adr/ADR-025-ai-review-completion-gate.md)、[ADR-026](../reference/adr/ADR-026-comprehension-check-quiz-format.md)）。観点3の誤答は完了を妨げません。
+### 8. セルフレビューしてマージする
 
-観点3（理解度チェック）は3〜5問の4択で、回答の評価に少なくとも2回のやり取りが必要です。1回目のレビューで出題されたら、「問番号＋選んだ選択肢＋選んだ理由を一文」の形式（例：`1-B。理由は…`）で PR の**会話コメント**に回答し、再度 `@claude pr-review` とコメントしてください。2回目で判定と、正誤にかかわらず全問の解説が返ります。
+[評価基準](../develop/review-criteria.md#completion-criteria) のチェックリストで自分の PR をセルフレビューします。
 
-総合判定はタスク完了の条件ですが、必須 status check には含めません。マージは自分で行います。
+PR に `@claude pr-review` とコメントすると、AI が 3 観点（要求整合性・実装と非機能部分の整合性・理解度チェック）で PR を判定します。  
+**観点1・観点2が OK、CI green、かつ観点3が確定している**とき総合判定が「完了」になり、これがタスク完了の条件です（[AI レビューとの対応](../develop/review-criteria.md#ai-review)）。
 
-:::note メンター・リポジトリ管理者向け
-    GitHub の Settings → Branches でブランチ保護ルールを設定する場合、必須 status check には `CI Frontend / ci`、`CI Backend / ci` を指定してください。承認レビューは必須にしません（「Require approvals」はオフ）。  
-    本リポジトリでは CODEOWNERS は使用しません。
+:::note[観点3の誤答は完了を妨げない]
+
+一度確定した観点3は、そのあと差分を変えても再判定・再出題されません。
 
 :::
-### 9. マージ・Issue クローズ
 
-PR をマージし、対応する Issue をクローズします。
+観点3（理解度チェック）は3〜5問の4択です。1回目のレビューは出題だけで終わるため、判定までに少なくとも2回のやり取りが必要です。  
+出題されたら「問番号＋選んだ選択肢＋選んだ理由を一文」の形式（例：`1-B。理由は…`）で、PR の**会話コメント**に全問まとめて回答してください（差分の行に付けたコメントは読み取れません。一部の問だけ答えた状態では解説が返りません）。  
+回答したうえで再度 `@claude pr-review` とコメントすると、2回目のレビューで判定が確定し、正誤にかかわらず全問の解説が返ります。
 
----
+総合判定が「完了」になったら、**自分のトランクブランチへ**自分でマージします。`main` へは学習者は誰もマージしません。  
+総合判定は必須 status check には含めないため、判定を待たずにマージすることも技術的には可能です。完了条件を満たしたことを自分で確かめてからマージしてください。
 
-## AI-DLC エンジンの活用参照
+:::warning[STEP-03 は例外]
 
-- **エンジン本体**: `.claude/skills/aidlc/SKILL.md`（`/aidlc` スキル）、`vendor/aidlc-rules/aws-aidlc-rules/core-workflow.md`（上流原本）
-- **起動判断のポインタ**: `.claude/rules/aidlc-core.md`（常時読込。`/aidlc` を起動すべきかどうかの判断のみを担う薄いファイル）
-- **ステージ詳細**: `.aidlc-rule-details/<phase>/<stage>.md`（BookFlow 翻案済み）
-- **進捗トラッカー**: `Docs/spec/aidlc-state.md`
-- **監査ログ**: `Docs/spec/aidlc-audit.md`
-- **採用台帳**: `Docs/spec/aidlc-adoption.md`
+STEP-03（初級課題1回目）の PR はマージしません。振り返りの記録として残すためだけに作成するもので、確認が終わったらクローズしてよいです。詳しくは [STEP-03](../curriculum.md#step-03) を参照してください。
+
+:::
+
+マージしたら完了です。対応する Issue はクローズしません。今後の学習者が同じ選択課題に取り組む際に参照できるよう、開いたままにしておきます。
