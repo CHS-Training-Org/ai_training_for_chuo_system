@@ -5,7 +5,7 @@ description: BookFlow 学習リポジトリで使用するドメイン用語・�
 tags:
   - guide
   - glossary
-audience: 学習者（若手・中堅以上）・メンター
+audience: 学習者・運営者
 references:
   - ../overview.md
   - ../requirements.md
@@ -47,8 +47,8 @@ BookFlow の業務ドメイン（施設・備品予約 + 承認ワークフロ�
 | **BookFlow** | 本リポジトリのベースとなるサンプルサービス（施設・備品予約 + 承認ワークフロー統合アプリ） |
 | **BFF** | Backend for Frontend。Next.js API Routes がこの役割を担い、認証トークン管理とバックエンド呼び出しを集約する |
 | **DevContainer** | VS Code + Docker を用いた再現性の高い開発環境。`.devcontainer/` 配下に定義 |
-| **選択課題** | GitHub Issue に登録して取り組む、順序性のない課題。学習者が自由に選択する |
-| **必須課題** | 環境構築など順序依存のあるステップ課題（STEP-01〜03）。GitHub Issue は起票せず自己チェックで進める。若手は先にこれをクリアする |
+| **選択課題（エンハンス課題）** | GitHub Issue に登録して取り組む、BookFlow への機能追加課題。カタログからどの課題をやるかを学習者が選ぶ。実施するかどうかは選べず、難易度は学習パス上の段階で決まる |
+| **必須ステップ課題** | 環境構築など順序依存のあるステップ課題（STEP-01〜03）。GitHub Issue は起票せず自己チェックで進める |
 | **LocalStack** | AWS サービス（S3・DynamoDB・Lambda・API Gateway）をローカルでエミュレートするツール |
 | **cognito-local** | Amazon Cognito のユーザープール認証フローをローカルでエミュレートする npm パッケージ |
 
@@ -68,6 +68,6 @@ BookFlow の業務ドメイン（施設・備品予約 + 承認ワークフロ�
 | **units of work** | CONSTRUCTION で並行実行可能な作業単位。BookFlow では縦切り課題 Issue（`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 単位）に対応する |
 | **縦切り実装** | フロントエンド・バックエンドなど複数レイヤーにまたがる変更を機能単位でまとめて実装する方針 |
 | **Spec-first** | 実装より先に `Docs/spec/` を更新し、それを真実の源とする原則 |
-| **セルフレビュー・マージ** | PR テンプレートのチェックリストを学習者自身が満たしたうえでマージする運用。メンターの承認は不要（[ADR-023](./reference/adr/ADR-023-mentor-gate-removal.md) 参照） |
+| **セルフレビュー・マージ** | PR テンプレートのチェックリストを学習者自身が満たしたうえでマージする運用。運営者の承認は不要（[ADR-023](./reference/adr/ADR-023-mentor-gate-removal.md) 参照） |
 | **ADR（Architecture Decision Record）** | 技術選定・設計上の重要な意思決定を記録するドキュメント。`Docs/decision/` に格納（[decision/README.md](./reference/adr/README.md) 参照） |
 | **OKF（Open Knowledge Format）** | Markdown + YAML frontmatter で知識メタデータを表現するベンダー中立フォーマット。BookFlow は frontmatter 規律のみを採用（[ADR-021](./reference/adr/ADR-021-okf-frontmatter-adoption.md) 参照） |

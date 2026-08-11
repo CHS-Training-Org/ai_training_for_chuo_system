@@ -6,7 +6,7 @@ tags:
   - adr
   - decision
   - guide
-audience: メンター・リポジトリ管理者・学習者
+audience: 運営者・学習者
 references:
   - ../overview.md
   - Docs/spec/index.md
@@ -150,6 +150,8 @@ Accepted（YYYY-MM-DD）
 | [ADR-026](../ADR-026-comprehension-check-quiz-format) | 理解度チェックを4択化し完了条件から誤答を外す | Accepted |
 | [ADR-027](../ADR-027-docusaurus-migration) | ドキュメントサイトを Zensical から Docusaurus に移行 | Proposed |
 | [ADR-028](../ADR-028-training-purpose) | 研修リポジトリの目的と学習範囲 | Accepted |
+| [ADR-029](../ADR-029-single-learning-path) | 学習パスの分岐を廃止し全員共通の一本道にする | Accepted |
+| [ADR-030](../ADR-030-personal-trunk-branch-strategy) | 学習者ごとの個人トランクブランチ導入 | Accepted |
 
 ### 開発環境（ADR-022〜）
 
