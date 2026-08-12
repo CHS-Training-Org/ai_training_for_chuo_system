@@ -14,7 +14,7 @@ const startingPoints = [
   {
     situation: '必須ステップを終えた',
     steps: [
-      { label: 'カタログから Beginner 課題を選ぶ', to: '/develop/enhancement-catalog#beginner' },
+      { label: 'カタログから未実施の課題を選ぶ', to: '/develop/enhancement-catalog#catalog' },
       { label: '標準開発フローを見直す', to: '/develop/dev-workflow' },
     ],
   },

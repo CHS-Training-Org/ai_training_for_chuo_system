@@ -5,12 +5,12 @@ import styles from './HomepageCurriculum.module.css';
 const requiredSteps = [
   {
     step: 'STEP-01',
-    title: '環境構築',
+    title: 'キックオフと環境構築',
     goal: 'DevContainer を起動し、ブラウザで BookFlow のダッシュボードにアクセスできる状態を作る。',
     icon: '🛠',
     path: '/getting-started',
     color: 'var(--bf-primary)',
-    checkpoints: ['DevContainer 起動', 'バックエンドの health が UP', 'サインイン画面の表示'],
+    checkpoints: ['オリエンテーションに参加', 'バックエンドの health が UP', 'サインイン画面の表示'],
   },
   {
     step: 'STEP-02',
@@ -23,10 +23,10 @@ const requiredSteps = [
   },
   {
     step: 'STEP-03',
-    title: 'AI ツール導入・活用',
+    title: '初級課題1回目（AI-DLC を使わない）',
     goal: 'Claude Code の特性を理解する。最初の Beginner 課題をあえて /aidlc を使わずに進め、使った場合との差を体感する。',
     icon: '🤖',
-    path: '/ai-tools-guide',
+    path: '/develop/no-aidlc-workflow',
     color: '#D97706',
     checkpoints: ['Claude Code のセットアップ', '/aidlc なしで 1 課題を完了', '感じた手間を PR に記載'],
   },
@@ -34,10 +34,10 @@ const requiredSteps = [
 
 const afterSteps = [
   {
-    title: '初級課題（AI-DLC を使う）',
-    goal: 'STEP-03 とは別の Beginner 課題を、今度は標準開発フロー（AI-DLC）に沿って実装し、エンジンが何を代行しているかを対比で捉える。',
+    title: '初級課題2回目（AI-DLC を使う）',
+    goal: 'STEP-03 と同じ課題を、今度は標準開発フロー（AI-DLC）に沿って実装し直し、エンジンが何を代行しているかを対比で捉える。',
     icon: '🚀',
-    path: '/develop/enhancement-catalog#beginner',
+    path: '/curriculum#beginner-with-aidlc',
     color: '#DC2626',
     note: '必須・2〜3 時間',
   },
@@ -59,7 +59,7 @@ export default function HomepageCurriculum() {
           <h2 id="curriculum-heading" className={styles.title}>必須課題の全体像</h2>
           <p className={styles.description}>
             学習パスは 1 本です。経験年数やレベルによる分岐はなく、全員が同じ順序で進めます。<br />
-            STEP-01 から中級課題まで、目安は合計 15〜21 時間です。
+            STEP-01 から中級課題まで、目安は合計 17〜24 時間です。
           </p>
         </header>
 
