@@ -7,6 +7,7 @@ tags:
   - workflow
 audience: 学習者
 references:
+  - ./no-aidlc-workflow.md
   - ./aidlc-guide.md
   - ./coding-conventions.md
   - ../ai-tools-guide.md
@@ -59,7 +60,7 @@ last_updated: '2026-08-12T00:00:00+09:00'
 
 ### 3. `/aidlc` を起動する
 
-通常（agent）モードのまま、ビジネス要求シートの内容を伝えたうえで、`/aidlc` を起動する（または「AI-DLC で進めて」と明示的に伝える）と、AI-DLC エンジンが発動し、実行計画（Workflow Planning）を提示します。AI-DLC の指定がない小修正・質問では発動しません。plan mode への切り替えは不要です。  
+通常（agent）モードのまま、ビジネス要求シートの内容を伝えたうえで、`/aidlc` を起動する（または「AI-DLC で進めて」と明示的に伝える）と、AI-DLC エンジンが発動し、実行計画（Workflow Planning）を提示します。AI-DLC の指定がない小修正・質問では発動しません。プランモードへの切り替えは不要です。  
 エンジンが内部で何を行うかは [AI-DLC ガイド](./aidlc-guide.md) を参照してください。
 
 計画の内容を自分で確認し、納得したらチャットでその旨を伝えて承認し、実装に進みます。運営者の承認は不要です。計画に問題があればこの段階で修正します。  
@@ -67,7 +68,7 @@ Claude Code の基本操作は [AI ツール活用ガイド](../ai-tools-guide.m
 
 :::warning[STEP-03 は例外]
 
-STEP-03（初級課題1回目）は AI-DLC を使わずに進めるため、このステップは行いません。詳しくは [STEP-03](../curriculum.md#step-03) を参照してください。
+STEP-03（初級課題1回目）は AI-DLC を使わずに進めるため、このステップは行いません。代わりに [AI-DLC を使わない開発フロー](./no-aidlc-workflow.md) に沿って進めてください（背景は [STEP-03](../curriculum.md#step-03) を参照）。
 
 :::
 
@@ -146,7 +147,7 @@ PR に `@claude pr-review` とコメントすると、AI が 3 観点（要求�
 
 :::warning[STEP-03 は例外]
 
-STEP-03（初級課題1回目）の PR はマージしません。振り返りの記録として残すためだけに作成するもので、確認が終わったらクローズしてよいです。詳しくは [STEP-03](../curriculum.md#step-03) を参照してください。
+STEP-03（初級課題1回目）の PR はマージしません。振り返りの記録として残すためだけに作成するもので、確認が終わったらクローズしてよいです。手順は [AI-DLC を使わない開発フロー](./no-aidlc-workflow.md) を参照してください。
 
 :::
 

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 title: 評価基準・レビュー観点
 description: PR 提出前のセルフレビュー基準と学習者・運営者の観点別チェックリスト
 tags:

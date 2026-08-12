@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 title: トラブルシューティング
 description: 環境構築・起動・開発中によく発生するエラーの原因と対処法
 tags:

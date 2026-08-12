@@ -9,10 +9,11 @@ tags:
 audience: 学習者
 references:
   - Docs/guide/coding-conventions.md
+  - ./develop/no-aidlc-workflow.md
   - ../getting-started.md
   - ../claude-code-best-practices.md
   - ../reference/claude-code/agent-config.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-08-12T00:00:00+09:00'
 ---
 
 # AI ツール活用ガイド（Claude Code）
@@ -199,18 +200,9 @@ Claude Code のサブスクリプション（Claude Pro プランと Max プラ�
 STEP-03 では、[初級の課題](./develop/enhancement-catalog.md#beginner) から選んだ最初の 1 課題を、**AI-DLC エンジン**（`/aidlc` が起動する INCEPTION フェーズ・承認ゲート・段階的な CONSTRUCTION フェーズの自動オーケストレーション）を使わずに進めます。  
 狙いは、エンジンが計画・段階分割・承認ゲートを代行してくれる価値を、後続課題で AI-DLC を使ったときとの対比で体感することです。
 
-AI-DLC エンジンを使わないことは、Claude Code を使わないことを意味しません。コード補完・設計相談・生成コードの相棒としては、この STEP でも通常どおり Claude Code を使います。  
-同様に、**spec-first**（実装より先に `Docs/spec/` を更新する原則）とセルフレビューは、AI-DLC の有無にかかわらずリポジトリ全体の必須ルールなので、このステップでも維持します。
+AI-DLC エンジンを使わないことは、Claude Code を使わないことを意味しません。コード補完・設計相談・生成コードの相棒としては、この STEP でも通常どおり Claude Code を使います。
 
-進め方は次のとおりです。
-
-1. [coding-conventions.md §作業ブランチの作成](./develop/coding-conventions.md#feature-branch) の規約に従い、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` ブランチを作成する
-2. 選んだ課題の要件シート（`Docs/spec/enhancements/<short-desc>.md`）を読み、変更が仕様に及ぶ範囲を `/update-spec` スキルで先に `Docs/spec/` に反映する
-3. `/aidlc` は起動せず、Claude Code に実装したい内容を直接プロンプトする。実装順序や確認のタイミングは、エンジンの Workflow Planning に頼らず自分で組み立てる
-4. 生成されたコードは必ず自分で読み、テスト実行・画面確認をしてからコミットする
-5. `/create-pr` で PR を作成する。[review-criteria.md](./develop/review-criteria.md) のチェックリストでセルフレビューし、満たしていることを確認したら自分でマージする
-
-完了したら、AI-DLC なしで進めて手間だった点（段取り、仕様との整合、レビューの負荷など）を短く振り返り、その選択課題の PR に記載してください。後続の選択課題で `/aidlc` を使ったときに、この振り返りが対比の基準になります。
+具体的な進め方は [AI-DLC を使わない開発フロー](./develop/no-aidlc-workflow.md) を参照してください。
 
 ---
 

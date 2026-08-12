@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 title: 選択課題カタログ
 description: 学習者が選択できるエンハンス課題の一覧と選択・着手手順
 tags:

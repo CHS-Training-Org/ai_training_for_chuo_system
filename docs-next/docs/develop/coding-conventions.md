@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 title: コーディング規約
 description: BookFlow の命名規則・ファイル構成・コミット規約・テスト規約を定めたコーディング標準
 tags:
@@ -218,7 +218,7 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 
 ---
 
-## コミット・PR 規約
+## コミット・PR 規約 \{#commit-pr}
 {/* 開発フロー全体（Issue 選択〜マージ）は dev-workflow.md（タスク 3.1）、PR テンプレートは .github/PULL_REQUEST_TEMPLATE.md（タスク 3.4）で整備済み */}
 
 ### Conventional Commits

@@ -10,9 +10,10 @@ audience: 学習者・運営者
 references:
   - ../getting-started.md
   - ../develop/dev-workflow.md
+  - ../develop/no-aidlc-workflow.md
   - ../develop/aidlc-guide.md
   - ../ai-tools-guide.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-08-12T00:00:00+09:00'
 ---
 
 # 学習カリキュラム
@@ -104,8 +105,8 @@ STEP-03〜05 はいずれも選択課題（エンハンス課題）そのもの�
 | ---- | ---- |
 | ゴール | 本リポジトリの標準 AI ツールである Claude Code の特性を理解する。あわせて、初級の最初の選択課題を標準開発フロー（AI-DLC）を使わずに進め、後続課題で AI-DLC を使った場合との違いを体感できるようになる |
 | 推定工数 | 3〜4 時間 |
-| AI 活用例 | [AI-DLC を使わずに最初の選択課題を進める](./ai-tools-guide.md#checklist) の手順を実際に手を動かして試す |
-| 完了条件 | 初級から選んだ最初の選択課題を、`/aidlc`（AI-DLC エンジン駆動）を使わずに Claude Code へ直接プロンプトして実装する。spec-first（先に `Docs/spec/` を更新する原則）とセルフレビューは AI-DLC を使う場合と同じく行う。完了後、AI-DLC なしで進めて感じた手間を短く振り返り、その選択課題の PR に記載する（後続課題で `/aidlc` を使った場合との対比の起点にする）。この PR はマージしない（STEP-04 で同じ課題を作り直すため） |
+| AI 活用例 | [AI-DLC を使わない開発フロー](./develop/no-aidlc-workflow.md) の手順を実際に手を動かして試す |
+| 完了条件 | 初級から選んだ最初の選択課題を、[AI-DLC を使わない開発フロー](./develop/no-aidlc-workflow.md) に沿って実装する（`/aidlc` は使わず、Claude Code へ直接プロンプトする）。完了後、AI-DLC なしで進めて感じた手間を短く振り返り、その選択課題の PR に記載する（後続課題で `/aidlc` を使った場合との対比の起点にする）。この PR はマージしない（STEP-04 で同じ課題を作り直すため） |
 
 セットアップ、使い方、効果的なプロンプトの書き方、AI 利用ポリシーは [AI ツール活用ガイド](./ai-tools-guide.md) を参照してください。
 

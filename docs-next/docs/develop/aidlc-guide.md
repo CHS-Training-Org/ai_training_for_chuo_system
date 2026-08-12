@@ -1,5 +1,5 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 title: AI-DLC ガイド
 description: AI-DLC エンジン（3 フェーズ・plan-first ゲート）の仕組みと BookFlow での位置づけ
 tags:

@@ -28,6 +28,7 @@ const sidebars: SidebarsConfig = {
       label: '開発フロー',
       items: [
         'develop/dev-workflow',
+        'develop/no-aidlc-workflow',
         'develop/aidlc-guide',
         'develop/coding-conventions',
       ],
@@ -101,6 +102,7 @@ const sidebars: SidebarsConfig = {
       label: '開発フロー',
       items: [
         'develop/dev-workflow',
+        'develop/no-aidlc-workflow',
         'develop/aidlc-guide',
         'develop/coding-conventions',
         'develop/review-criteria',
