@@ -74,6 +74,15 @@ const config: Config = {
     colorMode: {
       respectPrefersColorScheme: true,
     },
+    // docs-next 並行運用期間限定の案内バナー（ADR-027 Phase 5 で撤去）
+    announcementBar: {
+      id: 'docs-next-preview-notice',
+      content:
+        '📣 現在プレビュー中の新デザインです。従来のドキュメントサイトは <a href="/ai_training_for_chuo_system/">こちら</a>。ご意見は <a href="https://github.com/CHS-Training-Org/ai_training_for_chuo_system/issues/new/choose">Issue</a> へどうぞ。',
+      backgroundColor: '#fff5cc',
+      textColor: '#333',
+      isCloseable: true,
+    },
     navbar: {
       title: 'BookFlow Docs',
       logo: {
