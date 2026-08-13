@@ -28,8 +28,8 @@ BookFlow のリソース一覧画面（`/resources`）には、カテゴリ選�
 ## 依存関係
 
 - 前提課題：なし（ベースシステムの既存 `GET /api/resources`・`ResourceFilterForm.tsx` のみに依存）
-- 競合する課題：なし（[リソース一覧のソート順選択](./resource-list-sort.md) は本課題を前提課題とするため、本課題の完了後に着手される。実質的に並行着手にはならない）
-- 推奨着手順序：本課題（キーワード検索）を**先に着手**するとよい。後続として [リソース一覧のソート順選択](./resource-list-sort.md)（本課題の完了を前提とする）・[OpenAPI クライアント自動生成](./openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
+- 競合する課題：[リソース一覧のソート順選択](./resource-list-sort.md)（同一の `GET /api/resources` エンドポイント・`ResourceFilterForm.tsx` を変更するため、並行着手はマージ競合のリスクがある）
+- 推奨着手順序：[リソース一覧のソート順選択](./resource-list-sort.md)との間に前提関係はないため、どちらを先に着手してもよい（ただし競合する課題のため並行着手は避ける）。後続として [OpenAPI クライアント自動生成](./openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
 
 ## 要件
 
