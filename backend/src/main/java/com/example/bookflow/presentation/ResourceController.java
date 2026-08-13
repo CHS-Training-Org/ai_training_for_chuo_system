@@ -14,9 +14,11 @@ import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -50,6 +52,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/resources")
 public class ResourceController {
 
+  /** {@code sort} パラメータで指定できるフィールド（BR-01）。 */
+  private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "capacity", "createdAt");
+
   private final ResourceService resourceService;
 
   public ResourceController(ResourceService resourceService) {
@@ -65,7 +70,7 @@ public class ResourceController {
    * @param category カテゴリフィルタ（任意）
    * @param from 空き確認の開始日時（任意・to と同時指定）
    * @param to 空き確認の終了日時（任意・from と同時指定）
-   * @param pageable ページネーション（デフォルト: size=20）
+   * @param pageable ページネーション（デフォルト: size=20、sort=createdAt,asc）
    * @param currentUser 認証済みユーザー（ロール判定に使用）
    * @return {@link ResourceResponse} のページ
    */
@@ -74,14 +79,30 @@ public class ResourceController {
       @RequestParam(required = false) ResourceCategory category,
       @RequestParam(required = false) LocalDateTime from,
       @RequestParam(required = false) LocalDateTime to,
-      @PageableDefault(size = 20) Pageable pageable,
+      @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC)
+          Pageable pageable,
       @CurrentUser User currentUser) {
     // from / to は同時指定必須（api-spec.md §リソース一覧 参照）
     if ((from == null) != (to == null)) {
       throw new ValidationException("from と to は同時に指定してください。");
     }
+    validateSort(pageable.getSort());
     boolean isAdmin = currentUser.getRole() == Role.ADMIN;
     return resourceService.list(category, from, to, isAdmin, pageable);
+  }
+
+  /**
+   * {@code sort} パラメータの許可フィールド（BR-01）を検証する。
+   *
+   * @param sort 検証対象のソート指定
+   * @throws ValidationException 許可外のフィールド名が含まれる場合（BR-04）
+   */
+  private void validateSort(Sort sort) {
+    for (Sort.Order order : sort) {
+      if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
+        throw new ValidationException("不正なソートフィールドです: " + order.getProperty());
+      }
+    }
   }
 
   /**
