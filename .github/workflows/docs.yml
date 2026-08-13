@@ -1,9 +1,13 @@
-name: Deploy Docusaurus docs-next to GitHub Pages
+name: Deploy Docs (Zensical + Docusaurus docs-next) to GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
+      - 'Docs/**'
+      - 'zensical.toml'
+      - 'pyproject.toml'
+      - 'uv.lock'
       - 'docs-next/**'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
@@ -26,6 +30,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Zensical dependencies
+        run: uv sync
+
+      - name: Build Zensical docs (existing site)
+        run: uv run zensical build
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -33,7 +48,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: docs-next/package-lock.json
 
-      - name: Install dependencies
+      - name: Install docs-next dependencies
         working-directory: docs-next
         run: npm ci
 
@@ -41,14 +56,23 @@ jobs:
         working-directory: docs-next
         run: node scripts/gen-last-updated.mjs
 
-      - name: Build Docusaurus
+      - name: Build docs-next (Docusaurus)
         working-directory: docs-next
         run: npm run build
+
+      - name: Assemble combined Pages artifact
+        run: |
+          set -euo pipefail
+          rm -rf pages-root
+          mkdir -p pages-root
+          cp -r site/. pages-root/
+          mkdir -p pages-root/docs-next
+          cp -r docs-next/build/. pages-root/docs-next/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs-next/build
+          path: pages-root
 
   deploy:
     needs: build
