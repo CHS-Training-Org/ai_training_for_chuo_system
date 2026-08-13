@@ -41,7 +41,7 @@
 
 - name: 運用・管理
   color: E4E669
-  description: メンター・オーナーによる設定変更・整備タスク
+  description: 運営者による設定変更・整備タスク
 
 - name: 質問・相談
   color: 0075CA

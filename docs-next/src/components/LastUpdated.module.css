@@ -1,0 +1,18 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--bf-muted-foreground);
+  padding: 0.25rem 0.5rem;
+  background: var(--bf-muted);
+  border-radius: 4px;
+}
+
+.label {
+  font-weight: 500;
+}
+
+.date {
+  font-variant-numeric: tabular-nums;
+}

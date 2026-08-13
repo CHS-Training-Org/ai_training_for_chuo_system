@@ -72,6 +72,6 @@ BookFlowはAI-DLCエンジンを通してエンハンス課題を進め、仕様
 2. そのマーカー行の `状態:` を読む（`出題済み` または `確定`）
 3. 「出題済み」の場合は、そのコメントより後に投稿された**PR作成者**（`gh pr view <PR番号> --json author`）の会話コメントを回答として扱い、`--json commits` の `committedDate` がそのコメントより後のコミットを差分の変化として扱う。そのうえで表の該当行に従う
 
-メンターも任意のタイミングでPRにコメントする運用のため（[operations-guide.md §レビュー・応答方針](../../../../Docs/guide/operations-guide.md#response-policy)）、投稿者を確認せずに回答として扱わない。
+運営者も任意のタイミングでPRにコメントする運用のため（[operations-guide.md §レビュー・応答方針](../../../../Docs/guide/operations-guide.md#response-policy)）、投稿者を確認せずに回答として扱わない。
 
 観点1・観点2はラウンドや観点3の状態に関係なく毎回判定し直す。学習者が回答と同時に修正を push している場合があるためである。

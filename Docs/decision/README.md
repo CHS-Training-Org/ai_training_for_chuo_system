@@ -148,6 +148,8 @@ Accepted（YYYY-MM-DD）
 | [ADR-024](./ADR-024-ai-first-review-adoption.md) | AI一次レビュー（検討A）の採用 | Accepted |
 | [ADR-025](./ADR-025-ai-review-completion-gate.md) | AIレビューをタスク完了判定に格上げ | Accepted |
 | [ADR-026](./ADR-026-comprehension-check-quiz-format.md) | 理解度チェックを4択化し完了条件から誤答を外す | Accepted |
+| [ADR-027](./ADR-027-docusaurus-migration.md) | ドキュメントサイトを Zensical から Docusaurus に移行 | Proposed |
+| [ADR-028](./ADR-028-training-purpose.md) | 研修リポジトリの目的と学習範囲 | Accepted |
 
 ### 開発環境（ADR-022〜）
 

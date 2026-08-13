@@ -46,9 +46,11 @@ coverage/
 *.tsbuildinfo
 next-env.d.ts
 
-# pnpm 採用（ADR-001）に伴い他ロックファイルは混入禁止
+# pnpm 採用（ADR-001）に伴い他ロックファイルは混入禁止（frontend/ 対象）
+# docs-next/ は Docusaurus 標準の npm を採用するため対象外（ADR-027）
 package-lock.json
 yarn.lock
+!docs-next/package-lock.json
 
 # pnpm ストアがワークスペース内に誤作成された場合の保険
 .pnpm-store/
@@ -90,3 +92,6 @@ __pycache__/
 
 # cognito-local provisioning state（環境ごとの pool ID / client ID を保存）
 scripts/.cognito-provision-state
+
+# ===== 作業用一時ファイル（Claude Code のスクラッチ置き場） =====
+.tmp/

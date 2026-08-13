@@ -115,6 +115,9 @@ nav = [
 [project.theme]
 language = "ja"
 
+# docs-next（Docusaurus）並行運用期間限定の案内バナー用（ADR-027 Phase 5 で撤去）
+custom_dir = "overrides"
+
 features = [
   "announce.dismiss",
   "content.code.annotate",
