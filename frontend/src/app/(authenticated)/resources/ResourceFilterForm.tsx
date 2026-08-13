@@ -12,12 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
+import { RESOURCE_CATEGORY_LABELS, RESOURCE_SORT_OPTIONS } from "@/lib/labels";
+
+const DEFAULT_SORT = "createdAt,asc";
 
 interface ResourceFilterFormProps {
   defaultCategory?: string;
   defaultFrom?: string;
   defaultTo?: string;
+  defaultSort?: string;
 }
 
 /**
@@ -30,6 +33,7 @@ export function ResourceFilterForm({
   defaultCategory,
   defaultFrom,
   defaultTo,
+  defaultSort,
 }: ResourceFilterFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,10 +48,12 @@ export function ResourceFilterForm({
       const category = data.get("category") as string;
       const from = data.get("from") as string;
       const to = data.get("to") as string;
+      const sort = data.get("sort") as string;
 
       if (category && category !== "ALL") params.set("category", category);
       if (from) params.set("from", from);
       if (to) params.set("to", to);
+      if (sort && sort !== DEFAULT_SORT) params.set("sort", sort);
 
       router.push(`/resources?${params.toString()}`);
     },
@@ -61,7 +67,7 @@ export function ResourceFilterForm({
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4 space-y-4">
       <h2 className="text-sm font-semibold">フィルタ・空き確認</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         {/* カテゴリ */}
         <div className="space-y-1">
           <Label htmlFor="category">カテゴリ</Label>
@@ -74,6 +80,23 @@ export function ResourceFilterForm({
               <SelectItem value="ROOM">{RESOURCE_CATEGORY_LABELS.ROOM}</SelectItem>
               <SelectItem value="EQUIPMENT">{RESOURCE_CATEGORY_LABELS.EQUIPMENT}</SelectItem>
               <SelectItem value="VEHICLE">{RESOURCE_CATEGORY_LABELS.VEHICLE}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* 並び替え */}
+        <div className="space-y-1">
+          <Label htmlFor="sort">並び替え</Label>
+          <Select name="sort" defaultValue={defaultSort ?? DEFAULT_SORT}>
+            <SelectTrigger id="sort" data-testid="resource-filter-form-sort-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {RESOURCE_SORT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
