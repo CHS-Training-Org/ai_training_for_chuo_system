@@ -14,13 +14,40 @@ import {
 } from "@/components/ui/select";
 import { RESOURCE_CATEGORY_LABELS, RESOURCE_SORT_OPTIONS } from "@/lib/labels";
 
-const DEFAULT_SORT = "createdAt,asc";
+export const DEFAULT_SORT = "createdAt,asc";
 
 interface ResourceFilterFormProps {
   defaultCategory?: string;
   defaultFrom?: string;
   defaultTo?: string;
   defaultSort?: string;
+}
+
+interface ResourceFilterValues {
+  category?: string;
+  from?: string;
+  to?: string;
+  sort?: string;
+}
+
+/**
+ * フィルタフォームの入力値から /resources 遷移先の query 文字列を組み立てる純関数。
+ * sort は選択値がデフォルト（DEFAULT_SORT）と一致する場合は URL に付与しない。
+ */
+export function buildResourceFilterQuery({
+  category,
+  from,
+  to,
+  sort,
+}: ResourceFilterValues): string {
+  const params = new URLSearchParams();
+
+  if (category && category !== "ALL") params.set("category", category);
+  if (from) params.set("from", from);
+  if (to) params.set("to", to);
+  if (sort && sort !== DEFAULT_SORT) params.set("sort", sort);
+
+  return params.toString();
 }
 
 /**
@@ -43,19 +70,15 @@ export function ResourceFilterForm({
       e.preventDefault();
       const form = e.currentTarget;
       const data = new FormData(form);
-      const params = new URLSearchParams();
 
-      const category = data.get("category") as string;
-      const from = data.get("from") as string;
-      const to = data.get("to") as string;
-      const sort = data.get("sort") as string;
+      const query = buildResourceFilterQuery({
+        category: data.get("category") as string,
+        from: data.get("from") as string,
+        to: data.get("to") as string,
+        sort: data.get("sort") as string,
+      });
 
-      if (category && category !== "ALL") params.set("category", category);
-      if (from) params.set("from", from);
-      if (to) params.set("to", to);
-      if (sort && sort !== DEFAULT_SORT) params.set("sort", sort);
-
-      router.push(`/resources?${params.toString()}`);
+      router.push(`/resources?${query}`);
     },
     [router, searchParams],
   );
