@@ -7,7 +7,7 @@ tags:
   - enhancement
   - resource
   - sort
-timestamp: 2026-07-06
+timestamp: 2026-07-30
 audience: 学習者・メンター
 references:
   - Docs/spec/requirements.md
@@ -26,9 +26,9 @@ BookFlow のリソース一覧（`/resources`）は現在、登録日時（`crea
 
 ## 依存関係
 
-- 前提課題：[リソース一覧の検索・フィルタ追加](./resource-list-filter.md)。本課題の受入条件「カテゴリ・期間フィルタやキーワード検索との組み合わせでもソートが適用される」は、キーワード検索機能（前提課題の成果物）が存在しないと検証できないため。
-- 競合する課題：なし（前提課題を完了させてから着手するため、実質的に並行着手にはならない。両課題とも `GET /api/resources` と同一の `ResourceFilterForm.tsx` を変更するが、順序が固定されるため衝突しない）
-- 推奨着手順序：前提課題の完了後、本課題に着手する。後続として [OpenAPI クライアント自動生成](./openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
+- 前提課題：なし（ベースシステムの既存 `GET /api/resources`・`ResourceFilterForm.tsx` のみに依存し、本課題を先行実装する）
+- 競合する課題：[リソース一覧の検索・フィルタ追加](./resource-list-filter.md)。両課題とも `GET /api/resources` と同一の `ResourceFilterForm.tsx` を変更するため、並行着手は非推奨。本課題を先に完了させてから着手すること。
+- 推奨着手順序：本課題（ソート）を先に着手し、完了後に [リソース一覧の検索・フィルタ追加](./resource-list-filter.md) に着手する。後続として [OpenAPI クライアント自動生成](./openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
 
 ## 要件
 
@@ -43,7 +43,7 @@ BookFlow のリソース一覧（`/resources`）は現在、登録日時（`crea
 - [ ] 名称順（昇順・降順）でリソース一覧を並び替えられる
 - [ ] 定員順（昇順・降順）でリソース一覧を並び替えられる
 - [ ] ソート未選択時は従来どおり登録日時昇順で表示される
-- [ ] カテゴリ・期間フィルタやキーワード検索との組み合わせでもソートが適用される
+- [ ] カテゴリ・期間フィルタとの組み合わせでもソートが適用される
 - [ ] バックエンドの既存テストが引き続き pass する
 
 ## 影響範囲

@@ -52,6 +52,28 @@ describe("listResourcesAction", () => {
     expect(result.content).toHaveLength(1);
   });
 
+  it("正常時: sort パラメータをそのままクエリに付与する", async () => {
+    let capturedSort: string | null = null;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        capturedSort = new URL(request.url).searchParams.get("sort");
+        return HttpResponse.json({
+          content: [MOCK_RESOURCE_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    await listResourcesAction({ sort: "name,desc" });
+
+    expect(capturedSort).toBe("name,desc");
+  });
+
   it("401 時: ApiClientError をスローする", async () => {
     server.use(
       http.get("/api/backend/resources", () => {

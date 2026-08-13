@@ -72,6 +72,14 @@ class ResourceServiceTest {
     }
   }
 
+  private static void setCapacity(Resource resource, Integer capacity) {
+    try {
+      setField(resource, "capacity", capacity);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private static Reservation makeReservation(
       UUID id,
       Resource resource,
@@ -257,6 +265,68 @@ class ResourceServiceTest {
       Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_withTimeFilterAndSortByNameDescending_returnsSortedByNameDescending() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+      Resource apple = makeResource(UUID.randomUUID(), "Apple room", ResourceCategory.ROOM, true);
+      Resource zebra = makeResource(UUID.randomUUID(), "Zebra room", ResourceCategory.ROOM, true);
+
+      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(apple, zebra));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Pageable sorted =
+          PageRequest.of(0, 20, org.springframework.data.domain.Sort.by("name").descending());
+      Page<ResourceResponse> result = resourceService.list(null, from, to, false, sorted);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::name)
+          .containsExactly("Zebra room", "Apple room");
+    }
+
+    @Test
+    void list_withTimeFilterAndSortByCapacityDescending_returnsNullCapacityLast() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+      Resource small = makeResource(UUID.randomUUID(), "小会議室", ResourceCategory.ROOM, true);
+      setCapacity(small, 4);
+      Resource large = makeResource(UUID.randomUUID(), "大会議室", ResourceCategory.ROOM, true);
+      setCapacity(large, 20);
+      Resource unknown = makeResource(UUID.randomUUID(), "備品棚", ResourceCategory.EQUIPMENT, true);
+      setCapacity(unknown, null);
+
+      when(resourceRepository.findByIsActiveTrue())
+          .thenReturn(java.util.List.of(small, large, unknown));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Pageable sorted =
+          PageRequest.of(0, 20, org.springframework.data.domain.Sort.by("capacity").descending());
+      Page<ResourceResponse> result = resourceService.list(null, from, to, false, sorted);
+
+      // 降順でも null（定員未設定）は末尾に固定される
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::capacity)
+          .containsExactly(20, 4, null);
+    }
+
+    @Test
+    void list_withTimeFilterAndUnsupportedSortProperty_throwsValidationException() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Pageable sorted =
+          PageRequest.of(0, 20, org.springframework.data.domain.Sort.by("description").ascending());
+
+      assertThatThrownBy(() -> resourceService.list(null, from, to, false, sorted))
+          .isInstanceOf(com.example.bookflow.application.exception.ValidationException.class);
     }
   }
 

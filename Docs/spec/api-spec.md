@@ -6,7 +6,7 @@ tags:
   - spec
   - api
   - rest
-timestamp: 2026-06-17
+timestamp: 2026-07-30
 audience: 学習者・メンター
 references:
   - Docs/spec/requirements.md
@@ -167,7 +167,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 
 | メソッド | パス | 概要 | 権限 |
 |--------|------|------|------|
-| GET | `/api/resources` | リソース一覧（カテゴリ・空き日時でフィルタ可） | 全ロール |
+| GET | `/api/resources` | リソース一覧（カテゴリ・空き日時でフィルタ、並び替え可） | 全ロール |
 | POST | `/api/resources` | リソース登録 | ADMIN |
 | GET | `/api/resources/{id}` | リソース詳細 | 全ロール |
 | PUT | `/api/resources/{id}` | リソース更新 | ADMIN |
@@ -264,7 +264,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
+GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&sort=name,asc&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -275,6 +275,7 @@ Authorization: Bearer <JWT>
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
+| `sort` | string | ❌ | 並び替え基準。`name,asc` / `name,desc` / `capacity,asc` / `capacity,desc` / `createdAt,asc` / `createdAt,desc` のいずれか。未指定時は `createdAt,asc` |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 

@@ -1,6 +1,7 @@
 package com.example.bookflow.application;
 
 import com.example.bookflow.application.exception.ResourceNotFoundException;
+import com.example.bookflow.application.exception.ValidationException;
 import com.example.bookflow.domain.Reservation;
 import com.example.bookflow.domain.ReservationRepository;
 import com.example.bookflow.domain.ReservationStatus;
@@ -13,6 +14,7 @@ import com.example.bookflow.presentation.dto.ResourceResponse;
 import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -127,7 +130,10 @@ public class ResourceService {
       candidates = candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
     }
 
-    // 3. フィルタ後リストを手動ページネーション
+    // 3. ソート（Repository 経由ではなく候補リストを取得しているため Java 側でソートする）
+    candidates = sortCandidates(candidates, pageable.getSort());
+
+    // 4. フィルタ・ソート後リストを手動ページネーション
     int total = candidates.size();
     int start = (int) pageable.getOffset();
     int end = Math.min(start + pageable.getPageSize(), total);
@@ -136,6 +142,51 @@ public class ResourceService {
             ? List.of()
             : candidates.subList(start, end).stream().map(ResourceResponse::from).toList();
     return new PageImpl<>(content, pageable, total);
+  }
+
+  /**
+   * 候補リストを {@link Sort} 条件に従って並び替える（api-spec.md §{@code GET /api/resources} 準拠）。
+   *
+   * @param candidates 候補リソース
+   * @param sort ソート条件（{@code name} / {@code capacity} / {@code createdAt}）
+   * @return 並び替え後のリスト
+   */
+  private List<Resource> sortCandidates(List<Resource> candidates, Sort sort) {
+    if (sort.isUnsorted()) {
+      return candidates;
+    }
+    Comparator<Resource> comparator = null;
+    for (Sort.Order order : sort) {
+      Comparator<Resource> fieldComparator = resourceComparator(order);
+      comparator = comparator == null ? fieldComparator : comparator.thenComparing(fieldComparator);
+    }
+    return candidates.stream().sorted(comparator).toList();
+  }
+
+  /**
+   * {@code capacity} は null 許容フィールドのため、昇順・降順いずれでも null を末尾に固定する （{@code Comparator#reversed()}
+   * をそのまま使うと降順時に null が先頭に来てしまうため個別に組み立てる）。
+   */
+  private Comparator<Resource> resourceComparator(Sort.Order order) {
+    boolean ascending = order.isAscending();
+    return switch (order.getProperty()) {
+      case "name" -> {
+        Comparator<Resource> c =
+            Comparator.comparing(Resource::getName, String.CASE_INSENSITIVE_ORDER);
+        yield ascending ? c : c.reversed();
+      }
+      case "capacity" ->
+          Comparator.comparing(
+              Resource::getCapacity,
+              ascending
+                  ? Comparator.nullsLast(Comparator.naturalOrder())
+                  : Comparator.nullsLast(Comparator.reverseOrder()));
+      case "createdAt" -> {
+        Comparator<Resource> c = Comparator.comparing(Resource::getCreatedAt);
+        yield ascending ? c : c.reversed();
+      }
+      default -> throw new ValidationException("不正なソートパラメータです: " + order.getProperty());
+    };
   }
 
   private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
