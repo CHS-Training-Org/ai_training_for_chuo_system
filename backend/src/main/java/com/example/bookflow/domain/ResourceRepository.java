@@ -4,8 +4,6 @@ import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -14,9 +12,9 @@ import org.springframework.data.repository.query.Param;
 /**
  * リソースリポジトリ。
  *
- * <p>ADMIN は全リソース（inactive 含む）を参照できるが、それ以外のロールは有効リソース（{@code is_active = true}）のみ。 ページネーション有り / 無し
- * の両形式を提供するのは、 {@code GET /api/resources?from&to} の空きフィルタが Java 側（{@link
- * com.example.bookflow.application.ResourceService}）で行われるため、 フィルタ前に全件を取得する必要があるためである。
+ * <p>ADMIN は全リソース（inactive 含む）を参照できるが、それ以外のロールは有効リソース（{@code is_active = true}）のみ。
+ * 一覧取得はすべて全件取得のみを提供する。{@link com.example.bookflow.application.ResourceService} がソート（{@code
+ * Comparator}）・{@code from}/{@code to} の空きフィルタ・ページネーションをアプリケーション側で行うため、ページング付きクエリメソッドは持たない。
  */
 public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
@@ -37,23 +35,14 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   // ---- 非 ADMIN 用（is_active = true のみ）----
 
-  /** 有効リソース一覧をページネーションで返す。 */
-  Page<Resource> findByIsActiveTrue(Pageable pageable);
-
-  /** 有効リソース全件を返す（from/to フィルタ用）。 */
+  /** 有効リソース全件を返す。 */
   List<Resource> findByIsActiveTrue();
 
-  /** 有効リソースをカテゴリで絞り込んでページネーションで返す。 */
-  Page<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category, Pageable pageable);
-
-  /** 有効リソースをカテゴリで絞り込んで全件返す（from/to フィルタ用）。 */
+  /** 有効リソースをカテゴリで絞り込んで全件返す。 */
   List<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category);
 
   // ---- ADMIN 用（inactive 含む）----
 
-  /** リソースをカテゴリで絞り込んでページネーションで返す（inactive 含む）。 */
-  Page<Resource> findByCategory(ResourceCategory category, Pageable pageable);
-
-  /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
+  /** リソースをカテゴリで絞り込んで全件返す（inactive 含む）。 */
   List<Resource> findByCategory(ResourceCategory category);
 }

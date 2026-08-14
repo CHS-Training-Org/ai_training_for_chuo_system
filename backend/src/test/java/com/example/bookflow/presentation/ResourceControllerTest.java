@@ -198,6 +198,185 @@ class ResourceControllerTest extends BaseControllerTest {
   }
 
   // ---------------------------------------------------------------------------
+  // GET /api/resources — ソート（issue #22）
+  //
+  // 既存シード（ROOM / EQUIPMENT）と干渉しないよう、ソート専用テストは
+  // 既存シードが使わない VEHICLE カテゴリで絞り込んだ上でテスト用リソースを検証する。
+  // ---------------------------------------------------------------------------
+
+  private UUID insertResourceForSortTest(String name, Integer capacity, LocalDateTime createdAt) {
+    UUID id = UUID.randomUUID();
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, capacity, requires_approval, is_active,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        id,
+        name,
+        "VEHICLE",
+        capacity,
+        false,
+        true,
+        createdAt);
+    return id;
+  }
+
+  private void deleteResources(UUID... ids) {
+    for (UUID id : ids) {
+      jdbcTemplate.update("DELETE FROM resources WHERE id = ?", id);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_sortByNameAsc_returnsCaseInsensitiveAlphabeticalOrder() throws Exception {
+    UUID banana = insertResourceForSortTest("banana", null, LocalDateTime.of(2025, 4, 10, 9, 0));
+    UUID apple = insertResourceForSortTest("Apple", null, LocalDateTime.of(2025, 4, 11, 9, 0));
+    UUID cherry = insertResourceForSortTest("cherry", null, LocalDateTime.of(2025, 4, 12, 9, 0));
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources")
+                  .param("category", "VEHICLE")
+                  .param("sort", "name,asc")
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[0].name").value("Apple"))
+          .andExpect(jsonPath("$.content[1].name").value("banana"))
+          .andExpect(jsonPath("$.content[2].name").value("cherry"));
+    } finally {
+      deleteResources(banana, apple, cherry);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_sortByCapacityDesc_returnsNullsLast() throws Exception {
+    // BR-03 の回帰テスト：DB の ORDER BY capacity DESC への単純委譲では
+    // PostgreSQL の既定（DESC は NULLS FIRST）により null が先頭に来ることを実測で確認済み。
+    UUID withoutCapacity =
+        insertResourceForSortTest("車両A", null, LocalDateTime.of(2025, 4, 10, 9, 0));
+    UUID small = insertResourceForSortTest("車両B", 4, LocalDateTime.of(2025, 4, 11, 9, 0));
+    UUID large = insertResourceForSortTest("車両C", 8, LocalDateTime.of(2025, 4, 12, 9, 0));
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources")
+                  .param("category", "VEHICLE")
+                  .param("sort", "capacity,desc")
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[0].capacity").value(8))
+          .andExpect(jsonPath("$.content[1].capacity").value(4))
+          .andExpect(jsonPath("$.content[2].capacity").isEmpty());
+    } finally {
+      deleteResources(withoutCapacity, small, large);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_invalidSortField_returns400ValidationError() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("sort", "location,asc").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_multipleSortFields_returns400ValidationError() throws Exception {
+    // issue #22 の UI は単一フィールドのみ提供（複数フィールドの複合ソートはスコープ外）。
+    // 個々のフィールドが許可されていても、複数指定は黙って先頭のみ適用せず 400 で拒否する（回帰テスト）。
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("sort", "name,asc")
+                .param("sort", "capacity,desc")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_defaultSortNotSpecified_returnsCreatedAtAscOrder() throws Exception {
+    UUID newer = insertResourceForSortTest("車両新", null, LocalDateTime.of(2025, 5, 1, 9, 0));
+    UUID older = insertResourceForSortTest("車両旧", null, LocalDateTime.of(2025, 4, 1, 9, 0));
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources").param("category", "VEHICLE").accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[0].name").value("車両旧"))
+          .andExpect(jsonPath("$.content[1].name").value("車両新"));
+    } finally {
+      deleteResources(newer, older);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_categoryAndSortCombined_appliesSort() throws Exception {
+    UUID b = insertResourceForSortTest("車両b", 10, LocalDateTime.of(2025, 4, 10, 9, 0));
+    UUID a = insertResourceForSortTest("車両a", 20, LocalDateTime.of(2025, 4, 11, 9, 0));
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources")
+                  .param("category", "VEHICLE")
+                  .param("sort", "capacity,asc")
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[0].name").value("車両b"))
+          .andExpect(jsonPath("$.content[1].name").value("車両a"));
+    } finally {
+      deleteResources(b, a);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_timeFilterAndSortCombined_appliesSortAfterExclusion() throws Exception {
+    LocalDateTime from = LocalDateTime.of(2025, 7, 1, 10, 0);
+    LocalDateTime to = LocalDateTime.of(2025, 7, 1, 12, 0);
+    UUID occupied = insertResourceForSortTest("cherry", null, LocalDateTime.of(2025, 4, 10, 9, 0));
+    UUID freeB = insertResourceForSortTest("banana", null, LocalDateTime.of(2025, 4, 11, 9, 0));
+    UUID freeA = insertResourceForSortTest("Apple", null, LocalDateTime.of(2025, 4, 12, 9, 0));
+    UUID reservationId = UUID.randomUUID();
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at,"
+            + " updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        reservationId,
+        occupied,
+        USER_ID,
+        from.minusHours(1),
+        to.plusHours(1),
+        "ソートテスト用予約",
+        "APPROVED",
+        LocalDateTime.of(2025, 4, 1, 9, 0),
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources")
+                  .param("category", "VEHICLE")
+                  .param("from", "2025-07-01T10:00:00")
+                  .param("to", "2025-07-01T12:00:00")
+                  .param("sort", "name,asc")
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[0].name").value("Apple"))
+          .andExpect(jsonPath("$.content[1].name").value("banana"))
+          .andExpect(jsonPath("$.content[?(@.name == 'cherry')]").doesNotExist());
+    } finally {
+      jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", reservationId);
+      deleteResources(occupied, freeB, freeA);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // POST /api/resources — 登録
   // ---------------------------------------------------------------------------
 
