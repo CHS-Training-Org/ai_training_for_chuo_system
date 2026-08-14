@@ -7,7 +7,10 @@
  * BFF 層（sort の falsy 判定）とは別条件（デフォルト値との一致判定）のため、専用のテストが必要。
  */
 import { describe, it, expect } from "vitest";
-import { DEFAULT_SORT, buildResourceFilterQuery } from "@/app/(authenticated)/resources/ResourceFilterForm";
+import {
+  DEFAULT_SORT,
+  buildResourceFilterQuery,
+} from "@/app/(authenticated)/resources/ResourceFilterForm";
 
 describe("buildResourceFilterQuery", () => {
   describe("sort", () => {
