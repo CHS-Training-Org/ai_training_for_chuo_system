@@ -398,6 +398,19 @@ class ResourceServiceTest {
     }
 
     @Test
+    void list_pageOffsetBeyondIntRange_returnsEmptyContentWithoutOverflow() {
+      // 大きな page 値では offset (long) が int の範囲を超えるため、
+      // 先に int にキャストして total と比較すると負数に折り返り例外になる（回帰テスト）。
+      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+
+      Pageable farPage = PageRequest.of(200_000_000, 20);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, false, farPage);
+
+      assertThat(result.getContent()).isEmpty();
+      assertThat(result.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
     void list_withTimeFilterAndSort_appliesSortAfterExclusion() {
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);

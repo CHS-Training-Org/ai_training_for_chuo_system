@@ -284,6 +284,21 @@ class ResourceControllerTest extends BaseControllerTest {
 
   @Test
   @WithMockMember
+  void list_multipleSortFields_returns400ValidationError() throws Exception {
+    // issue #22 の UI は単一フィールドのみ提供（複数フィールドの複合ソートはスコープ外）。
+    // 個々のフィールドが許可されていても、複数指定は黙って先頭のみ適用せず 400 で拒否する（回帰テスト）。
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("sort", "name,asc")
+                .param("sort", "capacity,desc")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
   void list_defaultSortNotSpecified_returnsCreatedAtAscOrder() throws Exception {
     UUID newer = insertResourceForSortTest("車両新", null, LocalDateTime.of(2025, 5, 1, 9, 0));
     UUID older = insertResourceForSortTest("車両旧", null, LocalDateTime.of(2025, 4, 1, 9, 0));

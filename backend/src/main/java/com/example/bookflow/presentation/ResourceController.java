@@ -1,6 +1,7 @@
 package com.example.bookflow.presentation;
 
 import com.example.bookflow.application.ResourceService;
+import com.example.bookflow.application.ResourceSortField;
 import com.example.bookflow.application.exception.ValidationException;
 import com.example.bookflow.domain.ResourceCategory;
 import com.example.bookflow.domain.Role;
@@ -14,7 +15,6 @@ import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,9 +51,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/resources")
 public class ResourceController {
-
-  /** {@code sort} パラメータで指定できるフィールド（BR-01）。 */
-  private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "capacity", "createdAt");
 
   private final ResourceService resourceService;
 
@@ -92,16 +89,24 @@ public class ResourceController {
   }
 
   /**
-   * {@code sort} パラメータの許可フィールド（BR-01）を検証する。
+   * {@code sort} パラメータの許可フィールド（BR-01）・単一フィールド指定であることを検証する。
+   *
+   * <p>issue #22 の UI は単一フィールドの選択のみを提供する（複数フィールドの複合ソートはスコープ外）。 {@code sort}
+   * を複数指定した場合、各フィールド自体は個別に許可されていても 400 で拒否する（黙って先頭のみ適用しない）。
    *
    * @param sort 検証対象のソート指定
-   * @throws ValidationException 許可外のフィールド名が含まれる場合（BR-04）
+   * @throws ValidationException 許可外のフィールド名、または複数フィールドが指定された場合（BR-04）
    */
   private void validateSort(Sort sort) {
+    int orderCount = 0;
     for (Sort.Order order : sort) {
-      if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
+      orderCount++;
+      if (!ResourceSortField.isAllowed(order.getProperty())) {
         throw new ValidationException("不正なソートフィールドです: " + order.getProperty());
       }
+    }
+    if (orderCount > 1) {
+      throw new ValidationException("sort は単一フィールドのみ指定できます。");
     }
   }
 

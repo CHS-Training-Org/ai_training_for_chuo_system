@@ -92,12 +92,17 @@ public class ResourceService {
     List<Resource> sorted = candidates.stream().sorted(comparator).toList();
 
     int total = sorted.size();
-    int start = (int) pageable.getOffset();
-    int end = Math.min(start + pageable.getPageSize(), total);
+    long offset = pageable.getOffset();
+    // offset は total（int の候補件数）と比較してから int にキャストする。
+    // 大きな page 値では offset が int の範囲を超え得るため、先にキャストすると負数に折り返る。
     List<ResourceResponse> content =
-        start >= total
+        offset >= total
             ? List.of()
-            : sorted.subList(start, end).stream().map(ResourceResponse::from).toList();
+            : sorted
+                .subList((int) offset, (int) Math.min(offset + pageable.getPageSize(), total))
+                .stream()
+                .map(ResourceResponse::from)
+                .toList();
     return new PageImpl<>(content, pageable, total);
   }
 
@@ -133,8 +138,9 @@ public class ResourceService {
   /**
    * {@link Pageable#getSort()} から {@link Resource} 比較用の {@link Comparator} を導出する。
    *
-   * <p>issue #22 の UI は単一フィールドの選択のみを提供するため、最初の {@link Sort.Order} 1 件のみを見る（複数フィールドの複合ソートはスコープ外）。
-   * {@code sort} が未指定（unsorted）の場合は {@code createdAt} 昇順にフォールバックする（BR-02）。
+   * <p>issue #22 の UI は単一フィールドの選択のみを提供するため、最初の {@link Sort.Order} 1 件のみを見る（複数フィールドの複合ソートは {@link
+   * com.example.bookflow.presentation.ResourceController#list} が事前に 400 で拒否する）。 {@code sort}
+   * が未指定（unsorted）の場合は {@code createdAt} 昇順にフォールバックする（BR-02）。
    *
    * @param sort ページネーションの並び順
    * @return リソースの比較器
@@ -142,23 +148,26 @@ public class ResourceService {
   private static Comparator<Resource> resolveComparator(Sort sort) {
     Sort.Order order = sort.isSorted() ? sort.iterator().next() : Sort.Order.asc("createdAt");
     boolean desc = order.getDirection().isDescending();
-    return switch (order.getProperty()) {
-      case "name" -> {
+    ResourceSortField field = ResourceSortField.fromProperty(order.getProperty());
+    if (field == null) {
+      throw new ValidationException("不正なソートフィールドです: " + order.getProperty());
+    }
+    return switch (field) {
+      case NAME -> {
         Comparator<Resource> byName =
             Comparator.comparing(Resource::getName, String.CASE_INSENSITIVE_ORDER);
         yield desc ? byName.reversed() : byName;
       }
-      case "capacity" -> {
+      case CAPACITY -> {
         // null は昇順・降順いずれでも末尾固定（BR-03）。値部分のみ方向に応じて反転し、null 判定は変えない。
         Comparator<Integer> byValue =
             desc ? Comparator.<Integer>naturalOrder().reversed() : Comparator.naturalOrder();
         yield Comparator.comparing(Resource::getCapacity, Comparator.nullsLast(byValue));
       }
-      case "createdAt" -> {
+      case CREATED_AT -> {
         Comparator<Resource> byCreatedAt = Comparator.comparing(Resource::getCreatedAt);
         yield desc ? byCreatedAt.reversed() : byCreatedAt;
       }
-      default -> throw new ValidationException("不正なソートフィールドです: " + order.getProperty());
     };
   }
 
