@@ -220,7 +220,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ---
 
-## AI ツール関連
+## AI ツール関連 \{#ai-tools}
 ### コンテナ起動が `.claude.json` 関連のマウントエラーで失敗する
 
 - **症状**: 「Reopen in Container」が `.claude.json` のマウントに関するエラー（`... not a directory` 等）で失敗する。
@@ -244,12 +244,12 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 - **症状**: コンテナの再作成後に `claude` の再ログインが必要になる。会話履歴や設定が引き継がれない。
 - **原因**: ホストの `~/.claude` / `~/.claude.json` のバインドマウントが効いておらず、認証情報がコンテナ内にしか保存されていない。
-- **解決策**: コンテナ内で `ls /root/.claude` を実行し、ホスト側（WSL2 の `~/.claude`）と同じ内容が見えるか確認する。見えない場合は `.devcontainer/docker-compose.yml` のマウント定義（`${USERPROFILE:-$HOME}/.claude`）がホスト側の実パスに解決されているかを確認する（WSL2 から起動していれば `$HOME` = `/home/<user>` が使われる）。セットアップ全体は [ai-tools-guide.md §セットアップ](../ai-tools-guide.md#setup) を参照。
+- **解決策**: コンテナ内で `ls /root/.claude` を実行し、ホスト側（WSL2 の `~/.claude`）と同じ内容が見えるか確認する。見えない場合は `.devcontainer/docker-compose.yml` のマウント定義（`${USERPROFILE:-$HOME}/.claude`）がホスト側の実パスに解決されているかを確認する（WSL2 から起動していれば `$HOME` = `/home/<user>` が使われる）。セットアップ全体は [Claude Code のセットアップ](../ai-tools-guide.md#setup) を参照。
 
 ---
 
-## AI レビュー関連
-`@claude pr-review` で起動する AI レビューについての症状です。仕組みと判定基準は [review-criteria.md §AI レビューとの対応](../develop/review-criteria.md#ai-review)、運用の詳細は [operations-guide.md §AI レビュー](../operations/operations-guide.md#ai-review) を参照してください。
+## AI レビュー関連 \{#ai-review-trouble}
+`@claude pr-review` で起動する AI レビューについての症状です。仕組みと判定基準は [AI レビューとの対応](../develop/review-criteria.md#ai-review)、運用の詳細は [AI レビューの運用](../operations/operations-guide.md#ai-review) を参照してください。
 
 ### コメントしても反応がない
 

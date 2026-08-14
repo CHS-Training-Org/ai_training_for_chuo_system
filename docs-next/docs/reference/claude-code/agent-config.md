@@ -77,7 +77,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ---
 
-## その他の設定
+## その他の設定 \{#other-config}
 ### statusLine スクリプト
 
 `.claude/scripts/statusline-command.sh`：model / トークン数 / git ブランチ / コンテキスト使用率 / レートリミット（5h、7d、JST）をダッシュボード形式で表示する読み取り専用スクリプト。  
@@ -93,7 +93,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 実際の設定値は `.claude/settings.local.json` を直接参照してください（個人環境で異なる場合があります）。
 
-### 言語・モデル設定
+### 言語・モデル設定 \{#model-settings}
 `.claude/settings.json` で定義されています。
 
 | 設定 | 値 |
