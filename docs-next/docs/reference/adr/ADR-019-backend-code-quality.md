@@ -1,5 +1,5 @@
 ---
-sidebar_position: 119
+sidebar_position: 19
 title: ADR-019 — バックエンド：コード品質ツール
 description: バックエンドのコード品質ツールとして Spotless + Checkstyle を採用した判断の記録
 tags:

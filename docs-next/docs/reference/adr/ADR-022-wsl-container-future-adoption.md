@@ -1,5 +1,5 @@
 ---
-sidebar_position: 122
+sidebar_position: 22
 title: ADR-022 — 開発環境：WSL Container（wslc）の将来採用
 description: WSL Container（wslc.exe）を Rancher Desktop の代替として将来採用する方針を記録し、現時点での採用を保留する判断の根拠
 tags:
@@ -19,7 +19,7 @@ Proposed（2026-06-30）
 
 ## Context
 
-BookFlow の Windows 開発者は現在、DevContainer を起動するために **Rancher Desktop**（`dockerd (moby)` ランタイム）を使用する。別途インストールが必要な外部ツールであり、WSL2 統合設定（Preferences → WSL → Integrations → Ubuntu を ON）という追加手順がセットアップの障壁になっている（[getting-started.md](../../getting-started.md) §OS 別の事前準備 参照）。
+BookFlow の Windows 開発者は現在、DevContainer を起動するために **Rancher Desktop**（`dockerd (moby)` ランタイム）を使用する。別途インストールが必要な外部ツールであり、WSL2 統合設定（Preferences → WSL → Integrations → Ubuntu を ON）という追加手順がセットアップの障壁になっている（[getting-started.md](../../learn/getting-started.md) §OS 別の事前準備 参照）。
 
 2026 年 6 月、Microsoft が **WSL Container**（`wslc.exe`）のパブリックプレビューを発表した（[DevBlogs 記事](https://devblogs.microsoft.com/commandline/wsl-container-is-now-available-for-public-preview/)、[公式ドキュメント](https://learn.microsoft.com/en-us/windows/wsl/wsl-container)）。
 
@@ -77,14 +77,14 @@ BookFlow の `.devcontainer/devcontainer.json` は **Compose ベースの DevCon
 4. Windows 最小バージョン要件の明示（社内受講者の PC スペックとの照合が必要）
 5. パブリックプレビューから GA への昇格
 
-上記がすべて満たされた時点で `Accepted` に更新し、[getting-started.md](../../getting-started.md) の「前提ソフトウェア」表および「OS 別の事前準備」セクションを改訂する。
+上記がすべて満たされた時点で `Accepted` に更新し、[getting-started.md](../../learn/getting-started.md) の「前提ソフトウェア」表および「OS 別の事前準備」セクションを改訂する。
 
 ## Consequences
 
-- **短期**：Rancher Desktop によるセットアップフローを維持する。[getting-started.md](../../getting-started.md) に変更なし。
+- **短期**：Rancher Desktop によるセットアップフローを維持する。[getting-started.md](../../learn/getting-started.md) に変更なし。
 - **GA 後の作業（予定）**：
   - `.devcontainer/devcontainer.json` の `dockerComposeFile` パスはそのまま維持し、VS Code の「Docker Path」設定を `wslc` に変更するか、または `devcontainer.json` の `dockerPath` フィールドで指定する
-  - [getting-started.md](../../getting-started.md) §OS 別の事前準備（Windows）から Rancher Desktop の WSL2 統合設定手順を削除可能になる
+  - [getting-started.md](../../learn/getting-started.md) §OS 別の事前準備（Windows）から Rancher Desktop の WSL2 統合設定手順を削除可能になる
   - `wslc` の virtiofs により `/workspace` bind mount のビルド速度が改善される見込み（Next.js HMR・Gradle ビルド）
 - **macOS / Linux 受講者への影響**：なし（`wslc.exe` は Windows 専用）
 

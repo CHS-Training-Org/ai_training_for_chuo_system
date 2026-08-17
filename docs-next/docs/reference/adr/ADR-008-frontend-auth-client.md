@@ -1,5 +1,5 @@
 ---
-sidebar_position: 108
+sidebar_position: 8
 title: ADR-008 — フロントエンド：認証クライアント
 description: フロントエンドの認証クライアントとして Better Auth + Cognito 連携を採用した判断の記録
 tags:

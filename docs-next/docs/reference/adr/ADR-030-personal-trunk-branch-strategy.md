@@ -1,4 +1,5 @@
 ---
+sidebar_position: 30
 type: adr
 title: ADR-030 — 運用プロセス：学習者ごとの個人トランクブランチ導入
 description: main への学習者マージを廃止し、学習者ごとの個人トランクブランチ（learner/<ユーザー名>/main）に完了課題を積み上げる方式へ移行した判断の記録
@@ -19,7 +20,7 @@ Accepted（2026-08-11）
 
 [ADR-023](./ADR-023-mentor-gate-removal.md) は、学習者が `main` へ自分の PR を直接セルフマージする運用を採用した。これは単一の学習者が単発の課題に取り組む前提では成立するが、実際の運用条件を洗い出すと以下の 2 点で破綻することが分かった。
 
-- **同一学習者が同じ課題を 2 回実装する。** [curriculum.md](../../curriculum.md#path-map) の STEP-03（AI-DLC なし）と STEP-04（AI-DLC あり）は、同じ Beginner 課題を意図的に 2 回実装させ、進め方と品質の違いを比較させる設計である。STEP-03 の実装が `main` にマージされると、STEP-04 で作り直す対象が `main` 上に既に存在してしまい、同じ課題を作り直す設計そのものが成立しない。
+- **同一学習者が同じ課題を 2 回実装する。** [curriculum.md](../../learn/curriculum.md#path-map) の STEP-03（AI-DLC なし）と STEP-04（AI-DLC あり）は、同じ Beginner 課題を意図的に 2 回実装させ、進め方と品質の違いを比較させる設計である。STEP-03 の実装が `main` にマージされると、STEP-04 で作り直す対象が `main` 上に既に存在してしまい、同じ課題を作り直す設計そのものが成立しない。
 - **複数の学習者が同じ課題を選べる。** 本リポジトリは学習用チュートリアルであり、選択課題カタログ（[enhancement-catalog.md](../../develop/enhancement-catalog.md)）から同じ項目を複数の学習者が選ぶことを禁止していない（禁止する運用も採らない）。全員が同じ `main` にセルフマージする前提では、先にマージした学習者以降は同じ機能が `main` に既に存在し、同じ手順で進められなくなる。
 
 いずれも、複数の学習者が同一の課題プールを共有しながら、それぞれ独立に「着手から完了まで」を体験できる構造になっていないことが原因である。
@@ -55,6 +56,6 @@ AI レビュー（`.github/workflows/claude.yml` の `claude-review` ジョブ�
 - `main` は常にベース実装のクリーンな状態を保つ。
 
 **留意点**：
-- 前提課題（依存関係）がある選択課題（例：[resource-list-sort.md](../../spec/enhancements/resource-list-sort.md) は resource-list-filter を前提とする）は、学習者自身のトランクブランチに前提課題の実装が積み上がっていることが必要になる。必須パス（Beginner 1 課題を 2 回実装、Intermediate 1 課題）では現状この依存は発生しないが、Advanced（任意課題）で複数課題に取り組む学習者は順序に注意する必要がある。
+- 前提課題（依存関係）がある選択課題（例：[resource-list-sort.md](../../spec/enhancements/beginner/resource-list-sort.md) は resource-list-filter を前提とする）は、学習者自身のトランクブランチに前提課題の実装が積み上がっていることが必要になる。必須パス（Beginner 1 課題を 2 回実装、Intermediate 1 課題）では現状この依存は発生しないが、Advanced（任意課題）で複数課題に取り組む学習者は順序に注意する必要がある。
 - `.claude/skills/aidlc/SKILL.md` の Pre-flight ブランチ確認（`main`/`master` 上にいることを検知するロジック）は、トランクブランチ上に直接いる場合も検知対象に含めるよう、別途実装側の追従が必要である（本 ADR は docs-next 側の記述変更のみを扱う。実装側の変更は別タスクとする）。
 - GitHub のブランチ保護設定変更（`main` のマージ元制限）は本環境から実施できず、リポジトリオーナーへの申し送り事項となる（[operations-guide.md](../../operations/operations-guide.md#roles)）。

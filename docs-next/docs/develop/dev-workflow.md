@@ -10,9 +10,9 @@ references:
   - ./no-aidlc-workflow.md
   - ./aidlc-guide.md
   - ./coding-conventions.md
-  - ../ai-tools-guide.md
+  - ../learn/ai-tools-guide.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
-  - Docs/spec/index.md
+  - ../spec/index.md
 last_updated: '2026-08-12T00:00:00+09:00'
 ---
 
@@ -23,7 +23,7 @@ last_updated: '2026-08-12T00:00:00+09:00'
 
 ---
 
-## 標準開発フロー \{#flow}
+## 標準開発フロー {#flow}
 ![標準開発フロー](/diagrams/guide/dev-workflow-standard.drawio.svg)
 
 計画段階（Workflow Planning）・実装完了段階（PR）のそれぞれで、学習者自身がセルフチェックしてから次に進みます。  
@@ -31,18 +31,18 @@ last_updated: '2026-08-12T00:00:00+09:00'
 
 ### 1. 取り組む課題を選ぶ
 
-[選択課題カタログ](../develop/enhancement-catalog.md#catalog)から、自分の STEP の難易度に合う課題を選びます。各課題には**ビジネス要求シート**（`Docs/spec/enhancements/<short-desc>.md`。背景・依存関係・要件・受入条件・影響範囲・AI 活用ポイントの6節で実装対象を定義する文書）があります。
+[選択課題カタログ](./enhancement-catalog.md#catalog)から、自分の STEP の難易度に合う課題を選びます。各課題には**ビジネス要求シート**（`Docs/spec/enhancements/<short-desc>.md`。背景・依存関係・要件・受入条件・影響範囲・AI 活用ポイントの6節で実装対象を定義する文書）があります。
 
 対応する GitHub Issue はカタログ課題ごとに運営者が起票済みです。GitHub の Issues 一覧から、選んだ課題名で検索して見つけてください。受入条件はビジネス要求シート側が真実の源です。
 
 ### 2. フィーチャーブランチを作成する
 
 自分のトランクブランチ（`learner/<GitHubユーザー名>/main`）から、`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` の形式でブランチを作成します。  
-手順は [作業ブランチの作成](../develop/coding-conventions.md#feature-branch) を参照してください。
+手順は [作業ブランチの作成](./coding-conventions.md#feature-branch) を参照してください。
 
 :::note[トランクブランチが未作成の場合]
 
-最初の課題に着手する前に、`main` から自分のトランクブランチを 1 回だけ作成しておく必要があります。手順は [トランクブランチの作成](../develop/coding-conventions.md#trunk-branch) を参照してください。
+最初の課題に着手する前に、`main` から自分のトランクブランチを 1 回だけ作成しておく必要があります。手順は [トランクブランチの作成](./coding-conventions.md#trunk-branch) を参照してください。
 
 :::
 
@@ -54,7 +54,7 @@ last_updated: '2026-08-12T00:00:00+09:00'
 
 :::tip[コードベースを読み解くタイミング]
 
-実装に入る前に対象機能のコードを読み解いておくと、次の Workflow Planning での計画が立てやすくなります。読み方の目安は [コードベース理解ガイド](../curriculum.md#codebase-understanding) を参照してください。
+実装に入る前に対象機能のコードを読み解いておくと、次の Workflow Planning での計画が立てやすくなります。読み方の目安は [コードベース理解ガイド](../learn/curriculum.md#codebase-understanding) を参照してください。
 
 :::
 
@@ -64,11 +64,11 @@ last_updated: '2026-08-12T00:00:00+09:00'
 エンジンが内部で何を行うかは [AI-DLC ガイド](./aidlc-guide.md) を参照してください。
 
 計画の内容を自分で確認し、納得したらチャットでその旨を伝えて承認し、実装に進みます。運営者の承認は不要です。計画に問題があればこの段階で修正します。  
-Claude Code の基本操作は [AI ツール活用ガイド](../ai-tools-guide.md) を参照してください。
+Claude Code の基本操作は [AI ツール活用ガイド](../learn/ai-tools-guide.md) を参照してください。
 
 :::warning[STEP-03 は例外]
 
-STEP-03（初級課題1回目）は AI-DLC を使わずに進めるため、このステップは行いません。代わりに [AI-DLC を使わない開発フロー](./no-aidlc-workflow.md) に沿って進めてください（背景は [STEP-03](../curriculum.md#step-03) を参照）。
+STEP-03（初級課題1回目）は AI-DLC を使わずに進めるため、このステップは行いません。代わりに [AI-DLC を使わない開発フロー](./no-aidlc-workflow.md) に沿って進めてください（背景は [STEP-03](../learn/curriculum.md#step-03) を参照）。
 
 :::
 
@@ -99,7 +99,7 @@ INCEPTION フェーズで計画した設計ステージを必要な範囲だけ�
 設計の中でデータモデルや API の詳細が確定した場合は、コード生成に進む前に `/update-spec` をもう一度実行し、確定した内容を ER 図（`er-diagram.md`）と API 仕様書（`api-spec.md`）に反映します（ステップ 4 参照）。
 
 フロントエンド、バックエンドなど複数レイヤーにまたがる変更は、機能単位（縦切り）でまとめて実装します。  
-実装は [コーディング規約](../develop/coding-conventions.md) に沿って `/aidlc` が行います。  
+実装は [コーディング規約](./coding-conventions.md) に沿って `/aidlc` が行います。  
 生成されたコードがこの規約に沿っているかは、次のステップのセルフレビューで確認します。
 
 ### 6. ビルド・テストを通す
@@ -127,10 +127,10 @@ PR を作成するにはブランチへの push が事前に済んでいる必�
 
 ### 8. セルフレビューしてマージする
 
-[評価基準](../develop/review-criteria.md#completion-criteria) のチェックリストで自分の PR をセルフレビューします。
+[評価基準](./review-criteria.md#completion-criteria) のチェックリストで自分の PR をセルフレビューします。
 
 PR に `@claude pr-review` とコメントすると、AI が 3 観点（要求整合性・実装と非機能部分の整合性・理解度チェック）で PR を判定します。  
-**観点1・観点2が OK、CI green、かつ観点3が確定している**とき総合判定が「完了」になり、これがタスク完了の条件です（[AI レビューとの対応](../develop/review-criteria.md#ai-review)）。
+**観点1・観点2が OK、CI green、かつ観点3が確定している**とき総合判定が「完了」になり、これがタスク完了の条件です（[AI レビューとの対応](./review-criteria.md#ai-review)）。
 
 :::note[観点3の誤答は完了を妨げない]
 

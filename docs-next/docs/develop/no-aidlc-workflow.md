@@ -11,16 +11,16 @@ references:
   - ./aidlc-guide.md
   - ./coding-conventions.md
   - ./review-criteria.md
-  - ../ai-tools-guide.md
-  - ../claude-code-best-practices.md
-  - ../curriculum.md
-last_updated: '2026-08-12T00:00:00+09:00'
+  - ../learn/ai-tools-guide.md
+  - ../learn/claude-code-best-practices.md
+  - ../learn/curriculum.md
+last_updated: '2026-08-14T18:00:00+09:00'
 ---
 
 # AI-DLC を使わない開発フロー
 
 このガイドは **STEP-03**（初級課題1回目）で使う手順です。  
-AI-DLC エンジン（`/aidlc`）を使わず、選択課題を Claude Code へ直接プロンプトして実装します。ゴールと完了条件は [STEP-03](../curriculum.md#step-03) を参照してください。
+AI-DLC エンジン（`/aidlc`）を使わず、選択課題を Claude Code へ直接プロンプトして実装します。ゴールと完了条件は [STEP-03](../learn/curriculum.md#step-03) を参照してください。
 
 AI-DLC エンジンを使わないことは、Claude Code を使わないことも、計画を立てずに実装を始めることも意味しません。コード補完・設計相談・生成コードの相棒として、このフローでも通常どおり Claude Code を使います。  
 使わないのは `/aidlc` が代行する計画立案の自動オーケストレーション（段階分割・承認ゲート）だけです。  
@@ -42,7 +42,7 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 
 **起動してしまっていた場合**：
 
-- 気づいたらまず `/clear` で新しいセッションに切り替えてください。会話中に「AI-DLCを使わず進めて」と伝えるだけでは、読み込まれた `/aidlc` の指示がそのセッションに残ったまま影響し続ける可能性があるためです。それまでの計画に関する会話は失われるので、必要な要点は先にメモしてください（`/clear` の効果は [Claude Code ベストプラクティス](../claude-code-best-practices.md) を参照）。
+- 気づいたらまず `/clear` で新しいセッションに切り替えてください。会話中に「AI-DLCを使わず進めて」と伝えるだけでは、読み込まれた `/aidlc` の指示がそのセッションに残ったまま影響し続ける可能性があるためです。それまでの計画に関する会話は失われるので、必要な要点は先にメモしてください（`/clear` の効果は [Claude Code ベストプラクティス](../learn/claude-code-best-practices.md) を参照）。
 - 新しいセッションで上記のファイルを確認し、`Docs/spec/aidlc-docs/` 配下の未追跡ファイルは削除、コミット済みの `Docs/spec/aidlc-state.md` / `Docs/spec/aidlc-audit.md` の変更は打ち消しのコミットで戻してください。実装コード自体に問題がなければ、そこは活かしたままで構いません。
 - この課題のPRはそもそもマージしません（後述のとおり）。多少のやり直しが必要でも後続のステップに影響しません。判断に迷ったら、その場で運営者に相談して構いません。
 
@@ -50,7 +50,7 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 
 ---
 
-## 進め方 \{#flow}
+## 進め方 {#flow}
 
 ### 1. 取り組む課題を選ぶ
 
@@ -62,13 +62,13 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 最初の課題であれば、まず `main` から自分のトランクブランチを作成します（[トランクブランチの作成](./coding-conventions.md#trunk-branch)、初回のみ）。  
 そのうえで、自分のトランクブランチ（`learner/<GitHubユーザー名>/main`）から `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` の形式でブランチを作成します（[作業ブランチの作成](./coding-conventions.md#feature-branch)）。
 
-### 3. 計画を立て、仕様を更新する（Plan → Spec-first） \{#step-3}
+### 3. 計画を立て、仕様を更新する（Plan → Spec-first） {#step-3}
 
 ステップ3・4を合わせた流れは次の図のとおりです。
 
 ![計画→実装のループ](/diagrams/guide/no-aidlc-workflow-plan-implement.drawio.svg)
 
-Claude Code を[探索→計画→実装→コミット](../claude-code-best-practices.md#explore-plan-code-commit)の「探索・計画」に相当するプランモードに切り替え、選んだ課題のビジネス要求シートと関連する既存コードを読み取らせて、実装計画を立てさせます。プランモードの間は変更が加えられません。
+Claude Code を[探索→計画→実装→コミット](../learn/claude-code-best-practices.md#explore-plan-code-commit)の「探索・計画」に相当する[プランモード](../learn/ai-tools-guide.md#permission-modes)に切り替え、選んだ課題のビジネス要求シートと関連する既存コードを読み取らせて、実装計画を立てさせます。プランモードの間は変更が加えられません。
 
 計画の内容は、次の観点で自分で確認してください。
 
@@ -113,7 +113,7 @@ CI（`CI Frontend` / `CI Backend`）は機械的な品質ゲートです。
 
 ### 7. セルフレビューする
 
-[評価基準](./review-criteria.md#completion-criteria) のうち、**AI レビューの項目を除く**チェックリストで自分の PR をセルフレビューします。STEP-03 では `@claude pr-review` による AI レビューは行いません（[STEP-03](../curriculum.md#step-03)）。
+[評価基準](./review-criteria.md#completion-criteria) のうち、**AI レビューの項目を除く**チェックリストで自分の PR をセルフレビューします。STEP-03 では `@claude pr-review` による AI レビューは行いません（[STEP-03](../learn/curriculum.md#step-03)）。
 
 完了したら、AI-DLC なしで進めて感じた手間（段取り、仕様との整合、レビューの負荷など）を短く振り返り、PR に記載してください。STEP-04 で同じ課題を AI-DLC を使って実装し直すときの対比の基準になります。
 
@@ -128,5 +128,5 @@ STEP-03 の PR はマージしません。詳しくは [標準開発フロー](.
 ## 関連ドキュメント
 
 - [標準開発フロー](./dev-workflow.md)（AI-DLC を使う場合。STEP-04 以降で使用）
-- [AI ツール活用ガイド](../ai-tools-guide.md)
-- [STEP-03](../curriculum.md#step-03)
+- [AI ツール活用ガイド](../learn/ai-tools-guide.md)
+- [STEP-03](../learn/curriculum.md#step-03)

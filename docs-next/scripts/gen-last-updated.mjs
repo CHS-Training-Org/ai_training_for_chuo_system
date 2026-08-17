@@ -13,9 +13,11 @@ const docsDir = 'docs';
 
 function getGitLogDate(filePath) {
   try {
-    // Get the date of the last commit that modified this file
+    // Get the date of the last commit that modified this file.
+    // --follow でリネーム前の履歴もたどる（ディレクトリ再編で全ページの
+    // 最終更新日が再編日に揃ってしまうのを防ぐ）
     const date = execSync(
-      `git log -1 --format="%cI" -- "${filePath}"`,
+      `git log -1 --follow --format="%cI" -- "${filePath}"`,
       { encoding: 'utf-8', cwd: process.cwd() }
     ).trim();
     return date || null;

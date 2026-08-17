@@ -1,5 +1,5 @@
 ---
-sidebar_position: 121
+sidebar_position: 21
 title: ADR-021 — ドキュメント：OKF 準拠 frontmatter の部分採用
 description: OKF（Open Knowledge Format）調査を踏まえ、frontmatter 規律のみを BookFlow の全 Docs に採用した判断の記録
 tags:
@@ -99,5 +99,5 @@ references:          # BookFlow 拡張。旧『> 参照』の統合先（リス�
 ## 参照
 
 - [OKF v0.1 仕様](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
-- [ADR-020](../ADR-020-aidlc-engine-adoption)（AI-DLC エンジン採用。本 ADR と同日の判断）
-- [`Docs/decision/README.md`](../README)（ADR テンプレート・frontmatter スキーマ定義）
+- [ADR-020](./ADR-020-aidlc-engine-adoption.md)（AI-DLC エンジン採用。本 ADR と同日の判断）
+- [`Docs/decision/README.md`](./index.md)（ADR テンプレート・frontmatter スキーマ定義）

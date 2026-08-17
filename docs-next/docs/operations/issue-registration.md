@@ -17,7 +17,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 # ラベル設計と課題 Issue 起票手順
 
 このページは、課題 Issue に付与するラベル体系と、Issue の起票手順を定義します。  
-ラベルの定義実体は [`.github/labels.yml`](../../.github/labels.yml) が真実の源です。
+ラベルの定義実体は [`.github/labels.yml`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.github/labels.yml) が真実の源です。
 
 ---
 
@@ -39,7 +39,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ---
 
-## ラベルマッピング規則
+## ラベルマッピング規則 {#mapping}
 起票時に付与するラベルの組み合わせを以下の通りに定めます。必須ステップのうち STEP-01〜02 は GitHub Issue を起票しないため、対象は選択課題のみです。
 
 ### 選択課題（エンハンス課題）
@@ -52,7 +52,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ---
 
-## 起票手順
+## 起票手順 {#howto}
 起票は運営者が行います。学習者自身が選択課題の Issue を起票することはありません。カタログの選択課題 1 件につき Issue を 1 つ、事前にまとめて起票しておきます。複数の学習者が同じ課題を選んでも、参照する Issue は共通の 1 つです。
 
 起票後は参照するのみで、ステータス管理（着手・進行中等のラベル運用）は行いません。
@@ -86,7 +86,7 @@ gh issue create \
 
 ---
 
-## label-sync の実行
+## label-sync の実行 {#label-sync}
 ### 重要：起票より先にラベル実体を作る
 
 `課題` ラベルはテンプレートに宣言済みです。  
@@ -107,14 +107,14 @@ git push
 
 ### ラベルの変更
 
-ラベルの名称、色、説明を変更したい場合は [`.github/labels.yml`](../../.github/labels.yml) を編集して push してください。  
+ラベルの名称、色、説明を変更したい場合は [`.github/labels.yml`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.github/labels.yml) を編集して push してください。  
 `skip_delete: true` のため、`labels.yml` から**削除したラベルはリポジトリ側に残ります**（意図的な削除は GitHub UI で手動実施）。
 
 ---
 
 ## 関連ドキュメント
 
-- ラベル定義実体：[`.github/labels.yml`](../../.github/labels.yml)
+- ラベル定義実体：[`.github/labels.yml`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.github/labels.yml)
 - 選択課題一覧（難易度・レイヤー）：[enhancement-catalog.md](../develop/enhancement-catalog.md)
-- 必須課題定義：[curriculum.md §必須ステップ課題](../curriculum.md#required-steps)
-- Issue テンプレート：[`.github/ISSUE_TEMPLATE/`](../../.github/ISSUE_TEMPLATE/)
+- 必須課題定義：[curriculum.md §必須ステップ課題](../learn/curriculum.md#required-steps)
+- Issue テンプレート：[`.github/ISSUE_TEMPLATE/`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/.github/ISSUE_TEMPLATE)

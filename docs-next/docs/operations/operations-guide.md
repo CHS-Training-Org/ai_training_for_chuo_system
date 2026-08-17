@@ -8,7 +8,7 @@ tags:
   - management
 audience: 運営者
 references:
-  - ../overview.md
+  - ../spec/overview.md
   - ../develop/dev-workflow.md
   - ../develop/review-criteria.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
@@ -18,13 +18,13 @@ last_updated: '2026-08-01T11:56:18+09:00'
 # 運用ガイド
 
 このページは、BookFlow チュートリアルを**日常的に運営する上での役割分担、サポートフロー、応答方針**を一元化します。  
-役割の名簿（誰が何者か）は [リポジトリ概要 §ステークホルダーと役割](../overview.md#roles) が真実の源。  
+役割の名簿（誰が何者か）は [リポジトリ概要 §ステークホルダーと役割](../spec/overview.md#roles) が真実の源。  
 レビューの観点、評価基準は [review-criteria.md](../develop/review-criteria.md) が真実の源。本ページはそれらを運用の視点から接続します。
 
 ---
 
-## 役割分担（運用責任マトリクス）
-役割の定義は [リポジトリ概要 §ステークホルダーと役割](../overview.md#roles) を参照してください。以下は**運用上の責務**に絞った一覧です。
+## 役割分担（運用責任マトリクス） {#roles}
+役割の定義は [リポジトリ概要 §ステークホルダーと役割](../spec/overview.md#roles) を参照してください。以下は**運用上の責務**に絞った一覧です。
 
 | 責務 | 運営者 | 学習者 |
 |------|:---:|:---:|
@@ -42,13 +42,13 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 **補足：**
 
-- ブランチ保護は GitHub の Settings で設定します。詳細は [§セルフレビュー・マージの手順](#response-policy) の admonition を参照してください。
-- label-sync の実行手順は [issue-registration.md §label-sync の実行](../operations/issue-registration.md#label-sync) にあります。
-- 課題の起票手順は [issue-registration.md §起票手順](../operations/issue-registration.md#howto) にあります。
+- ブランチ保護は GitHub の Settings で設定します。詳細は [セルフレビュー・マージの手順](#self-merge) の admonition を参照してください。
+- label-sync の実行手順は [issue-registration.md §label-sync の実行](./issue-registration.md#label-sync) にあります。
+- 課題の起票手順は [issue-registration.md §起票手順](./issue-registration.md#howto) にあります。
 
 ---
 
-## 質問サポートフロー
+## 質問サポートフロー {#support}
 ### 一次窓口：Teams
 
 学習者の質問、詰まりは、**Teams で運営者に直接質問する**ことを一次窓口とします。
@@ -59,11 +59,11 @@ last_updated: '2026-08-01T11:56:18+09:00'
 |-----------|-------------|
 | 課題実装中の疑問・詰まり | Teams で運営者に質問 |
 | 環境構築・ツール系のトラブル | [troubleshooting.md](../develop/troubleshooting.md) を確認 → 解決しなければ Teams で運営者に連絡 |
-| 学習フロー・カリキュラムへのフィードバック | [学習効果測定（満足度アンケート）](../operations/learning-effectiveness.md) のふりかえり用 Issue にコメント |
+| 学習フロー・カリキュラムへのフィードバック | [学習効果測定（満足度アンケート）](./learning-effectiveness.md) のふりかえり用 Issue にコメント |
 
 ---
 
-## レビュー・応答方針 \{#response-policy}
+## レビュー・応答方針 {#response-policy}
 ### 基本方針
 
 PR のマージは運営者の承認を必要としません。学習者は [review-criteria.md](../develop/review-criteria.md) のチェックリストで自分の PR をセルフレビューし、満たしていることを確認したら自分のトランクブランチへ自分でマージします。`main` へは学習者は誰もマージしません（[ADR-030](../reference/adr/ADR-030-personal-trunk-branch-strategy.md)）。
@@ -75,7 +75,7 @@ PR のマージは運営者の承認を必要としません。学習者は [rev
 - 判断に迷った点、相談したい設計上のトレードオフがあれば、PR テンプレートの「任意メモ（運営者へ・あれば）」に記入するか、Teams で質問してください。
 - PR に `@claude pr-review` とコメントすると、AI レビューが得られます（[§AI レビュー](#ai-review)）。観点1・観点2 が OK、CI green、かつ観点3が確定していることがタスク完了の条件です。
 
-### セルフレビュー・マージの手順
+### セルフレビュー・マージの手順 {#self-merge}
 
 セルフレビューの流れと完了条件は [dev-workflow.md §8](../develop/dev-workflow.md#flow) を参照してください。  
 セルフレビューの観点、評価基準は [review-criteria.md](../develop/review-criteria.md) が真実の源です。本ページでは再掲しません。
@@ -94,7 +94,7 @@ GitHub の Settings → Branches でブランチ保護ルールを設定する�
 :::
 ---
 
-## AI レビュー
+## AI レビュー {#ai-review}
 AI レビューの採用は [ADR-024](../reference/adr/ADR-024-ai-first-review-adoption.md)、タスク完了判定としての位置づけは [ADR-025](../reference/adr/ADR-025-ai-review-completion-gate.md) で決着済みです。学習者が PR に `@claude pr-review` とコメントすると、`.github/workflows/claude.yml` の `claude-review` ジョブが起動し、`.github/workflows/references/pr-review-rubric/` に定義された3観点（要求整合性・実装と非機能部分の整合性・理解度チェック、[review-criteria.md §レビュー観点表](../develop/review-criteria.md#review-rubric) にも対応表を掲載）で判定します。
 
 - 出力は観点ごとに1件、最後にサマリを1件の計4件のコメントです。サマリに判定表と総合判定が載ります。観点3が確定している実行では観点3のコメントを投稿せず3件になります（再判定しないため、解説を含む長文の複製を避ける）。
@@ -165,11 +165,11 @@ docker compose exec docs uv run zensical build
 
 ## 関連ドキュメント
 
-- 役割の名簿・ステークホルダー定義：[リポジトリ概要 §ステークホルダーと役割](../overview.md#roles)
+- 役割の名簿・ステークホルダー定義：[リポジトリ概要 §ステークホルダーと役割](../spec/overview.md#roles)
 - 標準開発フローの詳細：[dev-workflow.md §標準開発フロー](../develop/dev-workflow.md#flow)
 - レビュー観点・評価基準：[review-criteria.md](../develop/review-criteria.md)
-- ラベル体系・課題起票手順：[issue-registration.md](../operations/issue-registration.md)
+- ラベル体系・課題起票手順：[issue-registration.md](./issue-registration.md)
 - トラブルシューティング：[troubleshooting.md](../develop/troubleshooting.md)
-- 学習効果測定（満足度アンケート）：[learning-effectiveness.md](../operations/learning-effectiveness.md)
+- 学習効果測定（満足度アンケート）：[learning-effectiveness.md](./learning-effectiveness.md)
 - AI レビュー採用の意思決定：[ADR-024](../reference/adr/ADR-024-ai-first-review-adoption.md)
 - AI レビューをタスク完了判定に格上げした意思決定：[ADR-025](../reference/adr/ADR-025-ai-review-completion-gate.md)

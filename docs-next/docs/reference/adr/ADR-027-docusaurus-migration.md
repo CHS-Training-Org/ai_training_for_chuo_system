@@ -1,6 +1,6 @@
 ---
-sidebar_position: 127
-title: ドキュメントサイトを Zensical から Docusaurus に移行する
+sidebar_position: 27
+title: ADR-027 — ドキュメントサイトを Zensical から Docusaurus に移行する
 tags:
   - docs
   - infrastructure
@@ -12,7 +12,7 @@ deciders:
 last_updated: '2026-08-01T11:56:18+09:00'
 ---
 
-# ADR-027: ドキュメントサイトを Zensical から Docusaurus に移行する
+# ADR-027 — ドキュメントサイトを Zensical から Docusaurus に移行する
 
 ## 背景
 
@@ -71,3 +71,28 @@ last_updated: '2026-08-01T11:56:18+09:00'
 - Mermaid 図が崩れず表示
 - ホームページが 5gctextbook.com 風の導線を持つ
 - GitHub Pages 本番 URL でアクセス可能
+
+## 追記（2026-08-15）— 移行後のリファインメント
+
+Phase 5（並行運用）の途中で、移行時に持ち越された構成の乱れとリンク破損をまとめて解消した。
+
+**構成**：`docs/` 直下に平置きされていた 17 ファイルを、読者と目的による 5 ディレクトリ
+（`learn/` `develop/` `spec/` `reference/` `operations/`）に整理し、URL も新構成に合わせた。
+Docusaurus のテンプレート雛形（`intro.mdx`・`tutorial-basics/`・`tutorial-extras/`・`blog/`）は
+サイドバー未登録のまま URL と検索インデックスには載っていたため削除した。
+旧トップページ `intro/overview.md` は `src/pages/index.tsx` と役割が重複していたため削除した。
+
+**サイドバー**：手書きで doc ID を列挙していた 5 本を、ディレクトリ構造からの自動生成
+（`_category_.json` でラベルと順序を指定）に置き換えた。手書きだったころは
+4 ファイルが 2 つのサイドバーに二重登録され、3 ファイルはどこにも載っていなかった。
+自動生成なら、ファイルを追加してサイドバーに載せ忘れる事故が構造的に起きない。
+
+**破損の解消**：壊れたリンク 103 件・壊れたアンカー 37 件を修正した。原因は移行スクリプトの
+2 つの副作用で、(1) ディレクトリインデックスページの兄弟リンクが 1 階層ずれた、
+(2) 見出しの明示 ID が `\{#id}` にエスケープされ無効化された、というもの。
+(2) の根治として `markdown.format` を `'detect'` にし、`.md` を CommonMark として解釈するようにした
+（`{#id}` と生 HTML がそのまま書ける。`design.md` をビルド対象から外していた理由も解消した）。
+
+**再発防止**：`onBrokenLinks` / `onBrokenAnchors` / `onBrokenMarkdownLinks` を `'throw'` に上げ、
+PR 時点でビルド検証する workflow（`.github/workflows/docs-check.yml`）を追加した。
+破損を生んだ使い捨ての移行スクリプトは `docs-next/scripts/migration/` に隔離した。

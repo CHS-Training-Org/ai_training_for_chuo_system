@@ -6,9 +6,9 @@ const startingPoints = [
   {
     situation: 'はじめて触る',
     steps: [
-      { label: '環境構築', to: '/getting-started' },
+      { label: '環境構築', to: '/learn/getting-started' },
       { label: '開発フローの理解', to: '/develop/dev-workflow' },
-      { label: 'AI ツール活用', to: '/ai-tools-guide' },
+      { label: 'AI ツール活用', to: '/learn/ai-tools-guide' },
     ],
   },
   {
@@ -21,8 +21,8 @@ const startingPoints = [
   {
     situation: '用語や仕様を調べたい',
     steps: [
-      { label: '用語集', to: '/glossary' },
-      { label: '仕様書インデックス', to: '/spec-index' },
+      { label: '用語集', to: '/learn/glossary' },
+      { label: '仕様書インデックス', to: '/spec/' },
     ],
   },
 ];

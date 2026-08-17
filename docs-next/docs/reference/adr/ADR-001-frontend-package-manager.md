@@ -1,5 +1,5 @@
 ---
-sidebar_position: 101
+sidebar_position: 1
 title: ADR-001 — フロントエンド：パッケージマネージャ
 description: フロントエンドの依存管理ツールとして pnpm を採用した判断の記録
 tags:

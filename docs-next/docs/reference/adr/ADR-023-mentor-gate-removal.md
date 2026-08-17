@@ -1,5 +1,5 @@
 ---
-sidebar_position: 123
+sidebar_position: 23
 title: ADR-023 — 運用プロセス：承認ゲート廃止・セルフ完結運用への移行
 description: >-
   plan mode 計画承認（第1ゲート）・PR
@@ -39,7 +39,7 @@ ADR-020（AI-DLC エンジン完全採用）により、BookFlow は「plan mode
 - **Workflow Planning**：提示後、学習者自身がチャットで計画に納得したことを示して実装に進む。メンターの承認は不要。
 - **PR**：`review-criteria.md` のチェックリストを学習者自身がセルフレビューで満たしたら、自分でマージする。メンターの Approve は不要。
 - **メンターの役割**：承認者から、Issue・PR への**任意の**質問対応・コメント役に変わる（ブロッキングではない）。既存の「質問サポートフロー（Issue コメント優先）」はそのまま活用する。
-- **ブランチ保護**：必須 status check（`CI Frontend / ci`・`CI Backend / ci`）は維持し、「Require approvals」を無効化する（GitHub Settings での変更が必要。[操作手順](#branch-protection-handoff)参照）。
+- **ブランチ保護**：必須 status check（`CI Frontend / ci`・`CI Backend / ci`）は維持し、「Require approvals」を無効化する（GitHub Settings での変更が必要。[操作手順](../../operations/operations-guide.md#self-merge)参照）。
 - **推定工数**：ゲート待ちが前提から外れるため、選択課題・STEP の推定工数を「学習者が着手からセルフマージするまでの純粋な作業時間（初回のみのツール習熟コストの小バッファを含む）」に再定義し、値を再計算する。
 
 AI-DLC エンジン本体（`.claude/skills/aidlc/SKILL.md` と `.aidlc-rule-details/` 配下の per-stage な "Wait for Explicit Approval"）は変更しない。これは学習者自身がそのセッションで AI 生成物を確認してから次に進むための汎用的な一時停止であり、外部のメンターへの依存ではないため、本決定の対象外である。
@@ -52,7 +52,7 @@ AI-DLC エンジン本体（`.claude/skills/aidlc/SKILL.md` と `.aidlc-rule-det
 - メンターの負荷が「全件承認」から「任意サポート」に下がり、より多くの学習者を並行して支援しやすくなる
 
 **留意点**：
-- 「AI が書いたから」を言い訳にできない責任の所在（[ai-tools-guide.md](../../ai-tools-guide.md)）が、セルフマージにより一段と重くなる。AI 出力を無検証でマージする習慣がつくリスクは、[review-criteria.md](../../develop/review-criteria.md) のセルフチェックで緩和する
+- 「AI が書いたから」を言い訳にできない責任の所在（[ai-tools-guide.md](../../learn/ai-tools-guide.md)）が、セルフマージにより一段と重くなる。AI 出力を無検証でマージする習慣がつくリスクは、[review-criteria.md](../../develop/review-criteria.md) のセルフチェックで緩和する
 - メンターによる第三者レビューが保証されなくなるため、コードの誤りが早期に発見されない可能性がある。任意コメントの文化を促進する運用上の工夫は今後の課題とする
 - GitHub のブランチ保護設定（Require approvals の無効化）は本環境から実施できず、リポジトリオーナーへの申し送り事項となる（[operations-guide.md](../../operations/operations-guide.md#roles)）
 
@@ -70,4 +70,4 @@ AI-DLC エンジン本体（`.claude/skills/aidlc/SKILL.md` と `.aidlc-rule-det
 
 ## 追記（2026-08-11）— 「メンター」「リポジトリオーナー」を「運営者」に統合
 
-本チュートリアルには「メンター」「リポジトリオーナー」という区別された役職者は存在しない。上記 Decision・Consequences が「メンター」と呼んでいた役割（任意の質問対応・コードフィードバック）と、[overview.md](../../overview.md#roles) が「リポジトリオーナー」と呼んでいた役割（リポジトリ設定管理）は、単一の「運営者」が兼務する。質問対応は GitHub Issue コメントではなく Teams を一次窓口とする（[operations-guide.md §質問サポートフロー](../../operations/operations-guide.md#support)）。承認ゲートを置かないという本 ADR の決定自体に変更はない。現行のドキュメントは以後この呼称に統一する。
+本チュートリアルには「メンター」「リポジトリオーナー」という区別された役職者は存在しない。上記 Decision・Consequences が「メンター」と呼んでいた役割（任意の質問対応・コードフィードバック）と、[overview.md](../../spec/overview.md#roles) が「リポジトリオーナー」と呼んでいた役割（リポジトリ設定管理）は、単一の「運営者」が兼務する。質問対応は GitHub Issue コメントではなく Teams を一次窓口とする（[operations-guide.md §質問サポートフロー](../../operations/operations-guide.md#support)）。承認ゲートを置かないという本 ADR の決定自体に変更はない。現行のドキュメントは以後この呼称に統一する。

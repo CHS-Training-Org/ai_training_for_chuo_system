@@ -1,5 +1,5 @@
 ---
-sidebar_position: 120
+sidebar_position: 20
 title: ADR-020 — AI-DLC エンジン完全採用（PHASE4 タスク 3.7 採用方針転換）
 description: AI-DLC エンジン（awslabs/aidlc-workflows）を BookFlow の標準開発ワークフローとして完全採用した判断の記録
 tags:
@@ -104,7 +104,7 @@ AI-DLC チュートリアル検証で2つの run を比較した結果、次の�
 
 ## 追記（2026-07-06）— 承認ゲート運用部分の見直し
 
-本 ADR が採用した運用のうち、「plan mode 計画へのメンター承認（第1ゲート）」「PR レビュー・Approve（第2ゲート）」という**メンターを承認者とする2段階ゲート**は、[ADR-023](../ADR-023-mentor-gate-removal) により見直され、学習者によるセルフ承認・セルフレビュー＆マージの運用に置き換わった。
+本 ADR が採用した運用のうち、「plan mode 計画へのメンター承認（第1ゲート）」「PR レビュー・Approve（第2ゲート）」という**メンターを承認者とする2段階ゲート**は、[ADR-023](./ADR-023-mentor-gate-removal.md) により見直され、学習者によるセルフ承認・セルフレビュー＆マージの運用に置き換わった。
 
 AI-DLC エンジン自体（per-stage の Wait for Explicit Approval・成果物生成・監査ログ記録）は本 ADR の決定のまま変更していない。変更対象は、そのエンジンの確認ステップに「メンターの承認」を紐づけていた BookFlow 側の解釈層のみである。詳細は ADR-023 を参照。
 

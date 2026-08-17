@@ -9,8 +9,8 @@ tags:
   - survey
 audience: 運営者
 references:
-  - ../operations/operations-guide.md
-  - ../curriculum.md
+  - ./operations-guide.md
+  - ../learn/curriculum.md
 last_updated: '2026-08-01T11:56:18+09:00'
 ---
 
@@ -79,7 +79,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 :::
 ---
 
-## 集計・活用
+## 集計・活用 {#review}
 ### 集計フロー
 
 1. 運営者が「ふりかえり用 Issue」のコメントを収集し、設問ごとに評価値と記述を整理する。
@@ -90,13 +90,13 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 フィードバックの定期トリアージ（四半期など）で採否を判断します。
 
-質問・サポートフローとの棲み分けは [operations-guide.md §質問サポートフロー](../operations/operations-guide.md#support) を参照してください。
+質問・サポートフローとの棲み分けは [operations-guide.md §質問サポートフロー](./operations-guide.md#support) を参照してください。
 
 ---
 
 ## 関連ドキュメント
 
-- 運用ガイド（質問サポートフロー・役割分担）：[operations-guide.md](../operations/operations-guide.md)
-- 学習カリキュラム・必須ステップ：[curriculum.md](../curriculum.md)
+- 運用ガイド（質問サポートフロー・役割分担）：[operations-guide.md](./operations-guide.md)
+- 学習カリキュラム・必須ステップ：[curriculum.md](../learn/curriculum.md)
 - 評価基準・レビュー観点（運営者向け）：[review-criteria.md](../develop/review-criteria.md)
-- 課題 Issue 起票手順：[issue-registration.md](../operations/issue-registration.md)
+- 課題 Issue 起票手順：[issue-registration.md](./issue-registration.md)
