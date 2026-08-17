@@ -1,0 +1,46 @@
+name: Docs Check (docs-next)
+
+# ドキュメントサイトのビルド検証を PR 時点で行う。
+# デプロイ workflow（docs.yml）は main への push でしか走らないため、
+# 壊れたリンク・アンカーがマージされてから初めて検知される状態だった。
+# docusaurus.config.ts が onBrokenLinks / onBrokenAnchors を 'throw' にしているので、
+# 破損があればこのジョブが落ちる。
+
+on:
+  pull_request:
+    paths:
+      - 'docs-next/**'
+      - '.github/workflows/docs-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: docs-next/package-lock.json
+
+      - name: Install dependencies
+        working-directory: docs-next
+        run: npm ci
+
+      - name: Build (壊れたリンク・アンカーがあれば失敗する)
+        working-directory: docs-next
+        run: npm run build
