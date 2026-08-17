@@ -17,10 +17,11 @@ timestamp: 2026-07-07
 
 ## Project Information
 
-- **Project Type**: [Greenfield/Brownfield]
-- **Start Date**: [ISO 8601 timestamp]
-- **Current Stage**: [INCEPTION - Workspace Detection]
+- **Project Type**: Brownfield
+- **Start Date**: 2026-08-14T07:24:14Z
+- **Current Stage**: CONSTRUCTION - Build and Test（完了、承認待ち）
 - **Workspace Root**: /workspace
+- **対象タスク**: `Docs/spec/enhancements/resource-list-filter.md`（リソース一覧の検索・フィルタ追加、Issue #76）
 
 ## Code Location Rules
 
@@ -40,22 +41,22 @@ timestamp: 2026-07-07
 
 ### INCEPTION PHASE
 
-- [ ] Workspace Detection
-- [ ] Reverse Engineering（Brownfield の場合）
-- [ ] Requirements Analysis
-- [ ] User Stories（条件付き）
-- [ ] Workflow Planning
-- [ ] Application Design（条件付き）
-- [ ] Units Generation（条件付き）
+- [x] Workspace Detection
+- [x] Reverse Engineering（Brownfield の場合）— SKIP（ユーザー判断、既存 Docs/spec/ を代替として採用）
+- [x] Requirements Analysis
+- [x] User Stories（条件付き）— SKIP（既存フォームへの単一項目追加。新規ペルソナ・新規ワークフローなし）
+- [x] Workflow Planning
+- [x] Application Design（条件付き）— SKIP（新規コンポーネント・サービスなし）
+- [x] Units Generation（条件付き）— SKIP（単一ユニットで完結）
 
-### CONSTRUCTION PHASE
+### CONSTRUCTION PHASE（単一ユニット: resource-keyword-filter）
 
-- [ ] Functional Design（条件付き、ユニット別）
-- [ ] NFR Requirements（条件付き、ユニット別）
-- [ ] NFR Design（条件付き、ユニット別）
-- [ ] Infrastructure Design（条件付き、ユニット別）
-- [ ] Code Generation（必須、ユニット別）
-- [ ] Build and Test（必須）
+- [x] Functional Design（条件付き、ユニット別）— EXECUTE・承認済み
+- [x] NFR Requirements（条件付き、ユニット別）— SKIP（新規 NFR なし）
+- [x] NFR Design（条件付き、ユニット別）— SKIP（NFR Requirements 未実行のため）
+- [x] Infrastructure Design（条件付き、ユニット別）— SKIP（インフラ変更なし）
+- [x] Code Generation（必須、ユニット別）
+- [x] Build and Test（必須）
 
 ### OPERATIONS PHASE
 
@@ -63,7 +64,7 @@ timestamp: 2026-07-07
 
 ## Current Status
 
-- **Lifecycle Phase**: [INCEPTION/CONSTRUCTION/OPERATIONS]
-- **Current Stage**: [Stage Name]
-- **Next Stage**: [Next stage to execute]
-- **Status**: [In Progress/Complete/Waiting for Approval]
+- **Lifecycle Phase**: CONSTRUCTION
+- **Current Stage**: Build and Test ― 完了（実機 PostgreSQL 統合確認で不具合1件検出・修正・再確認済み）
+- **Next Stage**: Operations（BookFlow では CI 品質ゲートを Operations 相当として運用。マージ・PR 作成が次のアクション）
+- **Status**: Waiting for Approval

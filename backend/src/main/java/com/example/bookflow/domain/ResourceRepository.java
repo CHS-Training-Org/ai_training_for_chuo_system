@@ -35,25 +35,36 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   @Query("SELECT r FROM Resource r WHERE r.id = :id")
   Optional<Resource> findByIdForUpdate(@Param("id") UUID id);
 
-  // ---- 非 ADMIN 用（is_active = true のみ）----
+  // ---- 一覧検索（カテゴリ・可視性・キーワードの AND 絞り込み）----
 
-  /** 有効リソース一覧をページネーションで返す。 */
-  Page<Resource> findByIsActiveTrue(Pageable pageable);
+  /** {@link #search(ResourceCategory, boolean, String, Pageable)} / 全件版で共有する検索条件。 */
+  String SEARCH_JPQL =
+      "SELECT r FROM Resource r "
+          + "WHERE (:category IS NULL OR r.category = :category) "
+          + "AND (:activeOnly = FALSE OR r.isActive = TRUE) "
+          + "AND (:keyword IS NULL "
+          + "     OR LOWER(r.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) "
+          + "     OR (r.description IS NOT NULL "
+          + "         AND LOWER(r.description) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))))";
 
-  /** 有効リソース全件を返す（from/to フィルタ用）。 */
-  List<Resource> findByIsActiveTrue();
+  /**
+   * カテゴリ・可視性・キーワードで絞り込んでページネーションで返す。
+   *
+   * @param category カテゴリ（null の場合は全カテゴリ）
+   * @param activeOnly true の場合は有効リソースのみ（ADMIN は false を渡す）
+   * @param keyword name/description への部分一致・大文字小文字非区別（null の場合はキーワード条件なし）
+   */
+  @Query(SEARCH_JPQL)
+  Page<Resource> search(
+      @Param("category") ResourceCategory category,
+      @Param("activeOnly") boolean activeOnly,
+      @Param("keyword") String keyword,
+      Pageable pageable);
 
-  /** 有効リソースをカテゴリで絞り込んでページネーションで返す。 */
-  Page<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category, Pageable pageable);
-
-  /** 有効リソースをカテゴリで絞り込んで全件返す（from/to フィルタ用）。 */
-  List<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category);
-
-  // ---- ADMIN 用（inactive 含む）----
-
-  /** リソースをカテゴリで絞り込んでページネーションで返す（inactive 含む）。 */
-  Page<Resource> findByCategory(ResourceCategory category, Pageable pageable);
-
-  /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
-  List<Resource> findByCategory(ResourceCategory category);
+  /** {@link #search(ResourceCategory, boolean, String, Pageable)} の全件版（from/to フィルタ用）。 */
+  @Query(SEARCH_JPQL)
+  List<Resource> search(
+      @Param("category") ResourceCategory category,
+      @Param("activeOnly") boolean activeOnly,
+      @Param("keyword") String keyword);
 }
