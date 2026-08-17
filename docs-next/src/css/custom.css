@@ -528,16 +528,15 @@ html {
 /* ============================================================================
  * ナビゲーション改善用スタイル
  * ============================================================================ */
-.menu__link--sublist::after {
-  content: '▶';
-  font-size: 0.625rem;
-  margin-left: 0.5rem;
-  transition: transform 0.2s;
-}
 
-.menu__link--sublist[aria-expanded="true"]::after {
-  transform: rotate(90deg);
-}
+/*
+ * キャレット（開閉の矢印）は Docusaurus 標準に任せる。
+ * かつて `.menu__link--sublist::after { content: '▶' }` を足していたが、テーマは
+ * カテゴリがリンク先（index.md）を持つかどうかで DOM を作り分けるため二重に描かれていた。
+ *   - リンクあり: ラベルの <a> とは別に <button class="menu__caret"> が出る → ▶ と ⌄ が並ぶ
+ *   - リンクなし: テーマが同じ ::after に背景画像のシェブロンを描く → 矢印が重なって潰れる
+ * 見た目を変えたい場合は content ではなく --ifm-menu-link-sublist-icon を差し替えること。
+ */
 
 /* アクティブなサイドバー項目の強調 */
 .menu__link--active {
