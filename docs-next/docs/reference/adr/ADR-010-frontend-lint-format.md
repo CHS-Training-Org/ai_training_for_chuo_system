@@ -1,5 +1,5 @@
 ---
-sidebar_position: 110
+sidebar_position: 10
 title: ADR-010 — フロントエンド：Lint / Format
 description: フロントエンドの Lint・Format ツールとして oxlint + oxfmt を採用した判断の記録
 tags:

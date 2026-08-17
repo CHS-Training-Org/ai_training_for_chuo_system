@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 6
 title: トラブルシューティング
 description: 環境構築・起動・開発中によく発生するエラーの原因と対処法
 tags:
@@ -8,7 +8,7 @@ tags:
   - debug
 audience: 学習者
 references:
-  - ../getting-started.md
+  - ../learn/getting-started.md
 last_updated: '2026-08-01T11:56:18+09:00'
 ---
 
@@ -24,7 +24,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 :::
 ---
 
-## DevContainer・Docker 関連
+## DevContainer・Docker 関連 {#devcontainer}
 ### （Windows）「Reopen in Container」が docker.sock への接続エラーで失敗する
 
 - **症状**: DevContainer 起動時に `failed to connect to the docker API at unix:///var/run/docker.sock ... no such file or directory` のようなエラーで失敗する。WSL2 ターミナルで `docker ps` を実行しても接続エラーになる。
@@ -45,7 +45,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 - **症状**: `pnpm install` や Gradle ビルドが異常に遅い。ファイルを保存しても HMR / Spring devtools が再読み込みしない。
 - **原因**: リポジトリを Windows 側（`/mnt/c/...`）に置いている。WSL2 からのクロスファイルシステムアクセスが低速で、inotify のファイル変更イベントも正しく伝播しない。
-- **解決策**: リポジトリを **WSL2 ネイティブ FS（`/home/<user>/...`）へ clone し直す**。WSL2 ターミナルで `pwd` が `/home/...` を返すことを確認してから VS Code を `code .` で開き、`Reopen in Container` する。詳細は [getting-started.md](../getting-started.md) の「OS 別の事前準備」を参照。
+- **解決策**: リポジトリを **WSL2 ネイティブ FS（`/home/<user>/...`）へ clone し直す**。WSL2 ターミナルで `pwd` が `/home/...` を返すことを確認してから VS Code を `code .` で開き、`Reopen in Container` する。詳細は [getting-started.md](../learn/getting-started.md) の「OS 別の事前準備」を参照。
 
 ### （Windows）「Reopen in Container」時に Wayland ソケットのマウントエラーが出る
 
@@ -66,7 +66,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 :::
 ---
 
-## 依存インストール関連
+## 依存インストール関連 {#install}
 ### `pnpm: command not found`／Node・Java のバージョンが想定と違う
 
 - **症状**: `pnpm` や `java` が `command not found` になる。または `node -v` / `java -version` の結果がドキュメントの記載（Node 24 / Java 25）と異なる。
@@ -119,11 +119,11 @@ last_updated: '2026-08-01T11:56:18+09:00'
   cd /workspace && bash scripts/provision-cognito.sh
   ```
 
-  provisioning が出力する Pool ID / Client ID の `.env.local` への設定は [getting-started.md](../getting-started.md) ステップ 3 を参照。
+  provisioning が出力する Pool ID / Client ID の `.env.local` への設定は [getting-started.md](../learn/getting-started.md) ステップ 3 を参照。
 
 ---
 
-## 起動・接続エラー
+## 起動・接続エラー {#startup}
 ### ロール別ログイン後に `/auth/signin` へリダイレクトされ続ける
 
 - **症状**: サインイン画面で MEMBER / APPROVER / ADMIN ボタンを押すと、ダッシュボードへ遷移できず再び `/auth/signin` に戻る。
@@ -144,7 +144,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
       # {"status":"UP"} が返れば OK
       ```
 
-    - 原因 2（初期データ未投入）の場合：[getting-started.md](../getting-started.md) の「ステップ 5：初期データ投入・動作確認」を実行してから、再度サインインする。
+    - 原因 2（初期データ未投入）の場合：[getting-started.md](../learn/getting-started.md) の「ステップ 5：初期データ投入・動作確認」を実行してから、再度サインインする。
 
 ### `pnpm dev` / `bootRun` がポート使用中エラーになる
 
@@ -176,7 +176,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ---
 
-## DB・マイグレーション関連
+## DB・マイグレーション関連 {#database}
 ### バックエンド起動時に `Connection to postgres:5432 refused` になる
 
 - **症状**: `bootRun` が DataSource / Flyway の初期化で失敗し、`Connection to postgres:5432 refused` を含むエラーが出る。
@@ -192,7 +192,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 ### Flyway の `Migration checksum mismatch` で起動に失敗する
 
 - **症状**: `bootRun` が `Validate failed: ... Migration checksum mismatch for migration version 001` のようなエラーで停止する。
-- **原因**: 適用済みのマイグレーションファイル（`backend/src/main/resources/db/migration/V001__create_initial_schema.sql` 等）を変更した。Flyway は適用時のチェックサムを DB に記録しており、ファイルが書き換わると検証エラーになる。**コミット済みマイグレーションファイルの変更は禁止**（[ADR-013](../reference/adr/ADR-013-backend-db-migration.md) / [coding-conventions.md](../develop/coding-conventions.md)）。
+- **原因**: 適用済みのマイグレーションファイル（`backend/src/main/resources/db/migration/V001__create_initial_schema.sql` 等）を変更した。Flyway は適用時のチェックサムを DB に記録しており、ファイルが書き換わると検証エラーになる。**コミット済みマイグレーションファイルの変更は禁止**（[ADR-013](../reference/adr/ADR-013-backend-db-migration.md) / [coding-conventions.md](./coding-conventions.md)）。
 - **解決策**: `git restore` 等でマイグレーションファイルを変更前に戻す。スキーマを変更したい場合は新しいバージョンのファイル（`V002__<snake_case>.sql`）を追加する。学習用に DB ごと作り直して構わない場合は、次項のリセット手順でも解消できる。
 
 ### DB を初期状態に戻したい（リセット）
@@ -205,7 +205,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
     -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
   ```
 
-  その後バックエンドを起動し直し、[getting-started.md](../getting-started.md) §初期データ投入の手順で seed を再投入する（postgres コンテナ名の確認方法と `docker exec -i` を使う理由も同節を参照）。
+  その後バックエンドを起動し直し、[getting-started.md](../learn/getting-started.md) §初期データ投入の手順で seed を再投入する（postgres コンテナ名の確認方法と `docker exec -i` を使う理由も同節を参照）。
 
 :::warning `docker compose down -v` は使わない
     `-v` はすべての named volume を削除するため、DB データだけでなく `node_modules`、pnpm ストア、cognito-local のユーザーデータまで消えてしまいます。  
@@ -220,7 +220,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ---
 
-## AI ツール関連 \{#ai-tools}
+## AI ツール関連 {#ai-tools}
 ### コンテナ起動が `.claude.json` 関連のマウントエラーで失敗する
 
 - **症状**: 「Reopen in Container」が `.claude.json` のマウントに関するエラー（`... not a directory` 等）で失敗する。
@@ -244,12 +244,12 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 - **症状**: コンテナの再作成後に `claude` の再ログインが必要になる。会話履歴や設定が引き継がれない。
 - **原因**: ホストの `~/.claude` / `~/.claude.json` のバインドマウントが効いておらず、認証情報がコンテナ内にしか保存されていない。
-- **解決策**: コンテナ内で `ls /root/.claude` を実行し、ホスト側（WSL2 の `~/.claude`）と同じ内容が見えるか確認する。見えない場合は `.devcontainer/docker-compose.yml` のマウント定義（`${USERPROFILE:-$HOME}/.claude`）がホスト側の実パスに解決されているかを確認する（WSL2 から起動していれば `$HOME` = `/home/<user>` が使われる）。セットアップ全体は [Claude Code のセットアップ](../ai-tools-guide.md#setup) を参照。
+- **解決策**: コンテナ内で `ls /root/.claude` を実行し、ホスト側（WSL2 の `~/.claude`）と同じ内容が見えるか確認する。見えない場合は `.devcontainer/docker-compose.yml` のマウント定義（`${USERPROFILE:-$HOME}/.claude`）がホスト側の実パスに解決されているかを確認する（WSL2 から起動していれば `$HOME` = `/home/<user>` が使われる）。セットアップ全体は [Claude Code のセットアップ](../learn/ai-tools-guide.md#setup) を参照。
 
 ---
 
-## AI レビュー関連 \{#ai-review-trouble}
-`@claude pr-review` で起動する AI レビューについての症状です。仕組みと判定基準は [AI レビューとの対応](../develop/review-criteria.md#ai-review)、運用の詳細は [AI レビューの運用](../operations/operations-guide.md#ai-review) を参照してください。
+## AI レビュー関連 {#ai-review-trouble}
+`@claude pr-review` で起動する AI レビューについての症状です。仕組みと判定基準は [AI レビューとの対応](./review-criteria.md#ai-review)、運用の詳細は [AI レビューの運用](../operations/operations-guide.md#ai-review) を参照してください。
 
 ### コメントしても反応がない
 

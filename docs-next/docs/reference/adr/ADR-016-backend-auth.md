@@ -1,5 +1,5 @@
 ---
-sidebar_position: 116
+sidebar_position: 16
 title: ADR-016 — バックエンド：認証・認可
 description: バックエンドの認証・認可として Spring Security + OAuth2 Resource Server（Cognito）を採用した判断の記録
 tags:

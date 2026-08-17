@@ -1,5 +1,5 @@
 ---
-sidebar_position: 107
+sidebar_position: 7
 title: ADR-007 — フロントエンド：クライアント状態管理
 description: クライアント側の状態管理ライブラリとして Zustand を最小限採用した判断の記録
 tags:

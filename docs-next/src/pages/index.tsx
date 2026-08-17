@@ -60,7 +60,7 @@ const whenStuck = [
     icon: '🏗',
     label: 'アーキテクチャ',
     detail: '各レイヤーがどの AWS サービスに対応し、ローカルでは何に置き換わるか',
-    to: '/architecture',
+    to: '/reference/architecture',
   },
 ];
 
@@ -94,7 +94,7 @@ export default function Home() {
             <div className={styles.container}>
               <h2 id="tech-stack-heading" className={styles.sectionTitle}>技術スタック</h2>
               <p className={styles.techStackDescription}>
-                各レイヤーの責務と選定理由は <Link to="/architecture">アーキテクチャ</Link> と <Link to="/reference/adr">設計判断（ADR）</Link> に記録しています。
+                各レイヤーの責務と選定理由は <Link to="/reference/architecture">アーキテクチャ</Link> と <Link to="/reference/adr">設計判断（ADR）</Link> に記録しています。
               </p>
               <div className={styles.techStackGrid}>
                 {Object.entries(techStack).map(([category, items]) => (

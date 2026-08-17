@@ -24,7 +24,12 @@ const config: Config = {
   organizationName: 'CHS-Training-Org', // Usually your GitHub org/user name.
   projectName: 'ai_training_for_chuo_system', // Usually your repo name.
 
-  onBrokenLinks: 'warn',
+  // 破損リンク・破損アンカーはビルドを失敗させる。
+  // 'warn' のままだと壊れたまま公開でき、Zensical からの移行時に 100 件超の破損が
+  // 気づかれず残っていた。壊した本人のビルドで止めるのがいちばん安い。
+  onBrokenLinks: 'throw',
+  onBrokenAnchors: 'throw',
+  onBrokenMarkdownLinks: 'throw',
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -45,7 +50,6 @@ const config: Config = {
           editUrl:
             'https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/docs-next/',
           routeBasePath: '/',
-          exclude: ['design.md'],
         },
         blog: false,
         theme: {
@@ -54,6 +58,13 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+
+  // .md は CommonMark、.mdx のみ MDX として解釈する。
+  // 既定の 'mdx' では見出しの明示 ID（`{#id}`）と生 HTML が MDX 式・JSX として解析され、
+  // 移行時に `\{#id}` へエスケープせざるを得なくなっていた（アンカーが全滅する原因）。
+  markdown: {
+    format: 'detect',
+  },
 
   themes: ['@docusaurus/theme-mermaid'],
 
@@ -69,8 +80,6 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
     colorMode: {
       respectPrefersColorScheme: true,
     },
@@ -92,21 +101,9 @@ const config: Config = {
       items: [
         {
           type: 'docSidebar',
-          sidebarId: 'curriculumSidebar',
+          sidebarId: 'learnSidebar',
           position: 'left',
-          label: 'カリキュラム',
-        },
-        {
-          type: 'docSidebar',
-          sidebarId: 'specSidebar',
-          position: 'left',
-          label: '本編・仕様',
-        },
-        {
-          type: 'docSidebar',
-          sidebarId: 'referenceSidebar',
-          position: 'left',
-          label: '辞典/リファレンス',
+          label: '学習',
         },
         {
           type: 'docSidebar',
@@ -116,9 +113,21 @@ const config: Config = {
         },
         {
           type: 'docSidebar',
+          sidebarId: 'specSidebar',
+          position: 'left',
+          label: '仕様',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'referenceSidebar',
+          position: 'left',
+          label: 'リファレンス',
+        },
+        {
+          type: 'docSidebar',
           sidebarId: 'operationsSidebar',
           position: 'left',
-          label: '運用・管理',
+          label: '運用',
         },
         {
           type: 'search',
@@ -139,15 +148,15 @@ const config: Config = {
           items: [
             {
               label: 'カリキュラム',
-              to: '/curriculum',
+              to: '/learn/curriculum',
             },
             {
               label: '環境構築',
-              to: '/getting-started',
+              to: '/learn/getting-started',
             },
             {
               label: 'AI ツール活用',
-              to: '/ai-tools-guide',
+              to: '/learn/ai-tools-guide',
             },
           ],
         },
@@ -156,19 +165,19 @@ const config: Config = {
           items: [
             {
               label: '要件定義',
-              to: '/requirements',
+              to: '/spec/requirements',
             },
             {
               label: 'API 仕様',
-              to: '/api-spec',
+              to: '/spec/api-spec',
             },
             {
               label: '画面仕様',
-              to: '/screen-spec',
+              to: '/spec/screen-spec',
             },
             {
               label: 'ER 図',
-              to: '/er-diagram',
+              to: '/spec/er-diagram',
             },
           ],
         },
@@ -177,7 +186,7 @@ const config: Config = {
           items: [
             {
               label: 'アーキテクチャ',
-              to: '/architecture',
+              to: '/reference/architecture',
             },
             {
               label: 'ADR 一覧',

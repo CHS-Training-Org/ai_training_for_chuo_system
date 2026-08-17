@@ -1,5 +1,5 @@
 ---
-sidebar_position: 115
+sidebar_position: 15
 title: ADR-015 — バックエンド：API ドキュメント
 description: バックエンドの API ドキュメント生成ツールとして Springdoc OpenAPI を採用した判断の記録
 tags:

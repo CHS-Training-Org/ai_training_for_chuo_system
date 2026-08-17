@@ -1,5 +1,5 @@
 ---
-sidebar_position: 102
+sidebar_position: 2
 title: ADR-002 — フロントエンド：スタイリング
 description: フロントエンドのスタイリング方針として Tailwind CSS v4 を採用した判断の記録
 tags:

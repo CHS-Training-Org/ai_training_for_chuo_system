@@ -1,5 +1,5 @@
 ---
-sidebar_position: 114
+sidebar_position: 14
 title: ADR-014 — バックエンド：バリデーション
 description: バックエンドのバリデーション方針として Bean Validation（Jakarta EE）を採用した判断の記録
 tags:

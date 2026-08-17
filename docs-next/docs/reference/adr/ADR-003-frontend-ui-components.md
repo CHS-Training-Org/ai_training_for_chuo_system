@@ -1,5 +1,5 @@
 ---
-sidebar_position: 103
+sidebar_position: 3
 title: ADR-003 — フロントエンド：UI コンポーネントライブラリ
 description: フロントエンドの UI コンポーネントライブラリとして shadcn/ui を採用した判断の記録
 tags:

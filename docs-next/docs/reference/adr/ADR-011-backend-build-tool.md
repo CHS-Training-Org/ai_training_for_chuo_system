@@ -1,5 +1,5 @@
 ---
-sidebar_position: 111
+sidebar_position: 11
 title: ADR-011 — バックエンド：ビルドツール
 description: バックエンドのビルドツールとして Gradle（Kotlin DSL）を採用した判断の記録
 tags:

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 999
+sidebar_position: 1
 title: Claude Code 設定台帳
 description: BookFlow リポジトリにインストールされている Rules・Skills・Hooks・その他設定の一覧と呼び出し方
 tags:
@@ -10,9 +10,9 @@ tags:
   - hooks
 audience: 学習者・運営者
 references:
-  - ../aidlc-adoption.md
-  - ../develop/dev-workflow.md
-  - ../ai-tools-guide.md
+  - ../aidlc/adoption.md
+  - ../../develop/dev-workflow.md
+  - ../../learn/ai-tools-guide.md
   - .claude/settings.json
 last_updated: '2026-08-01T11:56:18+09:00'
 ---
@@ -21,9 +21,9 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 このページは「今このリポジトリに何がインストールされていて、どう呼び出すか」を確認するためのリファレンスです。
 
-- **採用の経緯・由来**: [`Docs/spec/aidlc-adoption.md`](../../aidlc-adoption.md)
+- **採用の経緯・由来**: [`Docs/spec/aidlc-adoption.md`](../aidlc/adoption.md)
 - **ワークフローでの使い方**: [`Docs/guide/dev-workflow.md`](../../develop/dev-workflow.md)
-- **Claude Code の基本操作**: [`Docs/guide/ai-tools-guide.md`](../../ai-tools-guide.md)
+- **Claude Code の基本操作**: [`Docs/guide/ai-tools-guide.md`](../../learn/ai-tools-guide.md)
 
 ---
 
@@ -77,7 +77,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ---
 
-## その他の設定 \{#other-config}
+## その他の設定 {#other-config}
 ### statusLine スクリプト
 
 `.claude/scripts/statusline-command.sh`：model / トークン数 / git ブランチ / コンテキスト使用率 / レートリミット（5h、7d、JST）をダッシュボード形式で表示する読み取り専用スクリプト。  
@@ -93,7 +93,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 実際の設定値は `.claude/settings.local.json` を直接参照してください（個人環境で異なる場合があります）。
 
-### 言語・モデル設定 \{#model-settings}
+### 言語・モデル設定 {#model-settings}
 `.claude/settings.json` で定義されています。
 
 | 設定 | 値 |
@@ -104,4 +104,4 @@ last_updated: '2026-08-01T11:56:18+09:00'
 | `autoUpdatesChannel` | latest |
 | `theme` | auto |
 
-`model: sonnet` は対話セッションの既定モデルを Sonnet に固定する設定です。日常的な実装・修正では Sonnet を基本として使う方針（[ai-tools-guide.md §モデルの選択と使用量の管理](../../ai-tools-guide.md#model-and-usage)）を、リポジトリ設定として反映しています。`advisorModel` はこの既定とは独立しており、`advisor` ツール専用に Opus を指定するものです。
+`model: sonnet` は対話セッションの既定モデルを Sonnet に固定する設定です。日常的な実装・修正では Sonnet を基本として使う方針（[ai-tools-guide.md §モデルの選択と使用量の管理](../../learn/ai-tools-guide.md#model-and-usage)）を、リポジトリ設定として反映しています。`advisorModel` はこの既定とは独立しており、`advisor` ツール専用に Opus を指定するものです。

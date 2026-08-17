@@ -1,0 +1,8 @@
+{
+  "label": "AI-DLC 台帳",
+  "position": 5,
+  "collapsed": true,
+  "customProps": {
+    "description": "AI-DLC エンジンの採用状況・稼働記録（運営者向け）"
+  }
+}

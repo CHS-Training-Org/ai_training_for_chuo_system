@@ -1,5 +1,5 @@
 ---
-sidebar_position: 112
+sidebar_position: 12
 title: ADR-012 — バックエンド：データアクセス（ORM）
 description: バックエンドのデータアクセス層として Spring Data JPA + PostgreSQL を採用した判断の記録
 tags:

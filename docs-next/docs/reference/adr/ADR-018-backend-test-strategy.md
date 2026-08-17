@@ -1,5 +1,5 @@
 ---
-sidebar_position: 118
+sidebar_position: 18
 title: ADR-018 — バックエンド：テスト戦略
 description: バックエンドのテスト戦略として JUnit 5 + H2 + Mockito を採用した判断の記録
 tags:

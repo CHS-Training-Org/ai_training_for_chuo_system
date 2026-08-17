@@ -1,5 +1,5 @@
 ---
-sidebar_position: 117
+sidebar_position: 17
 title: ADR-017 — バックエンド：ロギング戦略
 description: バックエンドのロギング戦略として SLF4J + Logback を採用した判断の記録
 tags:

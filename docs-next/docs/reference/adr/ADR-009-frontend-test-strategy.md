@@ -1,5 +1,5 @@
 ---
-sidebar_position: 109
+sidebar_position: 9
 title: ADR-009 — フロントエンド：テスト戦略
 description: フロントエンドのテスト戦略として Vitest + Playwright + MSW を採用した判断の記録
 tags:

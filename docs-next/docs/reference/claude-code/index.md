@@ -1,5 +1,4 @@
 ---
-sidebar_position: 999
 title: Claude Code 設定
 description: BookFlow リポジトリにインストールされている Claude Code の Rules・Skills・Hooks・その他設定の索引
 tags:
@@ -8,9 +7,9 @@ tags:
   - index
 audience: 学習者・運営者
 references:
-  - ../aidlc-adoption.md
-  - ../develop/dev-workflow.md
-  - ../ai-tools-guide.md
+  - ../aidlc/adoption.md
+  - ../../develop/dev-workflow.md
+  - ../../learn/ai-tools-guide.md
 last_updated: '2026-08-01T11:56:18+09:00'
 ---
 
@@ -18,7 +17,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 このセクションでは、BookFlow リポジトリにインストールされている Claude Code の設定資産（Rules / Skills / Hooks / その他）を一覧します。
 
-「採用の経緯・由来」は [`Docs/spec/aidlc-adoption.md`](../../aidlc-adoption.md)、「ワークフローでの使い方」は [`Docs/guide/dev-workflow.md`](../../develop/dev-workflow.md) を参照してください。
+「採用の経緯・由来」は [`Docs/spec/aidlc-adoption.md`](../aidlc/adoption.md)、「ワークフローでの使い方」は [`Docs/guide/dev-workflow.md`](../../develop/dev-workflow.md) を参照してください。
 
 ---
 
@@ -26,4 +25,4 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 | ファイル | 目的 | 対象読者 |
 |---------|------|---------|
-| [agent-config.md](../agent-config) | Rules・Skills・Hooks・その他設定の一覧と呼び出し方 | 学習者・運営者 |
+| [agent-config.md](./agent-config.md) | Rules・Skills・Hooks・その他設定の一覧と呼び出し方 | 学習者・運営者 |

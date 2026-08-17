@@ -8,15 +8,15 @@ tags:
   - style
 audience: 学習者
 references:
-  - ../reference/adr/README.md
+  - ../reference/adr/index.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
-  - ../ai-tools-guide.md
+  - ../learn/ai-tools-guide.md
 last_updated: '2026-08-01T11:56:18+09:00'
 ---
 
 # コーディング規約
 
-BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../reference/adr/README.md) に、API、画面の**仕様**は [Docs/spec/](../spec-index.md) に書かれています。  
+BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../reference/adr/index.md) に、API、画面の**仕様**は [Docs/spec/](../spec/index.md) に書かれています。  
 本書は「実装時に迷わないためのルールと実例」に絞っています。
 
 :::tip 最大の規約は「既存コードに合わせる」
@@ -26,7 +26,7 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 :::
 ---
 
-## 共通方針 \{#common}
+## 共通方針 {#common}
 | 項目 | ルール |
 |------|--------|
 | トランクブランチ命名 | `learner/<GitHubユーザー名>/main`（例：`learner/taro/main`）。学習者ごとに 1 本だけ持つ個人の作業基点 |
@@ -37,11 +37,11 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 
 `main` は誰からもマージされません。完了した課題は各自のトランクブランチに積み上げます（トランクを導入した理由は [ADR-030](../reference/adr/ADR-030-personal-trunk-branch-strategy.md) を参照）。同じ選択課題（カタログ項目）に複数の学習者が着手しても、各自のトランクブランチが独立しているため衝突しません。Issue はカタログ課題ごとに運営者が起票済みの共通の 1 つを参照するため、同じ課題を選んだ学習者同士は Issue 番号が同じになります。番号だけでは `git branch -a` や GitHub の branch 一覧から誰の作業か判別できないため、先頭に GitHub ユーザー名を入れて担当者を明示します。
 
-### 作業ブランチの作成 \{#feature-branch}
+### 作業ブランチの作成 {#feature-branch}
 
 ブランチは 2 種類あります。**トランクブランチ**（`learner/<GitHubユーザー名>/main`）は学習者ごとに 1 本だけ持つ個人の作業基点で、`main` の代わりにマージ先になります。**フィーチャーブランチ**（`feature/<GitHubユーザー名>/<issue番号>-<short-desc>`）は課題ごとに作成する作業用ブランチで、自分のトランクブランチから切り、実装が終わったら自分のトランクブランチへマージします。どちらも先頭に `<GitHubユーザー名>` が必要なのは、複数の学習者が同時に作業するため、名前だけでは重複や判別ができないからです。
 
-### トランクブランチの作成（初回のみ） \{#trunk-branch}
+### トランクブランチの作成（初回のみ） {#trunk-branch}
 
 学習を始める前に、自分のトランクブランチを 1 本だけ作成します。
 
@@ -194,7 +194,7 @@ public record ResourceResponse(
 
 - 業務エラーは `application/exception/` のカスタム例外（`BusinessException`・`ResourceNotFoundException` 等）を throw する
 - HTTP ステータスへの変換は `presentation/exception/GlobalExceptionHandler`（`@RestControllerAdvice`）に**一元化**する。Controller / Service で try-catch して独自レスポンスを作らない
-- エラーコードは `application/exception/ErrorCode.java` の定数を使う。ステータス・エラーコードの対応は [api-spec.md](../api-spec.md) §共通が正
+- エラーコードは `application/exception/ErrorCode.java` の定数を使う。ステータス・エラーコードの対応は [api-spec.md](../spec/api-spec.md) §共通が正
 
 ### データアクセス・マイグレーション
 
@@ -218,7 +218,7 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 
 ---
 
-## コミット・PR 規約 \{#commit-pr}
+## コミット・PR 規約 {#commit-pr}
 {/* 開発フロー全体（Issue 選択〜マージ）は dev-workflow.md（タスク 3.1）、PR テンプレートは .github/PULL_REQUEST_TEMPLATE.md（タスク 3.4）で整備済み */}
 
 ### Conventional Commits
@@ -263,7 +263,7 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 
 - [ ] [§共通方針](#common)のフォーマット・Lint・テストをすべて通した
 - [ ] 仕様（`Docs/spec/`）と実装が一致している（仕様にない挙動を勝手に追加していない）
-- [ ] AI が生成したコードを自分で読み、説明できる状態になっている（→ [ai-tools-guide.md §AI 利用ポリシー](../ai-tools-guide.md#prohibited)）
+- [ ] AI が生成したコードを自分で読み、説明できる状態になっている（→ [ai-tools-guide.md §AI 利用ポリシー](../learn/ai-tools-guide.md#prohibited)）
 - [ ] 動作確認の手順と結果を PR に書ける状態になっている
 
 ---
@@ -327,7 +327,7 @@ Controller テストで認証ユーザーが必要な場合は、`src/test/java/
 その代わり、**新規に追加または変更したコードには必ず対応するテストを付ける**こと、既存テストを green に保つことを必須とします。
 
 :::tip テスト作成は AI の得意分野
-    既存テストファイルを参照させたうえで Claude Code に生成させると、命名規約、モックパターンに沿ったテストの叩き台が得られます（→ [ai-tools-guide.md](../ai-tools-guide.md)）。  
+    既存テストファイルを参照させたうえで Claude Code に生成させると、命名規約、モックパターンに沿ったテストの叩き台が得られます（→ [ai-tools-guide.md](../learn/ai-tools-guide.md)）。  
     生成後は必ず実行して検証してください。
 
 :::

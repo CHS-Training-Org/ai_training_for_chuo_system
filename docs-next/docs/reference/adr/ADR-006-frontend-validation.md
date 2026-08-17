@@ -1,5 +1,5 @@
 ---
-sidebar_position: 106
+sidebar_position: 6
 title: ADR-006 — フロントエンド：バリデーション
 description: フロントエンドのバリデーションスキーマライブラリとして Zod を採用した判断の記録
 tags:

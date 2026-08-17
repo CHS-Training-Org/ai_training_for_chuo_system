@@ -1,4 +1,5 @@
 ---
+sidebar_position: 29
 type: adr
 title: ADR-029 — 学習パスの分岐を廃止し全員共通の一本道にする
 description: 若手向け・中堅向けの学習パス分岐を一旦廃止し、全学習者が同じ順序で同じ課題に取り組む構成に改める判断の記録
@@ -17,7 +18,7 @@ Accepted（2026-08-09）
 
 ## Context
 
-[`curriculum.md`](../../curriculum.md) は学習パスを若手向けと中堅向けの 2 本に分けていた。若手は STEP-01 から 03 を順に実施して Beginner の課題へ、中堅は STEP-03 を任意確認でスキップして Intermediate 以上の課題へ進む構成である。[`overview.md`](../../overview.md) のペルソナ表とステークホルダー表、[`review-criteria.md`](../../develop/review-criteria.md) のレビュー観点表も同じ 2 分類を軸にしていた。
+[`curriculum.md`](../../learn/curriculum.md) は学習パスを若手向けと中堅向けの 2 本に分けていた。若手は STEP-01 から 03 を順に実施して Beginner の課題へ、中堅は STEP-03 を任意確認でスキップして Intermediate 以上の課題へ進む構成である。[`overview.md`](../../spec/overview.md) のペルソナ表とステークホルダー表、[`review-criteria.md`](../../develop/review-criteria.md) のレビュー観点表も同じ 2 分類を軸にしていた。
 
 **2 回目の実施に向けて作成した必須タスク表は、この分岐と食い違う。** 運営者が用意した表は、オリエンテーション、環境構築、ドキュメント読み込み、初級課題（AI-DLC なし）、初級課題（AI-DLC あり）、中級課題（AI-DLC あり）の 6 項目をすべて必須としている。分岐前提のドキュメントをそのまま残すと、学習者はサイトの記述と配布された表のどちらに従えばよいか判断できない。
 
@@ -36,7 +37,7 @@ Accepted（2026-08-09）
 
 ## Consequences
 
-- 中堅相当の経験を持つ学習者も STEP-03（AI-DLC なしの初級課題）を実施する。習熟済みの学習者には冗長になりうるが、[STEP-03 の設計意図](../../curriculum.md#step-03)である「AI-DLC の有無を対比で体感する」は AI 駆動開発の経験がない学習者には成立するため、受け入れる。
+- 中堅相当の経験を持つ学習者も STEP-03（AI-DLC なしの初級課題）を実施する。習熟済みの学習者には冗長になりうるが、[STEP-03 の設計意図](../../learn/curriculum.md#step-03)である「AI-DLC の有無を対比で体感する」は AI 駆動開発の経験がない学習者には成立するため、受け入れる。
 - 分岐が必要になった時点で本 ADR を改訂する。「一旦廃止」であり、分岐の設計そのものを否定したわけではない。判断材料は 2 回目の実施で得られる所要時間と難易度の実測になる。
 - 旧ドキュメントサイト（`Docs/` 配下、Zensical）には分岐前提の記述が残る。GitHub Pages に公開されているのは `docs-next` のみ（`.github/workflows/docs.yml`）であるため、公開面では矛盾しない。ただし `CLAUDE.md` と `.claude/rules/` が `Docs/guide/` を参照している間は、Claude Code が旧記述を読む。参照先の付け替えは別タスクで行う。
 - 必須タスク表の工数を採ったことで、[ADR-023](./ADR-023-mentor-gate-removal.md) で再計算した値と差が残る。実測との突き合わせは 2 回目の実施後に行う。

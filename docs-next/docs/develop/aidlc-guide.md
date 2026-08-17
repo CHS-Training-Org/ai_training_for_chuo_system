@@ -9,9 +9,10 @@ audience: 学習者
 references:
   - ./dev-workflow.md
   - ./no-aidlc-workflow.md
-  - ../curriculum.md
-  - ../aidlc-adoption.md
-last_updated: '2026-08-13T00:00:00+09:00'
+  - ../learn/ai-tools-guide.md
+  - ../learn/curriculum.md
+  - ../reference/aidlc/adoption.md
+last_updated: '2026-08-14T18:00:00+09:00'
 ---
 
 # AI-DLC ガイド
@@ -28,7 +29,7 @@ BookFlow はこのエンジンを **標準ワークフローとして採用**し
 
 ---
 
-## なぜ AI-DLC が生まれたか \{#why}
+## なぜ AI-DLC が生まれたか {#why}
 
 **従来の開発プロセスは、人間のペースで長く回ることを前提に設計されている。**
 AWS はこの前提を出発点に置いています。要件定義・設計・実装・テストという段階的な受け渡し、
@@ -56,7 +57,7 @@ AI が意図をほぼ即座にコードへ変えられるようになると、�
 
 ---
 
-## AI-DLC が大事にしていること \{#principles}
+## AI-DLC が大事にしていること {#principles}
 
 AI-DLC が掲げる 5 つの原則（tenets）と、それを支える 2 つの性質（適応性）は、
 BookFlow ではそれぞれ次の形で現れます。
@@ -78,7 +79,7 @@ AI-DLC における承認は、確認したという意思表示ではなく**�
 
 ---
 
-## 何を解決しうるか \{#value}
+## 何を解決しうるか {#value}
 
 BookFlow の文脈で、AI-DLC が解きうる問題は次の 4 つです。  
 いずれも [AI-DLC を使わない開発フロー](./no-aidlc-workflow.md) で自力で担保することも可能なので、
@@ -99,7 +100,7 @@ PR に AI 活用箇所を明記する運用と噛み合います。
 
 ---
 
-## 上流の概念と BookFlow での姿 \{#mapping}
+## 上流の概念と BookFlow での姿 {#mapping}
 
 AI-DLC の原典は**複数人のチーム**を前提にしています。プロダクトオーナー・アーキテクト・開発者が
 その場に集まり、AI の提案を一緒に検証する儀式が方法論の柱に置かれています。  
@@ -119,7 +120,7 @@ BookFlow は学習者 1 人・セルフ承認のため、この部分は形を�
 
 ---
 
-## 3 フェーズと全ステージ \{#phases}
+## 3 フェーズと全ステージ {#phases}
 
 エンジンは INCEPTION（WHAT / WHY）→ CONSTRUCTION（HOW）→ OPERATIONS の 3 フェーズで構成されます。  
 **必須**のステージは常に実行され、**条件付き**のステージは変更の内容に応じて実行かスキップが判定されます。
@@ -129,7 +130,7 @@ BookFlow は学習者 1 人・セルフ承認のため、この部分は形を�
 ### INCEPTION フェーズ（WHAT / WHY）
 ![INCEPTION フェーズ](/diagrams/guide/dev-workflow-inception.drawio.svg)
 
-`/aidlc` 起動後、通常（agent）モードのままワークスペースと要求を分析し、実行計画を提示するところまでを担います。
+`/aidlc` 起動後、[プランモード](../learn/ai-tools-guide.md#permission-modes)には入らず通常（agent）モードのままワークスペースと要求を分析し、実行計画を提示するところまでを担います。
 
 | ステージ | 区分 | 実行・スキップの条件 | 何を行うか | 承認ゲート |
 |---|---|---|---|---|
@@ -175,7 +176,7 @@ BookFlow では CI 品質ゲート（`CI Frontend` / `CI Backend`）を Operatio
 
 ---
 
-## plan-first のセルフ承認 \{#plan-first}
+## plan-first のセルフ承認 {#plan-first}
 
 AI-DLC の中核は、実装より先に計画を立てて人間が納得してから進める **plan-first** の考え方です。
 `/aidlc` を起動すると、エンジンが Workflow Planning で実行計画を提示し、
@@ -188,7 +189,7 @@ AI-DLC の中核は、実装より先に計画を立てて人間が納得して�
 
 ---
 
-## BookFlow での実装 \{#bookflow}
+## BookFlow での実装 {#bookflow}
 
 - **起動**：エンジン本体は `/aidlc` スキル（`.claude/skills/aidlc/SKILL.md`）に置かれています。
 常時読み込まれるのは起動判断だけを担う薄いポインタ（`.claude/rules/aidlc-core.md`）です。
@@ -201,18 +202,18 @@ AI-DLC の中核は、実装より先に計画を立てて人間が納得して�
 - **上流の固定**：VERSION 0.1.8（固定コミット `b19c81928bdf1b8d13856f462fcf2ede1720b4cb`）を [`vendor/aidlc-rules/`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/vendor/aidlc-rules) に逐語保存し、
 パスを翻案した稼働版を `.aidlc-rule-details/` に置いています。ライセンスは MIT No Attribution です。
 - **翻案の全体像**：上流 32 ファイルそれぞれの反映先・採用状態・同期手順は
-[AI-DLC 採用台帳](../aidlc-adoption.md) にまとまっています。
+[AI-DLC 採用台帳](../reference/aidlc/adoption.md) にまとまっています。
 
 ---
 
-## 参照先 \{#references}
+## 参照先 {#references}
 
 **BookFlow 側**
 
 - エンジン本体（`/aidlc` スキル）: [`.claude/skills/aidlc/SKILL.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/skills/aidlc/SKILL.md)
 - 起動判断のポインタ: [`.claude/rules/aidlc-core.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/rules/aidlc-core.md)
 - ステージ詳細（翻案済み）: [`.aidlc-rule-details/`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/.aidlc-rule-details)
-- [進捗トラッカー](../aidlc-state.md) / [監査ログ](../aidlc-audit.md) / [採用台帳](../aidlc-adoption.md)
+- [進捗トラッカー](../reference/aidlc/state.md) / [監査ログ](../reference/aidlc/audit.md) / [採用台帳](../reference/aidlc/adoption.md)
 
 **上流・一次情報**
 
