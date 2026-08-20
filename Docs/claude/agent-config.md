@@ -8,7 +8,7 @@ tags:
   - rules
   - skills
   - hooks
-timestamp: 2026-07-18
+timestamp: 2026-08-20
 audience: 学習者・メンター
 references:
   - Docs/spec/aidlc-adoption.md
@@ -89,13 +89,20 @@ references:
 
 ### Permissions
 
-ローカルの権限設定は `.claude/settings.local.json`（`.gitignore` 対象・個人環境用）が正典です。現在の許可コマンド例（`.claude/settings.local.json` の `permissions.allow`）:
+個人環境用の権限設定は `.claude/settings.local.json`（`.gitignore` 対象）に置きます。現在の許可コマンド例（`.claude/settings.local.json` の `permissions.allow`）:
 
 - `Bash(curl -s --max-time 5 http://backend:8080/actuator/health)`：ヘルスチェック確認
 - `WebFetch(domain:github.com)`：GitHub ページの参照
 - `WebSearch`：Web 検索
 
 実際の設定値は `.claude/settings.local.json` を直接参照してください（個人環境で異なる場合があります）。
+
+一方、リポジトリ全体で共有する権限は `.claude/settings.json`（コミット対象）の `permissions.allow` に置きます。現在は次の許可コマンドがあります（バックエンドを実 PostgreSQL に接続して起動・確認する作業向け）:
+
+- `Bash(./gradlew test *)`：引数付きの Gradle テスト実行
+- `Bash(docker volume *)`：devcontainer のボリューム確認
+- `Bash(timeout 3 bash -c "echo > /dev/tcp/localhost/8080")`：ポート疎通確認
+- `Bash(DB_URL="jdbc:postgresql://postgres:5432/bookflow" DB_USERNAME=bookflow DB_PASSWORD=bookflow COGNITO_JWKS_URI="http://cognito-local:9229/local_user_pool_id/.well-known/jwks.json" nohup ./gradlew bootRun)`：実 PostgreSQL に接続した状態でのバックエンド起動
 
 ### 言語・モデル設定 { #model-settings }
 

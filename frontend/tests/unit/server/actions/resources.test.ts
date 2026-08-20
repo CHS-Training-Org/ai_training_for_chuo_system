@@ -56,9 +56,29 @@ describe("listResourcesAction", () => {
     expect(result.content).toHaveLength(1);
   });
 
-  it("正常時: キーワードパラメータを渡せる", async () => {
-    // MSW がクエリパラメータを受け取っても同じレスポンスを返す（パラメータ検証はBE側）
+  it("正常時: keyword パラメータをクエリに渡す", async () => {
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        const url = new URL(request.url);
+        expect(url.searchParams.get("keyword")).toBe("会議室");
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
     const result = await listResourcesAction({ keyword: "会議室" });
+    expect(result.content).toHaveLength(1);
+  });
+
+  it("keyword 未指定時: クエリパラメータに keyword を含めない", async () => {
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        const url = new URL(request.url);
+        expect(url.searchParams.has("keyword")).toBe(false);
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    const result = await listResourcesAction();
     expect(result.content).toHaveLength(1);
   });
 

@@ -35,6 +35,23 @@ describe("buildResourceFilterQuery", () => {
     });
   });
 
+  describe("keyword", () => {
+    it("keyword が指定されている場合は付与する", () => {
+      const query = buildResourceFilterQuery({ keyword: "会議室" });
+      expect(query).toBe("keyword=%E4%BC%9A%E8%AD%B0%E5%AE%A4");
+    });
+
+    it("keyword が未指定（空文字）の場合は付与しない", () => {
+      const query = buildResourceFilterQuery({ keyword: "" });
+      expect(query).toBe("");
+    });
+
+    it("keyword が未指定（undefined）の場合は付与しない", () => {
+      const query = buildResourceFilterQuery({});
+      expect(query).toBe("");
+    });
+  });
+
   describe("他フィルタとの組み合わせ", () => {
     it("category・from・to を引き継ぎつつ、デフォルト sort は付与しない", () => {
       const query = buildResourceFilterQuery({
@@ -54,6 +71,11 @@ describe("buildResourceFilterQuery", () => {
     it("category・sort（非デフォルト）を両方付与する", () => {
       const query = buildResourceFilterQuery({ category: "EQUIPMENT", sort: "name,desc" });
       expect(query).toBe("category=EQUIPMENT&sort=name%2Cdesc");
+    });
+
+    it("keyword・sort（非デフォルト）を両方付与する", () => {
+      const query = buildResourceFilterQuery({ keyword: "会議室", sort: "name,desc" });
+      expect(query).toBe("keyword=%E4%BC%9A%E8%AD%B0%E5%AE%A4&sort=name%2Cdesc");
     });
   });
 });
