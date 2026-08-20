@@ -37,3 +37,18 @@ export const RESOURCE_CATEGORY_LABELS: Record<string, string> = {
   EQUIPMENT: "備品",
   VEHICLE: "社用車",
 };
+
+/**
+ * リソース一覧のソート選択肢（screen-spec.md §リソース 準拠）。
+ *
+ * バックエンドは name / capacity / createdAt の3フィールド × asc/desc の全6通りを受け付けるため、
+ * UI もAPIの能力と一致させて全6通りを提示する。
+ */
+export const RESOURCE_SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: "createdAt,asc", label: "登録日時が古い順" },
+  { value: "createdAt,desc", label: "登録日時が新しい順" },
+  { value: "name,asc", label: "名称順（昇順）" },
+  { value: "name,desc", label: "名称順（降順）" },
+  { value: "capacity,asc", label: "定員が少ない順" },
+  { value: "capacity,desc", label: "定員が多い順" },
+];

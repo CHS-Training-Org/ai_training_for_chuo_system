@@ -57,7 +57,7 @@ description: AI-DLC ワークフロー（INCEPTION→CONSTRUCTION→OPERATIONS�
 - **ルール解決パス**: `.aidlc-rule-details/`（ワークスペースルートに配置、BookFlow 翻案済みステージファイルが入っている）
 - **状態ファイル**: `Docs/spec/aidlc-state.md`（上流 `aidlc-docs/aidlc-state.md` に相当）
 - **監査ログ**: `Docs/spec/aidlc-audit.md`（上流 `aidlc-docs/audit.md` に相当・追記専用）
-- **設計成果物**: `Docs/spec/aidlc-docs/` 配下に生成する（既存の `Docs/spec/requirements.md` 等はエンジン完了後に統合する）
+- **設計成果物**: `Docs/spec/aidlc-docs/` 配下に生成する（既存の `Docs/spec/requirements.md` 等への統合はエンジンが行わない。`/update-spec` で Code Generation より前に統合する）
 - **既存スキルとの補完**: `/update-spec` でエンジン成果を `Docs/spec/` へ統合する。`/create-pr` で PR 文面を組み立て・作成する。
 - **AGENTS.md**: 非採用（Claude Code 専一）。
 

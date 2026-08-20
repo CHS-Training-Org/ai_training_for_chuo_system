@@ -30,9 +30,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * {@link ResourceService} 単体テスト（ADR-018 準拠・Mockito）。
@@ -59,6 +59,21 @@ class ResourceServiceTest {
    */
   private static Resource makeResource(
       UUID id, String name, ResourceCategory category, boolean isActive) {
+    return makeResource(id, name, category, isActive, null);
+  }
+
+  private static Resource makeResource(
+      UUID id, String name, ResourceCategory category, boolean isActive, Integer capacity) {
+    return makeResource(id, name, category, isActive, capacity, LocalDateTime.of(2025, 4, 1, 9, 0));
+  }
+
+  private static Resource makeResource(
+      UUID id,
+      String name,
+      ResourceCategory category,
+      boolean isActive,
+      Integer capacity,
+      LocalDateTime createdAt) {
     try {
       Resource r = new Resource() {};
       setField(r, "id", id);
@@ -66,7 +81,8 @@ class ResourceServiceTest {
       setField(r, "category", category);
       setField(r, "isActive", isActive);
       setField(r, "requiresApproval", false);
-      setField(r, "createdAt", LocalDateTime.of(2025, 4, 1, 9, 0));
+      setField(r, "capacity", capacity);
+      setField(r, "createdAt", createdAt);
       return r;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -199,8 +215,8 @@ class ResourceServiceTest {
 
     @Test
     void list_memberWithoutFilter_returnsActiveOnly() {
-      when(resourceRepository.search(null, true, null, pageable))
-          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(activeResource));
 
       Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
@@ -210,8 +226,8 @@ class ResourceServiceTest {
 
     @Test
     void list_adminWithoutFilter_returnsAllIncludingInactive() {
-      when(resourceRepository.search(null, false, null, pageable))
-          .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
+      when(resourceRepository.search(null, false, null))
+          .thenReturn(java.util.List.of(activeResource, inactiveResource));
 
       Page<ResourceResponse> result = resourceService.list(null, null, null, null, true, pageable);
 
@@ -264,22 +280,189 @@ class ResourceServiceTest {
 
     @Test
     void list_withBlankKeyword_normalizesToNullBeforeRepositoryCall() {
-      when(resourceRepository.search(null, true, null, pageable))
-          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(activeResource));
 
       resourceService.list(null, "   ", null, null, false, pageable);
 
-      verify(resourceRepository).search(null, true, null, pageable);
+      verify(resourceRepository).search(null, true, null);
     }
 
     @Test
     void list_withKeyword_passesTrimmedKeywordToRepositoryCall() {
-      when(resourceRepository.search(null, true, "会議室", pageable))
-          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+      when(resourceRepository.search(null, true, "会議室"))
+          .thenReturn(java.util.List.of(activeResource));
 
       resourceService.list(null, "  会議室  ", null, null, false, pageable);
 
-      verify(resourceRepository).search(null, true, "会議室", pageable);
+      verify(resourceRepository).search(null, true, "会議室");
+    }
+
+    // -------------------------------------------------------------------------
+    // sort — ソート（issue #22）
+    // -------------------------------------------------------------------------
+
+    @Test
+    void list_sortByNameAsc_sortsCaseInsensitively() {
+      Resource banana = makeResource(UUID.randomUUID(), "banana", ResourceCategory.ROOM, true);
+      Resource apple = makeResource(UUID.randomUUID(), "Apple", ResourceCategory.ROOM, true);
+      Resource cherry = makeResource(UUID.randomUUID(), "cherry", ResourceCategory.ROOM, true);
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(banana, apple, cherry));
+
+      Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("name")));
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::name)
+          .containsExactly("Apple", "banana", "cherry");
+    }
+
+    @Test
+    void list_sortByNameDesc_sortsCaseInsensitivelyReversed() {
+      Resource banana = makeResource(UUID.randomUUID(), "banana", ResourceCategory.ROOM, true);
+      Resource apple = makeResource(UUID.randomUUID(), "Apple", ResourceCategory.ROOM, true);
+      Resource cherry = makeResource(UUID.randomUUID(), "cherry", ResourceCategory.ROOM, true);
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(banana, apple, cherry));
+
+      Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("name")));
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::name)
+          .containsExactly("cherry", "banana", "Apple");
+    }
+
+    @Test
+    void list_sortByCapacityAsc_nullsLast() {
+      Resource withoutCapacity =
+          makeResource(UUID.randomUUID(), "無指定", ResourceCategory.ROOM, true, null);
+      Resource small = makeResource(UUID.randomUUID(), "小", ResourceCategory.ROOM, true, 5);
+      Resource large = makeResource(UUID.randomUUID(), "大", ResourceCategory.ROOM, true, 20);
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(withoutCapacity, large, small));
+
+      Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("capacity")));
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::capacity)
+          .containsExactly(5, 20, null);
+    }
+
+    @Test
+    void list_sortByCapacityDesc_nullsLast() {
+      // BR-03 の回帰テスト：DB の ORDER BY capacity DESC への単純委譲では
+      // PostgreSQL の既定（DESC は NULLS FIRST）により null が先頭に来てしまうことを実測で確認済み。
+      Resource withoutCapacity =
+          makeResource(UUID.randomUUID(), "無指定", ResourceCategory.ROOM, true, null);
+      Resource small = makeResource(UUID.randomUUID(), "小", ResourceCategory.ROOM, true, 5);
+      Resource large = makeResource(UUID.randomUUID(), "大", ResourceCategory.ROOM, true, 20);
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(withoutCapacity, small, large));
+
+      Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("capacity")));
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::capacity)
+          .containsExactly(20, 5, null);
+    }
+
+    @Test
+    void list_sortByCreatedAtDesc_sortsDescending() {
+      Resource older =
+          makeResource(
+              UUID.randomUUID(),
+              "旧",
+              ResourceCategory.ROOM,
+              true,
+              null,
+              LocalDateTime.of(2025, 1, 1, 9, 0));
+      Resource newer =
+          makeResource(
+              UUID.randomUUID(),
+              "新",
+              ResourceCategory.ROOM,
+              true,
+              null,
+              LocalDateTime.of(2025, 6, 1, 9, 0));
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(older, newer));
+
+      Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("createdAt")));
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
+
+      assertThat(result.getContent()).extracting(ResourceResponse::name).containsExactly("新", "旧");
+    }
+
+    @Test
+    void list_unsortedPageable_defaultsToCreatedAtAsc() {
+      Resource older =
+          makeResource(
+              UUID.randomUUID(),
+              "旧",
+              ResourceCategory.ROOM,
+              true,
+              null,
+              LocalDateTime.of(2025, 1, 1, 9, 0));
+      Resource newer =
+          makeResource(
+              UUID.randomUUID(),
+              "新",
+              ResourceCategory.ROOM,
+              true,
+              null,
+              LocalDateTime.of(2025, 6, 1, 9, 0));
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(newer, older));
+
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
+
+      assertThat(result.getContent()).extracting(ResourceResponse::name).containsExactly("旧", "新");
+    }
+
+    @Test
+    void list_pageOffsetBeyondIntRange_returnsEmptyContentWithoutOverflow() {
+      // 大きな page 値では offset (long) が int の範囲を超えるため、
+      // 先に int にキャストして total と比較すると負数に折り返り例外になる（回帰テスト）。
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(activeResource));
+
+      Pageable farPage = PageRequest.of(200_000_000, 20);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, farPage);
+
+      assertThat(result.getContent()).isEmpty();
+      assertThat(result.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
+    void list_withTimeFilterAndSort_appliesSortAfterExclusion() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+      Resource occupied = makeResource(UUID.randomUUID(), "banana", ResourceCategory.ROOM, true);
+      Resource free1 = makeResource(UUID.randomUUID(), "cherry", ResourceCategory.ROOM, true);
+      Resource free2 = makeResource(UUID.randomUUID(), "Apple", ResourceCategory.ROOM, true);
+      when(resourceRepository.search(null, true, null))
+          .thenReturn(java.util.List.of(occupied, free1, free2));
+
+      Reservation occupying =
+          makeReservation(
+              UUID.randomUUID(),
+              occupied,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.PENDING);
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of(occupying));
+
+      Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("name")));
+      Page<ResourceResponse> result = resourceService.list(null, null, from, to, false, sorted);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::name)
+          .containsExactly("Apple", "cherry");
     }
   }
 
