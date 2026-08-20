@@ -388,8 +388,7 @@ class ResourceServiceTest {
               true,
               null,
               LocalDateTime.of(2025, 6, 1, 9, 0));
-      when(resourceRepository.search(null, true, null))
-          .thenReturn(java.util.List.of(older, newer));
+      when(resourceRepository.search(null, true, null)).thenReturn(java.util.List.of(older, newer));
 
       Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("createdAt")));
       Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
@@ -415,8 +414,7 @@ class ResourceServiceTest {
               true,
               null,
               LocalDateTime.of(2025, 6, 1, 9, 0));
-      when(resourceRepository.search(null, true, null))
-          .thenReturn(java.util.List.of(newer, older));
+      when(resourceRepository.search(null, true, null)).thenReturn(java.util.List.of(newer, older));
 
       Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
