@@ -33,16 +33,28 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   @Query("SELECT r FROM Resource r WHERE r.id = :id")
   Optional<Resource> findByIdForUpdate(@Param("id") UUID id);
 
-  // ---- 非 ADMIN 用（is_active = true のみ）----
+  // ---- 一覧検索（カテゴリ・可視性・キーワードの AND 絞り込み、全件） ----
 
-  /** 有効リソース全件を返す。 */
-  List<Resource> findByIsActiveTrue();
-
-  /** 有効リソースをカテゴリで絞り込んで全件返す。 */
-  List<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category);
-
-  // ---- ADMIN 用（inactive 含む）----
-
-  /** リソースをカテゴリで絞り込んで全件返す（inactive 含む）。 */
-  List<Resource> findByCategory(ResourceCategory category);
+  /**
+   * カテゴリ・可視性・キーワードで絞り込んで全件返す。
+   *
+   * <p>ソート・ページネーションは {@link com.example.bookflow.application.ResourceService} が Java 側で行うため、
+   * 全件取得のみを提供する。
+   *
+   * @param category カテゴリ（null の場合は全カテゴリ）
+   * @param activeOnly true の場合は有効リソースのみ（ADMIN は false を渡す）
+   * @param keyword name/description への部分一致・大文字小文字非区別（null の場合はキーワード条件なし）
+   */
+  @Query(
+      "SELECT r FROM Resource r "
+          + "WHERE (:category IS NULL OR r.category = :category) "
+          + "AND (:activeOnly = FALSE OR r.isActive = TRUE) "
+          + "AND (:keyword IS NULL "
+          + "     OR LOWER(r.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) "
+          + "     OR (r.description IS NOT NULL "
+          + "         AND LOWER(r.description) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))))")
+  List<Resource> search(
+      @Param("category") ResourceCategory category,
+      @Param("activeOnly") boolean activeOnly,
+      @Param("keyword") String keyword);
 }

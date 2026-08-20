@@ -74,13 +74,15 @@ class ResourceControllerTest extends BaseControllerTest {
 
     // Resources（active + inactive）
     jdbcTemplate.update(
-        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
-            + " VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
         ACTIVE_RESOURCE_ID,
         "第1会議室",
         "ROOM",
         false,
         true,
+        "プロジェクター完備(Wi-Fi)",
         LocalDateTime.of(2025, 4, 1, 9, 0));
     jdbcTemplate.update(
         "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
@@ -195,6 +197,83 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsOnlyMatchingResource() throws Exception {
+    // 「第1」は ACTIVE_RESOURCE_ID の name に部分一致、旧備品A には一致しない
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "第1").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingDescription_returnsOnlyMatchingResource() throws Exception {
+    // 「プロジェクター」は ACTIVE_RESOURCE_ID の description に部分一致
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "プロジェクター").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordCaseInsensitive_returnsMatchingResource() throws Exception {
+    // description 中の "Wi-Fi" に対し小文字 "wi-fi" でも一致する
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "wi-fi").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordNotMatching_returnsEmptyContent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "存在しない文字列").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withBlankKeyword_returnsSameAsUnfiltered() throws Exception {
+    // 空白のみの keyword はフィルタ解除と同じ扱い（BR-03）
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "   ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordAndCategory_combinesWithAnd() throws Exception {
+    // keyword は一致するがカテゴリが不一致 → AND 条件で除外される
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "第1")
+                .param("category", "EQUIPMENT")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+
+    // keyword・カテゴリともに一致 → AND 条件で結果に含まれる
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "第1")
+                .param("category", "ROOM")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
   }
 
   // ---------------------------------------------------------------------------

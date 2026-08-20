@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-08-13
+timestamp: 2026-07-07
 ---
 
 # AI-DLC State Tracking
@@ -18,11 +18,10 @@ timestamp: 2026-08-13
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-08-07T06:35:59Z
-- **Current Stage**: INCEPTION - Reverse Engineering
+- **Start Date**: 2026-08-14T07:24:14Z
+- **Current Stage**: CONSTRUCTION - Build and Test（完了、承認待ち）
 - **Workspace Root**: /workspace
-- **対象タスク**: Issue #22 / `Docs/spec/enhancements/resource-list-sort.md`（リソース一覧のソート順選択）
-- **既知の重複**: 同一issueのPR #72（ブランチ `feature/CHS-YAMADA-YUKI/22-resource-list-sort`）が既に完了判定で存在。ユーザー承知の上で本ブランチで新規起動（詳細は `aidlc-audit.md` Pre-flight 節）。
+- **対象タスク**: `Docs/spec/enhancements/resource-list-filter.md`（リソース一覧の検索・フィルタ追加、Issue #76）
 
 ## Code Location Rules
 
@@ -43,29 +42,29 @@ timestamp: 2026-08-13
 ### INCEPTION PHASE
 
 - [x] Workspace Detection
-- [x] Reverse Engineering（Brownfield の場合） - Completed on 2026-08-07T06:35:59Z（成果物: `Docs/spec/aidlc-docs/inception/reverse-engineering/`）
-- [x] Requirements Analysis - Completed on 2026-08-07T06:50:00Z（成果物: `Docs/spec/aidlc-docs/inception/requirements/requirements.md`）
-- [x] User Stories（条件付き） - SKIP（単一ペルソナ・単純な要求のため。2026-08-07T06:55:00Z 確定）
-- [x] Workflow Planning - Completed on 2026-08-07T07:00:00Z（成果物: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md`）
-- [x] Application Design（条件付き） - SKIP（新規コンポーネント・新規サービスなし）
-- [x] Units Generation（条件付き） - SKIP（単一ユニット扱い）
+- [x] Reverse Engineering（Brownfield の場合）— SKIP（ユーザー判断、既存 Docs/spec/ を代替として採用）
+- [x] Requirements Analysis
+- [x] User Stories（条件付き）— SKIP（既存フォームへの単一項目追加。新規ペルソナ・新規ワークフローなし）
+- [x] Workflow Planning
+- [x] Application Design（条件付き）— SKIP（新規コンポーネント・サービスなし）
+- [x] Units Generation（条件付き）— SKIP（単一ユニットで完結）
 
-### CONSTRUCTION PHASE（Unit: リソース一覧ソート機能）
+### CONSTRUCTION PHASE（単一ユニット: resource-keyword-filter）
 
-- [x] Functional Design（条件付き、ユニット別） - Completed on 2026-08-07T07:10:00Z（成果物: `Docs/spec/aidlc-docs/construction/resource-list-sort/functional-design/`）。2026-08-13 実測（本番相当PostgreSQLでの検証）により、`business-logic-model.md`・`business-rules.md` を「経路A・B統合（全件取得→Comparatorソート）」方針へ修正（`aidlc-audit.md` 参照）
-- [ ] NFR Requirements（条件付き、ユニット別） - SKIP（新規NFR要求なし）
-- [ ] NFR Design（条件付き、ユニット別） - SKIP（NFR Requirements未実行のため連動）
-- [ ] Infrastructure Design（条件付き、ユニット別） - SKIP（インフラ変更なし）
-- [x] Code Generation（必須、ユニット別） - Completed on 2026-08-13T01:00:00Z（成果物: `Docs/spec/aidlc-docs/construction/plans/resource-list-sort-code-generation-plan.md`、`Docs/spec/aidlc-docs/construction/resource-list-sort/code/summary.md`）
-- [x] Build and Test（必須） - Completed on 2026-08-13T01:15:00Z（成果物: `Docs/spec/aidlc-docs/construction/build-and-test/`）
+- [x] Functional Design（条件付き、ユニット別）— EXECUTE・承認済み
+- [x] NFR Requirements（条件付き、ユニット別）— SKIP（新規 NFR なし）
+- [x] NFR Design（条件付き、ユニット別）— SKIP（NFR Requirements 未実行のため）
+- [x] Infrastructure Design（条件付き、ユニット別）— SKIP（インフラ変更なし）
+- [x] Code Generation（必須、ユニット別）
+- [x] Build and Test（必須）
 
 ### OPERATIONS PHASE
 
-- [x] Operations（プレースホルダー） - BookFlow翻案によりCI品質ゲート運用に委譲。`/aidlc`スキルとしての成果物生成はBuild and Testで完了。以降は`/commit-push`・`/create-pr`スキルでコミット分割・push・PR作成・CI確認を行う
+- [ ] Operations（プレースホルダー）
 
 ## Current Status
 
-- **Lifecycle Phase**: OPERATIONS
-- **Current Stage**: `/update-spec` 完了（`api-spec.md`・`screen-spec.md`・`requirements.md`・`resource-list-sort.md`・`resource-list-filter.md` を反映）
-- **Next Stage**: `/commit-push`（コミット分割・push）→ `/create-pr`（PR作成）→ CI品質ゲート確認
-- **Status**: Ready for handoff
+- **Lifecycle Phase**: CONSTRUCTION
+- **Current Stage**: Build and Test ― 完了（実機 PostgreSQL 統合確認で不具合1件検出・修正・再確認済み）
+- **Next Stage**: Operations（BookFlow では CI 品質ゲートを Operations 相当として運用。マージ・PR 作成が次のアクション）
+- **Status**: Waiting for Approval

@@ -70,6 +70,7 @@ public class ResourceService {
    * 順序既定に依存させてしまい、環境によって結果が変わるため（詳細は {@code aidlc-audit.md} 参照）。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param keyword キーワードフィルタ（name/description への部分一致・大文字小文字非区別。null・空白のみの場合はフィルタしない）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
@@ -79,11 +80,13 @@ public class ResourceService {
   @Transactional(readOnly = true)
   public Page<ResourceResponse> list(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    String normalizedKeyword = normalizeKeyword(keyword);
+    List<Resource> candidates = resourceRepository.search(category, !isAdmin, normalizedKeyword);
     if (from != null && to != null) {
       candidates = excludeOccupied(candidates, from, to);
     }
@@ -106,16 +109,13 @@ public class ResourceService {
     return new PageImpl<>(content, pageable, total);
   }
 
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
-    if (isAdmin) {
-      return category != null
-          ? resourceRepository.findByCategory(category)
-          : resourceRepository.findAll();
-    } else {
-      return category != null
-          ? resourceRepository.findByCategoryAndIsActiveTrue(category)
-          : resourceRepository.findByIsActiveTrue();
+  /** {@code null}・空文字・空白のみを {@code null}（フィルタなし）に正規化する。 */
+  private static String normalizeKeyword(String keyword) {
+    if (keyword == null) {
+      return null;
     }
+    String trimmed = keyword.trim();
+    return trimmed.isEmpty() ? null : trimmed;
   }
 
   /** 占有済み予約があるリソースを候補リストから除外する（重複するリソース ID を一括取得、1 クエリ）。 */
