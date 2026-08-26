@@ -99,48 +99,56 @@ jobs:
 
   build:
     name: ${{ matrix.label }}
-    needs: sdkman
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          # 現状の指定。実ビルドと同じ失敗を再現するはず。
-          - label: "現状 version=25 / jdkDistro=ms"
+          # 学習者の環境（devcontainer-lock.json が 1.8.0 を固定）と同じ指定。
+          # 添付ログと同じ失敗が再現するはず。
+          - label: "現状 1.8.0 / version=25 / ms"
+            feature: "ghcr.io/devcontainers/features/java:1.8.0"
             version: "25"
             distro: "ms"
-          # 一覧のパース自体が壊れているのか、ms 固有の問題なのかを切り分ける。
-          - label: "検証 version=25 / jdkDistro=tem"
+          # feature を最新（1.8.1）に上げるだけで直るかどうか。
+          - label: "feature 更新のみ 1.8.1 / version=25 / ms"
+            feature: "ghcr.io/devcontainers/features/java:1"
+            version: "25"
+            distro: "ms"
+          # tem の識別子 25.0.4-tem は feature の正規表現に合致する。
+          - label: "修正案A jdkDistro=tem"
+            feature: "ghcr.io/devcontainers/features/java:1.8.0"
             version: "25"
             distro: "tem"
-          # 完全識別子は install.sh の full_version_check に合致し、
+          # 完全識別子は install.sh の full_version_check (.*-[a-z]+$) に合致し、
           # 一覧のパース経路を通らずに sdk install へ直行する。
-          - label: "修正案A 完全識別子 (ms)"
-            version: ${{ needs.sdkman.outputs.ms_id }}
+          - label: "修正案B 完全識別子 25.0.4+1-ms"
+            feature: "ghcr.io/devcontainers/features/java:1.8.0"
+            version: "25.0.4+1-ms"
             distro: "ms"
-          - label: "修正案B 完全識別子 (tem)"
-            version: ${{ needs.sdkman.outputs.tem_id }}
+          - label: "修正案C 完全識別子 25.0.4-tem"
+            feature: "ghcr.io/devcontainers/features/java:1.8.0"
+            version: "25.0.4-tem"
             distro: "ms"
     steps:
-      - name: 前提となる識別子が取得できたか確認
-        id: guard
-        run: |
-          if [ -z "${{ matrix.version }}" ]; then
-            echo "識別子を検出できなかったため、このケースは実行しない。"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: 最小構成の devcontainer.json を用意
-        if: steps.guard.outputs.skip == 'false'
+      # image 指定ではなく Dockerfile を使い、apt のリストを空にしてから
+      # feature を走らせる。BookFlow の実ビルドでは先行する feature が
+      # /var/lib/apt/lists/* を掃除した状態で java feature に入るため、
+      # feature 自身が apt-get update を実行する。この前提を揃えないと
+      # 依存パッケージ（zip / unzip）の導入で落ち、バージョン解決まで到達しない。
+      - name: 検証用の devcontainer を用意
         run: |
           mkdir -p probe/.devcontainer
+          cat > probe/.devcontainer/Dockerfile <<'DOCKERFILE'
+          FROM node:24-slim
+          RUN rm -rf /var/lib/apt/lists/*
+          DOCKERFILE
+
           cat > probe/.devcontainer/devcontainer.json <<EOF
           {
-            "image": "node:24-slim",
+            "build": { "dockerfile": "Dockerfile" },
             "features": {
-              "ghcr.io/devcontainers/features/java:1": {
+              "${{ matrix.feature }}": {
                 "version": "${{ matrix.version }}",
                 "jdkDistro": "${{ matrix.distro }}"
               }
@@ -152,7 +160,6 @@ jobs:
       # 失敗するケースが含まれるのは想定どおりなので、ここではジョブを落とさず
       # 成否をサマリーに記録する。どのケースが通ったかの一覧が調査結果になる。
       - name: devcontainer build を実行
-        if: steps.guard.outputs.skip == 'false'
         run: |
           npm install -g @devcontainers/cli
           set +e
@@ -169,6 +176,7 @@ jobs:
           {
             echo "### ${{ matrix.label }}"
             echo ""
+            echo "- feature: \`${{ matrix.feature }}\`"
             echo "- version: \`${{ matrix.version }}\`"
             echo "- jdkDistro: \`${{ matrix.distro }}\`"
             echo "- 結果: **${result}**"
