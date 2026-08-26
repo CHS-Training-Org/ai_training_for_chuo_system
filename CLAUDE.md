@@ -49,6 +49,7 @@ backend/                # Spring Boot
   src/main/resources/
     db/migration/       # Flyway SQL
 Docs/                   # 設計ドキュメント・ADR（Zensical でサイト化）
+ops-note/               # チュートリアル運営ノート（素の静的HTML / Pages の /ops-note/ で公開）
 zensical.toml           # ドキュメントサイト設定
 pyproject.toml          # Python / uv 管理（docs ビルド用）
 ```
