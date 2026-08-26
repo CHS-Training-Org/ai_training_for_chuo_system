@@ -1,0 +1,737 @@
+/* ============================================================
+   chuosystem theme — Claude Code 4日間チャレンジ 教材デザインシステム
+   モチーフ: 「システム設計図面」— 中央システム株式会社 (1981年創業のSIer)
+   の堅実さと、図面・仕様書のような構造的な正確さを組み合わせた教材デザイン。
+   ============================================================ */
+
+:root {
+  /* --- color: 図面インク × システムブルー × 信号アンバー --- */
+  --cs-navy: #0f2a4a;
+  --cs-navy-deep: #081726;
+  --cs-blue: #1f5fa8;
+  --cs-blue-soft: #e8f0fa;
+  --cs-amber: #d98a2b;
+  --cs-amber-soft: #f8e9d3;
+  --cs-paper: #f7f6f2;
+  --cs-card: #ffffff;
+  --cs-line: #d9dde3;
+  --cs-line-strong: #b7c0cc;
+  --cs-ink: #1a2433;
+  --cs-muted: #5c6b7f;
+  --cs-muted-soft: #8b96a5;
+
+  /* --- type --- */
+  --f-display: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --f-body: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  --f-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+/* ------------------------------------------------------------
+   Reset & base
+   ------------------------------------------------------------ */
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--cs-paper);
+  color: var(--cs-ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--cs-blue); }
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--cs-amber);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* ------------------------------------------------------------
+   Title block — 図面の表題欄 (シグネチャー要素)
+   全ページ共通のヘッダー。仕様書の表題欄をモチーフにした帯。
+   ------------------------------------------------------------ */
+.tb {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: var(--cs-navy);
+  color: #fff;
+  padding: 0.85rem 1.4rem;
+  font-family: var(--f-mono);
+}
+
+.tb__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.tb__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  background: var(--cs-amber);
+  color: var(--cs-navy-deep);
+  font-weight: 700;
+  font-size: 0.72rem;
+  border-radius: 3px;
+  letter-spacing: 0;
+}
+
+.tb__word {
+  font-size: 0.86rem;
+  letter-spacing: 0.03em;
+  font-weight: 500;
+  color: #fff;
+}
+
+.tb__crumb {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.tb__crumb a { color: rgba(255, 255, 255, 0.75); text-decoration: none; }
+.tb__crumb a:hover { color: var(--cs-amber); }
+.tb__crumb .now { color: #fff; }
+
+.tb__meta {
+  display: flex;
+  gap: 1.1rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tb__meta strong { color: #fff; font-weight: 500; }
+
+/* corner marks — 図面の断ち切りトンボ */
+.corner-marks {
+  position: relative;
+}
+.corner-marks::before,
+.corner-marks::after {
+  content: "";
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border-color: var(--cs-amber);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+.corner-marks::before { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+.corner-marks::after { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+
+/* ------------------------------------------------------------
+   Document canvas
+   ------------------------------------------------------------ */
+main.doc {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 3rem 1.6rem 5rem;
+}
+
+/* remove markdown-export empties (blank <p></p> artifacts) */
+main.doc p:empty { display: none; }
+
+/* ------------------------------------------------------------
+   Headings
+   h1 (最初の1つ) = ページ全体のタイトル（ヒーロー）
+   h1 (2つ目以降) = 章区切り。CSSカウンタで自動採番 → 実際に連番の
+   構成なので採番は装飾ではなく情報。
+   ------------------------------------------------------------ */
+main.doc {
+  counter-reset: chapter -1;
+}
+
+main.doc h1,
+main.doc h2,
+main.doc h3,
+main.doc h4 {
+  font-family: var(--f-display);
+  color: var(--cs-navy);
+  line-height: 1.5;
+}
+
+main.doc > h1:first-of-type {
+  counter-increment: chapter; /* consume 0 so real chapters start at 01 */
+  margin: 0 0 2.6rem;
+  padding: 2.1rem 1.7rem 2rem;
+  background: var(--cs-navy);
+  color: #fff;
+  font-size: clamp(1.5rem, 4vw, 2.15rem);
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  border-radius: 2px;
+  position: relative;
+}
+
+main.doc > h1:first-of-type::after {
+  content: "";
+  position: absolute;
+  left: 1.7rem;
+  bottom: 1.1rem;
+  width: 3.2rem;
+  height: 4px;
+  background: var(--cs-amber);
+}
+
+main.doc > h1:not(:first-of-type) {
+  counter-increment: chapter;
+  margin: 3.6rem 0 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--cs-line-strong);
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  font-weight: 700;
+}
+
+main.doc > h1:not(:first-of-type)::before {
+  content: "CHAPTER " counter(chapter, decimal-leading-zero);
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: var(--cs-amber);
+  margin-bottom: 0.5rem;
+}
+
+main.doc h2 {
+  margin: 2.3rem 0 1rem;
+  padding-left: 0.85rem;
+  border-left: 4px solid var(--cs-blue);
+  font-size: 1.22rem;
+  font-weight: 700;
+}
+
+main.doc h3 {
+  margin: 1.8rem 0 0.75rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--cs-navy);
+}
+
+main.doc h4 {
+  margin: 1.3rem 0 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--cs-muted);
+}
+
+main.doc p { margin: 0 0 1.1rem; }
+main.doc strong { color: var(--cs-navy); font-weight: 700; }
+
+/* ------------------------------------------------------------
+   Lists
+   ------------------------------------------------------------ */
+main.doc ul,
+main.doc ol {
+  margin: 0 0 1.3rem;
+  padding-left: 1.4rem;
+}
+main.doc li { margin-bottom: 0.45rem; }
+main.doc ul ul,
+main.doc ol ul,
+main.doc ul ol,
+main.doc ol ol {
+  margin-top: 0.45rem;
+}
+
+/* checklist enhancement — JS adds .checklist to <ul> and .is-check to <li> */
+main.doc ul.checklist { list-style: none; padding-left: 0; }
+main.doc ul.checklist li.is-check {
+  position: relative;
+  padding-left: 1.9rem;
+}
+main.doc ul.checklist li.is-check::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--cs-blue);
+  border-radius: 3px;
+  background: var(--cs-blue-soft);
+}
+
+/* ------------------------------------------------------------
+   Q&A dialogue — 🙋受講者 / 👨‍🏫講師 を吹き出し化 (JS判定)
+   ------------------------------------------------------------ */
+main.doc blockquote {
+  margin: 1.2rem 0;
+  padding: 0.5rem 0 0.5rem 1rem;
+  border-left: 3px solid var(--cs-line-strong);
+  color: var(--cs-muted);
+  font-style: italic;
+}
+
+main.doc blockquote.qa {
+  max-width: 92%;
+  margin: 1rem 0;
+  padding: 0.9rem 1.15rem;
+  border-left: none;
+  border-radius: 3px;
+  font-style: normal;
+  color: var(--cs-ink);
+}
+
+main.doc blockquote.qa p { margin: 0; }
+main.doc blockquote.qa p + p { margin-top: 0.5rem; }
+
+main.doc blockquote.qa-student {
+  margin-left: auto;
+  background: var(--cs-blue-soft);
+  border: 1px solid #d3e2f2;
+}
+
+main.doc blockquote.qa-teacher {
+  margin-right: auto;
+  background: var(--cs-navy);
+  color: #fff;
+  border: 1px solid var(--cs-navy);
+}
+main.doc blockquote.qa-teacher strong { color: var(--cs-amber); }
+
+/* ------------------------------------------------------------
+   Tables — 仕様一覧
+   ------------------------------------------------------------ */
+main.doc table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.3rem 0 1.6rem;
+  font-size: 0.92rem;
+}
+main.doc th,
+main.doc td {
+  border: 1px solid var(--cs-line);
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+}
+main.doc th {
+  background: var(--cs-navy);
+  color: #fff;
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+}
+main.doc tbody tr:nth-child(even) td { background: #fbfaf7; }
+
+/* ------------------------------------------------------------
+   Code
+   ------------------------------------------------------------ */
+main.doc pre {
+  background: var(--cs-navy-deep);
+  color: #dce6f2;
+  padding: 1.1rem 1.2rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.86rem;
+  line-height: 1.65;
+  margin: 1.2rem 0 1.5rem;
+  border-left: 3px solid var(--cs-amber);
+}
+main.doc code {
+  font-family: var(--f-mono);
+}
+main.doc pre code { color: inherit; }
+main.doc p code,
+main.doc li code,
+main.doc td code {
+  background: var(--cs-blue-soft);
+  color: var(--cs-blue);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+/* ------------------------------------------------------------
+   Images / screenshots
+   ------------------------------------------------------------ */
+main.doc img {
+  max-width: 100%;
+  display: block;
+  border-radius: 3px;
+}
+main.doc p:has(> img) {
+  padding: 0.5rem;
+  background: var(--cs-card);
+  border: 1px solid var(--cs-line);
+  box-shadow: 0 1px 0 var(--cs-line);
+}
+
+/* 参照元URLが失われた画像キャプションのプレースホルダー */
+main.doc p.img-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.15rem;
+  background: var(--cs-blue-soft);
+  border: 1px dashed var(--cs-line-strong);
+  color: var(--cs-muted);
+  font-size: 0.86rem;
+}
+main.doc p.img-placeholder .img-placeholder__icon {
+  flex: 0 0 auto;
+  font-size: 1.25rem;
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------------------
+   Rule
+   ------------------------------------------------------------ */
+main.doc hr {
+  border: none;
+  border-top: 1px dashed var(--cs-line-strong);
+  margin: 2.6rem 0;
+}
+
+/* ------------------------------------------------------------
+   Footer nav — 前後の教材への導線
+   ------------------------------------------------------------ */
+.doc-nav {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 1.6rem 3.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--f-mono);
+  font-size: 0.82rem;
+}
+.doc-nav a {
+  color: var(--cs-navy);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+  transition: border-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+.doc-nav a:hover { border-color: var(--cs-blue); color: var(--cs-blue); }
+.doc-nav .hub-link {
+  color: var(--cs-muted);
+  border-color: transparent;
+  font-size: 0.76rem;
+}
+.doc-nav .spacer { flex: 1; }
+
+.site-footer {
+  text-align: center;
+  color: var(--cs-muted-soft);
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 1.5rem 1.5rem 3rem;
+}
+
+/* ============================================================
+   Hub page (index.html) — 目次
+   シグネチャー: Claude Code自身のセッション画面（プロンプト＋ToDoリスト）
+   を模した起動端末。学ぶ対象そのものの語彙で、これから進む5日間を
+   「タスクリスト」として提示する。
+   ============================================================ */
+.hub-hero {
+  padding: 3.4rem 1.6rem 2.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.7rem;
+  text-align: center;
+  background-color: var(--cs-paper);
+  background-image:
+    linear-gradient(rgba(15, 42, 74, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 42, 74, 0.05) 1px, transparent 1px);
+  background-size: 26px 26px;
+  border-bottom: 1px solid var(--cs-line);
+}
+
+/* --- terminal panel --- */
+.term {
+  width: 100%;
+  max-width: 640px;
+  text-align: left;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 26px 46px -28px rgba(8, 23, 38, 0.5);
+}
+.term__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.9rem;
+  background: var(--cs-navy);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.term__dots { display: flex; gap: 0.35rem; }
+.term__dots i {
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.term__dots i:last-child { background: var(--cs-amber); border-color: var(--cs-amber); }
+.term__path {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.5);
+}
+.term__body {
+  background: var(--cs-navy-deep);
+  padding: 1.7rem 1.7rem 1.4rem;
+}
+
+.term__row--prompt {
+  font-family: var(--f-mono);
+  font-size: clamp(1.02rem, 3vw, 1.3rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.55;
+  margin: 0 0 1.2rem;
+  animation: term-in 0.4s ease both;
+}
+.term__row--prompt .nowrap { white-space: nowrap; }
+.term__caret { color: var(--cs-amber); margin-right: 0.55rem; }
+
+.term__todo {
+  list-style: none;
+  margin: 0 0 1.1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.term__todo li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  font-family: var(--f-mono);
+  font-size: 0.85rem;
+  color: #c3d2e3;
+  animation: term-in 0.35s ease both;
+}
+.term__todo li:nth-child(1) { animation-delay: 0.45s; }
+.term__todo li:nth-child(2) { animation-delay: 0.58s; }
+.term__todo li:nth-child(3) { animation-delay: 0.71s; }
+.term__todo li:nth-child(4) { animation-delay: 0.84s; }
+.term__todo li:nth-child(5) { animation-delay: 0.97s; }
+.term__box { flex: 0 0 auto; color: #607d9c; }
+
+.term__row--note {
+  font-family: var(--f-mono);
+  font-size: 0.76rem;
+  color: #7c8ba0;
+  margin: 0;
+  padding-top: 0.9rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  animation: term-in 0.35s ease both;
+  animation-delay: 1.15s;
+}
+.term__blink {
+  display: inline-block;
+  margin-left: 0.1rem;
+  color: var(--cs-amber);
+  animation: term-blink 1s step-end infinite;
+  animation-delay: 1.15s;
+}
+
+@keyframes term-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes term-blink {
+  50% { opacity: 0; }
+}
+
+/* --- document meta strip --- */
+.hub-meta-row {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.hub-meta-row div {
+  padding: 0 1.15rem;
+  border-left: 1px solid var(--cs-line-strong);
+  text-align: left;
+}
+.hub-meta-row div:first-child { border-left: none; padding-left: 0; }
+.hub-meta-row dt {
+  font-family: var(--f-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--cs-muted-soft);
+  margin-bottom: 0.25rem;
+}
+.hub-meta-row dd {
+  margin: 0;
+  font-family: var(--f-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--cs-navy);
+}
+
+.hub-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2.8rem 1.6rem 4rem;
+}
+
+.day-group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin: 2.6rem 0 1rem;
+}
+.day-group:first-child { margin-top: 0; }
+.day-group h2 {
+  font-family: var(--f-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  color: var(--cs-blue);
+  white-space: nowrap;
+  margin: 0;
+  font-weight: 700;
+}
+.day-group__hint {
+  font-family: var(--f-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+  color: var(--cs-muted-soft);
+  white-space: nowrap;
+}
+.day-group .fill { flex: 1; border-top: 1px solid var(--cs-line-strong); }
+
+/* DAY1のみ: Codespaces / Windows はどちらか一方を選ぶ分岐なので
+   直列カードではなく左右2択（フォーク）で見せる */
+.day-fork {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+.day-fork .day-card { margin-bottom: 0; height: 100%; }
+.day-fork__or {
+  align-self: center;
+  flex: 0 0 auto;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  border: 1px solid var(--cs-line-strong);
+  background: var(--cs-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  color: var(--cs-muted-soft);
+}
+
+.day-card {
+  display: flex;
+  gap: 1.2rem;
+  align-items: flex-start;
+  text-decoration: none;
+  color: inherit;
+  background: var(--cs-card);
+  border: 1px solid var(--cs-line);
+  border-left: 3px solid var(--cs-navy);
+  padding: 1.3rem 1.5rem;
+  margin-bottom: 0.9rem;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.day-card:hover {
+  border-left-color: var(--cs-amber);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -18px rgba(217, 138, 43, 0.45);
+}
+.day-card:hover.corner-marks::after { border-color: var(--cs-blue); }
+
+.day-card__num {
+  flex: 0 0 auto;
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--cs-line-strong);
+  width: 2.4rem;
+}
+.day-card:hover .day-card__num { color: var(--cs-amber); }
+
+.day-card__body { flex: 1; min-width: 0; }
+.day-card__tag {
+  display: inline-block;
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  color: var(--cs-blue);
+  background: var(--cs-blue-soft);
+  padding: 0.15rem 0.55rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.03em;
+}
+.day-card__body h3 {
+  margin: 0 0 0.4rem;
+  font-family: var(--f-display);
+  font-size: 1.1rem;
+  color: var(--cs-navy);
+}
+.day-card__body p {
+  margin: 0;
+  color: var(--cs-muted);
+  font-size: 0.9rem;
+}
+.day-card__arrow {
+  flex: 0 0 auto;
+  color: var(--cs-muted-soft);
+  align-self: center;
+  font-size: 1.1rem;
+  transition: transform 0.15s ease;
+}
+.day-card:hover .day-card__arrow { transform: translateX(3px); }
+
+/* ------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------ */
+@media (max-width: 860px) {
+  .day-fork { grid-template-columns: 1fr; }
+  .day-fork__or { margin: -0.15rem auto; }
+}
+
+@media (max-width: 600px) {
+  .tb { padding: 0.7rem 1rem; }
+  .tb__meta { display: none; }
+  main.doc { padding: 2.2rem 1.1rem 4rem; }
+  main.doc > h1:first-of-type { padding: 1.6rem 1.2rem 1.5rem; }
+  main.doc blockquote.qa { max-width: 100%; }
+  .hub-hero { padding: 2.6rem 1.1rem 2.2rem; gap: 1.4rem; }
+  .term__body { padding: 1.3rem 1.2rem 1.1rem; }
+  .hub-meta-row { flex-direction: column; align-items: center; gap: 0.6rem; }
+  .hub-meta-row div { border-left: none; padding: 0; text-align: center; }
+  .day-card { padding: 1.1rem 1.1rem; gap: 0.9rem; }
+}

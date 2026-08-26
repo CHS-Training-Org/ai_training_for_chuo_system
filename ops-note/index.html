@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="chuosystem社内「AI駆動開発チュートリアル」運営ノート。ドキュメントサイトへの入口、進め方（STEP-01〜05）、スケジュール、事前準備、質問窓口をまとめた参照ページ。">
+<title>AI駆動開発チュートリアル 運営ノート</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230f2a4a'/%3E%3Ctext x='50' y='67' font-size='54' text-anchor='middle' font-family='monospace' font-weight='700' fill='%23d98a2b'%3ECS%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="chuosystem-theme.css">
+</head>
+<body>
+
+<header class="tb corner-marks">
+  <div class="tb__brand">
+    <span class="tb__mark">CS</span>
+    <span class="tb__word">chuosystem</span>
+  </div>
+  <div class="tb__crumb"><span class="now">AI駆動開発チュートリアル・運営ノート</span></div>
+  <div class="tb__meta">
+    <span>DOC <strong>CS-OPS-001</strong></span>
+    <span>FORMAT <strong>REFERENCE</strong></span>
+  </div>
+</header>
+
+<main class="doc">
+<h1>AI駆動開発チュートリアル 運営ノート</h1>
+
+<blockquote>
+<p>🗒️ <strong>このノートの位置づけ</strong>: 運営情報の置き場です。</p>
+<p>📚 <strong>手順の真実の源</strong>: 開発手順・仕様・規約はドキュメントサイト（BookFlow）側にあります。このノートには写しません。</p>
+</blockquote>
+
+<h2>セクション構成</h2>
+<table>
+<thead>
+<tr><th>ページ</th><th>何が書いてあるか</th><th>更新担当</th><th>更新タイミング</th></tr>
+</thead>
+<tbody>
+<tr><td>はじめに（このページ）</td><td>ノートの位置づけ、ドキュメントサイトへの入口</td><td>泊口</td><td>運用変更時</td></tr>
+<tr><td>進め方（STEP-01〜05）</td><td>各STEPでやること・参照先・完了条件の所在</td><td>泊口</td><td>カリキュラム改訂時</td></tr>
+<tr><td>スケジュール</td><td>全体日程（週次）、工数の目安、週次報告</td><td>泊口</td><td>カリキュラム改訂時</td></tr>
+<tr><td>オリエンテーション録画</td><td>録画リンクと視聴の目安時間</td><td>泊口</td><td>録画公開時</td></tr>
+<tr><td>事前準備（端末・アカウント）</td><td>端末スペック、ソフト入手経路、Claude Codeシート、GitHub権限</td><td>泊口</td><td>カリキュラム改訂時</td></tr>
+<tr><td>質問・サポート</td><td>質問先チャネル、対応方針</td><td>泊口</td><td>運用変更時</td></tr>
+</tbody>
+</table>
+
+<h2>ドキュメントサイト（手順の真実の源）</h2>
+<p>サイト入口: <a href="https://chs-training-org.github.io/ai_training_for_chuo_system/docs-next/" target="_blank" rel="noopener noreferrer"><strong>BookFlow ドキュメント ／ AI駆動開発チュートリアル</strong></a></p>
+<p>現行版（<code>/docs-next/</code> 配下）と旧版（<code>/Docs/</code> 配下）を並行運用中です。旧版は9月頃に削除予定のため、参照は現行版に寄せてください。</p>
+
+<h3>サイト内の主要な行き先</h3>
+<ul>
+<li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/docs-next/learn/curriculum" target="_blank" rel="noopener noreferrer">学習カリキュラム</a></li>
+<li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/docs-next/learn/getting-started" target="_blank" rel="noopener noreferrer">環境構築・起動手順</a></li>
+<li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/docs-next/develop/dev-workflow" target="_blank" rel="noopener noreferrer">開発ワークフローガイド</a></li>
+<li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/docs-next/develop/enhancement-catalog" target="_blank" rel="noopener noreferrer">選択課題カタログ</a></li>
+<li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/docs-next/develop/troubleshooting" target="_blank" rel="noopener noreferrer">トラブルシューティング</a></li>
+</ul>
+
+<blockquote>
+<p>※ リンク切れを見つけたら、OneNoteを直すのではなく<strong>泊口に連絡</strong>してください（サイト側を直します）。</p>
+</blockquote>
+
+<h2>進め方</h2>
+<p>中級課題（AI-DLCを使う）までのタスクは全て必須です。前のタスクの完了を前提に、次の課題へ進めてください。</p>
+
+<table>
+<thead>
+<tr><th>タスク</th><th>内容</th><th>必須/任意</th><th>サイトの対応箇所</th></tr>
+</thead>
+<tbody>
+<tr><td>オリエンテーション</td><td>環境構築・チュートリアルの主旨、AI-DLC / Claude Codeの説明（録画視聴）</td><td>必須</td><td>STEP-01（キックオフ）</td></tr>
+<tr><td>環境構築</td><td>DevContainerを起動しBookFlowにアクセスできる状態を作る</td><td>必須</td><td>STEP-01</td></tr>
+<tr><td>既存ドキュメントの読み込み</td><td>リポジトリ構成・標準開発フロー（AI-DLC）等のドキュメントを読み込む</td><td>必須</td><td>STEP-02</td></tr>
+<tr><td>初級課題（AI-DLCを使わない）</td><td>初級課題をAI-DLCを使わずに実装する</td><td>必須</td><td>STEP-03</td></tr>
+<tr><td>初級課題（AI-DLCを使う）</td><td>同じ初級課題をAI-DLCを使って実装し、有無の違いを体感する</td><td>必須</td><td>STEP-04</td></tr>
+<tr><td>中級課題（AI-DLCを使う）</td><td>中級課題をAI-DLCを使って実装する</td><td>必須</td><td>STEP-05</td></tr>
+<tr><td>上級課題</td><td>上級課題から選んで実装する</td><td>任意</td><td>上級課題</td></tr>
+<tr><td>振り返りアンケート</td><td>本チュートリアルの振り返りをアンケート形式で回答する</td><td>必須</td><td>—</td></tr>
+</tbody>
+</table>
+
+<h3>各タスクの補足</h3>
+<ul>
+<li>PRのbaseは自分のトランクブランチ（<code>learner/&lt;GitHubユーザー名&gt;/main</code>）。<code>main</code>宛のPRは作らない</li>
+<li>STEP-03のPRはマージしない（STEP-04で同じ課題を作り直すため）</li>
+<li>機密情報（顧客情報・認証情報・社外秘）をプロンプトに貼らない</li>
+</ul>
+
+<h2>スケジュール</h2>
+<p>週次スケジュール表で「■」が付いた週数を、区分ごとの実施週数として整理したものです。</p>
+
+<table>
+<thead>
+<tr><th>大分類</th><th>中分類</th><th>実施週数</th></tr>
+</thead>
+<tbody>
+<tr><td>事前作業</td><td>オリエンテーション</td><td>1週</td></tr>
+<tr><td>事前作業</td><td>環境構築</td><td>3週</td></tr>
+<tr><td>事前作業</td><td>ドキュメント読込</td><td>3週</td></tr>
+<tr><td>課題の実施</td><td>初級（AI-DLCなし）</td><td>2週</td></tr>
+<tr><td>課題の実施</td><td>初級（AI-DLCあり）</td><td>2週</td></tr>
+<tr><td>課題の実施</td><td>中級（AI-DLCあり）</td><td>2週</td></tr>
+<tr><td>PRレビュー・フォロー</td><td>（全体）</td><td>全9週</td></tr>
+</tbody>
+</table>
+<p>※ スケジュールは目安です。週次で進捗確認を報告してもらい、期間内に完了が見込めるかの指標として使用します。</p>
+
+<h3>週次報告</h3>
+<ul>
+<li>所属部署の上長へ週次（金曜日）で進捗報告をお願いします</li>
+<li>どのタスクにどの程度の時間がかかったかを報告してください（タスクのボリューム見直しや目安時間の改善に利用します）</li>
+</ul>
+
+<h2>オリエンテーション録画</h2>
+<table>
+<thead>
+<tr><th>収録日</th><th>内容</th><th>リンク</th></tr>
+</thead>
+<tbody>
+<tr><td>2026/7/9</td><td>環境構築デモ</td><td><a href="https://chuosystemcojp-my.sharepoint.com/:v:/g/personal/tomariguchi_yoshifumi_chuosystem_co_jp/IQBnzId9IMcdTIbJMVDmIQUjAXPVQ6-FdzO249wavaSmeSo?e=L66RAM&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D" target="_blank" rel="noopener noreferrer"><code>AI駆動開発チュートリアル用サービスの環境構築.mp4</code></a></td></tr>
+<tr><td>2026/8/14</td><td>チュートリアルの主旨・全体像、Claude Code / AI-DLCの説明</td><td><a href="https://chuosystemcojp-my.sharepoint.com/:v:/g/personal/tomariguchi_yoshifumi_chuosystem_co_jp/IQDo8fx21bctQL0tz1bNRktRAX088QU0VwikVODOD3YZ-Uo?e=pUgNDl&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D" target="_blank" rel="noopener noreferrer"><code>AI駆動開発チュートリアルのオリエンテーション-20260814_170127-会議の録音.mp4</code></a></td></tr>
+</tbody>
+</table>
+<p>※ 録画視聴でオリエンテーションは完了とみなします。</p>
+
+<h2>事前準備（端末・アカウント）</h2>
+<table>
+<thead>
+<tr><th>項目</th><th>入手・申請経路</th><th>相談先</th></tr>
+</thead>
+<tbody>
+<tr><td>作業端末（チュートリアル実施に必要なスペックを満たしたPC）</td><td>私物PC もしくは社内のレンタルPC</td><td>上長</td></tr>
+<tr><td>GitHubアカウント、organization参加</td><td>各実施者がアカウントを作成</td><td>泊口</td></tr>
+<tr><td>Claude Codeのシート</td><td>部署から情シスに申請</td><td>上長</td></tr>
+</tbody>
+</table>
+
+<h3>GitHubアカウントの作成について</h3>
+<table>
+<tbody>
+<tr><th>メールアドレス</th><td>会社のメールアドレス</td></tr>
+<tr><th>名前</th><td>CHS-姓-名（例：CHS-TOMARIGUCHI-YOSHIFUMI）</td></tr>
+</tbody>
+</table>
+
+<h2>振り返りアンケート</h2>
+<p>MicrosoftのFormsから回答してください：<a href="https://forms.cloud.microsoft/r/q1ZbTiuhXN" target="_blank" rel="noopener noreferrer"><strong>「AI駆動開発チュートリアル 振り返りアンケート」フォーム</strong></a></p>
+
+<h2>質問・サポート</h2>
+<blockquote>
+<p>💬 <strong>一次窓口</strong>: <a href="https://teams.cloud.microsoft/l/channel/19%3A0d8372763b1d456db977f5282003585f%40thread.tacv2/AI%E9%A7%86%E5%8B%95%E9%96%8B%E7%99%BA%E3%83%81%E3%83%A5%E3%83%BC%E3%83%88%E3%83%AA%E3%82%A2%E3%83%AB?groupId=8eca4760-2a6b-4854-8a6c-515676cd518b&tenantId=1417fa99-7f11-41d4-873b-f7d447d1b2b1" target="_blank" rel="noopener noreferrer">Teamsチャネル「AI駆動開発チュートリアル ｜ CS AIナビ」</a></p>
+<p>🙋 <strong>担当</strong>: 泊口</p>
+</blockquote>
+<p>環境・ツールのトラブルは、まずサイトのトラブルシューティングを確認してから質問してください。Claude Codeへ質問することも有効です。</p>
+
+</main>
+
+<footer class="site-footer">chuosystem — AI駆動開発チュートリアル 運営ノート</footer>
+
+<script src="chuosystem-theme.js" defer></script>
+</body>
+</html>
