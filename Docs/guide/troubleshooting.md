@@ -6,7 +6,7 @@ tags:
   - guide
   - troubleshooting
   - debug
-timestamp: 2026-08-26
+timestamp: 2026-06-12
 audience: 学習者（主に若手）
 references:
   - Docs/guide/getting-started.md
@@ -40,23 +40,6 @@ references:
 - **症状**: Rancher Desktop は起動しているのに、DevContainer のビルド・起動が失敗する。
 - **原因**: Rancher Desktop の Container Engine が `containerd` に設定されている。本リポジトリは `dockerd (moby)` ランタイムを前提としている。
 - **解決策**: Rancher Desktop の **Preferences → Container Engine** で **dockerd (moby)** を選択して **Apply** し、「Dev Containers: Rebuild Container」で起動し直す。
-
-### ビルドが Java feature のインストールで失敗する
-
-- **症状**: 「コンテナーの設定中にエラーが発生しました」と表示され、ビルドログの末尾付近に次が出る。
-
-    ```
-    Check if OpenJDK is available for version 25 for ms Distro
-    JDK version 25 is available in ms...
-    JDK_DISTRO: ms
-    Version 25 not found. Available versions:
-
-    ERROR: Feature "Java (via SDKMAN!)" (ghcr.io/devcontainers/features/java) failed to install!
-    ```
-
-- **原因**: Java feature が JDK のバージョンを解決できていない。SDKMAN における Microsoft Build of OpenJDK の識別子は `25.0.4+1-ms` のようにビルド番号 `+1` を含むが、feature の `install.sh` がバージョン解決に使う正規表現は数字の後ろにドット区切りの断片しか許さないため、この識別子に一致しない。feature には「要求されたバージョンが `ms` に無ければ Eclipse Temurin へ切り替える」フォールバックがあるものの、その判定が `ms` を含む行から数字だけを抜き出す緩いもので `25.0.4` を拾うため、切り替えが働かない。
-- **補足**: Docker や Rancher Desktop の状態はこの失敗の原因ではない。ビルドは feature のインストール段階まで到達しており、同じログで apt と SDKMAN のダウンロードは成功している。`devcontainer-lock.json` が固定しているのは feature 本体のバージョンだけで、JDK のバージョン文字列はビルドのたびに SDKMAN へ問い合わせて解決される。そのためリポジトリを変更していなくても、SDKMAN 側の識別子が変わった時点で失敗し始める。
-- **解決策**: `.devcontainer/devcontainer.json` で `jdkDistro` に `tem`（Eclipse Temurin）を明示済み。Temurin の識別子は `25.0.4-tem` でビルド番号を含まないため、feature の正規表現に一致する。このエラーが出る場合はリポジトリを最新の `main` に更新し、「開発コンテナー: キャッシュなしでコンテナーをリビルド」（`Dev Containers: Rebuild Container Without Cache`）を実行する。
 
 ### （Windows）ファイル操作・ビルドが極端に遅い / ホットリロードが効かない
 

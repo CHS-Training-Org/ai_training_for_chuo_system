@@ -30,7 +30,8 @@
     // feature には ms に無ければ tem へ切り替えるフォールバックがあるが、
     // その判定が ms を含む行から数字だけを抜き出す緩いもので 25.0.4 を拾うため働かない。
     // Temurin の識別子は 25.0.4-tem でビルド番号を含まず、正規表現に一致する。
-    // 詳細は Docs/guide/troubleshooting.md の該当項目を参照。
+    // ms 配布は 25 に限らず全バージョンが +1 付きのため、jdkDistro を戻すと再発する。
+    // 調査と検証の経緯は PR #86 を参照。
     "ghcr.io/devcontainers/features/java:1": { "version": "25", "jdkDistro": "tem" },
     "ghcr.io/devcontainers/features/node:2.0.0": { "version": "24" },
     "ghcr.io/devcontainers/features/github-cli:1": {},
