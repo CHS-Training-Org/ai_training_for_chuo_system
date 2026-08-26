@@ -9,6 +9,7 @@ on:
       - 'pyproject.toml'
       - 'uv.lock'
       - 'docs-next/**'
+      - 'ops-note/**'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
@@ -68,6 +69,9 @@ jobs:
           cp -r site/. pages-root/
           mkdir -p pages-root/docs-next
           cp -r docs-next/build/. pages-root/docs-next/
+          # 運営ノート（素の静的HTML）を /ops-note/ にパススルー配置
+          mkdir -p pages-root/ops-note
+          cp -r ops-note/. pages-root/ops-note/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
