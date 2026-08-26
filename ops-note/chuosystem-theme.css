@@ -139,7 +139,8 @@ input:focus-visible {
   pointer-events: none;
 }
 .corner-marks::before { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
-.corner-marks::after { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+/* right/bottom を 0 にする。-1px だと body に 1px の横スクロールが生じる */
+.corner-marks::after { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
 
 /* ------------------------------------------------------------
    Document canvas
@@ -336,6 +337,21 @@ main.doc th {
   letter-spacing: 0.04em;
 }
 main.doc tbody tr:nth-child(even) td { background: #fbfaf7; }
+
+/* 狭い幅では横スクロールさせる。table は width:100% なので親が狭いと
+   列が1〜2文字ずつに潰れる。min-width とセットでないとスクロールしない。 */
+main.doc .table-scroll {
+  overflow-x: auto;
+  margin: 1.3rem 0 1.6rem;
+  -webkit-overflow-scrolling: touch;
+}
+main.doc .table-scroll table {
+  margin: 0;
+  min-width: 36rem;
+}
+
+/* 長いファイル名・URL がセル内で折り返せず行数を膨らませるのを防ぐ */
+main.doc td code { overflow-wrap: anywhere; }
 
 /* ------------------------------------------------------------
    Code
