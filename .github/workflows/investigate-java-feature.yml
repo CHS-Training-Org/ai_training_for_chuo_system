@@ -1,0 +1,183 @@
+name: Investigate Java Feature
+
+# 【一時的な調査用ワークフロー。原因確定後に削除する】
+#
+# DevContainer のビルドが Java feature のインストールで失敗する事象を、
+# ローカル PC を使わずに GitHub Actions 上で再現・検証する。
+#
+# 失敗の内容:
+#   ghcr.io/devcontainers/features/java 1.8.0 の install.sh が
+#   `sdk list java` の出力から `25...-ms` を抜き出せず
+#   "Version 25 not found. Available versions:"（空）で exit 1 する。
+#
+# このワークフローが答えを出す3点:
+#   1. SDKMAN に JDK 25 の識別子が実在するか（ms / tem それぞれ）
+#   2. feature の2段階の判定が実際に何を返すか（緩いチェックと厳密な解決の食い違い）
+#   3. どの指定なら通るか（version=25 / jdkDistro=tem / 完全識別子）
+#
+# GitHub Actions のランナーは Docker が使えて外部通信の制限もないため、
+# 学習者のローカル環境を借りずに検証できる。
+
+on:
+  push:
+    branches:
+      - claude/attached-image-error-investigation-f9tap7
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sdkman:
+    name: SDKMAN の JDK 25 識別子を確認
+    runs-on: ubuntu-latest
+    outputs:
+      ms_id: ${{ steps.probe.outputs.ms_id }}
+      tem_id: ${{ steps.probe.outputs.tem_id }}
+    steps:
+      # DevContainer と同じベースイメージ（node:24-slim）で SDKMAN を導入し、
+      # feature の install.sh が実行するのと同じコマンド・同じ正規表現を再現する。
+      - name: node:24-slim 上で sdk list java を採取
+        id: probe
+        run: |
+          mkdir -p out
+          docker run --rm -v "$PWD/out:/out" node:24-slim bash -lc '
+            set -e
+            apt-get update -qq
+            apt-get install -y -qq curl zip unzip >/dev/null
+            curl -s "https://get.sdkman.io" | bash >/dev/null
+            . "$HOME/.sdkman/bin/sdkman-init.sh"
+
+            echo "=== sdk version ==="
+            sdk version || true
+
+            sdk list java > /out/java-list.txt 2>&1
+
+            echo "=== 25 を含む行 ==="
+            grep -E "25" /out/java-list.txt || echo "(該当なし)"
+
+            echo "=== ms を含む行 ==="
+            grep -E "ms" /out/java-list.txt || echo "(該当なし)"
+
+            # install.sh の1段階目（緩いチェック）。
+            # ここが 25 を拾うと JDK_DISTRO は ms のまま維持され、tem への切替が起きない。
+            echo "=== 1段階目: 緩いチェックが返す一覧 ==="
+            grep ms /out/java-list.txt | grep -oE "[0-9]+(\.[0-9]+(\.[0-9]+)?)?" | sort -u || echo "(空)"
+
+            # install.sh の2段階目（厳密な解決）。実ビルドではここが空を返して失敗した。
+            echo "=== 2段階目: 厳密な解決が返す一覧 (ms) ==="
+            grep -oP "\s*\K25\.?[0-9]*\.?[0-9]*(\.[a-z0-9]+)*-ms\s*" /out/java-list.txt | tr -d " " | sort -rV || echo "(空)"
+
+            echo "=== 2段階目: 厳密な解決が返す一覧 (tem) ==="
+            grep -oP "\s*\K25\.?[0-9]*\.?[0-9]*(\.[a-z0-9]+)*-tem\s*" /out/java-list.txt | tr -d " " | sort -rV || echo "(空)"
+
+            # 修正案に使う完全識別子。正規表現を緩めて実在する識別子を拾う。
+            grep -oP "25[0-9.]*-ms"  /out/java-list.txt | sort -rV | head -n 1 > /out/ms_id  || true
+            grep -oP "25[0-9.]*-tem" /out/java-list.txt | sort -rV | head -n 1 > /out/tem_id || true
+          '
+
+          MS_ID="$(cat out/ms_id 2>/dev/null || true)"
+          TEM_ID="$(cat out/tem_id 2>/dev/null || true)"
+          echo "ms_id=${MS_ID}" >> "$GITHUB_OUTPUT"
+          echo "tem_id=${TEM_ID}" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## SDKMAN の JDK 25 識別子"
+            echo ""
+            echo "| 配布 | 検出された完全識別子 |"
+            echo "| --- | --- |"
+            echo "| ms (Microsoft) | \`${MS_ID:-（検出できず）}\` |"
+            echo "| tem (Temurin) | \`${TEM_ID:-（検出できず）}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # sdk list java の全文。2段階目が空を返した理由はこの出力に現れる。
+      - name: sdk list java の全文を成果物として保存
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdk-list-java
+          path: out/java-list.txt
+
+  build:
+    name: ${{ matrix.label }}
+    needs: sdkman
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 現状の指定。実ビルドと同じ失敗を再現するはず。
+          - label: "現状 version=25 / jdkDistro=ms"
+            version: "25"
+            distro: "ms"
+          # 一覧のパース自体が壊れているのか、ms 固有の問題なのかを切り分ける。
+          - label: "検証 version=25 / jdkDistro=tem"
+            version: "25"
+            distro: "tem"
+          # 完全識別子は install.sh の full_version_check に合致し、
+          # 一覧のパース経路を通らずに sdk install へ直行する。
+          - label: "修正案A 完全識別子 (ms)"
+            version: ${{ needs.sdkman.outputs.ms_id }}
+            distro: "ms"
+          - label: "修正案B 完全識別子 (tem)"
+            version: ${{ needs.sdkman.outputs.tem_id }}
+            distro: "ms"
+    steps:
+      - name: 前提となる識別子が取得できたか確認
+        id: guard
+        run: |
+          if [ -z "${{ matrix.version }}" ]; then
+            echo "識別子を検出できなかったため、このケースは実行しない。"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 最小構成の devcontainer.json を用意
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          mkdir -p probe/.devcontainer
+          cat > probe/.devcontainer/devcontainer.json <<EOF
+          {
+            "image": "node:24-slim",
+            "features": {
+              "ghcr.io/devcontainers/features/java:1": {
+                "version": "${{ matrix.version }}",
+                "jdkDistro": "${{ matrix.distro }}"
+              }
+            }
+          }
+          EOF
+          cat probe/.devcontainer/devcontainer.json
+
+      # 失敗するケースが含まれるのは想定どおりなので、ここではジョブを落とさず
+      # 成否をサマリーに記録する。どのケースが通ったかの一覧が調査結果になる。
+      - name: devcontainer build を実行
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          npm install -g @devcontainers/cli
+          set +e
+          devcontainer build --workspace-folder probe 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          set -e
+
+          if [ "${status}" -eq 0 ]; then
+            result="成功"
+          else
+            result="失敗 (exit ${status})"
+          fi
+
+          {
+            echo "### ${{ matrix.label }}"
+            echo ""
+            echo "- version: \`${{ matrix.version }}\`"
+            echo "- jdkDistro: \`${{ matrix.distro }}\`"
+            echo "- 結果: **${result}**"
+            echo ""
+            echo "<details><summary>ビルドログ末尾</summary>"
+            echo ""
+            echo '```'
+            tail -n 40 build.log
+            echo '```'
+            echo ""
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
