@@ -6,7 +6,7 @@
 site_name = "BookFlow ドキュメント"
 site_description = "社内 AI 駆動開発チュートリアル「BookFlow」の設計・学習ドキュメント"
 site_author = "Bizarress"
-site_url = "https://github.com/CHS-Training-Org/ai_training_for_chuo_system"
+site_url = "https://chs-training-org.github.io/ai_training_for_chuo_system/"
 copyright = "Copyright &copy; 2026 中央システム"
 
 # docs_dir はリポジトリルートからの相対パス（Zensical issue #68 参照）
