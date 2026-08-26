@@ -18,6 +18,7 @@ export const DEFAULT_SORT = "createdAt,asc";
 
 interface ResourceFilterFormProps {
   defaultCategory?: string;
+  defaultKeyword?: string;
   defaultFrom?: string;
   defaultTo?: string;
   defaultSort?: string;
@@ -25,6 +26,7 @@ interface ResourceFilterFormProps {
 
 interface ResourceFilterValues {
   category?: string;
+  keyword?: string;
   from?: string;
   to?: string;
   sort?: string;
@@ -36,6 +38,7 @@ interface ResourceFilterValues {
  */
 export function buildResourceFilterQuery({
   category,
+  keyword,
   from,
   to,
   sort,
@@ -43,6 +46,7 @@ export function buildResourceFilterQuery({
   const params = new URLSearchParams();
 
   if (category && category !== "ALL") params.set("category", category);
+  if (keyword && keyword.trim()) params.set("keyword", keyword.trim());
   if (from) params.set("from", from);
   if (to) params.set("to", to);
   if (sort && sort !== DEFAULT_SORT) params.set("sort", sort);
@@ -58,6 +62,7 @@ export function buildResourceFilterQuery({
  */
 export function ResourceFilterForm({
   defaultCategory,
+  defaultKeyword,
   defaultFrom,
   defaultTo,
   defaultSort,
@@ -73,6 +78,7 @@ export function ResourceFilterForm({
 
       const query = buildResourceFilterQuery({
         category: data.get("category") as string,
+        keyword: data.get("keyword") as string,
         from: data.get("from") as string,
         to: data.get("to") as string,
         sort: data.get("sort") as string,
@@ -90,7 +96,19 @@ export function ResourceFilterForm({
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4 space-y-4">
       <h2 className="text-sm font-semibold">フィルタ・空き確認</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+        {/* キーワード */}
+        <div className="space-y-1">
+          <Label htmlFor="keyword">キーワード</Label>
+          <Input
+            id="keyword"
+            name="keyword"
+            type="text"
+            placeholder="名称・説明で検索"
+            defaultValue={defaultKeyword}
+          />
+        </div>
+
         {/* カテゴリ */}
         <div className="space-y-1">
           <Label htmlFor="category">カテゴリ</Label>
