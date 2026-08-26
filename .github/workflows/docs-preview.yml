@@ -32,8 +32,8 @@ jobs:
        contains(github.event.pull_request.labels.*.name, 'ドキュメントプレビュー'))
     runs-on: ubuntu-latest
     steps:
+      # 削除時も checkout が要る（デプロイ先の git 操作がワークスペース上で行われるため）
       - name: Checkout
-        if: github.event.action != 'closed' && github.event.action != 'unlabeled'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0

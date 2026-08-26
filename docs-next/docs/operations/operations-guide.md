@@ -114,39 +114,55 @@ AI レビューの採用は [ADR-024](../reference/adr/ADR-024-ai-first-review-a
 
 | 項目 | 値 |
 |------|---|
-| 公開先 URL | `https://github.com/CHS-Training-Org/ai_training_for_chuo_system` |
-| ソース | `main` ブランチの `Docs/` 配下 |
-| ビルドツール | Zensical（`zensical.toml` で設定） |
-| 設定ファイル | `zensical.toml`・`pyproject.toml`・`uv.lock` |
+| 公開先 URL | `https://chs-training-org.github.io/ai_training_for_chuo_system/` |
+| Docusaurus（docs-next） | `https://chs-training-org.github.io/ai_training_for_chuo_system/docs-next/` |
+| 運営ノート | `https://chs-training-org.github.io/ai_training_for_chuo_system/ops-note/` |
+| 配信方式 | `gh-pages` ブランチ配信（Settings → Pages → Deploy from a branch） |
+| ビルドツール | Zensical（`zensical.toml`）＋ Docusaurus（`docs-next/`） |
 
 ### 自動デプロイの仕組み
 
-`.github/workflows/docs.yml` が次のタイミングで自動的にビルド＆デプロイします。
+`.github/workflows/docs.yml` が次のタイミングでビルドし、`gh-pages` ブランチへ push します。
 
-- **main/master への push** ：`Docs/**`・`zensical.toml`・`pyproject.toml`・`uv.lock`・`docs.yml` のいずれかが変更された場合
+- **main への push**：`Docs/**`・`docs-next/**`・`ops-note/**`・`zensical.toml`・`pyproject.toml`・`uv.lock`・共通ビルド action・`docs.yml` のいずれかが変更された場合
 - **手動実行**（`workflow_dispatch`）：GitHub Actions の UI からいつでも実行可能
 
-ビルドフローは「`uv sync` → `uv run zensical build`（`site/` へ出力）→ GitHub Pages へデプロイ」の 2 ジョブ構成です。
+ビルド手順は composite action `.github/actions/build-docs-site` に集約されており、Zensical の出力（`site/`）・Docusaurus の出力（`docs-next/build/`）・`ops-note/` を `pages-root/` に合成します（ブランチ配信では Jekyll が `_` 始まりのパスを無視するため `.nojekyll` も配置します）。本番デプロイは `clean-exclude: pr-preview/` を指定しており、PR プレビューを消しません。
 
-### 管理者による初回有効化手順（申し送り）
+### PR プレビュー（修正途中のドキュメントを確認する） {#pr-preview}
+
+`main` への push でしかサイトは更新されないため、PR で修正途中のドキュメントを確認するには **PR プレビュー**を使います（[ADR-031](../reference/adr/ADR-031-docs-pr-preview.md)）。
+
+1. `main` 宛の PR にラベル **`ドキュメントプレビュー`** を付ける
+2. `.github/workflows/docs-preview.yml` がサイトをビルドし、`https://chs-training-org.github.io/ai_training_for_chuo_system/pr-preview/pr-<PR番号>/` へデプロイする
+3. プレビュー URL が PR にコメントで投稿される
+4. ラベルを外すか PR をクローズすると、プレビューは自動的に削除される
+
+学習者の PR でプレビューが生成されないよう、**ラベルが付いた PR のみ**を対象にしています（学習者の PR は Spec-first 運用のため必ず `Docs/` 配下を変更するため、変更パスや base ブランチでは絞り込めません）。fork からの PR ではプレビューは生成されません。プレビューは公開されるため、未公開情報を含む PR にはラベルを付けないでください。
+
+### 管理者による設定（申し送り）
 
 :::warning[運営者作業]
 
-以下の手順は本環境からは実施不可のため、運営者への申し送りです。  
-**この手順が完了するまでは受入条件「ドキュメントサイトが公開され…」は未充足です**（4.4 / 5.2 / 3.6 と同じ申し送りパターン）。
+以下は本環境からは実施不可のため、運営者への申し送りです。設定が完了するまでサイトは更新されません。
 
 :::
-1. GitHub リポジトリの **Settings → Pages** を開く
-2. **Source** を **"GitHub Actions"** に設定して保存する
-3. `docs.yml` を手動実行（Actions → "Deploy Docs to GitHub Pages" → "Run workflow"）またはドキュメントの変更を main に push する
-4. Actions が green になったあと `https://github.com/CHS-Training-Org/ai_training_for_chuo_system` にアクセスし、サイトが表示されることを確認する
+
+1. GitHub リポジトリの **Settings → Pages** を開き、**Source** を **"Deploy from a branch"**、Branch を **`gh-pages`**、Folder を **`/ (root)`** に設定して保存する（`gh-pages` ブランチが存在しないと選択できないため、先に `docs.yml` を手動実行してブランチを作る）
+2. **Settings → Actions → General → Workflow permissions** を **"Read and write permissions"** に設定する（ワークフローが `gh-pages` へ push するため）
+3. `docs.yml` を手動実行（Actions → "Deploy Docs …" → "Run workflow"）または `main` にドキュメント変更を push する
+4. Actions が green になったあと公開 URL にアクセスし、サイトが表示されることを確認する
 
 ### ビルド失敗時の対処
 
 ローカルで以下のコマンドで再現できます（docs コンテナが起動している必要があります）：
 
 ```bash
+# Zensical（site/ へ出力）
 docker compose exec docs uv run zensical build
+
+# Docusaurus（docs-next/build へ出力。リンク・アンカー破損があれば失敗する）
+cd docs-next && npm ci && npm run build
 ```
 
 > DevContainer 外から実行する場合：`docker exec ai_training_for_chuo_system_devcontainer-docs-1 sh -c 'cd /workspace && uv run zensical build'`
@@ -157,10 +173,10 @@ docker compose exec docs uv run zensical build
 |------|------|------|
 | `page does not exist` | `zensical.toml` の nav に追記したが対応ファイルが存在しない（または逆） | nav とファイルを揃える |
 | `page does not exist`（警告のみ） | `Docs/` 外のファイルへのリンク（`.claude/`・`vendor/` 等） | サイト外リンクのため無視してよい（既存の既知警告） |
+| Docusaurus の `Broken link` / `Broken anchor` | 移動・改名したページへのリンクが残っている | リンク先を修正する（`onBrokenLinks: 'throw'` のため必ず失敗する） |
 | ビルドエラー | Markdown 構文エラー・Mermaid 構文ミス | エラー箇所を修正する |
 
 環境・コンテナ起動に関するトラブルは [troubleshooting.md](../develop/troubleshooting.md) を参照してください。
-
 ---
 
 ## 関連ドキュメント
