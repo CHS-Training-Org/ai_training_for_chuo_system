@@ -18,7 +18,10 @@ const config: Config = {
   url: 'https://CHS-Training-Org.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/ai_training_for_chuo_system/docs-next/',
+  // PR プレビュー（docs-preview.yml）は本番と別パスで配信されるため、
+  // ワークフローから DOCS_BASE_URL で差し替えられるようにしている。
+  // 未設定・空文字のときは本番のパスを使う（`??` だと空文字が通ってしまうので `||`）。
+  baseUrl: process.env.DOCS_BASE_URL || '/ai_training_for_chuo_system/docs-next/',
 
   // GitHub pages deployment config.
   organizationName: 'CHS-Training-Org', // Usually your GitHub org/user name.

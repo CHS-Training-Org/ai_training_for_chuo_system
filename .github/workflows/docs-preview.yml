@@ -1,0 +1,56 @@
+name: Docs Preview (PR)
+
+# main への push でしか Pages が更新されないため、PR で修正途中のドキュメントを
+# 実サイトの見た目で確認できなかった。ラベル「ドキュメントプレビュー」が付いた
+# main 宛の PR に対して、gh-pages ブランチの pr-preview/pr-<N>/ へプレビューを
+# デプロイし、URL を PR にコメントする（ADR-031）。
+#
+# ラベル方式にしているのは、学習者の PR（Spec-first 運用のため必ず Docs を触る）で
+# プレビューを生成させないため。ラベルを外すか PR を閉じるとプレビューは自動削除される。
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: docs-preview-pr-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: deploy preview
+    # ラベルが外されたときは「そのラベルが対象ラベルだったか」で判定する。
+    # それ以外のイベントでは、PR に対象ラベルが付いていることを条件にする。
+    if: >-
+      (github.event.action == 'unlabeled' && github.event.label.name == 'ドキュメントプレビュー') ||
+      (github.event.action != 'unlabeled' &&
+       contains(github.event.pull_request.labels.*.name, 'ドキュメントプレビュー'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        if: github.event.action != 'closed' && github.event.action != 'unlabeled'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build docs site
+        if: github.event.action != 'closed' && github.event.action != 'unlabeled'
+        uses: ./.github/actions/build-docs-site
+        with:
+          # プレビューは本番と別パスで配信されるため baseUrl を差し替える
+          docs-next-base-url: /ai_training_for_chuo_system/pr-preview/pr-${{ github.event.number }}/docs-next/
+
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: pages-root
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: >-
+            ${{ (github.event.action == 'closed' || github.event.action == 'unlabeled')
+                && 'remove' || 'deploy' }}
