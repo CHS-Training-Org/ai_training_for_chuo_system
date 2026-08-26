@@ -1,5 +1,10 @@
 name: Deploy Docs (Zensical + Docusaurus docs-next) to GitHub Pages
 
+# 配信方式は「gh-pages ブランチからの配信」（Settings > Pages > Deploy from a branch）。
+# PR プレビュー（docs-preview.yml）が同じブランチの pr-preview/ 配下に成果物を置くため、
+# Pages の公開方式を GitHub Actions からブランチ配信へ移した（ADR-031）。
+# 公開 URL は変わらない。
+
 on:
   push:
     branches: [main]
@@ -10,20 +15,19 @@ on:
       - 'uv.lock'
       - 'docs-next/**'
       - 'ops-note/**'
+      - '.github/actions/build-docs-site/**'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: 'pages'
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,60 +35,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+      - name: Build docs site
+        uses: ./.github/actions/build-docs-site
+
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          enable-cache: true
-
-      - name: Install Zensical dependencies
-        run: uv sync
-
-      - name: Build Zensical docs (existing site)
-        run: uv run zensical build
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: docs-next/package-lock.json
-
-      - name: Install docs-next dependencies
-        working-directory: docs-next
-        run: npm ci
-
-      - name: Generate last_updated from git log
-        working-directory: docs-next
-        run: node scripts/gen-last-updated.mjs
-
-      - name: Build docs-next (Docusaurus)
-        working-directory: docs-next
-        run: npm run build
-
-      - name: Assemble combined Pages artifact
-        run: |
-          set -euo pipefail
-          rm -rf pages-root
-          mkdir -p pages-root
-          cp -r site/. pages-root/
-          mkdir -p pages-root/docs-next
-          cp -r docs-next/build/. pages-root/docs-next/
-          # 運営ノート（素の静的HTML）を /ops-note/ にパススルー配置
-          mkdir -p pages-root/ops-note
-          cp -r ops-note/. pages-root/ops-note/
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: pages-root
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          folder: pages-root
+          branch: gh-pages
+          # PR プレビューは同じブランチの pr-preview/ 配下に置かれる。
+          # ここで除外しないと本番デプロイのたびに全プレビューが消える。
+          clean-exclude: pr-preview/
