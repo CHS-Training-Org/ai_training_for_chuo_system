@@ -6,7 +6,7 @@ tags:
   - guide
   - troubleshooting
   - debug
-timestamp: 2026-06-12
+timestamp: 2026-08-26
 audience: 学習者（主に若手）
 references:
   - Docs/guide/getting-started.md
@@ -218,6 +218,39 @@ references:
 - **症状**: API アクセス時や起動時のスキーマ検証で `relation "reservations" does not exist` のようなエラーが出る。
 - **原因**: マイグレーション未適用の DB に接続している（DB リセット後にバックエンドを再起動していない等）。
 - **解決策**: バックエンドを再起動し、起動ログで Flyway の適用結果（`Successfully applied 1 migration` 等）を確認する。
+
+---
+
+## Git・GitHub 関連 { #git }
+
+### ブランチを push できない（`could not read Username` / `403 Permission denied`）
+
+- **症状**: 作成したブランチを push すると、次のように 2 種類のエラーが続けて出る。
+
+  ```
+  $ git push -u origin <ブランチ名>
+  fatal: could not read Username for 'https://github.com': terminal prompts disabled
+  remote: Permission to CHS-Training-Org/ai_training_for_chuo_system.git denied to <ユーザー名>.
+  fatal: unable to access 'https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git/': The requested URL returned error: 403
+  ```
+
+- **原因**: 1 つのログに 2 つの異なる原因が混ざっています。
+    - **(a) git に資格情報が渡っていない**：`gh auth login` の際に「Authenticate Git with your GitHub credentials?」を No にした、または SSH を選んだ場合、`gh` にはログインできていても git 単体には credential helper が設定されません。DevContainer のターミナルは非対話（`terminal prompts disabled`）のため入力を求められず、`could not read Username` で失敗します。
+    - **(b) リポジトリへの Write 権限がない**：Organization の招待が未承諾、ロールが Read、または `gh` のトークンに `repo` scope が不足している場合、`403 Permission denied` になります。`Permission to ... denied to <ユーザー名>` とユーザー名が表示されている場合はこちらです。
+- **切り分け**: DevContainer 内のターミナルで次を実行します。
+
+    ```bash
+    gh auth status
+    gh api repos/CHS-Training-Org/ai_training_for_chuo_system --jq .permissions
+    ```
+
+    `"push": true` が返れば Write 権限はあるので **(a)** が原因、`false` なら **(b)** が原因です。
+- **解決策**:
+    - **(a)** の場合：`gh auth setup-git` を実行して git に credential helper を設定してから、push し直す。
+    - **(b)** の場合：`gh auth refresh -s repo,workflow` でトークンに scope を付与し直す。それでも `"push": false` のままなら、GitHub からの招待メールを承諾済みかを確認し、未着・未承諾であれば運営担当者へ連絡する。
+
+!!! note "ブランチ保護ルールによる拒否は別のエラーになります"
+    ブランチ保護ルールで拒否された場合は `protected branch hook declined` / `GH006` という別のメッセージになります。上記のエラーが出ている場合は保護ルールではなく認証・権限が原因です。
 
 ---
 

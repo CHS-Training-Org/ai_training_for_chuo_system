@@ -196,6 +196,8 @@ gh auth login
 
 画面の指示に従って GitHub アカウントで認証してください。この認証は、以降の実習でブランチを push したり Issue / PR を作成する際に必要になります（`gh` 自体は `.devcontainer/devcontainer.json` の feature でインストール済みです）。
 
+認証方式は **HTTPS** を選び、「Authenticate Git with your GitHub credentials?」には **Yes** と答えてください。No にすると git 単体に資格情報が渡らず、後の `git push` が `could not read Username` で失敗します（後から `gh auth setup-git` を実行すれば修正できます）。
+
 **Claude Code**
 
 ```bash
@@ -471,5 +473,6 @@ claude
 | 認証後に `/auth/signin` へ戻され続ける | バックエンド未起動、または初期データ未投入が原因（[troubleshooting.md §起動・接続エラー](../develop/troubleshooting.md#startup)参照） |
 | `[BetterAuthError]: DOMAIN_AND_REGION_REQUIRED` で 500 エラー | `.env.local` 未設定が原因（ステップ 3 参照） |
 | DB 接続エラー・Flyway マイグレーション失敗 | [troubleshooting.md §DB・マイグレーション関連](../develop/troubleshooting.md#database) |
+| Git の push が `could not read Username` / `403 Permission denied` で失敗する | [troubleshooting.md §Git・GitHub 関連](../develop/troubleshooting.md#git) |
 | Claude Code が動かない・コンテナ起動が `.claude.json` で失敗する | [troubleshooting.md §AI ツール関連](../develop/troubleshooting.md#ai-tools) |
 | `@claude pr-review` に反応がない・観点3の回答が読み取られない | [troubleshooting.md §AI レビュー関連](../develop/troubleshooting.md#ai-review-trouble) |

@@ -45,6 +45,12 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 
 学習を始める前に、自分のトランクブランチを 1 本だけ作成します。
 
+:::tip[前提：リポジトリへの Write 権限]
+
+Organization からの招待を承諾し、リポジトリへの Write 権限がある状態で実施してください（`gh api repos/CHS-Training-Org/ai_training_for_chuo_system --jq .permissions` で `"push": true` を確認できます）。権限がない状態、または `gh auth login` で git の資格情報設定を No にした状態では push が失敗します。エラーが出た場合の切り分けは [troubleshooting.md §Git・GitHub 関連](./troubleshooting.md#git) を参照してください。
+
+:::
+
 **GitHub の画面から作成する場合**：リポジトリのブランチ一覧画面で `main` を選択し、ブランチ名の入力欄に `learner/<GitHubユーザー名>/main` と入力して作成します。
 
 **コマンドで作成する場合**：
