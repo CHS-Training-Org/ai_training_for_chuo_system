@@ -1,0 +1,3716 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AWS Labs AI-DLC から BookFlow に取り込んだ要素・反映先・状態・上流同期手順の管理台帳">
+      
+      
+        <meta name="author" content="Bizarress">
+      
+      
+        <link rel="canonical" href="https://github.com/CHS-Training-Org/ai_training_for_chuo_system/spec/aidlc-adoption/">
+      
+      
+        <link rel="prev" href="../../claude/agent-config/">
+      
+      
+        <link rel="next" href="../../guide/operations-guide/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.43">
+    
+    
+      
+        <title>AI-DLC 採用台帳 - BookFlow ドキュメント</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.fba56155.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/design-showcase.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/drawio.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/tech-stack.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="ナビゲーション"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ai-dlc" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="非表示にします">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            
+            
+  新しいデザインのドキュメントサイト（プレビュー版）を公開中です。
+  <a href="/ai_training_for_chuo_system/docs-next/">こちらから試す →</a>
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../.." title="BookFlow ドキュメント" class="md-header__button md-logo" aria-label="BookFlow ドキュメント" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="ナビゲーション">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BookFlow ドキュメント
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AI-DLC 採用台帳
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="検索">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="検索">
+  <button type="button" class="md-search__button">
+    検索
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/CHS-Training-Org/ai_training_for_chuo_system" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CHS-Training-Org/ai_training_for_chuo_system
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="タブ" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  ホーム
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/" class="md-tabs__link">
+          
+  
+  はじめに
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/dev-workflow/" class="md-tabs__link">
+          
+  
+  開発する
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../overview/" class="md-tabs__link">
+          
+  
+  仕様 (Spec)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/review-criteria/" class="md-tabs__link">
+          
+  
+  レビュー・完成
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  リファレンス
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/operations-guide/" class="md-tabs__link">
+          
+  
+  運用・管理
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="BookFlow ドキュメント" class="md-nav__button md-logo" aria-label="BookFlow ドキュメント" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    BookFlow ドキュメント
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CHS-Training-Org/ai_training_for_chuo_system" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CHS-Training-Org/ai_training_for_chuo_system
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ホーム
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  はじめに
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  はじめに
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  学習者向けガイド (Guide)
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  用語集
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/curriculum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  学習カリキュラム
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  環境構築・起動手順
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/ai-tools-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  AI ツール活用ガイド（Claude Code）
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/claude-code-best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Claude Code ベストプラクティス
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  開発する
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  開発する
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/dev-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  開発ワークフローガイド
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/coding-conventions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  コーディング規約
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/enhancement-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  選択課題カタログ
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  仕様 (Spec)
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  仕様 (Spec)
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  BookFlow 学習用リポジトリ概要
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  仕様書 (Spec)
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  要件定義
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../screen-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  画面仕様書
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  REST API 仕様書
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../er-diagram/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ER 図
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  エンハンス要件
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  エンハンス要件
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  エンハンス要件（ビジネス要求シート）
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/resource-list-filter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  リソース一覧の検索・フィルタ追加
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/resource-list-sort/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  リソース一覧のソート順選択
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/reservation-list-filter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  予約一覧のフィルタ拡張
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/resource-detail-info/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  リソース詳細画面の情報拡充
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/e2e-test-coverage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  既存機能の E2E テスト追加
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/recurring-reservation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  繰り返し予約
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/calendar-view/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  カレンダービュー
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/usage-statistics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  利用実績の集計・グラフ表示
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/csv-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  CSV 帳票出力
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/reservation-draft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  予約の下書き保存
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/multi-step-approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  多段階承認フロー
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/department-approver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  部署ごとの承認者設定
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/resource-image-upload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  リソース画像アップロード
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/audit-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  操作ログ・監査証跡
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../enhancements/openapi-client-gen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  OpenAPI クライアント自動生成
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  レビュー・完成
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  レビュー・完成
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/review-criteria/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  評価基準・レビュー観点
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  トラブルシューティング
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  リファレンス
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  リファレンス
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  AWS 標準アーキテクチャ（受注案件デフォルト構成）
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  デザインシステム
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  設計判断 (ADR)
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  設計判断 (ADR)
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-001-frontend-package-manager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-001 — フロントエンド：パッケージマネージャ
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-002-frontend-styling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-002 — フロントエンド：スタイリング
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-003-frontend-ui-components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-003 — フロントエンド：UI コンポーネントライブラリ
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-004-frontend-data-fetching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-004 — フロントエンド：データ取得戦略
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-005-frontend-form-library/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-005 — フロントエンド：フォームライブラリ
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-006-frontend-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-006 — フロントエンド：バリデーション
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-007-frontend-client-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-007 — フロントエンド：クライアント状態管理
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-008-frontend-auth-client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-008 — フロントエンド：認証クライアント
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-009-frontend-test-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-009 — フロントエンド：テスト戦略
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-010-frontend-lint-format/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-010 — フロントエンド：Lint / Format
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-011-backend-build-tool/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-011 — バックエンド：ビルドツール
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-012-backend-orm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-012 — バックエンド：データアクセス（ORM）
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-013-backend-db-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-013 — バックエンド：DB マイグレーション
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-014-backend-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-014 — バックエンド：バリデーション
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-015-backend-api-docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-015 — バックエンド：API ドキュメント
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-016-backend-auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-016 — バックエンド：認証・認可
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-017-backend-logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-017 — バックエンド：ロギング戦略
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-018-backend-test-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-018 — バックエンド：テスト戦略
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-019-backend-code-quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-019 — バックエンド：コード品質ツール
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-020-aidlc-engine-adoption/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-020 — AI-DLC エンジン完全採用（PHASE4 タスク 3.7 採用方針転換）
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-021-okf-frontmatter-adoption/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-021 — ドキュメント：OKF 準拠 frontmatter の部分採用
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-022-wsl-container-future-adoption/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-022 — 開発環境：WSL Container（wslc）の将来採用
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-023-mentor-gate-removal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-023 — 運用プロセス：承認ゲート廃止・セルフ完結運用への移行
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-024-ai-first-review-adoption/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-024 — AI一次レビュー（検討A）の採用
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-025-ai-review-completion-gate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-025 — AIレビューをタスク完了判定に格上げ
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decision/ADR-026-comprehension-check-quiz-format/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADR-026 — 理解度チェックを4択化し完了条件から誤答を外す
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Claude Code 設定
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Claude Code 設定
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../claude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Claude Code 設定
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../claude/agent-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Claude Code 設定台帳
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  AI-DLC 採用台帳
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  AI-DLC 採用台帳
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        採用方針の変更記録
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#state-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        状態管理の写像
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        採用台帳（上流 32 ファイル全カバレッジ）
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="採用台帳（上流 32 ファイル全カバレッジ）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        オーケストレーション（1ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common11" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        common（全フェーズ共通、11ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inception17" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        inception（フェーズ1、7ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#construction26" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        construction（フェーズ2、6ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operations31" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        operations（フェーズ3、1ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extensions6" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        extensions（オプトイン拡張、6ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        上流同期手順
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        関連リンク
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  運用・管理
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  運用・管理
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/operations-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  運用ガイド
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/issue-registration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ラベル設計と課題 Issue 起票手順
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/learning-effectiveness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  学習効果測定（満足度アンケート）
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        採用方針の変更記録
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#state-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        状態管理の写像
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        採用台帳（上流 32 ファイル全カバレッジ）
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="採用台帳（上流 32 ファイル全カバレッジ）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        オーケストレーション（1ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common11" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        common（全フェーズ共通、11ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inception17" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        inception（フェーズ1、7ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#construction26" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        construction（フェーズ2、6ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operations31" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        operations（フェーズ3、1ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extensions6" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        extensions（オプトイン拡張、6ファイル）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        上流同期手順
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        関連リンク
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="ナビゲーション" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  
+  <span class="md-ellipsis">
+    ホーム
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+    
+    
+    
+      <li class="md-path__item">
+        <a href="../../ARCHITECTURE/" class="md-path__link">
+          
+  
+  <span class="md-ellipsis">
+    リファレンス
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="ai-dlc">AI-DLC 採用台帳<a class="headerlink" href="#ai-dlc" title="Permanent link">&para;</a></h1>
+<p><a href="https://github.com/awslabs/aidlc-workflows">AWS Labs AI-DLC（<code>awslabs/aidlc-workflows</code>）</a> のうち、本リポジトリに取り込み・反映した要素と、その反映先・状態を管理する台帳。</p>
+<ul>
+<li><strong>固定コミット</strong>: <code>b19c81928bdf1b8d13856f462fcf2ede1720b4cb</code>（2026-06-08、VERSION 0.1.8）</li>
+<li><strong>取得日</strong>: 2026-06-14（common）/ 2026-06-18（inception / construction / operations / extensions / core-workflow）</li>
+<li><strong>ライセンス</strong>: MIT No Attribution（vendored ファイルに同梱）</li>
+<li><strong>vendored スナップショット</strong>: <a href="../../../vendor/aidlc-rules/"><code>vendor/aidlc-rules/</code></a>（逐語コピー・出典は <code>PROVENANCE.md</code>）</li>
+<li><strong>BookFlow 翻案済みステージファイル</strong>: <a href="../../../.aidlc-rule-details/"><code>.aidlc-rule-details/</code></a>（パス翻案済み活性資産）</li>
+</ul>
+<hr />
+<h2 id="_1">採用方針の変更記録<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p><strong>2026-06-18 採用方針更新</strong>（ADR-020 参照）: PHASE4 タスク 3.7「案B改良（写像のみ・エンジン非採用）」から「エンジン完全導入（replace）+ Docs/spec/ 写像統合」に転換。<br />
+AI-DLC エンジン（<code>core-workflow.md</code> + 全ステージ）を BookFlow の標準ワークフローとして採用し、<code>dev-workflow.md</code> をエンジンベースに全面改訂。</p>
+<p><strong>2026-06-24 起動メカニズム変更</strong>（ADR-020 追記参照）: エンジン本体を <code>.claude/rules/aidlc-core.md</code>（常時読込、soft 委譲）から <strong><code>.claude/skills/aidlc/SKILL.md</code>（<code>/aidlc</code> スキル）へ移設</strong>。<br />
+発火は <code>/aidlc</code> 明示起動または「AI-DLC で進める」等の意図指定時のみ（常時 OVERRIDES ではない）。<br />
+これによりスキル内で硬い per-stage 意味論（承認ゲート、成果物生成、監査ログ記録）が保持され、台帳の「活性化」主張が実行時に履行される。常時読込の <code>aidlc-core.md</code> は薄いポインタに縮小。</p>
+<p><strong>2026-07-16 Pre-flight ブランチ確認追加</strong>: <code>/aidlc</code> 起動時、エンジン開始（Workspace Detection）より前に BookFlow 独自の前置き処理として、ブランチ作成し忘れを検知して確認する処理を追加。上流ステージ定義（<code>.aidlc-rule-details/</code> 配下）には変更なし。</p>
+<hr />
+<h2 id="state-mapping">状態管理の写像<a class="headerlink" href="#state-mapping" title="Permanent link">&para;</a></h2>
+<p>エンジンが前提とする状態管理ファイルの BookFlow 写像：</p>
+<table>
+<thead>
+<tr>
+<th>上流ファイル</th>
+<th>BookFlow 写像先</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>aidlc-docs/aidlc-state.md</code></td>
+<td><code>Docs/spec/aidlc-state.md</code></td>
+<td>単一ファイル（ツリー新設なし）でセッション復元機構（<code>session-continuity.md</code>）が機能する</td>
+</tr>
+<tr>
+<td><code>aidlc-docs/audit.md</code></td>
+<td><code>Docs/spec/aidlc-audit.md</code></td>
+<td>単一の追記専用ログファイル。並行ツリーの懸念なし。学習者の AI 利用記録と相補的</td>
+</tr>
+<tr>
+<td><code>aidlc-docs/&lt;phase&gt;/</code> 設計成果物</td>
+<td><code>Docs/spec/aidlc-docs/&lt;phase&gt;/</code>（作業用）→ 永続成果は既存 <code>Docs/spec/</code> ファイルに統合</td>
+<td>aidlc-docs/ という<strong>ツリー</strong>は新設せず <code>Docs/spec/</code> 内の 1 サブディレクトリに限定</td>
+</tr>
+<tr>
+<td>units of work 分解</td>
+<td>縦切り課題 Issue（<code>feature/&lt;GitHubユーザー名&gt;/&lt;issue番号&gt;-&lt;short-desc&gt;</code> 単位）</td>
+<td>既存ブランチ命名・課題粒度と一致</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="32">採用台帳（上流 32 ファイル全カバレッジ）<a class="headerlink" href="#32" title="Permanent link">&para;</a></h2>
+<h3 id="1">オーケストレーション（1ファイル）<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>上流ファイル</th>
+<th>役割</th>
+<th>BookFlow 反映先</th>
+<th>採用状態</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>aws-aidlc-rules/core-workflow.md</code></td>
+<td>AI-DLC エンジン本体。3フェーズ・全ステージ・ゲート・監査ログ・パス解決・extensions ローディングを統括</td>
+<td><strong><code>.claude/skills/aidlc/SKILL.md</code>（エンジン本体・硬い意味論）</strong> + <code>.claude/rules/aidlc-core.md</code>（薄いポインタ・常時読込）+ <code>.aidlc-rule-details/</code>（ステージファイル群）</td>
+<td><strong>エンジン採用（スキル化・活性化）</strong></td>
+<td>BookFlow の標準ワークフローとして教える。発火は <code>/aidlc</code> 明示起動または「AI-DLC で進める」等の意図指定時。スキル内で per-stage MANDATORY・承認ゲート・成果物生成・監査ログが確定的に機能する</td>
+</tr>
+</tbody>
+</table>
+<h3 id="common11">common（全フェーズ共通、11ファイル）<a class="headerlink" href="#common11" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>上流ファイル</th>
+<th>役割</th>
+<th>BookFlow 反映先</th>
+<th>採用状態</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>common/ascii-diagram-standards.md</code></td>
+<td>ASCII 図の文字種・整列規約</td>
+<td><code>.claude/rules/aidlc-guardrails.md</code> §4</td>
+<td>rules 化（既存）</td>
+<td>ドキュメント内の図表品質を保つための具体的な規約として有用</td>
+</tr>
+<tr>
+<td><code>common/content-validation.md</code></td>
+<td>ファイル作成前の Mermaid/ASCII 構文検証</td>
+<td><code>.claude/rules/aidlc-guardrails.md</code> §3</td>
+<td>rules 化（既存）</td>
+<td>仕様ドキュメント（Mermaid 多用）の品質保証に直結</td>
+</tr>
+<tr>
+<td><code>common/depth-levels.md</code></td>
+<td>問題の複雑さに応じた出力粒度の調整</td>
+<td><code>.claude/rules/aidlc-guardrails.md</code> §2</td>
+<td>rules 化（既存）</td>
+<td>plan-first での計画粒度判断に有用</td>
+</tr>
+<tr>
+<td><code>common/error-handling.md</code></td>
+<td>ワークフローエンジンのエラー処理・復旧手順</td>
+<td><code>.aidlc-rule-details/common/error-handling.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>エンジン導入により前提（<code>aidlc-state.md</code> / <code>audit.md</code>）が揃った。状態ファイルパスを BookFlow 写像先に翻案済み</td>
+</tr>
+<tr>
+<td><code>common/overconfidence-prevention.md</code></td>
+<td>過信防止（不確実なら質問する）</td>
+<td><code>.claude/rules/aidlc-guardrails.md</code> §1</td>
+<td>rules 化（既存）</td>
+<td>「プロセスの厳格さは簡略化しない」方針と直結する中核的ガードレール</td>
+</tr>
+<tr>
+<td><code>common/process-overview.md</code></td>
+<td>AI-DLC 3フェーズワークフローの技術参照（Mermaid 図含む）</td>
+<td><code>Docs/guide/dev-workflow.md</code> の写像表・標準フロー図</td>
+<td><strong>参照のみ（写像済み）</strong></td>
+<td>フェーズ構造は <code>dev-workflow.md #aidlc-mapping</code> で写像済み（エンジン採用に更新）。重複再構成はしない</td>
+</tr>
+<tr>
+<td><code>common/question-format-guide.md</code></td>
+<td>確認質問の様式（専用ファイル＋選択肢＋Other）</td>
+<td><code>.claude/rules/aidlc-questions.md</code></td>
+<td>rules 化（既存）</td>
+<td>様式上の規律は Claude Code の <code>AskUserQuestion</code> 運用に翻案して有用</td>
+</tr>
+<tr>
+<td><code>common/session-continuity.md</code></td>
+<td><code>aidlc-state.md</code> 再開時のアーティファクト読み込み手順</td>
+<td><code>.aidlc-rule-details/common/session-continuity.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>エンジン導入により前提が揃った。<code>Docs/spec/aidlc-state.md</code> からの first unchecked item レジューム機構として機能</td>
+</tr>
+<tr>
+<td><code>common/terminology.md</code></td>
+<td>AI-DLC 独自用語集（Phase/Stage/Unit of Work 等）</td>
+<td><code>.aidlc-rule-details/common/terminology.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>エンジン採用により用語体系が BookFlow の正式用語となった。用語集としてそのまま採用可</td>
+</tr>
+<tr>
+<td><code>common/welcome-message.md</code></td>
+<td>AI-DLC 開始時のユーザー向けウェルカムメッセージ</td>
+<td><code>.aidlc-rule-details/common/welcome-message.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（条件付き活性化）</strong></td>
+<td>エンジン導入により有効。Claude Code には「エンジン起動」イベントがないため、ワークフロー開始時に 1 回表示する形で <code>aidlc-core.md</code> §MANDATORY が発動</td>
+</tr>
+<tr>
+<td><code>common/workflow-changes.md</code></td>
+<td><code>aidlc-state.md</code> ベースのワークフロー変更管理</td>
+<td><code>.aidlc-rule-details/common/workflow-changes.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>エンジン導入により前提が揃った。状態ファイルパスを <code>Docs/spec/aidlc-state.md</code> に翻案済み</td>
+</tr>
+</tbody>
+</table>
+<h3 id="inception17">inception（フェーズ1、7ファイル）<a class="headerlink" href="#inception17" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>上流ファイル</th>
+<th>役割</th>
+<th>BookFlow 反映先</th>
+<th>採用状態</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inception/workspace-detection.md</code></td>
+<td>ワークスペース検出・state 初期化（必須・最初）</td>
+<td><code>.aidlc-rule-details/inception/workspace-detection.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>必須ステージ。<code>Docs/spec/aidlc-state.md</code> の初期化・Brownfield/Greenfield 判定</td>
+</tr>
+<tr>
+<td><code>inception/reverse-engineering.md</code></td>
+<td>既存コード解析（Brownfield のみ・条件付き）</td>
+<td><code>.aidlc-rule-details/inception/reverse-engineering.md</code>（翻案済み）+ 将来 <code>/reverse-engineering</code> スキル化</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>学習者向け「コードベース理解ガイド」（<a href="../../guide/curriculum/#codebase-understanding"><code>curriculum.md#codebase-understanding</code></a>）に直結（台帳「今後の候補」から実装済みに昇格）</td>
+</tr>
+<tr>
+<td><code>inception/requirements-analysis.md</code></td>
+<td>要件分析（必須・深さ適応型）</td>
+<td><code>.aidlc-rule-details/inception/requirements-analysis.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>必須ステージ。成果は <code>Docs/spec/requirements.md</code> に統合</td>
+</tr>
+<tr>
+<td><code>inception/user-stories.md</code></td>
+<td>ユーザーストーリー作成（条件付き）</td>
+<td><code>.aidlc-rule-details/inception/user-stories.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>条件付きステージ。ユーザー影響のある機能開発時に実行</td>
+</tr>
+<tr>
+<td><code>inception/workflow-planning.md</code></td>
+<td>ワークフロー計画・ステージ EXECUTE/SKIP 判断（必須）</td>
+<td><code>.aidlc-rule-details/inception/workflow-planning.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>必須ステージ。通常（agent）モードで実行計画を提示し、学習者自身がチャットで確認・承認する</td>
+</tr>
+<tr>
+<td><code>inception/application-design.md</code></td>
+<td>コンポーネント・サービス設計（条件付き）</td>
+<td><code>.aidlc-rule-details/inception/application-design.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>条件付きステージ。新コンポーネント・サービスが必要な場合に実行</td>
+</tr>
+<tr>
+<td><code>inception/units-generation.md</code></td>
+<td>units of work 分解（条件付き）</td>
+<td><code>.aidlc-rule-details/inception/units-generation.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>条件付きステージ。複数ユニット分割が必要な場合に実行。分解結果は縦切り Issue に写像</td>
+</tr>
+</tbody>
+</table>
+<h3 id="construction26">construction（フェーズ2、6ファイル）<a class="headerlink" href="#construction26" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>上流ファイル</th>
+<th>役割</th>
+<th>BookFlow 反映先</th>
+<th>採用状態</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>construction/functional-design.md</code></td>
+<td>機能設計・ビジネスロジック設計（条件付き・ユニット別）</td>
+<td><code>.aidlc-rule-details/construction/functional-design.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>条件付きステージ。新データモデル・複雑なビジネスロジックに実行</td>
+</tr>
+<tr>
+<td><code>construction/nfr-requirements.md</code></td>
+<td>非機能要件・技術スタック選定（条件付き・ユニット別）</td>
+<td><code>.aidlc-rule-details/construction/nfr-requirements.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>条件付きステージ。BookFlow の Spring Boot + Next.js スタックに対応</td>
+</tr>
+<tr>
+<td><code>construction/nfr-design.md</code></td>
+<td>NFR パターン・論理コンポーネント設計（条件付き・ユニット別）</td>
+<td><code>.aidlc-rule-details/construction/nfr-design.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>条件付きステージ。NFR Requirements 実行時に続けて実行</td>
+</tr>
+<tr>
+<td><code>construction/infrastructure-design.md</code></td>
+<td>インフラ・デプロイアーキテクチャ設計（条件付き・ユニット別）</td>
+<td><code>.aidlc-rule-details/construction/infrastructure-design.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>条件付きステージ。BookFlow の Docker Compose / DevContainer 環境に対応</td>
+</tr>
+<tr>
+<td><code>construction/code-generation.md</code></td>
+<td>コード生成（必須・ユニット別。計画→生成の 2 段階）</td>
+<td><code>.aidlc-rule-details/construction/code-generation.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>必須ステージ。Spec-first との統合：コード生成前に <code>Docs/spec/</code> 更新（<code>/update-spec</code> スキル）</td>
+</tr>
+<tr>
+<td><code>construction/build-and-test.md</code></td>
+<td>ビルド・テスト手順生成（必須・全ユニット完了後）</td>
+<td><code>.aidlc-rule-details/construction/build-and-test.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（翻案・活性化）</strong></td>
+<td>必須ステージ。CI 品質ゲート（<code>CI Frontend</code> / <code>CI Backend</code>）に対応</td>
+</tr>
+</tbody>
+</table>
+<h3 id="operations31">operations（フェーズ3、1ファイル）<a class="headerlink" href="#operations31" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>上流ファイル</th>
+<th>役割</th>
+<th>BookFlow 反映先</th>
+<th>採用状態</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>operations/operations.md</code></td>
+<td>デプロイ・監視（将来機能のプレースホルダー）</td>
+<td><code>.aidlc-rule-details/operations/operations.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（プレースホルダー）</strong></td>
+<td>上流同様プレースホルダー。BookFlow の CI 品質ゲート（Operations 相当）が現状の実体</td>
+</tr>
+</tbody>
+</table>
+<h3 id="extensions6">extensions（オプトイン拡張、6ファイル）<a class="headerlink" href="#extensions6" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>上流ファイル</th>
+<th>役割</th>
+<th>BookFlow 反映先</th>
+<th>採用状態</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>extensions/security/baseline/security-baseline.md</code></td>
+<td>セキュリティベースラインルール（フルルール）</td>
+<td><code>.aidlc-rule-details/extensions/security/baseline/security-baseline.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（opt-in 時にロード）</strong></td>
+<td>既存セキュリティ監査（<code>Docs/decision/</code> ADR）と相補的</td>
+</tr>
+<tr>
+<td><code>extensions/security/baseline/security-baseline.opt-in.md</code></td>
+<td>セキュリティ拡張のオプトイン質問</td>
+<td><code>.aidlc-rule-details/extensions/security/baseline/security-baseline.opt-in.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（Requirements Analysis で表示）</strong></td>
+<td>Requirements Analysis で学習者にセキュリティ適用有無を問う</td>
+</tr>
+<tr>
+<td><code>extensions/resiliency/baseline/resiliency-baseline.md</code></td>
+<td>レジリエンシーベースラインルール（フルルール）</td>
+<td><code>.aidlc-rule-details/extensions/resiliency/baseline/resiliency-baseline.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（opt-in 時にロード）</strong></td>
+<td>AWS Well-Architected ベース。BookFlow の Spring Boot + Docker 環境に対応</td>
+</tr>
+<tr>
+<td><code>extensions/resiliency/baseline/resiliency-baseline.opt-in.md</code></td>
+<td>レジリエンシー拡張のオプトイン質問</td>
+<td><code>.aidlc-rule-details/extensions/resiliency/baseline/resiliency-baseline.opt-in.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（Requirements Analysis で表示）</strong></td>
+<td>Requirements Analysis で学習者にレジリエンシー適用有無を問う</td>
+</tr>
+<tr>
+<td><code>extensions/testing/property-based/property-based-testing.md</code></td>
+<td>プロパティベーステストルール（フルルール）</td>
+<td><code>.aidlc-rule-details/extensions/testing/property-based/property-based-testing.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（opt-in 時にロード）</strong></td>
+<td>Vitest + JUnit 5 テスト基盤でのプロパティベーステスト適用</td>
+</tr>
+<tr>
+<td><code>extensions/testing/property-based/property-based-testing.opt-in.md</code></td>
+<td>プロパティベーステスト拡張のオプトイン質問</td>
+<td><code>.aidlc-rule-details/extensions/testing/property-based/property-based-testing.opt-in.md</code>（翻案済み）</td>
+<td><strong>エンジン採用（Requirements Analysis で表示）</strong></td>
+<td>Requirements Analysis で学習者にプロパティベーステスト適用有無を問う</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_2">上流同期手順<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="https://github.com/awslabs/aidlc-workflows"><code>awslabs/aidlc-workflows</code></a> の最新コミットを確認する。</li>
+<li><a href="../../../vendor/aidlc-rules/"><code>vendor/aidlc-rules/</code></a> の各ファイルを新しい上流コミットの内容と diff する（vendored スナップショットが diff の基準）。</li>
+<li>差分があった内容について、上の採用台帳テーブルと以下を更新する：</li>
+<li><code>.claude/rules/aidlc-core.md</code>（core-workflow 翻案）</li>
+<li><code>.claude/rules/aidlc-guardrails.md</code> / <code>.claude/rules/aidlc-questions.md</code></li>
+<li><code>.aidlc-rule-details/</code> の対応ファイル（パス翻案を維持しつつ内容を更新）</li>
+<li><code>vendor/aidlc-rules/</code> の内容、<code>vendor/aidlc-rules/PROVENANCE.md</code> の固定コミット・取得日・VERSION を新しい値に更新する。</li>
+<li>本ファイル冒頭の固定コミット・取得日表記を更新する。</li>
+</ol>
+<p>専用の同期スキル・CI は設けていない。上記手順を都度実施する。</p>
+<hr />
+<h2 id="_3">関連リンク<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>BookFlow の標準フロー・フェーズ詳細: <a href="../../guide/dev-workflow/"><code>Docs/guide/dev-workflow.md</code></a></li>
+<li>取り込み案の検討記録: <a href="../../plan/aidlc-overview.html"><code>Docs/plan/aidlc-overview.html</code></a></li>
+<li>採用転換 ADR: <a href="../../decision/"><code>Docs/decision/</code></a>（ADR-020 参照）</li>
+<li>vendored スナップショットの出典: <a href="../../../vendor/aidlc-rules/PROVENANCE/"><code>vendor/aidlc-rules/PROVENANCE.md</code></a></li>
+<li>BookFlow 翻案済みステージファイル: <a href="../../../.aidlc-rule-details/"><code>.aidlc-rule-details/</code></a></li>
+<li>状態トラッカー: <a href=".././aidlc-state/"><code>Docs/spec/aidlc-state.md</code></a></li>
+<li>監査ログ: <a href=".././aidlc-audit/"><code>Docs/spec/aidlc-audit.md</code></a></li>
+</ul>
+
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+      
+        <span class="md-tag">ai-dlc</span>
+      
+    
+      
+      
+      
+      
+        <span class="md-tag">adoption</span>
+      
+    
+      
+      
+      
+      
+        <span class="md-tag">vendor</span>
+      
+    
+  </nav>
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="フッター" >
+        
+          
+          <a href="../../claude/agent-config/" class="md-footer__link md-footer__link--prev" aria-label="前: Claude Code 設定台帳">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                前
+              </span>
+              <div class="md-ellipsis">
+                Claude Code 設定台帳
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../guide/operations-guide/" class="md-footer__link md-footer__link--next" aria-label="次: 運用ガイド">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                次
+              </span>
+              <div class="md-ellipsis">
+                運用ガイド
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 中央システム
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.tabs","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.top","navigation.tracking","search.highlight","header.autohide"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"コピーしました","clipboard.copy":"クリップボードへコピー","search.result.more.one":"このページ内にもう1件見つかりました","search.result.more.other":"このページ内にあと#件見つかりました","search.result.none":"何も見つかりませんでした","search.result.one":"1件見つかりました","search.result.other":"#件見つかりました","search.result.placeholder":"検索キーワードを入力してください","search.result.term.missing":"検索に含まれない","select.version":"バージョン切り替え"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.6e5f0216.min.js"></script>
+      
+    
+  </body>
+</html>
