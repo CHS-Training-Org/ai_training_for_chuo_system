@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -67,9 +68,12 @@ public class ResourceService {
    *
    * <p>ソート（{@code pageable.getSort()}）は DB の {@code ORDER BY} には委譲せず、候補リスト取得後に {@link Comparator}
    * で適用する。DB 委譲では null 定員の末尾固定（BR-03）や大文字小文字非依存（BR-05）を DB のロケール・NULLS
-   * 順序既定に依存させてしまい、環境によって結果が変わるため（詳細は {@code aidlc-audit.md} 参照）。
+   * 順序既定に依存させてしまい、環境によって結果が変わるため（詳細は {@code aidlc-audit.md} 参照）。{@code keyword} によるフィルタも同じ理由から DB の
+   * {@code ILIKE} 等には委譲せず、候補リスト取得後に Java 側（{@link Locale#ROOT} での大文字小文字非依存比較）で判定する。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param keyword キーワード検索（null または空白のみの場合はフィルタしない。{@code name} / {@code description}
+   *     への部分一致・大文字小文字非依存）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
@@ -79,11 +83,13 @@ public class ResourceService {
   @Transactional(readOnly = true)
   public Page<ResourceResponse> list(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
     List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    candidates = filterByKeyword(candidates, keyword);
     if (from != null && to != null) {
       candidates = excludeOccupied(candidates, from, to);
     }
@@ -116,6 +122,27 @@ public class ResourceService {
           ? resourceRepository.findByCategoryAndIsActiveTrue(category)
           : resourceRepository.findByIsActiveTrue();
     }
+  }
+
+  /**
+   * 候補リストを {@code keyword} で絞り込む（{@code name} / {@code description} への部分一致、大文字小文字非依存）。
+   *
+   * @param candidates 候補リスト
+   * @param keyword キーワード（null または空白のみの場合は絞り込みをスキップする）
+   * @return 絞り込み後のリスト
+   */
+  private List<Resource> filterByKeyword(List<Resource> candidates, String keyword) {
+    if (keyword == null || keyword.isBlank()) {
+      return candidates;
+    }
+    String needle = keyword.toLowerCase(Locale.ROOT);
+    return candidates.stream()
+        .filter(
+            r ->
+                r.getName().toLowerCase(Locale.ROOT).contains(needle)
+                    || (r.getDescription() != null
+                        && r.getDescription().toLowerCase(Locale.ROOT).contains(needle)))
+        .toList();
   }
 
   /** 占有済み予約があるリソースを候補リストから除外する（重複するリソース ID を一括取得、1 クエリ）。 */
