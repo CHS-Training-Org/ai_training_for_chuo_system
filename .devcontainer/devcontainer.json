@@ -21,7 +21,17 @@
   //     安全性はスクリプト内コメント参照）。Rancher Desktop 以外では no-op。`|| true` で起動を止めない。
   "initializeCommand": "[ -f \"$HOME/.claude.json\" ] || printf '{}' > \"$HOME/.claude.json\"; sh \"${localWorkspaceFolder}/scripts/clean-devcontainer-mounts.sh\" || true",
   "features": {
-    "ghcr.io/devcontainers/features/java:1": { "version": "25" },
+    // jdkDistro に tem（Eclipse Temurin）を明示する。
+    // feature の既定値は ms（Microsoft Build of OpenJDK）だが、SDKMAN における
+    // Microsoft の識別子は 25.0.4+1-ms のようにビルド番号 +1 を含む一方、
+    // feature の install.sh がバージョン解決に使う正規表現は数字の後ろに
+    // ドット区切りの断片しか許さないため一致せず、
+    // "Version 25 not found. Available versions:"（空）で exit 1 する。
+    // feature には ms に無ければ tem へ切り替えるフォールバックがあるが、
+    // その判定が ms を含む行から数字だけを抜き出す緩いもので 25.0.4 を拾うため働かない。
+    // Temurin の識別子は 25.0.4-tem でビルド番号を含まず、正規表現に一致する。
+    // 詳細は Docs/guide/troubleshooting.md の該当項目を参照。
+    "ghcr.io/devcontainers/features/java:1": { "version": "25", "jdkDistro": "tem" },
     "ghcr.io/devcontainers/features/node:2.0.0": { "version": "24" },
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
