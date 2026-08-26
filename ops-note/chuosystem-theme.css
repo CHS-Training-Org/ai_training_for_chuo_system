@@ -312,6 +312,27 @@ main.doc blockquote.qa-teacher {
 }
 main.doc blockquote.qa-teacher strong { color: var(--cs-amber); }
 
+/* 文書冒頭の位置づけ注記。本文中の引用（斜体・グレー・細い罫）と同じ見た目だと
+   ページ最重要のメッセージが最も弱く見えてしまうため、図面の凡例欄をモチーフに
+   独立した重みを与える。講師発言を表す .qa-teacher とは用途が別。 */
+main.doc blockquote.note-lead {
+  margin: 0 0 2.4rem;
+  padding: 1.15rem 1.35rem;
+  background: var(--cs-card);
+  border: 1px solid var(--cs-line);
+  border-left: 4px solid var(--cs-amber);
+  border-radius: 2px;
+  color: var(--cs-ink);
+  font-style: normal;
+}
+main.doc blockquote.note-lead p { margin: 0; }
+main.doc blockquote.note-lead p + p {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--cs-line);
+}
+main.doc blockquote.note-lead strong { color: var(--cs-navy); }
+
 /* ------------------------------------------------------------
    Tables — 仕様一覧
    ------------------------------------------------------------ */
@@ -456,7 +477,9 @@ main.doc hr {
 
 .site-footer {
   text-align: center;
-  color: var(--cs-muted-soft);
+  /* --cs-muted-soft は paper 背景に対して 2.77:1 で WCAG AA (4.5:1) 未達。
+     11.5px の小さな文字なのでトークンではなくここだけ濃い色にする。 */
+  color: var(--cs-muted);
   font-family: var(--f-mono);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
