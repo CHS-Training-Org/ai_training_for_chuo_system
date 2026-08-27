@@ -198,6 +198,93 @@ class ResourceControllerTest extends BaseControllerTest {
   }
 
   // ---------------------------------------------------------------------------
+  // GET /api/resources — キーワード検索
+  // ---------------------------------------------------------------------------
+
+  private UUID insertResourceWithDescription(String name, String category, String description) {
+    UUID id = UUID.randomUUID();
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, description, requires_approval, is_active,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        id,
+        name,
+        category,
+        description,
+        false,
+        true,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    return id;
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsMatchingResourceOnly() throws Exception {
+    // seed した ACTIVE_RESOURCE_ID（"第1会議室"）にのみ部分一致する
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議室").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordCaseInsensitive_returnsMatch() throws Exception {
+    // seed データは全角のみのため、ここでは大文字小文字を含む別リソースで検証する
+    UUID resource = insertResourceWithDescription("Meeting Room X", "ROOM", null);
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources").param("keyword", "meeting").accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[?(@.id == '" + resource + "')]").exists());
+    } finally {
+      deleteResources(resource);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingDescription_returnsMatchingResource() throws Exception {
+    UUID described = insertResourceWithDescription("会議室B", "ROOM", "プロジェクター完備");
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources").param("keyword", "プロジェクター").accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[?(@.id == '" + described + "')]").exists())
+          .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+    } finally {
+      deleteResources(described);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordNoMatch_returnsEmptyContent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "存在しない備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(0));
+  }
+
+  @Test
+  @WithMockMember
+  void list_withCategoryAndKeywordCombined_appliesAndCondition() throws Exception {
+    // ACTIVE_RESOURCE_ID（ROOM・「第1会議室」）は EQUIPMENT では絞られるため、
+    // category と keyword が AND 条件であることを確認する回帰テスト。
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "EQUIPMENT")
+                .param("keyword", "会議室")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  // ---------------------------------------------------------------------------
   // GET /api/resources — ソート（issue #22）
   //
   // 既存シード（ROOM / EQUIPMENT）と干渉しないよう、ソート専用テストは
