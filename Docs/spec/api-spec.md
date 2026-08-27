@@ -167,7 +167,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 
 | メソッド | パス | 概要 | 権限 |
 |--------|------|------|------|
-| GET | `/api/resources` | リソース一覧（カテゴリ・空き日時でフィルタ可、並び替え可） | 全ロール |
+| GET | `/api/resources` | リソース一覧（カテゴリ・キーワード・空き日時でフィルタ可、並び替え可） | 全ロール |
 | POST | `/api/resources` | リソース登録 | ADMIN |
 | GET | `/api/resources/{id}` | リソース詳細 | 全ロール |
 | PUT | `/api/resources/{id}` | リソース更新 | ADMIN |
@@ -264,7 +264,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&sort=capacity,desc&page=0&size=20
+GET /api/resources?category=ROOM&keyword=会議&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&sort=capacity,desc&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -273,12 +273,15 @@ Authorization: Bearer <JWT>
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
+| `keyword` | string | ❌ | `name` / `description` への部分一致（大文字小文字を区別しない） |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
 | `sort` | string | ❌ | 並び替え。`name` / `capacity` / `createdAt` のいずれか + `,` + `asc` / `desc`（例：`capacity,desc`）。デフォルトは `createdAt,asc` |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
+> `category`・`keyword`・`from`/`to` は AND 条件で組み合わせられる。`keyword` は `name` または `description` のいずれかに部分一致すれば結果に含める（`description` が未設定のリソースはキーワード側では一致しない）。未指定または空文字の場合はキーワードによる絞り込みを行わない。
+>
 > `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
 >
 > `sort` に許可されていないフィールド名・方向を指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。`name` の比較は大文字小文字を区別しない。`capacity` が未設定のリソースは、昇順・降順いずれを選択した場合も一覧の末尾に表示する。

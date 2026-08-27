@@ -62,9 +62,11 @@ public class ResourceController {
    * リソース一覧を返す（全ロール・認証必須）。
    *
    * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を同時指定した場合は、当該時間帯に
-   * {@code PENDING} / {@code APPROVED} の予約が存在しないリソースのみを返す。
+   * {@code PENDING} / {@code APPROVED} の予約が存在しないリソースのみを返す。 {@code category} / {@code keyword} /
+   * {@code from,to} は AND 条件で組み合わせられる。
    *
    * @param category カテゴリフィルタ（任意）
+   * @param keyword キーワード検索（任意・name/description への部分一致、既存フィルタと AND 条件）
    * @param from 空き確認の開始日時（任意・to と同時指定）
    * @param to 空き確認の終了日時（任意・from と同時指定）
    * @param pageable ページネーション（デフォルト: size=20、sort=createdAt,asc）
@@ -74,6 +76,7 @@ public class ResourceController {
   @GetMapping
   public Page<ResourceResponse> list(
       @RequestParam(required = false) ResourceCategory category,
+      @RequestParam(required = false) String keyword,
       @RequestParam(required = false) LocalDateTime from,
       @RequestParam(required = false) LocalDateTime to,
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC)
@@ -85,7 +88,7 @@ public class ResourceController {
     }
     validateSort(pageable.getSort());
     boolean isAdmin = currentUser.getRole() == Role.ADMIN;
-    return resourceService.list(category, from, to, isAdmin, pageable);
+    return resourceService.list(category, keyword, from, to, isAdmin, pageable);
   }
 
   /**
