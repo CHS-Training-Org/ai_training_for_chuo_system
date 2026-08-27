@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs_next=self.webpackChunkdocs_next||[]).push([["960"],{8350(e){e.exports=JSON.parse('{"name":"docusaurus-plugin-search-local","id":"default"}')}}]);
