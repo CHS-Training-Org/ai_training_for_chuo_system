@@ -17,6 +17,7 @@ import type { CreateResourceInput, UpdateResourceInput } from "@/lib/schemas/res
 
 interface ListResourcesParams {
   category?: string;
+  keyword?: string;
   from?: string;
   to?: string;
   sort?: string;
@@ -33,11 +34,14 @@ interface ListResourcesParams {
  *
  * ADMIN は is_active=false のリソースも含む（BE 側でロール判定）。
  * from/to を指定した場合は当該時間帯に占有予約のあるリソースを除外した結果を返す。
+ * keyword を指定した場合は name/description への部分一致（大文字小文字区別なし）で絞り込む。
  */
 export async function listResourcesAction(params?: ListResourcesParams) {
   const client = createApiClient(getAccessToken);
   const queryParams: Record<string, string> = {};
   if (params?.category) queryParams.category = params.category;
+  const trimmedKeyword = params?.keyword?.trim();
+  if (trimmedKeyword) queryParams.keyword = trimmedKeyword;
   if (params?.from) queryParams.from = params.from;
   if (params?.to) queryParams.to = params.to;
   if (params?.sort) queryParams.sort = params.sort;
