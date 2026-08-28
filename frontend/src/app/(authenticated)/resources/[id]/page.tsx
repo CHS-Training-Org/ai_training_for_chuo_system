@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
+import { ResourceAvailabilityCalendar } from "./ResourceAvailabilityCalendar";
 
 /**
  * リソース詳細画面（screen-spec.md §リソース /resources/{id} 準拠）。
@@ -30,7 +31,7 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-4xl">
       {/* 戻るリンク */}
       <Link href="/resources" className="text-sm text-primary hover:underline">
         ← リソース一覧に戻る
@@ -81,7 +82,10 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
         </Button>
       )}
 
-      {/* 空き状況 */}
+      {/* カレンダー形式の空き状況（週/月表示、期間ナビゲーション） */}
+      <ResourceAvailabilityCalendar resourceId={resource.id} />
+
+      {/* 空き状況（テキストリスト、当日〜7日後固定。カレンダーの表示期間とは連動しない） */}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">
           空き状況（{now.toLocaleDateString("ja-JP")} 〜 {weekLater.toLocaleDateString("ja-JP")}）

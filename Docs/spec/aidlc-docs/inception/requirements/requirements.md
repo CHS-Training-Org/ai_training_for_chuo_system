@@ -1,78 +1,82 @@
 ---
 type: note
 title: Requirements（Requirements Analysis）
-description: AI-DLC Requirements Analysis ステージが生成したissue #22（リソース一覧のソート順選択）の要件定義
+description: AI-DLC Requirements Analysis ステージが生成したissue #27（カレンダービュー）の要件定義
 tags:
   - ai-dlc
   - requirements
-timestamp: 2026-08-07
+timestamp: 2026-08-14
 ---
 
-# Requirements Analysis — リソース一覧のソート順選択（Issue #22）
+# Requirements Analysis — カレンダービュー（Issue #27）
 
 ## Intent Analysis Summary
 
-- **User Request**: `Docs/spec/enhancements/resource-list-sort.md`（issue #22）に基づき、リソース一覧（`/resources`）に並び替え機能を追加する
-- **Request Type**: Enhancement（既存機能の拡張）
-- **Scope Estimate**: Multiple Components（backend: Controller/Service/Repository、frontend: フォーム/BFF/ラベル、Docs: api-spec/screen-spec）
-- **Complexity Estimate**: Moderate（`ResourceService` の2経路分岐への個別対応が必要）
+- **User Request**: `Docs/spec/enhancements/calendar-view.md`（issue #27）に基づき、リソース詳細画面（`/resources/{id}`）に週・月単位のカレンダー形式で予約状況を表示する
+- **Request Type**: New Feature（既存画面への新規UI追加）
+- **Scope Estimate**: Single Component（frontend のみ。バックエンド・DBの変更なし）
+- **Complexity Estimate**: Moderate（週・月グリッドの日付計算、既存 `OccupiedSlot[]` から空き枠を導出するロジック、クリック時のクエリパラメータ引き渡しが新規ロジック）
 
 ## 入力（真実の源）
 
-- `Docs/spec/enhancements/resource-list-sort.md`（要件 RES-01〜03、受入条件5点）
-- `Docs/spec/aidlc-docs/inception/reverse-engineering/`（本ワークフローで生成したRE成果物一式）
+- `Docs/spec/enhancements/calendar-view.md`（要件 RSV-01〜05、受入条件6点）
+- `frontend/src/app/(authenticated)/resources/[id]/page.tsx`（変更対象の既存実装）
+- `backend/src/main/java/com/example/bookflow/presentation/ResourceController.java`・`ResourceService.java`・`dto/OccupiedSlot.java`（既存API、本タスクでは変更しない）
 
 ## スコープ確定事項（ユーザー確認済み）
 
-前提課題「[リソース一覧の検索・フィルタ追加](../../../enhancements/resource-list-filter.md)」（キーワード検索）は現時点で未実装であることを RE ステージで確認した。issue #22 の見積り工数（半日）はキーワード検索の実装を含まないため、**本タスクではソート機能を単独実装し、キーワード検索との組み合わせ検証は対象外とする**（ユーザー承認済み）。
-
-この決定に伴い、以下2点のビジネス要求シートの更新が必要（Code Generation 完了後、`/update-spec` で反映）:
-- `resource-list-sort.md` の受入条件「カテゴリ・期間フィルタやキーワード検索との組み合わせでもソートが適用される」→「カテゴリ・期間フィルタとの組み合わせでもソートが適用される」に変更（キーワード検索を対象外に）
-- `resource-list-sort.md` の依存関係節：前提課題を「なし」に変更
-- `resource-list-filter.md` の依存関係節：「本課題を前提課題とする」という記述を削除（順序の前提が崩れたため）
+- **カレンダー実装方式**: 外部ライブラリ（`react-big-calendar`・`@fullcalendar/react`）は導入せず、shadcn/ui のプリミティブと Tailwind CSS を用いた自作コンポーネントとする。理由：本タスクの見積り工数（半日〜1日）に対し外部ライブラリのテーマ調整コストが見合わないこと、ライセンス確認の手間を避けられること。
+- **既存の空き状況リスト表示**: 削除せず、カレンダーの下に両方表示する（RSV-05「共存するか置き換えるかは実装者の判断に委ねる」への回答）。
+- **週の開始曜日**: 月曜始まり。
+- **カレンダーに表示する時間帯**: 終日24時間を全表示する（営業時間の概念は既存データに存在しないため導入しない）。
+- **空き枠クリック時に予約申請フォームへ渡す時間の粒度**: 1時間単位。
+- **拡張機能（Resiliency Baseline・Security Baseline・Property-Based Testing）**: いずれも適用しない。理由：frontendのみの小規模UI機能であり、可用性・DR設計や追加の認証・認可面の変更がなく、PBT対象となる複雑な純粋関数もないため。
 
 ## Functional Requirements
 
 | # | 要件 | 出典 |
 |---|------|------|
-| RES-01 | `GET /api/resources` に `sort` クエリパラメータを追加し、`name`・`capacity`・`createdAt` のいずれかのフィールド × `asc`/`desc` の方向を指定できる | resource-list-sort.md |
-| RES-02 | `sort` パラメータ未指定時のデフォルトは `createdAt,asc`（現行の暗黙動作を維持） | resource-list-sort.md |
-| RES-03 | `ResourceFilterForm` にソート選択 UI を追加し、選択値を URL パラメータ（`sort`）として付与する | resource-list-sort.md |
-| RES-04（新規、RE起因） | `ResourceService` の一覧取得ロジックにソートを適用する。当初は `from`/`to` 指定時の手動ページネーション経路（`listWithAvailabilityFilter`）にのみ個別対応する想定だったが、Code Generation Planning 時の実測（`aidlc-audit.md` 参照）により `listPaginated`（Spring Data 標準経路）側もDB委譲ではBR-03・BR-05を満たせないと判明したため、両経路を「全件取得→Comparatorソート」の単一フローに統合する | RE: code-quality-assessment.md の技術的負債 |
-| RES-05（新規、設計判断） | `capacity` でのソート時、`capacity` が `null` のリソースは昇順・降順いずれでも末尾に固定する | 受入条件に未記載のため設計判断として明記。理由：nullを先頭固定すると「定員順」の直感に反するため |
-| RES-06（新規、設計判断） | `name` でのソートは大文字・小文字を区別しない | 受入条件の「名称のアルファベット順」という意図を汲んだ設計判断 |
-| RES-07（新規、設計判断） | `sort` に許可されていないフィールド名・方向が指定された場合は 400 Bad Request を返す | 未定義の入力に対する挙動を明確化。既存の他パラメータのバリデーション方針（`ResourceControllerTest` の400系テスト）との一貫性を優先 |
+| RSV-01 | リソース詳細画面（`/resources/{id}`）にカレンダー形式の空き状況ビューを追加する | calendar-view.md |
+| RSV-02 | カレンダーは週表示・月表示を切り替えられる | calendar-view.md |
+| RSV-03 | カレンダー上で予約済み枠はグレーアウト、空き枠はクリック可能。クリックすると `/reservations/new` に開始日時（1時間単位）をクエリパラメータで引き渡す | calendar-view.md |
+| RSV-04 | 表示期間を前後に移動（週表示は前週・次週、月表示は前月・次月）すると、その期間に応じた `from`/`to` を再計算し `GET /api/resources/{id}/availability` を呼び直す | calendar-view.md |
+| RSV-05 | 既存の空き確認リスト表示は削除せず、カレンダーの下に併存させる（カレンダーの表示期間ナビゲーションとは連動させず、常に当日〜7日後固定のまま表示する） | ユーザー確認済み（本書「スコープ確定事項」） |
+| RSV-06（新規、設計判断） | カレンダーの週は月曜始まり、時間帯は0時〜24時を表示する（週表示のみ。月表示はRSV-08参照） | ユーザー確認済み |
+| RSV-07（新規、設計判断） | 空き枠の算出は、既存の `OccupiedSlot[]`（`reservationId`・`startAt`・`endAt`）を表示期間の1時間刻みグリッドに写像し、いずれの `OccupiedSlot` とも重複しない枠を空きと判定する。重複判定は既存バックエンドの半開区間 `[start, end)` の定義（`ResourceService.overlaps`）に合わせる。過去日時の枠も他の枠と同様にクリック可能とし、本課題側で無効化しない（過去日時の申請可否は既存の予約作成APIのバリデーションに委ねる） | 既存API仕様との整合性確保のための設計判断 |
+| RSV-08（新規、設計判断） | 月表示は日単位の要約セル（1日1マス、予約有無を色・件数で要約表示）とする。1時間刻みの時間グリッドは週表示のみで用いる。月表示のセルをクリックすると、その日を含む週表示に切り替える | ユーザー確認済み（Functional Design時の確認） |
+| RSV-09（新規、設計判断） | カレンダー上の空き枠クリック時、`/reservations/new` は `resourceId`・`startAt`（1時間単位、`YYYY-MM-DDTHH:mm:ss`形式）の両方をクエリパラメータとして受け取り、`startAt` をフォームの開始日時欄の初期値に設定する。既存の `ReservationForm.tsx` は `startAt` クエリパラメータを解釈しない実装だったため、`/reservations/new/page.tsx`・`ReservationForm.tsx` への変更を本課題のスコープに含める | ユーザー確認済み（Functional Design時の既存コード再検証で判明） |
 
 ## Non-Functional Requirements
 
-- **Performance**: リソース件数は学習用途のため小規模（数十〜数百件）と想定。`listWithAvailabilityFilter` 経路のインメモリソートによる性能劣化は許容範囲とする（新規NFR設計は不要）
-- **Testability**: 新規ロジック（2経路それぞれのソート適用、null定員の扱い、不正な`sort`値の400応答）にはユニットテストを追加する（RE: 既存テストにソート関連ケースがゼロという指摘を反映）
-- **Backward Compatibility**: `sort` 未指定時の既存の挙動（`createdAt` 昇順）・既存の `category`/`from`/`to`/`page` パラメータの挙動は変更しない（RES-02、既存 `ResourceServiceTest`/`ResourceControllerTest` が引き続き pass すること）
+- **Performance**: 月表示・週表示のいずれも `GET /api/resources/{id}/availability` への呼び出しは表示期間1回分のみとする（バックエンドの `from`/`to` に範囲上限のバリデーションがないことをコード確認済み）。月表示は日単位の要約セル（最大42セル）、週表示は1時間刻みグリッド（7日 × 24時間 = 168セル）であり、いずれもセル数は小規模なため専用の性能対策（仮想スクロール等）は不要。
+- **Accessibility**: 空き枠・予約済み枠の区別を色のみに依存させず、テキストまたはパターンでも判別できるようにする（受入条件「予約済み枠は視覚的に区別されている（色・パターン・テキスト等）」）。
+- **Backward Compatibility**: 既存の空き確認リスト表示（`page.tsx` 内の `<ul>` 表示部分）・既存の `getAvailabilityAction` の関数シグネチャは変更しない。既存の `ReservationForm.tsx` の `resourceId` によるリソース初期選択の挙動も変更しない（`startAt` 初期値設定を追加するのみ）。
 
 ## User Scenarios
 
-1. 利用者が `/resources` でカテゴリを選ばず一覧を開く→デフォルトの登録日時昇順で表示される（現行どおり）
-2. 利用者が並び替えドロップダウンで「名称順（昇順）」を選択し「絞り込む」を押す→URLに `sort=name,asc` が付与され、名称のアルファベット順（大文字小文字区別なし）で一覧が再表示される
-3. 利用者がカテゴリ「会議室」+期間指定+「定員順（降順）」を選択する→会議室カテゴリ・当該期間に空きのあるリソースが、定員の多い順（定員未設定は末尾）で表示される
-4. （対象外・将来課題）利用者がキーワード検索と並び替えを同時に使う→本タスクでは未対応。キーワード検索実装後に別途検証する
+1. 利用者がリソース詳細画面を開く→デフォルトで当週のカレンダー（月曜始まり、週表示）が表示され、その下に既存の空き状況リストが表示される。
+2. 利用者が「月表示」に切り替える→当月のカレンダーが表示され、`from`/`to` が当月の範囲に更新されて空き状況が再取得される。
+3. 利用者が「次週」ボタンを押す→表示期間が1週間後に進み、その期間の空き状況が再取得されてカレンダーが更新される。
+4. 利用者がカレンダー上の空き枠（例：8月20日14時〜15時）をクリックする→`/reservations/new?resourceId={id}&startAt=2026-08-20T14:00:00` に遷移し、予約申請フォームに開始日時が引き渡される。
+5. 利用者が予約済み枠をクリックしようとする→クリック不可（グレーアウトされ操作を受け付けない）。
 
 ## Business Context
 
-- **Goals**: リソース数増加時の一覧の見つけやすさ向上（resource-list-sort.md 背景節）
-- **Constraints**: 学習用チュートリアルのため、Spring Data の `Pageable`/`Sort` を活用した最小限の実装を志向する（AI活用ポイント節）
-- **Success Criteria**: 受入条件5点（キーワード検索関連を除く）を満たし、バックエンド既存テストが pass すること
+- **Goals**: リスト形式では把握しにくい週・月単位の混雑感を可視化し、利用者が空き枠を見つけやすくする（calendar-view.md 背景節）。
+- **Constraints**: 既存の空き確認API以外のバックエンド変更を行わない（受入条件、フロントエンドのみの変更で実現する制約）。
+- **Success Criteria**: 受入条件6点をすべて満たし、既存のフロントエンドテスト（`pnpm test`）・型チェック（`pnpm build`）が通過すること。
 
 ## Technical Context
 
-- **Integration Points**: `ResourceController` → `ResourceService` → `ResourceRepository`（backend）、`ResourceFilterForm.tsx` → `page.tsx` → `server/actions/resources.ts`（frontend）
-- **UI設計判断**: ソート選択UIは既存の「カテゴリ」`Select`（shadcn/ui）と同じパターンのドロップダウンとする（カラムヘッダクリック方式は不採用。理由：現在の一覧はカードレイアウトでテーブルではないため、カラムヘッダという概念が存在しない）
-- **データモデル**: テーブル・カラムの変更は不要（`resources` テーブルは既存カラムのみで対応可能）
+- **Integration Points**: `frontend/src/app/(authenticated)/resources/[id]/page.tsx`（Server Component、既存の`getResourceAction`/`getAvailabilityAction`呼び出し元）に、新規クライアントコンポーネント（カレンダー本体、週・月切り替え、期間ナビゲーション）を追加する構成とする。加えて、`frontend/src/app/(authenticated)/reservations/new/page.tsx`（`searchParams`から`startAt`を読み取る）・`ReservationForm.tsx`（`defaultStartAt` propを受け取りフォーム初期値に設定する）に変更を加える（RSV-09）。
+- **状態管理**: カレンダーの表示モード（週/月）・表示期間の起点日は画面内に閉じたクライアント状態であるため、`useState` で管理する（Zustand はページをまたぐ共有状態向けであり本機能には該当しない）。
+- **データモデル**: バックエンドのテーブル・APIとも変更不要。既存の `OccupiedSlot`（`reservationId`・`startAt`・`endAt`）のみを入力として使う。
 
 ## Quality Attributes
 
-- 新規ロジック（RES-04〜07）はいずれも「取り消すと落ちる」ユニットテストで検証する（本リポジトリのAIレビュー基準に合わせる）
-- 仕様書更新：`Docs/spec/api-spec.md`（`sort`パラメータ）・`Docs/spec/screen-spec.md`（ソート選択UI）を Build and Test 完了後、`/update-spec` で反映する
+- 新規ロジック（表示期間からの `from`/`to` 算出、`OccupiedSlot[]` からのグリッドマッピング、週・月切り替え時の再取得）にはユニットテスト（Vitest）を追加する。
+- 仕様書更新：`Docs/spec/screen-spec.md` §`/resources/{id}` にカレンダー表示UIと操作（期間切り替え・クリック動作）を追記する（calendar-view.md「影響範囲」節に明記済み）。Build and Test 完了後、`/update-spec` で反映する。
 
 ## 未解決の疑問点
 
-なし（前提課題の依存関係についてはユーザー確認済み。UI方式・null定員の扱い・不正値の挙動はAI活用ポイントに基づく設計判断として本書に明記し、次のWorkflow Planningで提示する）
+なし（ライブラリ選定・既存リスト表示の扱い・週開始曜日・表示時間帯・クリック粒度・拡張機能適用可否はいずれもユーザー確認済み。次のWorkflow Planningで実行計画を提示する）

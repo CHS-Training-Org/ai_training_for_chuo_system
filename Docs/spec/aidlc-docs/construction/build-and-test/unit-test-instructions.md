@@ -1,40 +1,46 @@
 ---
 type: note
-title: Unit Test Execution Instructions（resource-list-sort）
-description: AI-DLC Build and Test ステージが生成したリソース一覧ソート機能のユニットテスト実行手順
+title: Unit Test Execution
+description: カレンダービュー（Unit：calendar-view）のユニットテスト実行手順・結果
 tags:
   - ai-dlc
   - build-and-test
-timestamp: 2026-08-13
+timestamp: 2026-08-20
 ---
 
-# Unit Test Execution — リソース一覧ソート機能
+# Unit Test Execution — カレンダービュー（Unit: calendar-view）
 
-## バックエンド
+## Run Unit Tests
 
-```bash
-cd backend
-./gradlew test
-./gradlew spotlessCheck checkstyleMain checkstyleTest
-```
-
-- **期待結果**: 全テスト成功（本課題の変更範囲では `ResourceServiceTest` に新規7件、`ResourceControllerTest` に新規6件を追加）
-- **テストレポート**: `backend/build/reports/tests/test/index.html`
-- **Checkstyle レポート**: `backend/build/reports/checkstyle/`（本課題と無関係な既存メソッド名の warning が出るが、error ではないため許容する）
-
-## フロントエンド
+### 1. Execute All Unit Tests
 
 ```bash
 cd frontend
-pnpm test resources
-pnpm lint
+pnpm test
 ```
 
-- **期待結果**: `resources.test.ts` 全テスト成功（本課題の変更範囲では `sort` パラメータの受け渡しを検証する新規2件を追加）
-- **Lint**: `oxlint .` がエラーなく完了すること
+### 2. Review Test Results
 
-## テストが失敗した場合
+- **Expected**: 13ファイル・113件成功、失敗0件（本課題で追加した`calendar-logic.test.ts`22件・`reservation-form.test.tsx`2件を含む）。
+- **Test Coverage**: `calendar-logic.ts`の全公開関数（期間算出・週グリッド写像・月次要約・クリック可否判定）を境界値込みで網羅。`ReservationForm`は`defaultStartAt`の初期値反映のみを対象とし、既存の申請・重複エラー処理のフローは変更していないため再検証していない。
+- **Test Report Location**: 標準出力（`vitest run`の実行結果）。HTMLレポートは`coverage/`（`vitest.config.ts`のcoverage設定、明示的に`--coverage`指定時のみ生成）。
 
-1. `./gradlew test`（バックエンド）または `pnpm test`（フロントエンド）の出力で失敗箇所を特定する
-2. `Docs/spec/aidlc-docs/construction/resource-list-sort/functional-design/business-rules.md`（BR-01〜06）と実装（`ResourceService.resolveComparator`）を照合する
-3. 修正後、該当テストのみ再実行して確認してから全体を再実行する
+### 3. 個別実行（本課題の追加テストのみ）
+
+```bash
+pnpm test calendar-logic
+pnpm test reservation-form
+```
+
+### 4. Fix Failing Tests
+
+失敗が発生した場合：
+1. `vitest run`の出力で失敗ケース名を確認する。
+2. `calendar-logic.test.ts`側の失敗は、`business-logic-model.md`の期間算出・重複判定ロジックとの整合を確認する。
+3. `reservation-form.test.tsx`側の失敗は、`@/lib/session`経由のBetter Auth初期化がテスト環境で走っていないか（`vi.mock("@/server/actions/reservations", ...)`が効いているか）を確認する。
+
+## 実行結果（本ステージで確認済み）
+
+- `pnpm test`：13ファイル・113件すべて成功。
+- `pnpm lint`（oxlint）：エラー・警告なし。
+- `pnpm build`（型チェック兼ねる）：成功。
