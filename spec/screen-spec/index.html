@@ -4410,8 +4410,20 @@
 <td>名称・カテゴリ・場所・定員・説明・承認フロー要否</td>
 </tr>
 <tr>
+<td>空き状況カレンダー</td>
+<td>週表示（月曜始まり、0 時〜24 時の 1 時間刻みグリッド）と月表示（日単位の要約セル、予約件数を表示）を切り替えられる。「前週/前月」「次週/次月」ボタンで表示期間を移動するたびに、その期間の <code>from</code>/<code>to</code> で <code>GET /api/resources/{id}/availability</code> を呼び直す。<code>status IN ('PENDING', 'APPROVED')</code> の予約と重複する枠はグレーアウトし、色だけでなくテキスト（「予約済」）でも判別できるようにする</td>
+</tr>
+<tr>
+<td>カレンダーの空き枠クリック（週表示）</td>
+<td>グレーアウトされていない 1 時間セルをクリックすると、予約申請フォーム（<code>/reservations/new?resourceId={id}&amp;startAt={開始日時}</code>）へ遷移する。予約済み枠はクリックできない</td>
+</tr>
+<tr>
+<td>カレンダーの日セルクリック（月表示）</td>
+<td>日セルをクリックすると、画面遷移せずその日を含む週の週表示に切り替わる</td>
+</tr>
+<tr>
 <td>空き状況リスト</td>
-<td>当日〜7 日後の占有時間帯（<code>status IN ('PENDING', 'APPROVED')</code> の予約。<code>GET /api/resources/{id}/availability</code> で取得）をリスト表示。占有なしの場合は「予約はありません」メッセージ</td>
+<td>当日〜7 日後の占有時間帯（<code>status IN ('PENDING', 'APPROVED')</code> の予約。<code>GET /api/resources/{id}/availability</code> で取得）をリスト表示。占有なしの場合は「予約はありません」メッセージ。カレンダーの表示期間とは独立しており、常に当日〜7 日後を表示する</td>
 </tr>
 <tr>
 <td>「このリソースを予約する」ボタン</td>
@@ -4535,7 +4547,7 @@
 </tbody>
 </table>
 <blockquote>
-<p><code>/resources/{id}</code> からの遷移時は <code>resourceId</code> をクエリパラメータ（<code>?resourceId={id}</code>）で受け取り、リソース選択欄に初期値として設定する。</p>
+<p><code>/resources/{id}</code> からの遷移時は <code>resourceId</code> をクエリパラメータ（<code>?resourceId={id}</code>）で受け取り、リソース選択欄に初期値として設定する。カレンダーの空き枠クリックからの遷移時はあわせて <code>startAt</code>（<code>YYYY-MM-DDTHH:mm</code> 形式、1 時間単位）を受け取り、開始日時欄に初期値として設定する。</p>
 </blockquote>
 <h4 id="_15">バリデーション<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h4>
 <table>

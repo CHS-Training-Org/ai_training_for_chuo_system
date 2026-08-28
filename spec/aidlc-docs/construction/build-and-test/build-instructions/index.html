@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="AI-DLC Build and Test ステージが生成したリソース一覧ソート機能のビルド手順">
+        <meta name="description" content="カレンダービュー（Unit：calendar-view）のビルド手順（frontendのみ、バックエンド変更なし）">
       
       
         <meta name="author" content="Bizarress">
@@ -25,7 +25,7 @@
     
     
       
-        <title>Build Instructions（resource-list-sort） - BookFlow ドキュメント</title>
+        <title>Build Instructions - BookFlow ドキュメント</title>
       
     
     
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#build-instructions" class="md-skip">
+        <a href="#build-instructions-unit-calendar-view" class="md-skip">
           コンテンツにスキップ
         </a>
       
@@ -139,7 +139,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Build Instructions（resource-list-sort）
+              Build Instructions
             
           </span>
         </div>
@@ -2802,10 +2802,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        バックエンド
+        Prerequisites
       </span>
     </span>
   </a>
@@ -2813,13 +2813,91 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#build-steps" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        フロントエンド
+        Build Steps
       </span>
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Build Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-install-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        1. Install Dependencies
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configure-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        2. Configure Environment
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        3. Build
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-verify-build-success" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        4. Verify Build Success
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Troubleshooting
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-fails-with-type-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Build Fails with Type Errors
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2849,23 +2927,35 @@
   
 
 
-<h1 id="build-instructions">Build Instructions — リソース一覧ソート機能<a class="headerlink" href="#build-instructions" title="Permanent link">&para;</a></h1>
-<p>本課題は既存の BookFlow モノレポ（<code>backend/</code>・<code>frontend/</code>）への変更であり、新規のビルドツール・依存関係・環境変数は追加していない。ビルド手順は <code>CLAUDE.md</code>「よく使うコマンド」節に記載の既存手順をそのまま使う。</p>
-<h2 id="_1">バックエンド<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>backend
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>./gradlew<span class="w"> </span>compileJava<span class="w"> </span>compileTestJava
-</span></code></pre></div>
+<h1 id="build-instructions-unit-calendar-view">Build Instructions — カレンダービュー（Unit: calendar-view）<a class="headerlink" href="#build-instructions-unit-calendar-view" title="Permanent link">&para;</a></h1>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>ビルドツール</strong>: Gradle（Kotlin DSL）、Java 25、Spring Boot 4.0</li>
-<li><strong>成果物確認</strong>: コンパイルエラーがないこと（<code>BUILD SUCCESSFUL</code>）</li>
+<li><strong>Build Tool</strong>: pnpm（frontend）。本課題はfrontendのみの変更のため、バックエンドのビルドは対象外。</li>
+<li><strong>Dependencies</strong>: 追加の依存パッケージなし（既存の<code>package.json</code>のまま。外部カレンダーライブラリは導入していない）。</li>
+<li><strong>Environment Variables</strong>: 追加の環境変数なし。</li>
+<li><strong>System Requirements</strong>: 既存のBookFlow devcontainer環境（Node.js、pnpm）。</li>
 </ul>
-<h2 id="_2">フロントエンド<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pnpm<span class="w"> </span>build
+<h2 id="build-steps">Build Steps<a class="headerlink" href="#build-steps" title="Permanent link">&para;</a></h2>
+<h3 id="1-install-dependencies">1. Install Dependencies<a class="headerlink" href="#1-install-dependencies" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pnpm<span class="w"> </span>install
 </span></code></pre></div>
+<h3 id="2-configure-environment">2. Configure Environment<a class="headerlink" href="#2-configure-environment" title="Permanent link">&para;</a></h3>
+<p>追加設定は不要（既存の<code>.env.local</code>をそのまま使用）。</p>
+<h3 id="3-build">3. Build<a class="headerlink" href="#3-build" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pnpm<span class="w"> </span>build
+</span></code></pre></div>
+<h3 id="4-verify-build-success">4. Verify Build Success<a class="headerlink" href="#4-verify-build-success" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>ビルドツール</strong>: Next.js 15（App Router）、pnpm</li>
-<li><strong>成果物確認</strong>: <code>next build</code> の型チェック（<code>Linting and checking validity of types</code>）がエラーなく完了し、<code>Route (app)</code> 一覧に <code>/resources</code> が含まれること</li>
+<li><strong>Expected Output</strong>: <code>✓ Compiled successfully</code>、型チェックエラーなし、<code>Route (app)</code>一覧に<code>/resources/[id]</code>・<code>/reservations/new</code>が表示される。</li>
+<li><strong>Build Artifacts</strong>: <code>frontend/.next/</code>（本課題専用の成果物はなし、既存ビルドに統合される）。</li>
+<li><strong>Common Warnings</strong>: なし（実行時、警告ゼロで成功を確認済み）。</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="build-fails-with-type-errors">Build Fails with Type Errors<a class="headerlink" href="#build-fails-with-type-errors" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Cause</strong>: <code>calendar-logic.ts</code>の型（<code>CalendarViewMode</code>・<code>HourSlotStatus</code>・<code>DaySummary</code>）とコンポーネントPropsの不整合。</li>
+<li><strong>Solution</strong>: <code>Docs/spec/aidlc-docs/construction/calendar-view/functional-design/domain-entities.md</code>の型定義と実装を突き合わせる。</li>
 </ul>
 
 

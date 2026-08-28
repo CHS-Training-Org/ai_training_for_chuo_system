@@ -2858,10 +2858,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#construction-phaseunit" class="md-nav__link">
+  <a href="#construction-phaseunit-calendar-view" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        CONSTRUCTION PHASE（Unit: リソース一覧ソート機能）
+        CONSTRUCTION PHASE（Unit: calendar-view）
       </span>
     </span>
   </a>
@@ -2930,11 +2930,12 @@
 <h2 id="project-information">Project Information<a class="headerlink" href="#project-information" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Project Type</strong>: Brownfield</li>
-<li><strong>Start Date</strong>: 2026-08-07T06:35:59Z</li>
-<li><strong>Current Stage</strong>: INCEPTION - Reverse Engineering</li>
+<li><strong>Start Date</strong>: 2026-08-14T08:39:36Z</li>
+<li><strong>Current Stage</strong>: INCEPTION - Requirements Analysis</li>
 <li><strong>Workspace Root</strong>: /workspace</li>
-<li><strong>対象タスク</strong>: Issue #22 / <code>Docs/spec/enhancements/resource-list-sort.md</code>（リソース一覧のソート順選択）</li>
-<li><strong>既知の重複</strong>: 同一issueのPR #72（ブランチ <code>feature/CHS-YAMADA-YUKI/22-resource-list-sort</code>）が既に完了判定で存在。ユーザー承知の上で本ブランチで新規起動（詳細は <code>aidlc-audit.md</code> Pre-flight 節）。</li>
+<li><strong>対象タスク</strong>: Issue #27 / <code>Docs/spec/enhancements/calendar-view.md</code>（カレンダービュー）</li>
+<li><strong>Unit 名</strong>: <code>calendar-view</code>（ブランチ短縮名 <code>resource-calendarview</code> とはシート名の方を正として採用。詳細は <code>aidlc-audit.md</code> 参照）</li>
+<li><strong>前回ワークフロー</strong>: Issue #22（resource-list-sort）は OPERATIONS フェーズで完了・PR #78 マージ済み。今回は別タスクとして本ファイルをリセットして新規起動。</li>
 </ul>
 <h2 id="code-location-rules">Code Location Rules<a class="headerlink" href="#code-location-rules" title="Permanent link">&para;</a></h2>
 <ul>
@@ -2954,51 +2955,51 @@
 <tbody>
 <tr>
 <td>Security Baseline</td>
-<td>—</td>
-<td>—</td>
+<td>No</td>
+<td>Requirements Analysis（2026-08-14T08:50:00Z）</td>
 </tr>
 <tr>
 <td>Resiliency Baseline</td>
-<td>—</td>
-<td>—</td>
+<td>No</td>
+<td>Requirements Analysis（2026-08-14T08:50:00Z）</td>
 </tr>
 <tr>
 <td>Property-Based Testing</td>
-<td>—</td>
-<td>—</td>
+<td>No</td>
+<td>Requirements Analysis（2026-08-14T08:50:00Z）</td>
 </tr>
 </tbody>
 </table>
 <h2 id="stage-progress">Stage Progress<a class="headerlink" href="#stage-progress" title="Permanent link">&para;</a></h2>
 <h3 id="inception-phase">INCEPTION PHASE<a class="headerlink" href="#inception-phase" title="Permanent link">&para;</a></h3>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Workspace Detection</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Reverse Engineering（Brownfield の場合） - Completed on 2026-08-07T06:35:59Z（成果物: <code>Docs/spec/aidlc-docs/inception/reverse-engineering/</code>）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Requirements Analysis - Completed on 2026-08-07T06:50:00Z（成果物: <code>Docs/spec/aidlc-docs/inception/requirements/requirements.md</code>）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> User Stories（条件付き） - SKIP（単一ペルソナ・単純な要求のため。2026-08-07T06:55:00Z 確定）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Workflow Planning - Completed on 2026-08-07T07:00:00Z（成果物: <code>Docs/spec/aidlc-docs/inception/plans/execution-plan.md</code>）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Application Design（条件付き） - SKIP（新規コンポーネント・新規サービスなし）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Units Generation（条件付き） - SKIP（単一ユニット扱い）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Workspace Detection - Completed on 2026-08-14T08:39:36Z（既存ワークスペース、Brownfield 継続と判定）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Reverse Engineering（Brownfield の場合） - SKIP（<code>Docs/spec/aidlc-docs/inception/reverse-engineering/</code> に既存成果物あり。ただし対象ファイル（<code>/resources/[id]/page.tsx</code>・<code>resources.ts</code> 等）は個別に読み直して最新状態を確認する）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Requirements Analysis - Completed on 2026-08-14T09:12:00Z（成果物: <code>Docs/spec/aidlc-docs/inception/requirements/requirements.md</code>、ユーザー承認済み）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> User Stories（条件付き） - EXECUTE と判定（2026-08-14T09:12:00Z）。Completed on 2026-08-14T09:37:00Z（成果物: <code>Docs/spec/aidlc-docs/inception/user-stories/personas.md</code>・<code>stories.md</code>、ユーザー承認済み）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Workflow Planning - Completed on 2026-08-20T16:53:25Z（成果物: <code>Docs/spec/aidlc-docs/inception/plans/execution-plan.md</code>、ユーザー承認済み）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Application Design（条件付き） - SKIP（既存画面内への機能追加のみ。新規サービス間契約の新設なし）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Units Generation（条件付き） - SKIP（単一ユニット扱い、frontendのみ）</li>
 </ul>
-<h3 id="construction-phaseunit">CONSTRUCTION PHASE（Unit: リソース一覧ソート機能）<a class="headerlink" href="#construction-phaseunit" title="Permanent link">&para;</a></h3>
+<h3 id="construction-phaseunit-calendar-view">CONSTRUCTION PHASE（Unit: calendar-view）<a class="headerlink" href="#construction-phaseunit-calendar-view" title="Permanent link">&para;</a></h3>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Functional Design（条件付き、ユニット別） - Completed on 2026-08-07T07:10:00Z（成果物: <code>Docs/spec/aidlc-docs/construction/resource-list-sort/functional-design/</code>）。2026-08-13 実測（本番相当PostgreSQLでの検証）により、<code>business-logic-model.md</code>・<code>business-rules.md</code> を「経路A・B統合（全件取得→Comparatorソート）」方針へ修正（<code>aidlc-audit.md</code> 参照）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> NFR Requirements（条件付き、ユニット別） - SKIP（新規NFR要求なし）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> NFR Design（条件付き、ユニット別） - SKIP（NFR Requirements未実行のため連動）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Infrastructure Design（条件付き、ユニット別） - SKIP（インフラ変更なし）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Code Generation（必須、ユニット別） - Completed on 2026-08-13T01:00:00Z（成果物: <code>Docs/spec/aidlc-docs/construction/plans/resource-list-sort-code-generation-plan.md</code>、<code>Docs/spec/aidlc-docs/construction/resource-list-sort/code/summary.md</code>）</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Build and Test（必須） - Completed on 2026-08-13T01:15:00Z（成果物: <code>Docs/spec/aidlc-docs/construction/build-and-test/</code>）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Functional Design（条件付き、ユニット別） - EXECUTE。Completed on 2026-08-20T17:10:18Z（成果物: <code>Docs/spec/aidlc-docs/construction/calendar-view/functional-design/</code>、ユーザー承認済み。既存コード再検証によりRSV-05・08・09を新設し<code>requirements.md</code>/<code>execution-plan.md</code>を修正）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> NFR Requirements（条件付き、ユニット別） - SKIP（拡張機能不適用、新規NFR要求なし）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> NFR Design（条件付き、ユニット別） - SKIP（NFR Requirements未実行のため連動）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Infrastructure Design（条件付き、ユニット別） - SKIP（インフラ変更なし）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Code Generation（必須、ユニット別） - Completed on 2026-08-20T17:36:04Z（成果物: <code>Docs/spec/aidlc-docs/construction/calendar-view/code/</code>、<code>calendar-view-code-generation-plan.md</code>全7ステップ完了、ユーザー承認済み）</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Build and Test（必須） - Completed on 2026-08-20T17:57:36Z（成果物: <code>Docs/spec/aidlc-docs/construction/build-and-test/</code>。frontend全113件成功・lint/build成功に加え、<code>run</code>スキル経由の一時的なブラウザ動作確認を実施、ユーザー承認済み）</li>
 </ul>
 <h3 id="operations-phase">OPERATIONS PHASE<a class="headerlink" href="#operations-phase" title="Permanent link">&para;</a></h3>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Operations（プレースホルダー） - BookFlow翻案によりCI品質ゲート運用に委譲。<code>/aidlc</code>スキルとしての成果物生成はBuild and Testで完了。以降は<code>/commit-push</code>・<code>/create-pr</code>スキルでコミット分割・push・PR作成・CI確認を行う</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Operations（プレースホルダー） - BookFlow翻案によりCI品質ゲート運用（<code>/commit-push</code>・<code>/create-pr</code>）に委譲予定。<code>/update-spec</code>完了（2026-08-20T18:15:24Z、<code>requirements.md</code>RES-10〜13・<code>screen-spec.md</code>§<code>/resources/{id}</code>・§<code>/reservations/new</code>を更新）</li>
 </ul>
 <h2 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Lifecycle Phase</strong>: OPERATIONS</li>
-<li><strong>Current Stage</strong>: <code>/update-spec</code> 完了（<code>api-spec.md</code>・<code>screen-spec.md</code>・<code>requirements.md</code>・<code>resource-list-sort.md</code>・<code>resource-list-filter.md</code> を反映）</li>
-<li><strong>Next Stage</strong>: <code>/commit-push</code>（コミット分割・push）→ <code>/create-pr</code>（PR作成）→ CI品質ゲート確認</li>
-<li><strong>Status</strong>: Ready for handoff</li>
+<li><strong>Current Stage</strong>: <code>/update-spec</code>完了</li>
+<li><strong>Next Stage</strong>: <code>/commit-push</code> → <code>/create-pr</code></li>
+<li><strong>Status</strong>: In Progress</li>
 </ul>
 
 

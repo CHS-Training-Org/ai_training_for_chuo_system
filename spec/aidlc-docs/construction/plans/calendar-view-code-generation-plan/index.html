@@ -12,7 +12,7 @@
         <meta name="author" content="Bizarress">
       
       
-        <link rel="canonical" href="https://chs-training-org.github.io/ai_training_for_chuo_system/spec/aidlc-docs/inception/plans/execution-plan/">
+        <link rel="canonical" href="https://chs-training-org.github.io/ai_training_for_chuo_system/spec/aidlc-docs/construction/plans/calendar-view-code-generation-plan/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Execution Plan - BookFlow ドキュメント</title>
+        <title>Code Generation Plan - BookFlow ドキュメント</title>
       
     
     
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#execution-plan-issue-27" class="md-skip">
+        <a href="#code-generation-plan-unit-calendar-view" class="md-skip">
           コンテンツにスキップ
         </a>
       
@@ -139,7 +139,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Execution Plan
+              Code Generation Plan
             
           </span>
         </div>
@@ -2802,71 +2802,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#detailed-analysis-summary" class="md-nav__link">
+  <a href="#unit-context" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Detailed Analysis Summary
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Detailed Analysis Summary">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#transformation-scopebrownfield" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Transformation Scope（Brownfield）
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#change-impact-assessment" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Change Impact Assessment
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#component-relationshipsbrownfield" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Component Relationships（Brownfield）
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#risk-assessment" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Risk Assessment
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#workflow-visualization" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Workflow Visualization
+        Unit Context
       </span>
     </span>
   </a>
@@ -2874,60 +2813,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phases-to-execute" class="md-nav__link">
+  <a href="#steps" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Phases to Execute
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Phases to Execute">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#inception-phase" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        INCEPTION PHASE
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#construction-phaseunit-calendar-view" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        CONSTRUCTION PHASE（Unit: calendar-view）
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#operations-phase" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        OPERATIONS PHASE
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#estimated-timeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Estimated Timeline
+        Steps
       </span>
     </span>
   </a>
@@ -2935,10 +2824,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#success-criteria" class="md-nav__link">
+  <a href="#skip" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Success Criteria
+        Skip対象（理由明記）
       </span>
     </span>
   </a>
@@ -2971,139 +2860,93 @@
   
 
 
-<h1 id="execution-plan-issue-27">Execution Plan — カレンダービュー（Issue #27）<a class="headerlink" href="#execution-plan-issue-27" title="Permanent link">&para;</a></h1>
-<h2 id="detailed-analysis-summary">Detailed Analysis Summary<a class="headerlink" href="#detailed-analysis-summary" title="Permanent link">&para;</a></h2>
-<h3 id="transformation-scopebrownfield">Transformation Scope（Brownfield）<a class="headerlink" href="#transformation-scopebrownfield" title="Permanent link">&para;</a></h3>
+<h1 id="code-generation-plan-unit-calendar-view">Code Generation Plan — カレンダービュー（Unit: calendar-view）<a class="headerlink" href="#code-generation-plan-unit-calendar-view" title="Permanent link">&para;</a></h1>
+<h2 id="unit-context">Unit Context<a class="headerlink" href="#unit-context" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Transformation Type</strong>: Single component change（既存のリソース詳細画面・予約申請フォーム画面への機能追加。アーキテクチャ変更・デプロイモデル変更なし）</li>
-<li><strong>Primary Changes</strong>: <code>frontend/src/app/(authenticated)/resources/[id]/page.tsx</code> に、新規クライアントコンポーネント（カレンダー本体・週月切替・期間ナビゲーション）を追加する。加えて <code>frontend/src/app/(authenticated)/reservations/new/page.tsx</code>・<code>ReservationForm.tsx</code> に <code>startAt</code> クエリパラメータの読み取り・フォーム初期値設定を追加する（RSV-09。Functional Design時に既存<code>ReservationForm.tsx</code>が<code>startAt</code>クエリパラメータを解釈しない実装であることが判明したため、当初計画から範囲を拡大した）</li>
-<li><strong>Related Components</strong>: <code>server/actions/resources.ts</code>（既存の<code>getAvailabilityAction</code>をそのまま利用、変更なし）、<code>screen-spec.md</code>（仕様反映先）</li>
+<li><strong>対象ユニット</strong>: <code>calendar-view</code>（frontendのみ、単一ユニット）</li>
+<li><strong>対応ストーリー</strong>: STORY-01（カレンダー形式の空き状況表示）・STORY-02（週/月表示切り替え）・STORY-03（表示期間の前後移動）・STORY-04（空き枠クリックによる予約導線）</li>
+<li><strong>依存関係</strong>: 既存の<code>getAvailabilityAction</code>・<code>getResourceAction</code>（<code>server/actions/resources.ts</code>、シグネチャ変更なし）。バックエンド・DBの変更なし。</li>
+<li><strong>入力設計成果物</strong>: <code>Docs/spec/aidlc-docs/construction/calendar-view/functional-design/</code>（business-logic-model.md・business-rules.md・domain-entities.md・frontend-components.md）</li>
 </ul>
-<h3 id="change-impact-assessment">Change Impact Assessment<a class="headerlink" href="#change-impact-assessment" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>User-facing changes</strong>: Yes（カレンダーUIの新規追加、既存リスト表示は維持）</li>
-<li><strong>Structural changes</strong>: No（新規の画面・API・データモデルなし。既存画面内への機能追加）</li>
-<li><strong>Data model changes</strong>: No</li>
-<li><strong>API changes</strong>: No（既存の<code>GET /api/resources/{id}/availability</code>を変更なしで利用）</li>
-<li><strong>NFR impact</strong>: Minor（月表示は日単位要約セル〈最大42セル〉、週表示は1時間刻みグリッド〈168セル〉といずれも小規模。専用のNFR設計ステージを要するほどの新規非機能要求ではない）</li>
-</ul>
-<h3 id="component-relationshipsbrownfield">Component Relationships（Brownfield）<a class="headerlink" href="#component-relationshipsbrownfield" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Primary Component</strong>: <code>frontend/src/app/(authenticated)/resources/[id]/</code>（本タスクで新規コンポーネントを追加する対象ディレクトリ）</li>
-<li><strong>Shared Components</strong>: <code>server/actions/resources.ts</code>（<code>getAvailabilityAction</code>。呼び出し方は変更しない）</li>
-<li><strong>Dependent Components</strong>: <code>/reservations/new</code>（カレンダーからのクリックで遷移先となる。当初「遷移先画面自体の変更は不要」としていたが、既存<code>ReservationForm.tsx</code>が<code>startAt</code>クエリパラメータを解釈しない実装であることが判明したため、<code>page.tsx</code>・<code>ReservationForm.tsx</code>双方への変更を要する）</li>
-<li><strong>Supporting Components</strong>: なし（監視・ログ・デプロイへの影響なし）</li>
-</ul>
-<h3 id="risk-assessment">Risk Assessment<a class="headerlink" href="#risk-assessment" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Risk Level</strong>: Low（frontendのみ、単一画面内への追加、バックエンド・DB変更なし）</li>
-<li><strong>Rollback Complexity</strong>: Easy（新規ファイル追加が中心で、既存ファイルへの変更は<code>page.tsx</code>への呼び出し追加程度）</li>
-<li><strong>Testing Complexity</strong>: Simple〜Moderate（日付グリッド計算・スロット重複判定にユニットテストが必要だが、対象ロジックは純粋関数として切り出し可能）</li>
-</ul>
-<h2 id="workflow-visualization">Workflow Visualization<a class="headerlink" href="#workflow-visualization" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>flowchart TD
-    Start(["User Request: Issue #27 カレンダービュー"])
-
-    subgraph INCEPTION["INCEPTION PHASE"]
-        WD["Workspace Detection&lt;br/&gt;&lt;b&gt;COMPLETED&lt;/b&gt;"]
-        RE["Reverse Engineering&lt;br/&gt;&lt;b&gt;SKIPPED&lt;/b&gt;"]
-        RA["Requirements Analysis&lt;br/&gt;&lt;b&gt;COMPLETED&lt;/b&gt;"]
-        US["User Stories&lt;br/&gt;&lt;b&gt;COMPLETED&lt;/b&gt;"]
-        WP["Workflow Planning&lt;br/&gt;&lt;b&gt;IN PROGRESS&lt;/b&gt;"]
-        AD["Application Design&lt;br/&gt;&lt;b&gt;SKIP&lt;/b&gt;"]
-        UG["Units Generation&lt;br/&gt;&lt;b&gt;SKIP&lt;/b&gt;"]
-    end
-
-    subgraph CONSTRUCTION["CONSTRUCTION PHASE (Unit: calendar-view)"]
-        FD["Functional Design&lt;br/&gt;&lt;b&gt;EXECUTE&lt;/b&gt;"]
-        NFRA["NFR Requirements&lt;br/&gt;&lt;b&gt;SKIP&lt;/b&gt;"]
-        NFRD["NFR Design&lt;br/&gt;&lt;b&gt;SKIP&lt;/b&gt;"]
-        ID["Infrastructure Design&lt;br/&gt;&lt;b&gt;SKIP&lt;/b&gt;"]
-        CG["Code Generation&lt;br/&gt;&lt;b&gt;EXECUTE&lt;/b&gt;"]
-        BT["Build and Test&lt;br/&gt;&lt;b&gt;EXECUTE&lt;/b&gt;"]
-    end
-
-    subgraph OPERATIONS["OPERATIONS PHASE"]
-        OPS["Operations&lt;br/&gt;&lt;b&gt;PLACEHOLDER&lt;/b&gt;"]
-    end
-
-    Start --&gt; WD
-    WD --&gt; RE
-    RE --&gt; RA
-    RA --&gt; US
-    US --&gt; WP
-    WP --&gt; AD
-    AD --&gt; UG
-    UG --&gt; FD
-    FD --&gt; NFRA
-    NFRA --&gt; NFRD
-    NFRD --&gt; ID
-    ID --&gt; CG
-    CG --&gt; BT
-    BT --&gt; OPS
-    OPS --&gt; End(["Complete"])
-
-    style WD fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style RA fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style US fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style WP fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style CG fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style BT fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style FD fill:#FFA726,stroke:#E65100,stroke-width:3px,stroke-dasharray: 5 5,color:#000
-    style RE fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style AD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style UG fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style NFRA fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style NFRD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style ID fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style OPS fill:#FFF59D,stroke:#F57F17,stroke-width:2px,color:#000
-    style Start fill:#CE93D8,stroke:#6A1B9A,stroke-width:3px,color:#000
-    style End fill:#CE93D8,stroke:#6A1B9A,stroke-width:3px,color:#000
-
-    linkStyle default stroke:#333,stroke-width:2px</code></pre>
-<h2 id="phases-to-execute">Phases to Execute<a class="headerlink" href="#phases-to-execute" title="Permanent link">&para;</a></h2>
-<h3 id="inception-phase">INCEPTION PHASE<a class="headerlink" href="#inception-phase" title="Permanent link">&para;</a></h3>
+<p>このプランがCode Generationの実行における唯一の正典であり、各ステップを順に実行する。</p>
+<h2 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h2>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Workspace Detection (COMPLETED)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Reverse Engineering (SKIPPED — 既存成果物あり、対象ファイルは個別に読み直し済み)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Requirements Analysis (COMPLETED)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> User Stories (COMPLETED)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Workflow Planning (IN PROGRESS — 本ドキュメント)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Application Design - <strong>SKIP</strong></li>
-<li><strong>Rationale</strong>: 本タスクは既存のリソース詳細画面（<code>/resources/{id}</code>）という単一画面内への機能追加であり、新規の「サービス」や画面をまたぐコンポーネント間契約を新設しない。個々のUIコンポーネント（カレンダーグリッド・週月切替・期間ナビゲーション）の分割と責務は、Functional Designでの業務ロジック定義（日付グリッド計算・スロット重複判定）とCode Generation Planningでのファイル単位の計画で十分にカバーできる。Application Designが本来対象とする「新規サービス間の設計」に該当する変更がないため、Issue #22と同じSKIP判定だが、判定基準（新規コンポーネント/サービスの有無）自体を本タスクに当てはめて独立に判断した。</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Units Generation - <strong>SKIP</strong></li>
-<li><strong>Rationale</strong>: 新規データモデル・新規APIエンドポイントがなく、対象パッケージはfrontend単一。日付グリッド計算やスロット重複判定という複雑なロジックはあるが、複数ユニットへの分割を要する規模ではない（単一ユニット <code>calendar-view</code> として扱う）。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Step 1: Business Logic Generation</strong></li>
+<li>作成: <code>frontend/src/app/(authenticated)/resources/[id]/calendar-logic.ts</code></li>
+<li>内容: <code>business-logic-model.md</code>の1〜4章を純粋関数として実装する<ul>
+<li><code>computePeriod(viewMode, anchorDate): CalendarPeriod</code></li>
+<li><code>shiftAnchorDate(viewMode, anchorDate, direction): Date</code>（月表示は月初正規化、BR-11）</li>
+<li><code>buildWeekSlots(weekStart, occupiedSlots): HourSlotStatus[]</code>（168セル、BR-03・BR-04）</li>
+<li><code>buildMonthDays(anchorDate, occupiedSlots): DaySummary[]</code>（月曜始まりの完全な週、前月・翌月日付を含む、BR-06・BR-08）</li>
+<li><code>buildReservationUrl(resourceId, date, hour): string</code>（BR-14。内部実装として使用し、外部には公開しない）</li>
+<li><code>getWeekCellHref(cell: HourSlotStatus, resourceId): string | null</code>（<code>cell.occupied</code>が<code>true</code>の場合は<code>null</code>を返し、そうでなければ<code>buildReservationUrl</code>の結果を返す。クリック可否の決定をコンポーネント内の条件分岐に委ねず、この関数一つに集約する。STORY-04 AC1・AC3の担保をユニットテストで直接検証可能にするための設計。<code>CalendarWeekGrid</code>はこの関数の戻り値が<code>null</code>かどうかだけでクリック可否を判定する）</li>
+<li><code>formatPeriodLabel(viewMode, period): string</code>（トゥールバー表示用ラベル）</li>
 </ul>
-<h3 id="construction-phaseunit-calendar-view">CONSTRUCTION PHASE（Unit: calendar-view）<a class="headerlink" href="#construction-phaseunit-calendar-view" title="Permanent link">&para;</a></h3>
-<ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Functional Design - <strong>EXECUTE</strong></li>
-<li><strong>Rationale</strong>: (1) 表示モード（週/月）ごとの<code>from</code>/<code>to</code>算出ロジック、(2) <code>OccupiedSlot[]</code>を1時間グリッドへ写像し空き/予約済みを判定するロジック（STORY-04 AC4で指摘した境界不一致ケースを含む）、(3) 週の開始曜日・時間帯範囲の定数化、という3つの業務ロジックが新規に発生し、いずれも受け入れ基準の充足に直結するため、コード生成前に設計を固める価値がある。</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> NFR Requirements - <strong>SKIP</strong></li>
-<li><strong>Rationale</strong>: 拡張機能（Resiliency/Security/PBT）はいずれも不適用と確定済み。唯一のNFR的懸念（月表示時の描画セル数）は<code>requirements.md</code>のNon-Functional Requirements節に実装時の配慮事項として既に明記済みで、独立したNFR要求ステージを要するほどの規模・リスクではない。</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> NFR Design - <strong>SKIP</strong></li>
-<li><strong>Rationale</strong>: NFR RequirementsをSKIPしたため連動してSKIP。</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Infrastructure Design - <strong>SKIP</strong></li>
-<li><strong>Rationale</strong>: インフラ・デプロイモデルの変更なし（frontendのみの変更、既存のNext.jsアプリ内で完結）。</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Code Generation - <strong>EXECUTE (ALWAYS)</strong></li>
-<li><strong>Rationale</strong>: 実装計画の立案とコード生成が必要。</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Build and Test - <strong>EXECUTE (ALWAYS)</strong></li>
-<li><strong>Rationale</strong>: ビルド・テスト・検証が必要。</li>
+</li>
+<li>
+<p>対応要件: RSV-04, RSV-06, RSV-07, RSV-08, RSV-09, BR-01〜BR-11, BR-14</p>
+</li>
+<li class="task-list-item">
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Step 2: Business Logic Unit Testing</strong></p>
+</li>
+<li>作成: <code>frontend/tests/unit/calendar-logic.test.ts</code></li>
+<li>テストケース（最低限）:<ul>
+<li><code>computePeriod</code>: 週表示・月表示それぞれの<code>from</code>/<code>to</code>算出（月曜始まりの境界値を含む）</li>
+<li><code>shiftAnchorDate</code>: 週の前後移動、月の前後移動（31日始まりで日数の少ない月へ移動するケースを含む、BR-11）</li>
+<li><code>buildWeekSlots</code>: 境界一致の予約・境界不一致の予約（14:30〜15:30が14-15時・15-16時の両セルを占有済みにする、STORY-04 AC4/BR-04）・予約なしの空きセル</li>
+<li><code>buildMonthDays</code>: 当月1日が月曜でない月の前月日付混入、末日を含む週の翌月日付混入、日次予約件数の集計</li>
+<li><code>buildReservationUrl</code>: ゼロ埋め・<code>YYYY-MM-DDTHH:mm</code>形式の検証</li>
+<li><code>getWeekCellHref</code>: 空きセル→<code>buildReservationUrl</code>と同じURLを返す（STORY-04 AC1）、占有セル→<code>null</code>を返す（STORY-04 AC3）、境界不一致で占有扱いになったセル→<code>null</code>を返す（STORY-04 AC3・AC4の組み合わせ）、過去日時の空きセル→<code>null</code>を返さない（クリック可能のまま、Functional Design時の確認事項）</li>
 </ul>
-<h3 id="operations-phase">OPERATIONS PHASE<a class="headerlink" href="#operations-phase" title="Permanent link">&para;</a></h3>
-<ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Operations - <strong>PLACEHOLDER</strong></li>
-<li><strong>Rationale</strong>: BookFlow翻案によりCI品質ゲート（CI Frontend）運用に委譲。<code>/aidlc</code>スキルとしての成果物生成はBuild and Testまで。</li>
+</li>
+<li>
+<p>対応要件: すべてのstory受け入れ基準の裏付け</p>
+</li>
+<li class="task-list-item">
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Step 3: Business Logic Summary</strong></p>
+</li>
+<li>
+<p><code>Docs/spec/aidlc-docs/construction/calendar-view/code/business-logic-summary.md</code>に、実装した関数一覧とテストケース対応表を記録する</p>
+</li>
+<li class="task-list-item">
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Step 4: Frontend Components Generation</strong></p>
+</li>
+<li>作成: <code>frontend/src/app/(authenticated)/resources/[id]/CalendarToolbar.tsx</code></li>
+<li>作成: <code>frontend/src/app/(authenticated)/resources/[id]/CalendarWeekGrid.tsx</code></li>
+<li>作成: <code>frontend/src/app/(authenticated)/resources/[id]/CalendarMonthGrid.tsx</code></li>
+<li>作成: <code>frontend/src/app/(authenticated)/resources/[id]/ResourceAvailabilityCalendar.tsx</code></li>
+<li>変更: <code>frontend/src/app/(authenticated)/resources/[id]/page.tsx</code>（<code>ResourceAvailabilityCalendar</code>を追加、既存リストは変更しない）</li>
+<li>変更: <code>frontend/src/app/(authenticated)/reservations/new/page.tsx</code>（<code>searchParams.startAt</code>を読み取り<code>ReservationForm</code>へ渡す）</li>
+<li>変更: <code>frontend/src/app/(authenticated)/reservations/new/ReservationForm.tsx</code>（<code>defaultStartAt</code> prop追加）</li>
+<li><code>CalendarWeekGrid</code>のセルは<code>getWeekCellHref(cell, resourceId)</code>の戻り値で分岐する（<code>null</code>ならグレーアウト・クリック無効の<code>&lt;div&gt;</code>、<code>null</code>でなければクリック可能な<code>&lt;Link&gt;</code>）。コンポーネント自身は占有判定を行わない</li>
+<li><code>data-testid</code>命名: <code>calendar-view-mode-week</code>・<code>calendar-view-mode-month</code>・<code>calendar-prev-button</code>・<code>calendar-next-button</code>・<code>calendar-week-cell-{day}-{hour}</code>・<code>calendar-month-day-{date}</code></li>
+<li>
+<p>対応要件: RSV-01〜03, RSV-05, RSV-09, STORY-01〜04</p>
+</li>
+<li class="task-list-item">
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Step 5: Frontend Components Unit Testing</strong></p>
+</li>
+<li><code>frontend/tests/unit/resources/page.test.tsx</code>は存在しないため影響確認はスキップ（<code>resources/[id]/page.tsx</code>に対する既存のレンダリングテスト自体がリポジトリに存在しない）</li>
+<li>作成: <code>frontend/tests/unit/reservation-form.test.tsx</code>（<code>defaultStartAt</code>が開始日時欄の初期値に反映されること・未指定時は空のままであることの2件を検証）</li>
+<li>
+<p>対応要件: RSV-09, STORY-04 AC1</p>
+</li>
+<li class="task-list-item">
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Step 6: Frontend Components Summary</strong></p>
+</li>
+<li>
+<p><code>Docs/spec/aidlc-docs/construction/calendar-view/code/frontend-components-summary.md</code>に、作成・変更ファイル一覧とテスト結果を記録する</p>
+</li>
+<li class="task-list-item">
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>Step 7: Documentation Generation</strong></p>
+</li>
+<li><code>Docs/spec/aidlc-docs/construction/calendar-view/code/summary.md</code>を生成し、Build and Test後の<code>/update-spec</code>反映対象（<code>screen-spec.md</code> §<code>/resources/{id}</code>・§<code>/reservations/new</code>）を明記する</li>
 </ul>
-<h2 id="estimated-timeline">Estimated Timeline<a class="headerlink" href="#estimated-timeline" title="Permanent link">&para;</a></h2>
+<h2 id="skip">Skip対象（理由明記）<a class="headerlink" href="#skip" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Total Stages Executed</strong>: 5（Workspace Detection・Requirements Analysis・User Stories・Workflow Planning・Functional Design・Code Generation・Build and Test）※Workflow Planning含め計7ステージがCOMPLETED/EXECUTE対象</li>
-<li><strong>Estimated Duration</strong>: 半日〜1日（ビジネス要求シートの見積り工数どおり）</li>
-</ul>
-<h2 id="success-criteria">Success Criteria<a class="headerlink" href="#success-criteria" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Primary Goal</strong>: <code>Docs/spec/enhancements/calendar-view.md</code> の受入条件6点をすべて満たす</li>
-<li><strong>Key Deliverables</strong>: Functional Design成果物（<code>business-logic-model.md</code>・<code>business-rules.md</code>）、新規frontendコンポーネント一式、Vitestユニットテスト、<code>Docs/spec/screen-spec.md</code>の更新</li>
-<li><strong>Quality Gates</strong>: <code>pnpm lint</code>・<code>pnpm test</code>・<code>pnpm build</code>（型チェック兼ねる）がすべて成功すること。バックエンドの変更が発生していないこと（<code>git diff</code>で<code>backend/</code>配下に差分がないことを確認）</li>
+<li><strong>Repository Layer / API Layer Generation</strong>: SKIP（バックエンド変更なし。既存の<code>GET /api/resources/{id}/availability</code>をそのまま利用）</li>
+<li><strong>Database Migration Scripts</strong>: SKIP（データモデル変更なし）</li>
+<li><strong>Deployment Artifacts Generation</strong>: SKIP（インフラ・デプロイモデルの変更なし、Workflow PlanningでInfrastructure Design自体をSKIP済み）</li>
 </ul>
 
 
@@ -3120,7 +2963,7 @@
       
       
       
-        <span class="md-tag">workflow-planning</span>
+        <span class="md-tag">code-generation</span>
       
     
       

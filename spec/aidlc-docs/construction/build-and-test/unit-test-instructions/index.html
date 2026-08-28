@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="AI-DLC Build and Test ステージが生成したリソース一覧ソート機能のユニットテスト実行手順">
+        <meta name="description" content="カレンダービュー（Unit：calendar-view）のユニットテスト実行手順・結果">
       
       
         <meta name="author" content="Bizarress">
@@ -25,7 +25,7 @@
     
     
       
-        <title>Unit Test Execution Instructions（resource-list-sort） - BookFlow ドキュメント</title>
+        <title>Unit Test Execution - BookFlow ドキュメント</title>
       
     
     
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#unit-test-execution" class="md-skip">
+        <a href="#unit-test-execution-unit-calendar-view" class="md-skip">
           コンテンツにスキップ
         </a>
       
@@ -139,7 +139,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Unit Test Execution Instructions（resource-list-sort）
+              Unit Test Execution
             
           </span>
         </div>
@@ -2802,32 +2802,71 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#run-unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Run Unit Tests
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run Unit Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-execute-all-unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        1. Execute All Unit Tests
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-review-test-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        2. Review Test Results
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        3. 個別実行（本課題の追加テストのみ）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-fix-failing-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        4. Fix Failing Tests
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        バックエンド
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        フロントエンド
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        テストが失敗した場合
+        実行結果（本ステージで確認済み）
       </span>
     </span>
   </a>
@@ -2860,32 +2899,33 @@
   
 
 
-<h1 id="unit-test-execution">Unit Test Execution — リソース一覧ソート機能<a class="headerlink" href="#unit-test-execution" title="Permanent link">&para;</a></h1>
-<h2 id="_1">バックエンド<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>backend
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>./gradlew<span class="w"> </span><span class="nb">test</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>./gradlew<span class="w"> </span>spotlessCheck<span class="w"> </span>checkstyleMain<span class="w"> </span>checkstyleTest
+<h1 id="unit-test-execution-unit-calendar-view">Unit Test Execution — カレンダービュー（Unit: calendar-view）<a class="headerlink" href="#unit-test-execution-unit-calendar-view" title="Permanent link">&para;</a></h1>
+<h2 id="run-unit-tests">Run Unit Tests<a class="headerlink" href="#run-unit-tests" title="Permanent link">&para;</a></h2>
+<h3 id="1-execute-all-unit-tests">1. Execute All Unit Tests<a class="headerlink" href="#1-execute-all-unit-tests" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pnpm<span class="w"> </span><span class="nb">test</span>
 </span></code></pre></div>
+<h3 id="2-review-test-results">2. Review Test Results<a class="headerlink" href="#2-review-test-results" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>期待結果</strong>: 全テスト成功（本課題の変更範囲では <code>ResourceServiceTest</code> に新規7件、<code>ResourceControllerTest</code> に新規6件を追加）</li>
-<li><strong>テストレポート</strong>: <code>backend/build/reports/tests/test/index.html</code></li>
-<li><strong>Checkstyle レポート</strong>: <code>backend/build/reports/checkstyle/</code>（本課題と無関係な既存メソッド名の warning が出るが、error ではないため許容する）</li>
+<li><strong>Expected</strong>: 13ファイル・113件成功、失敗0件（本課題で追加した<code>calendar-logic.test.ts</code>22件・<code>reservation-form.test.tsx</code>2件を含む）。</li>
+<li><strong>Test Coverage</strong>: <code>calendar-logic.ts</code>の全公開関数（期間算出・週グリッド写像・月次要約・クリック可否判定）を境界値込みで網羅。<code>ReservationForm</code>は<code>defaultStartAt</code>の初期値反映のみを対象とし、既存の申請・重複エラー処理のフローは変更していないため再検証していない。</li>
+<li><strong>Test Report Location</strong>: 標準出力（<code>vitest run</code>の実行結果）。HTMLレポートは<code>coverage/</code>（<code>vitest.config.ts</code>のcoverage設定、明示的に<code>--coverage</code>指定時のみ生成）。</li>
 </ul>
-<h2 id="_2">フロントエンド<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>frontend
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pnpm<span class="w"> </span><span class="nb">test</span><span class="w"> </span>resources
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>pnpm<span class="w"> </span>lint
+<h3 id="3">3. 個別実行（本課題の追加テストのみ）<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pnpm<span class="w"> </span><span class="nb">test</span><span class="w"> </span>calendar-logic
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pnpm<span class="w"> </span><span class="nb">test</span><span class="w"> </span>reservation-form
 </span></code></pre></div>
+<h3 id="4-fix-failing-tests">4. Fix Failing Tests<a class="headerlink" href="#4-fix-failing-tests" title="Permanent link">&para;</a></h3>
+<p>失敗が発生した場合：
+1. <code>vitest run</code>の出力で失敗ケース名を確認する。
+2. <code>calendar-logic.test.ts</code>側の失敗は、<code>business-logic-model.md</code>の期間算出・重複判定ロジックとの整合を確認する。
+3. <code>reservation-form.test.tsx</code>側の失敗は、<code>@/lib/session</code>経由のBetter Auth初期化がテスト環境で走っていないか（<code>vi.mock("@/server/actions/reservations", ...)</code>が効いているか）を確認する。</p>
+<h2 id="_1">実行結果（本ステージで確認済み）<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>期待結果</strong>: <code>resources.test.ts</code> 全テスト成功（本課題の変更範囲では <code>sort</code> パラメータの受け渡しを検証する新規2件を追加）</li>
-<li><strong>Lint</strong>: <code>oxlint .</code> がエラーなく完了すること</li>
+<li><code>pnpm test</code>：13ファイル・113件すべて成功。</li>
+<li><code>pnpm lint</code>（oxlint）：エラー・警告なし。</li>
+<li><code>pnpm build</code>（型チェック兼ねる）：成功。</li>
 </ul>
-<h2 id="_3">テストが失敗した場合<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<ol>
-<li><code>./gradlew test</code>（バックエンド）または <code>pnpm test</code>（フロントエンド）の出力で失敗箇所を特定する</li>
-<li><code>Docs/spec/aidlc-docs/construction/resource-list-sort/functional-design/business-rules.md</code>（BR-01〜06）と実装（<code>ResourceService.resolveComparator</code>）を照合する</li>
-<li>修正後、該当テストのみ再実行して確認してから全体を再実行する</li>
-</ol>
 
 
   <nav class="md-tags" >
