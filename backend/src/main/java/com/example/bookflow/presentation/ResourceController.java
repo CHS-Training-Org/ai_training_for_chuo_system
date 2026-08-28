@@ -67,6 +67,7 @@ public class ResourceController {
    * @param category カテゴリフィルタ（任意）
    * @param from 空き確認の開始日時（任意・to と同時指定）
    * @param to 空き確認の終了日時（任意・from と同時指定）
+   * @param keyword キーワード検索（任意・{@code name} / {@code description} への大文字小文字非依存の部分一致）
    * @param pageable ページネーション（デフォルト: size=20、sort=createdAt,asc）
    * @param currentUser 認証済みユーザー（ロール判定に使用）
    * @return {@link ResourceResponse} のページ
@@ -76,6 +77,7 @@ public class ResourceController {
       @RequestParam(required = false) ResourceCategory category,
       @RequestParam(required = false) LocalDateTime from,
       @RequestParam(required = false) LocalDateTime to,
+      @RequestParam(required = false) String keyword,
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC)
           Pageable pageable,
       @CurrentUser User currentUser) {
@@ -85,7 +87,7 @@ public class ResourceController {
     }
     validateSort(pageable.getSort());
     boolean isAdmin = currentUser.getRole() == Role.ADMIN;
-    return resourceService.list(category, from, to, isAdmin, pageable);
+    return resourceService.list(category, from, to, keyword, isAdmin, pageable);
   }
 
   /**

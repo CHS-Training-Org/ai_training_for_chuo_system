@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -67,11 +68,14 @@ public class ResourceService {
    *
    * <p>ソート（{@code pageable.getSort()}）は DB の {@code ORDER BY} には委譲せず、候補リスト取得後に {@link Comparator}
    * で適用する。DB 委譲では null 定員の末尾固定（BR-03）や大文字小文字非依存（BR-05）を DB のロケール・NULLS
-   * 順序既定に依存させてしまい、環境によって結果が変わるため（詳細は {@code aidlc-audit.md} 参照）。
+   * 順序既定に依存させてしまい、環境によって結果が変わるため（詳細は {@code aidlc-audit.md} 参照）。keyword 検索（大文字小文字非依存の部分一致）も同じ理由で DB
+   * の {@code ILIKE} には委譲せず、候補リストに対して Java 側で適用する。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
+   * @param keyword キーワード検索（null または空白のみの場合はフィルタしない。{@code name} / {@code description}
+   *     への部分一致、大文字小文字非依存）
    * @param isAdmin ADMIN ロールであれば inactive を含む
    * @param pageable ページネーション・ソート
    * @return {@link ResourceResponse} のページ
@@ -81,11 +85,15 @@ public class ResourceService {
       ResourceCategory category,
       LocalDateTime from,
       LocalDateTime to,
+      String keyword,
       boolean isAdmin,
       Pageable pageable) {
     List<Resource> candidates = fetchAllCandidates(category, isAdmin);
     if (from != null && to != null) {
       candidates = excludeOccupied(candidates, from, to);
+    }
+    if (keyword != null && !keyword.isBlank()) {
+      candidates = filterByKeyword(candidates, keyword);
     }
 
     Comparator<Resource> comparator = resolveComparator(pageable.getSort());
@@ -133,6 +141,21 @@ public class ResourceService {
             .map(r -> r.getResource().getId())
             .collect(Collectors.toSet());
     return candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
+  }
+
+  /** {@code name} または {@code description} が keyword を含む（大文字小文字非依存）候補のみを残す。 */
+  private static List<Resource> filterByKeyword(List<Resource> candidates, String keyword) {
+    String needle = keyword.toLowerCase(Locale.ROOT);
+    return candidates.stream()
+        .filter(
+            r ->
+                containsIgnoreCase(r.getName(), needle)
+                    || containsIgnoreCase(r.getDescription(), needle))
+        .toList();
+  }
+
+  private static boolean containsIgnoreCase(String value, String lowerNeedle) {
+    return value != null && value.toLowerCase(Locale.ROOT).contains(lowerNeedle);
   }
 
   /**

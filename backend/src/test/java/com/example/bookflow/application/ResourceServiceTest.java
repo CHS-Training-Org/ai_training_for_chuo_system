@@ -88,6 +88,18 @@ class ResourceServiceTest {
     }
   }
 
+  /** {@link #makeResource} に加えて {@code description} を設定するヘルパー（keyword 検索テスト専用）。 */
+  private static Resource makeResourceWithDescription(
+      UUID id, String name, String description, ResourceCategory category, boolean isActive) {
+    Resource r = makeResource(id, name, category, isActive);
+    try {
+      setField(r, "description", description);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    return r;
+  }
+
   private static Reservation makeReservation(
       UUID id,
       Resource resource,
@@ -216,7 +228,7 @@ class ResourceServiceTest {
     void list_memberWithoutFilter_returnsActiveOnly() {
       when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
@@ -227,7 +239,7 @@ class ResourceServiceTest {
       when(resourceRepository.findAll())
           .thenReturn(java.util.List.of(activeResource, inactiveResource));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, true, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, true, pageable);
 
       assertThat(result.getContent()).hasSize(2);
     }
@@ -250,7 +262,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, null, false, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }
@@ -269,7 +281,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
     }
@@ -287,7 +299,7 @@ class ResourceServiceTest {
           .thenReturn(java.util.List.of(banana, apple, cherry));
 
       Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("name")));
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, sorted);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
 
       assertThat(result.getContent())
           .extracting(ResourceResponse::name)
@@ -303,7 +315,7 @@ class ResourceServiceTest {
           .thenReturn(java.util.List.of(banana, apple, cherry));
 
       Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("name")));
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, sorted);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
 
       assertThat(result.getContent())
           .extracting(ResourceResponse::name)
@@ -320,7 +332,7 @@ class ResourceServiceTest {
           .thenReturn(java.util.List.of(withoutCapacity, large, small));
 
       Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("capacity")));
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, sorted);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
 
       assertThat(result.getContent())
           .extracting(ResourceResponse::capacity)
@@ -339,7 +351,7 @@ class ResourceServiceTest {
           .thenReturn(java.util.List.of(withoutCapacity, small, large));
 
       Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("capacity")));
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, sorted);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
 
       assertThat(result.getContent())
           .extracting(ResourceResponse::capacity)
@@ -367,7 +379,7 @@ class ResourceServiceTest {
       when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(older, newer));
 
       Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("createdAt")));
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, sorted);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, sorted);
 
       assertThat(result.getContent()).extracting(ResourceResponse::name).containsExactly("新", "旧");
     }
@@ -392,7 +404,7 @@ class ResourceServiceTest {
               LocalDateTime.of(2025, 6, 1, 9, 0));
       when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(newer, older));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).extracting(ResourceResponse::name).containsExactly("旧", "新");
     }
@@ -404,7 +416,7 @@ class ResourceServiceTest {
       when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
 
       Pageable farPage = PageRequest.of(200_000_000, 20);
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, farPage);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, farPage);
 
       assertThat(result.getContent()).isEmpty();
       assertThat(result.getTotalElements()).isEqualTo(1);
@@ -431,11 +443,81 @@ class ResourceServiceTest {
           .thenReturn(java.util.List.of(occupying));
 
       Pageable sorted = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("name")));
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, sorted);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, null, false, sorted);
 
       assertThat(result.getContent())
           .extracting(ResourceResponse::name)
           .containsExactly("Apple", "cherry");
+    }
+
+    // -------------------------------------------------------------------------
+    // keyword — キーワード検索（issue #23）
+    // -------------------------------------------------------------------------
+
+    @Test
+    void list_withKeywordMatchingName_returnsOnlyMatching() {
+      Resource meetingRoom =
+          makeResourceWithDescription(
+              UUID.randomUUID(), "第1会議室", null, ResourceCategory.ROOM, true);
+      Resource projector =
+          makeResourceWithDescription(
+              UUID.randomUUID(), "プロジェクター", null, ResourceCategory.EQUIPMENT, true);
+      when(resourceRepository.findByIsActiveTrue())
+          .thenReturn(java.util.List.of(meetingRoom, projector));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, "会議室", false, pageable);
+
+      assertThat(result.getContent()).extracting(ResourceResponse::name).containsExactly("第1会議室");
+    }
+
+    @Test
+    void list_withKeywordMatchingDescriptionCaseInsensitive_returnsOnlyMatching() {
+      Resource withProjector =
+          makeResourceWithDescription(
+              UUID.randomUUID(), "第1会議室", "4K Projector完備", ResourceCategory.ROOM, true);
+      Resource withoutProjector =
+          makeResourceWithDescription(
+              UUID.randomUUID(), "第2会議室", "ホワイトボードのみ", ResourceCategory.ROOM, true);
+      when(resourceRepository.findByIsActiveTrue())
+          .thenReturn(java.util.List.of(withProjector, withoutProjector));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, "projector", false, pageable);
+
+      assertThat(result.getContent()).extracting(ResourceResponse::name).containsExactly("第1会議室");
+    }
+
+    @Test
+    void list_withBlankKeyword_returnsAllCandidates() {
+      Resource meetingRoom =
+          makeResourceWithDescription(
+              UUID.randomUUID(), "第1会議室", null, ResourceCategory.ROOM, true);
+      Resource projector =
+          makeResourceWithDescription(
+              UUID.randomUUID(), "プロジェクター", null, ResourceCategory.EQUIPMENT, true);
+      when(resourceRepository.findByIsActiveTrue())
+          .thenReturn(java.util.List.of(meetingRoom, projector));
+
+      Page<ResourceResponse> result = resourceService.list(null, null, null, "  ", false, pageable);
+
+      assertThat(result.getContent()).hasSize(2);
+    }
+
+    @Test
+    void list_withKeywordAndCategoryCombined_appliesAndCondition() {
+      Resource matchingRoom =
+          makeResourceWithDescription(
+              UUID.randomUUID(), "第1会議室", null, ResourceCategory.ROOM, true);
+      Resource nonMatchingRoom =
+          makeResourceWithDescription(UUID.randomUUID(), "多目的室", null, ResourceCategory.ROOM, true);
+      when(resourceRepository.findByCategoryAndIsActiveTrue(ResourceCategory.ROOM))
+          .thenReturn(java.util.List.of(matchingRoom, nonMatchingRoom));
+
+      Page<ResourceResponse> result =
+          resourceService.list(ResourceCategory.ROOM, null, null, "会議室", false, pageable);
+
+      assertThat(result.getContent()).extracting(ResourceResponse::name).containsExactly("第1会議室");
     }
   }
 

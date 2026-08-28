@@ -377,6 +377,93 @@ class ResourceControllerTest extends BaseControllerTest {
   }
 
   // ---------------------------------------------------------------------------
+  // GET /api/resources — keyword 検索（issue #23）
+  // ---------------------------------------------------------------------------
+
+  private UUID insertResourceForKeywordTest(String name, String description, String category) {
+    UUID id = UUID.randomUUID();
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, description, requires_approval, is_active,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        id,
+        name,
+        category,
+        description,
+        false,
+        true,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    return id;
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsFilteredResults() throws Exception {
+    // シード（第1会議室）と紛れないよう固有の名称を使う
+    UUID meetingRoom = insertResourceForKeywordTest("特別会議室ZZZ", null, "ROOM");
+    UUID projector = insertResourceForKeywordTest("プロジェクター", null, "EQUIPMENT");
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources").param("keyword", "特別会議室ZZZ").accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[0].name").value("特別会議室ZZZ"))
+          .andExpect(jsonPath("$.content.length()").value(1));
+    } finally {
+      deleteResources(meetingRoom, projector);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingDescriptionCaseInsensitive_returnsFilteredResults()
+      throws Exception {
+    UUID withProjector = insertResourceForKeywordTest("第2会議室", "4K Projector完備", "ROOM");
+    UUID withoutProjector = insertResourceForKeywordTest("第3会議室", "ホワイトボードのみ", "ROOM");
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources")
+                  .param("keyword", "projector")
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[0].name").value("第2会議室"))
+          .andExpect(jsonPath("$.content.length()").value(1));
+    } finally {
+      deleteResources(withProjector, withoutProjector);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordAndCategoryCombined_appliesAndCondition() throws Exception {
+    // シード（第1会議室）と紛れないよう固有の名称を使う
+    UUID matchingRoom = insertResourceForKeywordTest("特別会議室YYY", null, "ROOM");
+    UUID matchingEquipment = insertResourceForKeywordTest("特別会議室YYY用ホワイトボード", null, "EQUIPMENT");
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources")
+                  .param("category", "ROOM")
+                  .param("keyword", "特別会議室YYY")
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[0].name").value("特別会議室YYY"))
+          .andExpect(jsonPath("$.content.length()").value(1));
+    } finally {
+      deleteResources(matchingRoom, matchingEquipment);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_withEmptyKeywordParam_returnsAllResults() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.name == '第1会議室')]").exists());
+  }
+
+  // ---------------------------------------------------------------------------
   // POST /api/resources — 登録
   // ---------------------------------------------------------------------------
 
