@@ -56,4 +56,33 @@ describe("buildResourceFilterQuery", () => {
       expect(query).toBe("category=EQUIPMENT&sort=name%2Cdesc");
     });
   });
+
+  describe("keyword", () => {
+    it("keyword を指定した場合は付与する", () => {
+      const query = buildResourceFilterQuery({ keyword: "会議室" });
+      expect(query).toBe("keyword=%E4%BC%9A%E8%AD%B0%E5%AE%A4");
+    });
+
+    it("keyword が空文字の場合は付与しない（フィルタ解除）", () => {
+      const query = buildResourceFilterQuery({ keyword: "" });
+      expect(query).toBe("");
+    });
+
+    it("keyword が未指定（undefined）の場合は付与しない", () => {
+      const query = buildResourceFilterQuery({});
+      expect(query).toBe("");
+    });
+
+    it("category・from・to・keyword を組み合わせて付与する", () => {
+      const query = buildResourceFilterQuery({
+        category: "ROOM",
+        keyword: "プロジェクター",
+        from: "2026-06-10T09:00",
+        to: "2026-06-10T12:00",
+      });
+      expect(query).toBe(
+        "category=ROOM&keyword=%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%82%BF%E3%83%BC&from=2026-06-10T09%3A00&to=2026-06-10T12%3A00",
+      );
+    });
+  });
 });
