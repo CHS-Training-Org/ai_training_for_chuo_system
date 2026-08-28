@@ -153,6 +153,23 @@ export function buildMonthDays(anchorDate: Date, occupiedSlots: AvailabilitySlot
 }
 
 // ---------------------------------------------------------------------------
+// ローカル日時文字列フォーマット
+// ---------------------------------------------------------------------------
+
+/**
+ * DateをローカルタイムゾーンのYYYY-MM-DDTHH:mm:ss形式へ整形する。
+ *
+ * toISOString()はUTCへ変換してしまうため、period.from/period.toのような
+ * ローカル日時として組み立てられたDateをAPIへ渡す際はこちらを使うこと。
+ * buildReservationUrlと同じくgetFullYear/getMonth/getDateでローカル値を取り出す。
+ */
+export function formatLocalDateTime(date: Date): string {
+  const datePart = `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+  const timePart = `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+  return `${datePart}T${timePart}`;
+}
+
+// ---------------------------------------------------------------------------
 // 予約申請フォームへの遷移URL生成
 // ---------------------------------------------------------------------------
 

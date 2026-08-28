@@ -10,6 +10,7 @@ import {
   computePeriod,
   shiftAnchorDate,
   formatPeriodLabel,
+  formatLocalDateTime,
   buildWeekSlots,
   buildMonthDays,
   getWeekCellHref,
@@ -87,6 +88,22 @@ describe("formatPeriodLabel", () => {
   it("月表示は年月のみを返す", () => {
     const period = computePeriod("month", new Date(2026, 7, 17));
     expect(formatPeriodLabel("month", period)).toBe("2026年8月");
+  });
+});
+
+describe("formatLocalDateTime", () => {
+  it("ローカル日時をYYYY-MM-DDTHH:mm:ss形式へ整形する（toISOStringのUTC変換を避ける）", () => {
+    expect(formatLocalDateTime(new Date(2026, 7, 20, 9, 5, 3))).toBe("2026-08-20T09:05:03");
+  });
+
+  it("月・日・時・分・秒が1桁の値も2桁ゼロ埋めする", () => {
+    expect(formatLocalDateTime(new Date(2026, 0, 1, 0, 0, 0))).toBe("2026-01-01T00:00:00");
+  });
+
+  it("computePeriodが返す期間の境界（週表示）をローカル日時として整形できる", () => {
+    const period = computePeriod("week", new Date(2026, 7, 20));
+    expect(formatLocalDateTime(period.from)).toBe("2026-08-17T00:00:00");
+    expect(formatLocalDateTime(period.to)).toBe("2026-08-24T00:00:00");
   });
 });
 

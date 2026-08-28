@@ -10,6 +10,7 @@ import {
   buildMonthDays,
   buildWeekSlots,
   computePeriod,
+  formatLocalDateTime,
   formatPeriodLabel,
   shiftAnchorDate,
   type CalendarViewMode,
@@ -34,8 +35,8 @@ export function ResourceAvailabilityCalendar({ resourceId }: ResourceAvailabilit
   const periodToTime = period.to.getTime();
 
   useEffect(() => {
-    const from = new Date(periodFromTime).toISOString().slice(0, 19);
-    const to = new Date(periodToTime).toISOString().slice(0, 19);
+    const from = formatLocalDateTime(new Date(periodFromTime));
+    const to = formatLocalDateTime(new Date(periodToTime));
     startTransition(async () => {
       try {
         const result = await getAvailabilityAction(resourceId, from, to);
