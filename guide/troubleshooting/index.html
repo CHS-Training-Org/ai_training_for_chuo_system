@@ -1922,6 +1922,34 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#git" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Git・GitHub 関連
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Git・GitHub 関連">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#push-could-not-read-username-403-permission-denied" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        ブランチを push できない（<code>could not read Username</code> / <code>403 Permission denied</code>）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#ai-tools" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3503,6 +3531,34 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#git" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Git・GitHub 関連
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Git・GitHub 関連">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#push-could-not-read-username-403-permission-denied" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        ブランチを push できない（<code>could not read Username</code> / <code>403 Permission denied</code>）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#ai-tools" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3880,6 +3936,38 @@
 <li><strong>解決策</strong>: バックエンドを再起動し、起動ログで Flyway の適用結果（<code>Successfully applied 1 migration</code> 等）を確認する。</li>
 </ul>
 <hr />
+<h2 id="git">Git・GitHub 関連<a class="headerlink" href="#git" title="Permanent link">&para;</a></h2>
+<h3 id="push-could-not-read-username-403-permission-denied">ブランチを push できない（<code>could not read Username</code> / <code>403 Permission denied</code>）<a class="headerlink" href="#push-could-not-read-username-403-permission-denied" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>症状</strong>: 作成したブランチを push すると、次のように 2 種類のエラーが続けて出る。</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$ git push -u origin &lt;ブランチ名&gt;
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>fatal: could not read Username for &#39;https://github.com&#39;: terminal prompts disabled
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>remote: Permission to CHS-Training-Org/ai_training_for_chuo_system.git denied to &lt;ユーザー名&gt;.
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>fatal: unable to access &#39;https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git/&#39;: The requested URL returned error: 403
+</span></code></pre></div>
+<ul>
+<li><strong>原因</strong>: 1 つのログに 2 つの異なる原因が混ざっています。<ul>
+<li><strong>(a) git に資格情報が渡っていない</strong>：<code>gh auth login</code> の際に「Authenticate Git with your GitHub credentials?」を No にした、または SSH を選んだ場合、<code>gh</code> にはログインできていても git 単体には credential helper が設定されません。DevContainer のターミナルは非対話（<code>terminal prompts disabled</code>）のため入力を求められず、<code>could not read Username</code> で失敗します。</li>
+<li><strong>(b) リポジトリへの Write 権限がない</strong>：Organization の招待が未承諾、ロールが Read、または <code>gh</code> のトークンに <code>repo</code> scope が不足している場合、<code>403 Permission denied</code> になります。<code>Permission to ... denied to &lt;ユーザー名&gt;</code> とユーザー名が表示されている場合はこちらです。</li>
+</ul>
+</li>
+<li>
+<p><strong>切り分け</strong>: DevContainer 内のターミナルで次を実行します。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>gh<span class="w"> </span>auth<span class="w"> </span>status
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>gh<span class="w"> </span>api<span class="w"> </span>repos/CHS-Training-Org/ai_training_for_chuo_system<span class="w"> </span>--jq<span class="w"> </span>.permissions
+</span></code></pre></div>
+<p><code>"push": true</code> が返れば Write 権限はあるので <strong>(a)</strong> が原因、<code>false</code> なら <strong>(b)</strong> が原因です。
+- <strong>解決策</strong>:
+- <strong>(a)</strong> の場合：<code>gh auth setup-git</code> を実行して git に credential helper を設定してから、push し直す。
+- <strong>(b)</strong> の場合：<code>gh auth refresh -s repo,workflow</code> でトークンに scope を付与し直す。それでも <code>"push": false</code> のままなら、GitHub からの招待メールを承諾済みかを確認し、未着・未承諾であれば運営担当者へ連絡する。</p>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">ブランチ保護ルールによる拒否は別のエラーになります</p>
+<p>ブランチ保護ルールで拒否された場合は <code>protected branch hook declined</code> / <code>GH006</code> という別のメッセージになります。上記のエラーが出ている場合は保護ルールではなく認証・権限が原因です。</p>
+</div>
+<hr />
 <h2 id="ai-tools">AI ツール関連<a class="headerlink" href="#ai-tools" title="Permanent link">&para;</a></h2>
 <h3 id="claudejson">コンテナ起動が <code>.claude.json</code> 関連のマウントエラーで失敗する<a class="headerlink" href="#claudejson" title="Permanent link">&para;</a></h3>
 <ul>
@@ -3887,8 +3975,8 @@
 <li><strong>原因</strong>: ホスト（WSL2）側の <code>~/.claude.json</code> が<strong>ディレクトリ</strong>として存在している。マウント元が存在しない状態で Docker が自動生成すると空ディレクトリになり、ファイルを期待するコンテナ側と型が衝突する。通常は <code>devcontainer.json</code> の <code>initializeCommand</code> が空の JSON ファイル（<code>{}</code>）を事前生成するため発生しないが、一度ディレクトリ化すると以降の起動が失敗し続ける。</li>
 <li><strong>解決策</strong>: WSL2 ターミナルで確認し、<strong>ディレクトリだった場合のみ</strong>削除してから DevContainer を起動し直す（<code>initializeCommand</code> がファイルとして再生成する）。</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>ls<span class="w"> </span>-ld<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># 先頭が d ならディレクトリ化している</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># ディレクトリだった場合のみ実行</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>ls<span class="w"> </span>-ld<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># 先頭が d ならディレクトリ化している</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># ディレクトリだった場合のみ実行</span>
 </span></code></pre></div>
 <p>ファイルとして存在する <code>~/.claude.json</code> は Claude Code の認証、設定情報を含むため削除しないでください。</p>
 <h3 id="claude-command-not-found"><code>claude: command not found</code><a class="headerlink" href="#claude-command-not-found" title="Permanent link">&para;</a></h3>

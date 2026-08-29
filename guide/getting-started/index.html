@@ -3681,6 +3681,7 @@ Ubuntu ターミナルで <code>docker ps</code> が権限エラーなく通れ�
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>gh<span class="w"> </span>auth<span class="w"> </span>login
 </span></code></pre></div>
 <p>画面の指示に従って GitHub アカウントで認証してください。この認証は、以降の実習でブランチを push したり Issue / PR を作成する際に必要になります（<code>gh</code> 自体は <code>.devcontainer/devcontainer.json</code> の feature でインストール済みです）。</p>
+<p>認証方式は <strong>HTTPS</strong> を選び、「Authenticate Git with your GitHub credentials?」には <strong>Yes</strong> と答えてください。No にすると git 単体に資格情報が渡らず、後の <code>git push</code> が <code>could not read Username</code> で失敗します（後から <code>gh auth setup-git</code> を実行すれば修正できます）。</p>
 <p><strong>Claude Code</strong></p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>claude
 </span></code></pre></div>
@@ -3949,6 +3950,10 @@ Windows 側で起動するとファイルアクセスが 9p プロトコル経�
 <tr>
 <td>DB 接続エラー・Flyway マイグレーション失敗</td>
 <td><a href=".././troubleshooting/#database">troubleshooting.md §DB・マイグレーション関連</a></td>
+</tr>
+<tr>
+<td>Git の push が <code>could not read Username</code> / <code>403 Permission denied</code> で失敗する</td>
+<td><a href=".././troubleshooting/#git">troubleshooting.md §Git・GitHub 関連</a></td>
 </tr>
 <tr>
 <td>Claude Code が動かない・コンテナ起動が <code>.claude.json</code> で失敗する</td>
