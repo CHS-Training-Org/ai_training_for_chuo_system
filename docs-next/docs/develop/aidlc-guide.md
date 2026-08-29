@@ -213,7 +213,7 @@ AI-DLC の中核は、実装より先に計画を立てて人間が納得して�
 - エンジン本体（`/aidlc` スキル）: [`.claude/skills/aidlc/SKILL.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/skills/aidlc/SKILL.md)
 - 起動判断のポインタ: [`.claude/rules/aidlc-core.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/rules/aidlc-core.md)
 - ステージ詳細（翻案済み）: [`.aidlc-rule-details/`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/.aidlc-rule-details)
-- [進捗トラッカー](../reference/aidlc/state.md) / [監査ログ](../reference/aidlc/audit.md) / [採用台帳](../reference/aidlc/adoption.md)
+- [採用台帳](../reference/aidlc/adoption.md)。エンジンが実行中に読み書きする進捗トラッカー（[`Docs/spec/aidlc-state.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/Docs/spec/aidlc-state.md)）と監査ログ（[`Docs/spec/aidlc-audit.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/Docs/spec/aidlc-audit.md)）はリポジトリ内のファイルで、サイトには載せていない
 
 **上流・一次情報**
 

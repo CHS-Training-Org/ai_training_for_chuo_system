@@ -137,5 +137,5 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 - 採用転換 ADR: [設計判断（ADR）一覧](../adr/index.md)（ADR-020 参照）
 - vendored スナップショットの出典: [`vendor/aidlc-rules/PROVENANCE.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/vendor/aidlc-rules/PROVENANCE.md)
 - BookFlow 翻案済みステージファイル: [`.aidlc-rule-details/`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/.aidlc-rule-details)
-- 状態トラッカー: [AI-DLC State Tracking](./state.md)
-- 監査ログ: [AI-DLC Audit Log](./audit.md)
+- 状態トラッカー: [`Docs/spec/aidlc-state.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/Docs/spec/aidlc-state.md)
+- 監査ログ: [`Docs/spec/aidlc-audit.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/Docs/spec/aidlc-audit.md)
