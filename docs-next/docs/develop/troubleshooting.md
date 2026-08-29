@@ -252,6 +252,31 @@ Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本�
 ブランチ保護ルール（[ADR-030](../reference/adr/ADR-030-personal-trunk-branch-strategy.md)）で拒否された場合は `protected branch hook declined` / `GH006` という別のメッセージになります。上記のエラーが出ている場合は保護ルールではなく認証・権限が原因です。
 :::
 
+### push 先が自分の fork になっている（PR に変更が表示されない）
+
+- **症状**: PR を作成しても、変更したはずのファイルが差分に出てこない。GitHub の自分のアカウント配下に同名のリポジトリがあり、`forked from CHS-Training-Org/ai_training_for_chuo_system` と表示される。
+- **原因**: push が権限エラーになったとき、VS Code の GitHub 拡張が「You don't have permission to push to this repository. Would you like to create a fork?」と尋ねます。ここで fork を作ると、`origin` が自分のアカウント配下の fork に切り替わります。以降のコミットはすべて fork へ push されるため、共有リポジトリ側からは何も見えません。
+- **切り分け**: `git remote -v` を実行し、`origin` の URL を確認します。`CHS-Training-Org/ai_training_for_chuo_system` 以外（自分のユーザー名配下）になっていれば、この状態です。
+- **解決策**: リモートを共有リポジトリに戻し、作業ブランチを push し直します。コミットはそのまま使えます。
+
+    1. リモートを付け替える。`upstream` という名前で共有リポジトリが登録済みなら `git remote rename origin fork` と `git remote rename upstream origin` の 2 つを、`origin`（fork）しか無ければ次を実行する。
+
+        ```bash
+        git remote rename origin fork
+        git remote add origin https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git
+        git fetch origin
+        ```
+
+    2. トランクブランチをまだ作っていなければ [トランクブランチの作成](./coding-conventions.md#trunk-branch) の手順で作成する。
+    3. 作業ブランチに切り替え、`git push -u origin <ブランチ名>` で共有リポジトリへ push する。`-u` を付けると以降の追跡先も共有リポジトリになる。
+    4. base を自分のトランクブランチにして PR を作成し直す。fork 側に作ってしまった PR は close する。
+    5. fork リポジトリは不要なので、共有リポジトリ側にコミットが揃っていることを確認してから削除してよい（自分のアカウントの当該リポジトリ → Settings → Danger Zone → Delete this repository）。削除は取り消せないため、確認してから実行する。ローカルの参照だけ外す場合は `git remote remove fork`。
+
+:::warning[fork のまま進めない]
+
+fork 側では、AI レビュー（`@claude pr-review`）が依存する secrets、ラベル、Issue、ブランチ保護がいずれも用意されていません。PR も共有リポジトリに現れないため、運営者からレビューも進捗把握もできません。fork ではなく共有リポジトリ内のトランクブランチで作業する理由は [ADR-030](../reference/adr/ADR-030-personal-trunk-branch-strategy.md) を参照してください。
+:::
+
 ---
 
 ## AI ツール関連 {#ai-tools}
