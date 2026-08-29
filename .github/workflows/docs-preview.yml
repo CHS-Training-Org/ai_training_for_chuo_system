@@ -43,7 +43,7 @@ jobs:
         uses: ./.github/actions/build-docs-site
         with:
           # プレビューは本番と別パスで配信されるため baseUrl を差し替える
-          docs-next-base-url: /ai_training_for_chuo_system/pr-preview/pr-${{ github.event.number }}/docs-next/
+          docs-next-base-url: /ai_training_for_chuo_system/pr-preview/pr-${{ github.event.number }}/
 
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1

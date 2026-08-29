@@ -7,14 +7,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        対応するビジネス要求シート（`Docs/spec/enhancements/<課題>.md`）を先に読んでから記入してください。
+        対応するビジネス要求シート（`docs-next/docs/spec/enhancements/<難易度>/<課題>.md`）を先に読んでから記入してください。
         **受入条件・完了条件はシート側が真実の源です**。本 Issue では概要のみを記載し、二重管理しないようにしてください。
   - type: input
     id: requirement-sheet
     attributes:
       label: ビジネス要求シートへのリンク
-      description: "`Docs/spec/enhancements/<課題>.md` へのパス・リンクを記載してください。"
-      placeholder: "例：Docs/spec/enhancements/<short-desc>.md"
+      description: "`docs-next/docs/spec/enhancements/<難易度>/<課題>.md` へのパス・リンクを記載してください。"
+      placeholder: "例：docs-next/docs/spec/enhancements/beginner/resource-list-sort.md"
     validations:
       required: true
   - type: textarea
@@ -66,7 +66,7 @@ body:
     attributes:
       label: 難易度
       description: |
-        課題の想定難易度を選択してください。対応する `level:*` ラベル（`level:beginner` 等）は運営者が起票後に付与します（ラベル体系の詳細は [Docs/guide/issue-registration.md](../Docs/guide/issue-registration.md) を参照）。
+        課題の想定難易度を選択してください。対応する `level:*` ラベル（`level:beginner` 等）は運営者が起票後に付与します（ラベル体系の詳細は [docs-next/docs/operations/issue-registration.md](../docs-next/docs/operations/issue-registration.md) を参照）。
       options:
         - Beginner
         - Intermediate

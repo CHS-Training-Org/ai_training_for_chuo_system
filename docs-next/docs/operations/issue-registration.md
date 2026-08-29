@@ -79,7 +79,7 @@ Issue テンプレートは起票時に `課題` を自動付与しますが、*
 gh issue create \
   --title "[Enhance] リソース一覧の検索・フィルタ追加" \
   --label "課題" \
-  --body "ビジネス要求シート: Docs/spec/enhancements/resource-list-filter.md"
+  --body "ビジネス要求シート: docs-next/docs/spec/enhancements/resource-list-filter.md"
 ```
 
 > **注意**：CLI 起票ではテンプレートの自動ラベル付与が適用されないため、`--label` オプションで明示的に指定してください。

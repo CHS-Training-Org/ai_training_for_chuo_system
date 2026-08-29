@@ -41,7 +41,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 各課題は [dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) に沿って進めます。
 
-1. 取り組む課題を決め、対応する**要件シート**（`Docs/spec/enhancements/<short-desc>.md`）を参照する
+1. 取り組む課題を決め、対応する**要件シート**（`docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md`）を参照する
 2. 対応する GitHub Issue（課題ごとに運営者が起票済み）を確認する
 3. 自分のトランクブランチから `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` ブランチを切り、`/aidlc` を起動して実装計画を作成し、チャットで自分自身が承認して実装に進む
 4. **Spec-first** で仕様を更新してから実装する（`/update-spec` スキルを使う）

@@ -24,7 +24,7 @@
 | テスト（BE） | JUnit 5 + H2 + Mockito |
 | Lint / Format | oxlint + oxfmt（FE）/ Spotless + Checkstyle（BE） |
 | パッケージ管理 | pnpm（FE） / Gradle wrapper（BE） |
-| ドキュメントサイト | Zensical / uv（Python） |
+| ドキュメントサイト | Docusaurus（TypeScript / React） |
 
 ---
 
@@ -48,10 +48,14 @@ backend/                # Spring Boot
     infrastructure/     # JPA 実装・外部連携
   src/main/resources/
     db/migration/       # Flyway SQL
-Docs/                   # 設計ドキュメント・ADR（Zensical でサイト化）
+docs-next/              # ドキュメントサイト（Docusaurus）
+  docs/learn/           # 学習者が最初に読む（カリキュラム・環境構築・AI ツール・用語集）
+  docs/develop/         # 学習者が実装中に引く（開発フロー・規約・レビュー基準・選択課題カタログ）
+  docs/spec/            # 仕様（要件・画面・API・ER 図・エンハンス要件シート）。真実の源
+  docs/reference/       # アーキテクチャ・デザイン・ADR・Claude Code 設定・AI-DLC 台帳
+  docs/operations/      # 運営者向け（運用ガイド・Issue 起票手順・学習効果測定）
+Docs/spec/              # AI-DLC エンジンの作業ファイル（進捗トラッカー・監査ログ・設計成果物）
 ops-note/               # チュートリアル運営ノート（素の静的HTML / Pages の /ops-note/ で公開）
-zensical.toml           # ドキュメントサイト設定
-pyproject.toml          # Python / uv 管理（docs ビルド用）
 ```
 
 ---
@@ -81,9 +85,10 @@ cd backend
 # ローカルサービス
 docker compose -f .devcontainer/docker-compose.yml up -d
 
-# ドキュメントサイト（Zensical）
-# serve は devcontainer 起動時に docs サービスが自動起動（http://localhost:8000）
-docker compose exec docs uv run zensical build    # 手動ビルド（site/ に出力）
+# ドキュメントサイト（Docusaurus）
+# 開発サーバーは devcontainer 起動時に docs サービスが自動起動（http://localhost:8000）
+cd docs-next
+npm run build         # 手動ビルド（docs-next/build/ に出力。リンク・アンカー破損があれば失敗する）
 ```
 
 ---
@@ -110,7 +115,8 @@ bash scripts/provision-cognito.sh
 - **バックエンド**: 4 レイヤーアーキテクチャ（domain / application / presentation / infrastructure）を厳守。
 - **コミット**: Conventional Commits（`feat:`, `fix:`, `docs:` 等）
 - **ブランチ**: `feature/<GitHubユーザー名>/<issue番号>-<short-desc>`
-- **Docs frontmatter**：`Docs/` 配下の全 Markdown は OKF 準拠 frontmatter（`type` 必須）を持つ。スキーマ・`type` 語彙は `Docs/decision/ADR-021-okf-frontmatter-adoption.md` および `Docs/decision/README.md` を参照。
+- **Docs frontmatter**：`docs-next/docs/` 配下の全 Markdown は OKF 準拠 frontmatter（`type` 必須）を持つ。スキーマ・`type` 語彙は `docs-next/docs/reference/adr/ADR-021-okf-frontmatter-adoption.md` および `docs-next/docs/reference/adr/index.md` を参照。
+- **文章規範**：`docs-next/docs/` 配下の Markdown を書くときは `docs-next/CLAUDE.md` に従う。
 
 ---
 
@@ -119,7 +125,7 @@ bash scripts/provision-cognito.sh
 本リポジトリは AWS Labs の **AI-DLC エンジン**（[`awslabs/aidlc-workflows`](https://github.com/awslabs/aidlc-workflows)、VERSION 0.1.8）を **BookFlow の標準ワークフローとして採用**し、Claude Code を前提とした開発フローを実装しています。`AGENTS.md` は導入しません（Claude Code 専一）。
 
 - **AI-DLC エンジン**：`.claude/skills/aidlc/SKILL.md`（`/aidlc` スキル）が BookFlow 翻案版オーケストレーション。ソフトウェア開発要求に対して INCEPTION（要件分析・設計）→ CONSTRUCTION（実装・テスト）→ OPERATIONS（CI）の 3 フェーズを駆動する。`/aidlc` の明示起動、または「AI-DLC で進めて」等の意図指定があったときに発動し（指定のない小修正・質問では発動しない）、各ステージで承認ゲートを挟む。
-- **Spec-first**：実装より先に `Docs/spec/` を更新する。これが真実の源。`/update-spec` スキルで更新対象を特定する。
+- **Spec-first**：実装より先に `docs-next/docs/spec/` を更新する。これが真実の源。`/update-spec` スキルで更新対象を特定する。
 - **plan-first**：`/aidlc` 起動時、通常（agent）モードでエンジンが INCEPTION フェーズを実行し Workflow Planning を提示する。学習者自身がチャットで計画に納得したことを示してから実装に進む（メンターの承認は不要）。
 - **縦切り実装**：フロントエンド・バックエンドにまたがる変更は機能単位でまとめて実装する（units of work = 縦切り Issue 単位）。
 - **PR**：`/create-pr` スキルで本文を組み立て、確認のうえ作成する（AI 活用箇所を明記する）。コミットの分割・push は `/commit-push` スキルの役割。PR テンプレートのセルフレビュー項目を満たしたら自分でマージする（メンターレビューは必須ではない。メンターは任意のタイミングで Issue・PR にコメントする）。
@@ -127,19 +133,19 @@ bash scripts/provision-cognito.sh
 - **思考ガードレール**：過信防止・出力粒度・コンテンツ検証・確認質問の様式は `.claude/rules/`（`aidlc-guardrails.md` / `aidlc-questions.md`）に定義する。
 - **AI-DLC 状態管理**：進捗トラッカーは `Docs/spec/aidlc-state.md`、監査ログは `Docs/spec/aidlc-audit.md`（追記専用）。
 
-標準フローの詳細は [`Docs/guide/dev-workflow.md`](Docs/guide/dev-workflow.md)、AI 利用ポリシーは [`Docs/guide/ai-tools-guide.md`](Docs/guide/ai-tools-guide.md#prohibited) を参照。
+標準フローの詳細は [`docs-next/docs/develop/dev-workflow.md`](docs-next/docs/develop/dev-workflow.md)、AI 利用ポリシーは [`docs-next/docs/learn/ai-tools-guide.md`](docs-next/docs/learn/ai-tools-guide.md#prohibited) を参照。
 
 ---
 
 ## 設計書の参照先
 
-- リポジトリ概要（目的・対象者・役割・用語集）: `Docs/spec/overview.md`
-- アーキテクチャ全体: `Docs/ARCHITECTURE.md`
-- 実装仕様（要件・画面・API・ER 図）: `Docs/spec/`
-- ADR 一覧: `Docs/decision/`
-- AI-DLC 採用台帳（32 ファイル全カバレッジ）: `Docs/spec/aidlc-adoption.md`
-- AI-DLC 採用転換 ADR: `Docs/decision/ADR-020-aidlc-engine-adoption.md`
-- OKF frontmatter 部分採用 ADR: `Docs/decision/ADR-021-okf-frontmatter-adoption.md`
+- リポジトリ概要（目的・対象者・役割・用語集）: `docs-next/docs/spec/overview.md`
+- アーキテクチャ全体: `docs-next/docs/reference/architecture.md`
+- 実装仕様（要件・画面・API・ER 図）: `docs-next/docs/spec/`
+- ADR 一覧: `docs-next/docs/reference/adr/`
+- AI-DLC 採用台帳（32 ファイル全カバレッジ）: `docs-next/docs/reference/aidlc/adoption.md`
+- AI-DLC 採用転換 ADR: `docs-next/docs/reference/adr/ADR-020-aidlc-engine-adoption.md`
+- OKF frontmatter 部分採用 ADR: `docs-next/docs/reference/adr/ADR-021-okf-frontmatter-adoption.md`
 - AI-DLC エンジン本体（`/aidlc` スキル）: `.claude/skills/aidlc/SKILL.md`
 - AI-DLC 進捗トラッカー: `Docs/spec/aidlc-state.md`
 - AI-DLC 監査ログ: `Docs/spec/aidlc-audit.md`

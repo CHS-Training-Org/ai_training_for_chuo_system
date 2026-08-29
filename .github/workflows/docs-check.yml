@@ -5,11 +5,16 @@ name: Docs Check (docs-next)
 # 壊れたリンク・アンカーがマージされてから初めて検知される状態だった。
 # docusaurus.config.ts が onBrokenLinks / onBrokenAnchors を 'throw' にしているので、
 # 破損があればこのジョブが落ちる。
+#
+# 検証はデプロイと同じ build-docs-site を通す。Docusaurus のビルドだけを回していた
+# ころは、合成手順・リダイレクトスタブ生成の変更が PR で検証されなかった。
 
 on:
   pull_request:
     paths:
       - 'docs-next/**'
+      - '.github/actions/build-docs-site/**'
+      - '.github/scripts/gen-legacy-redirects.mjs'
       - '.github/workflows/docs-check.yml'
   workflow_dispatch:
 
@@ -30,17 +35,5 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: docs-next/package-lock.json
-
-      - name: Install dependencies
-        working-directory: docs-next
-        run: npm ci
-
-      - name: Build (壊れたリンク・アンカーがあれば失敗する)
-        working-directory: docs-next
-        run: npm run build
+      - name: Build docs site (壊れたリンク・アンカーがあれば失敗する)
+        uses: ./.github/actions/build-docs-site

@@ -31,7 +31,7 @@ last_updated: '2026-08-12T00:00:00+09:00'
 
 ### 1. 取り組む課題を選ぶ
 
-[選択課題カタログ](./enhancement-catalog.md#catalog)から、自分の STEP の難易度に合う課題を選びます。各課題には**ビジネス要求シート**（`Docs/spec/enhancements/<short-desc>.md`。背景・依存関係・要件・受入条件・影響範囲・AI 活用ポイントの6節で実装対象を定義する文書）があります。
+[選択課題カタログ](./enhancement-catalog.md#catalog)から、自分の STEP の難易度に合う課題を選びます。各課題には**ビジネス要求シート**（`docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md`。背景・依存関係・要件・受入条件・影響範囲・AI 活用ポイントの6節で実装対象を定義する文書）があります。
 
 対応する GitHub Issue はカタログ課題ごとに運営者が起票済みです。GitHub の Issues 一覧から、選んだ課題名で検索して見つけてください。受入条件はビジネス要求シート側が真実の源です。
 
@@ -74,7 +74,7 @@ STEP-03（初級課題1回目）は AI-DLC を使わずに進めるため、こ�
 
 ### 4. 仕様を更新する
 
-`/aidlc` は INCEPTION フェーズの成果を `Docs/spec/aidlc-docs/` に生成するだけで、既存の仕様書（要件定義 `requirements.md`、画面仕様書 `screen-spec.md`、API 仕様書 `api-spec.md`、ER 図 `er-diagram.md`。いずれも `Docs/spec/` 配下）への統合は自動で行われません。  
+`/aidlc` は INCEPTION フェーズの成果を `Docs/spec/aidlc-docs/` に生成するだけで、既存の仕様書（要件定義 `requirements.md`、画面仕様書 `screen-spec.md`、API 仕様書 `api-spec.md`、ER 図 `er-diagram.md`。いずれも `docs-next/docs/spec/` 配下）への統合は自動で行われません。  
 `/update-spec` スキルを使って統合します。
 
 Spec-first が求めるのは、**コードを生成する前に仕様書が更新されていること**です。設計より先に書くことは求めていません。そのため、仕様を書けるだけの情報が揃うタイミングは変更の内容によって変わります。
