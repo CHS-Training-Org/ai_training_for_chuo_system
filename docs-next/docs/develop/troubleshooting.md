@@ -16,12 +16,12 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 環境構築、開発中によくあるトラブルと解決策をまとめています。各項目は「症状 → 原因 → 解決策」の形式で記載します。
 
-:::tip コマンドの「実行場所」に注意
-    本リポジトリではコマンドの実行場所が 3 つあります。**DevContainer 内**（VS Code の統合ターミナル。`pnpm` / `gradlew` / `claude` はここ）、**WSL2 ターミナル**（`~/.claude` などホスト側ファイルの操作）、**Windows 側**（PowerShell。`wsl --shutdown` 等）。  
-    場所の取り違えが「コマンドが無い」「バージョンが違う」系トラブルの最大の原因です。各項目の解決策には実行場所を明記しています。  
-    なお `docker` コマンドは DevContainer 内、WSL2 のどちらからでも同じ Docker デーモンに接続できます。
-
+:::tip[コマンドの「実行場所」に注意]
+本リポジトリではコマンドの実行場所が 3 つあります。**DevContainer 内**（VS Code の統合ターミナル。`pnpm` / `gradlew` / `claude` はここ）、**WSL2 ターミナル**（`~/.claude` などホスト側ファイルの操作）、**Windows 側**（PowerShell。`wsl --shutdown` 等）。  
+場所の取り違えが「コマンドが無い」「バージョンが違う」系トラブルの最大の原因です。各項目の解決策には実行場所を明記しています。  
+なお `docker` コマンドは DevContainer 内、WSL2 のどちらからでも同じ Docker デーモンに接続できます。
 :::
+
 ---
 
 ## DevContainer・Docker 関連 {#devcontainer}
@@ -59,11 +59,11 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 - **解決策**: コマンドパレット →「**Dev Containers: Show Container Log**」で失敗箇所のログを確認する。`.claude.json` 関連のマウントエラーであれば [§AI ツール関連](#ai-tools) を参照。原因を解消したら「**Dev Containers: Rebuild Container**」で再作成する（named volume は消えないため `node_modules` や DB データは保持される）。
 
-:::note `docker ps -a` に `k8s_` で始まるコンテナが大量に表示される場合
-    Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本プロジェクトとは無関係です。  
-    使わない場合は **Preferences → Kubernetes** で無効化するとリソース消費を抑えられます。
-
+:::note[docker ps -a に k8s_ で始まるコンテナが大量に表示される場合]
+Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本プロジェクトとは無関係です。  
+使わない場合は **Preferences → Kubernetes** で無効化するとリソース消費を抑えられます。
 :::
+
 ---
 
 ## 依存インストール関連 {#install}
@@ -207,11 +207,11 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
   その後バックエンドを起動し直し、[getting-started.md](../learn/getting-started.md) §初期データ投入の手順で seed を再投入する（postgres コンテナ名の確認方法と `docker exec -i` を使う理由も同節を参照）。
 
-:::warning `docker compose down -v` は使わない
-    `-v` はすべての named volume を削除するため、DB データだけでなく `node_modules`、pnpm ストア、cognito-local のユーザーデータまで消えてしまいます。  
-    リセットは上記の `DROP SCHEMA` 方式で DB だけを対象にしてください。
-
+:::warning[docker compose down -v は使わない]
+`-v` はすべての named volume を削除するため、DB データだけでなく `node_modules`、pnpm ストア、cognito-local のユーザーデータまで消えてしまいます。  
+リセットは上記の `DROP SCHEMA` 方式で DB だけを対象にしてください。
 :::
+
 ### `relation "..." does not exist` のような SQL エラーが出る
 
 - **症状**: API アクセス時や起動時のスキーマ検証で `relation "reservations" does not exist` のようなエラーが出る。
@@ -250,7 +250,6 @@ last_updated: '2026-08-01T11:56:18+09:00'
 :::note[ブランチ保護ルールによる拒否は別のエラーになります]
 
 ブランチ保護ルール（[ADR-030](../reference/adr/ADR-030-personal-trunk-branch-strategy.md)）で拒否された場合は `protected branch hook declined` / `GH006` という別のメッセージになります。上記のエラーが出ている場合は保護ルールではなく認証・権限が原因です。
-
 :::
 
 ---

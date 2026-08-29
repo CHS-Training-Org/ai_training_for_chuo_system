@@ -7,7 +7,7 @@ tags:
   - docs
   - infrastructure
   - ci
-timestamp: 2026-08-26
+timestamp: 2026-08-29
 ---
 
 # ADR-031 — ドキュメントの PR プレビュー：gh-pages ブランチ配信＋ラベル駆動
@@ -46,6 +46,13 @@ Accepted（2026-08-26）
 - **生成条件**：`pull_request` の `branches: [main]`（base による絞り込み）と、ラベル `ドキュメントプレビュー` の有無の **両方**を満たす PR のみ。ラベルは `.github/labels.yml` で管理する。
 - **ビルド手順の共通化**：本番デプロイとプレビューで同じ成果物を作るため、`Docs/`（Zensical）・`docs-next/`（Docusaurus）・`ops-note/` を `pages-root/` に合成する手順を composite action（`.github/actions/build-docs-site`）に切り出す。
 - **`baseUrl`**：プレビューは本番と別パスで配信されるため、`docusaurus.config.ts` の `baseUrl` を環境変数 `DOCS_BASE_URL` で差し替えられるようにする（未設定時は本番のパス）。
+- **変更ページの通知**（2026-08-29 追記）：プレビューをデプロイした後、**この PR で変更されたドキュメントの一覧を、プレビューサイト上の該当ページへの直リンク付きで PR にコメントする**（`.github/scripts/changed-docs-comment.mjs`）。どのページを直したかを PR 本文から探す手間をなくすのが目的。
+
+  - プレビュー URL は PR 番号だけで決まる決定的な値であり、ラベル付与を待たなくても組み立てられる。デプロイ済みであることだけが要件なので、同一ジョブの deploy ステップの後に置く。
+  - 変更ファイルの取得は `git diff` ではなく **PR files API**（`/pulls/{N}/files`）を使う。`pull_request` イベントの HEAD はマージコミットのため `git diff` では正しい差分が取れず、また API なら `removed` / `renamed` の区別が付く。
+  - パス → URL の変換は、Docusaurus 側は **ビルド成果物 `docs-next/.docusaurus/globalData.json`（doc id → URL パス）** を参照する。`slug` や `index.md` のディレクトリ URL 化を Docusaurus 自身の解決結果として得られ、`DOCS_BASE_URL` 適用済みのパスがそのまま使える。
+  - Zensical（`Docs/`）・運営ノート（`ops-note/`）側は権威データが無いためディレクトリ URL の規則で変換し、**`pages-root/` に実体があるときだけリンクする**。規則がずれた場合はリンク無しのパス表示に退化するだけで、リンク切れは出さない。
+  - コメントは `marocchino/sticky-pull-request-comment` で 1 件を更新し続ける。`rossjrw/pr-preview-action` 自身のコメントとは `header` を分ける（同じにすると互いに上書きし合う）。
 
 ラベル方式を採ったのは、ADR-030 の移行状況に依存せず学習者の PR を除外できる唯一の手段であり、「見たい PR にラベルを付ける」という運用が明示的で誤発火しないため。作成者の許可リストや head ブランチ名による絞り込みは、人が増えるたびに workflow を編集する必要があるか、命名規則の追加を強いる。
 
@@ -54,6 +61,7 @@ Accepted（2026-08-26）
 **ポジティブ**：
 
 - 修正途中のドキュメントを、サイドバー・全文検索・テーマを含む実サイトの見た目で確認できる。
+- 変更したページに PR コメントから直接飛べるため、レビュアーが確認対象を探す必要がない。
 - 公開 URL・パス構成・サイトの中身は変わらないため、既存のリンク・ブックマークに影響しない。
 - 外部サービスも追加リポジトリも増えない。シークレットの追加も不要（`GITHUB_TOKEN` で完結する）。
 - ビルド手順が composite action に集約されるため、[ADR-027](./ADR-027-docusaurus-migration.md) のカットオーバーで合成対象が変わっても修正箇所は 1 か所になる。

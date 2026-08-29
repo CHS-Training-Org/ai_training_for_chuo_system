@@ -19,11 +19,11 @@ last_updated: '2026-08-01T11:56:18+09:00'
 BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../reference/adr/index.md) に、API、画面の**仕様**は [Docs/spec/](../spec/index.md) に書かれています。  
 本書は「実装時に迷わないためのルールと実例」に絞っています。
 
-:::tip 最大の規約は「既存コードに合わせる」
-    本書に書かれていないことで迷ったら、**同じ種類の既存ファイルを開いてパターンを真似る**のが正解です。
-    ベース実装は ADR と本規約に沿って書かれているため、既存コードがそのまま生きた手本になります。
-
+:::tip[最大の規約は「既存コードに合わせる」]
+本書に書かれていないことで迷ったら、**同じ種類の既存ファイルを開いてパターンを真似る**のが正解です。
+ベース実装は ADR と本規約に沿って書かれているため、既存コードがそのまま生きた手本になります。
 :::
+
 ---
 
 ## 共通方針 {#common}
@@ -48,7 +48,6 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 :::tip[前提：リポジトリへの Write 権限]
 
 Organization からの招待を承諾し、リポジトリへの Write 権限がある状態で実施してください（`gh api repos/CHS-Training-Org/ai_training_for_chuo_system --jq .permissions` で `"push": true` を確認できます）。権限がない状態、または `gh auth login` で git の資格情報設定を No にした状態では push が失敗します。エラーが出た場合の切り分けは [troubleshooting.md §Git・GitHub 関連](./troubleshooting.md#git) を参照してください。
-
 :::
 
 **GitHub の画面から作成する場合**：リポジトリのブランチ一覧画面で `main` を選択し、ブランチ名の入力欄に `learner/<GitHubユーザー名>/main` と入力して作成します。
@@ -126,11 +125,11 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
 - 各 Action に JSDoc で「何をするか・必要なロール」を書く
 - レスポンスは Zod スキーマ（`@/lib/types/api`）で検証してから返す
 
-:::warning Zod スキーマは `'use server'` ファイルに置けない
-    Next.js の制約により、`'use server'` ファイルからは非同期関数以外（Zod スキーマオブジェクト等）を export できません。  
-    入力スキーマは `src/lib/schemas/`（例：`src/lib/schemas/resource.ts`）に分離し、Action 側では `z.infer` で導出した**型のみ**をインポートしたうえで再エクスポートします。
-
+:::warning[Zod スキーマは 'use server' ファイルに置けない]
+Next.js の制約により、`'use server'` ファイルからは非同期関数以外（Zod スキーマオブジェクト等）を export できません。  
+入力スキーマは `src/lib/schemas/`（例：`src/lib/schemas/resource.ts`）に分離し、Action 側では `z.infer` で導出した**型のみ**をインポートしたうえで再エクスポートします。
 :::
+
 ### 命名規則
 
 | 対象 | 規則 | 例 |
@@ -240,25 +239,25 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 | `test` | テストの追加・修正 |
 | `chore` | ビルド設定・依存更新等 |
 
-=== "Good な例"
+#### Good な例
 
-    ```text
-    feat: リソース詳細画面を追加
-    fix: 予約重複チェックで終了時刻ちょうどの予約を許可
-    test: ReservationService の境界値テストを追加
-    ```
+```text
+feat: リソース詳細画面を追加
+fix: 予約重複チェックで終了時刻ちょうどの予約を許可
+test: ReservationService の境界値テストを追加
+```
 
-    → type が変更の性質と一致し、何が変わるかが要約から分かる。
+→ type が変更の性質と一致し、何が変わるかが要約から分かる。
 
-=== "Bad な例"
+#### Bad な例
 
-    ```text
-    update
-    fix: いろいろ修正
-    feat: 画面追加とバグ修正とリファクタ
-    ```
+```text
+update
+fix: いろいろ修正
+feat: 画面追加とバグ修正とリファクタ
+```
 
-    → 内容が分からない、複数の関心事が 1 コミットに混在している。
+→ 内容が分からない、複数の関心事が 1 コミットに混在している。
 
 ### コミットの粒度
 
@@ -332,8 +331,7 @@ Controller テストで認証ユーザーが必要な場合は、`src/test/java/
 カバレッジの数値基準は設けていません。  
 その代わり、**新規に追加または変更したコードには必ず対応するテストを付ける**こと、既存テストを green に保つことを必須とします。
 
-:::tip テスト作成は AI の得意分野
-    既存テストファイルを参照させたうえで Claude Code に生成させると、命名規約、モックパターンに沿ったテストの叩き台が得られます（→ [ai-tools-guide.md](../learn/ai-tools-guide.md)）。  
-    生成後は必ず実行して検証してください。
-
+:::tip[テスト作成は AI の得意分野]
+既存テストファイルを参照させたうえで Claude Code に生成させると、命名規約、モックパターンに沿ったテストの叩き台が得られます（→ [ai-tools-guide.md](../learn/ai-tools-guide.md)）。  
+生成後は必ず実行して検証してください。
 :::

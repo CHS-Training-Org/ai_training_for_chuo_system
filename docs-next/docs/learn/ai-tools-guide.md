@@ -70,7 +70,7 @@ claude             # 対話セッションを開始
 
 :::
 
-:::warning[コンテナ起動が `.claude.json` 関連で失敗する場合]
+:::warning[コンテナ起動が .claude.json 関連で失敗する場合]
 
 マウント元の `~/.claude.json` はコンテナ初回起動時に自動生成されます（`devcontainer.json` の `initializeCommand`）。  
 起動に失敗する場合は [AI ツール関連のトラブルシューティング](../develop/troubleshooting.md#ai-tools) を参照してください。
