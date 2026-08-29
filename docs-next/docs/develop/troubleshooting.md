@@ -25,6 +25,20 @@ last_updated: '2026-08-01T11:56:18+09:00'
 ---
 
 ## DevContainer・Docker 関連 {#devcontainer}
+### 「Reopen in Container」を選んでも DevContainer に接続されない
+
+- **症状**: DevContainer に自動接続されない。VS Code を開いてもコンテナで開き直すかを尋ねるプロンプトが出ない、またはコマンドパレットから「Reopen in Container」を選んでも反応がない。エラーメッセージは出ない。
+- **原因**: VS Code で開いているフォルダが、リポジトリのルート（`.devcontainer` ディレクトリがある階層）になっていない。`frontend/` や `backend/` などのサブディレクトリや、リポジトリの親フォルダを開いていると、Dev Containers 拡張が `.devcontainer/devcontainer.json` を検出できず、起動そのものが始まりません。エラーで失敗するのではなく何も起きないため、他の起動失敗と症状が異なります。
+- **切り分け**: VS Code のエクスプローラーのルート表示、またはウィンドウのタイトルバーのフォルダ名を確認します。開いているのがリポジトリのルートであれば、エクスプローラーの直下に `.devcontainer` が見えます。
+- **解決策**: リポジトリのルートを開き直します。WSL2 ターミナルでルートへ移動して `code .` を実行するか、VS Code の **File → Open Folder** でルートを選び直してください。
+
+    ```bash
+    cd ~/projects/ai_training_for_chuo_system
+    code .
+    ```
+
+    開き直してもプロンプトが出ない場合は、コマンドパレット（<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>）から「**Dev Containers: Reopen in Container**」を手動で実行します。
+
 ### （Windows）「Reopen in Container」が docker.sock への接続エラーで失敗する
 
 - **症状**: DevContainer 起動時に `failed to connect to the docker API at unix:///var/run/docker.sock ... no such file or directory` のようなエラーで失敗する。WSL2 ターミナルで `docker ps` を実行しても接続エラーになる。
