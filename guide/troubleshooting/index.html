@@ -1944,6 +1944,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#push-fork-pr" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        push 先が自分の fork になっている（PR に変更が表示されない）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3553,6 +3564,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#push-fork-pr" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        push 先が自分の fork になっている（PR に変更が表示されない）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3967,6 +3989,33 @@
 <p class="admonition-title">ブランチ保護ルールによる拒否は別のエラーになります</p>
 <p>ブランチ保護ルールで拒否された場合は <code>protected branch hook declined</code> / <code>GH006</code> という別のメッセージになります。上記のエラーが出ている場合は保護ルールではなく認証・権限が原因です。</p>
 </div>
+<h3 id="push-fork-pr">push 先が自分の fork になっている（PR に変更が表示されない）<a class="headerlink" href="#push-fork-pr" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>症状</strong>: PR を作成しても、変更したはずのファイルが差分に出てこない。GitHub の自分のアカウント配下に同名のリポジトリがあり、<code>forked from CHS-Training-Org/ai_training_for_chuo_system</code> と表示される。</li>
+<li><strong>原因</strong>: push が権限エラーになったとき、VS Code の GitHub 拡張が「You don't have permission to push to this repository. Would you like to create a fork?」と尋ねます。ここで fork を作ると、<code>origin</code> が自分のアカウント配下の fork に切り替わります。以降のコミットはすべて fork へ push されるため、共有リポジトリ側からは何も見えません。</li>
+<li><strong>切り分け</strong>: <code>git remote -v</code> を実行し、<code>origin</code> の URL を確認します。<code>CHS-Training-Org/ai_training_for_chuo_system</code> 以外（自分のユーザー名配下）になっていれば、この状態です。</li>
+<li>
+<p><strong>解決策</strong>: リモートを共有リポジトリに戻し、作業ブランチを push し直します。コミットはそのまま使えます。</p>
+<ol>
+<li>
+<p>リモートを付け替える。<code>upstream</code> という名前で共有リポジトリが登録済みなら <code>git remote rename origin fork</code> と <code>git remote rename upstream origin</code> の 2 つを、<code>origin</code>（fork）しか無ければ次を実行する。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>git<span class="w"> </span>remote<span class="w"> </span>rename<span class="w"> </span>origin<span class="w"> </span>fork
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>origin<span class="w"> </span>https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>git<span class="w"> </span>fetch<span class="w"> </span>origin
+</span></code></pre></div>
+</li>
+<li>
+<p>作業ブランチに切り替え、<code>git push -u origin &lt;ブランチ名&gt;</code> で共有リポジトリへ push する。<code>-u</code> を付けると以降の追跡先も共有リポジトリになる。</p>
+</li>
+<li>共有リポジトリ側で PR を作成し直す。fork 側に作ってしまった PR は close する。</li>
+<li>fork リポジトリは不要なので、共有リポジトリ側にコミットが揃っていることを確認してから削除してよい（自分のアカウントの当該リポジトリ → Settings → Danger Zone → Delete this repository）。削除は取り消せないため、確認してから実行する。ローカルの参照だけ外す場合は <code>git remote remove fork</code>。</li>
+</ol>
+</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">fork のまま進めない</p>
+<p>fork 側では、AI レビュー（<code>@claude pr-review</code>）が依存する secrets、ラベル、Issue、ブランチ保護がいずれも用意されていません。PR も共有リポジトリに現れないため、運営者からレビューも進捗把握もできません。作業は必ず共有リポジトリ内のブランチで行ってください。</p>
+</div>
 <hr />
 <h2 id="ai-tools">AI ツール関連<a class="headerlink" href="#ai-tools" title="Permanent link">&para;</a></h2>
 <h3 id="claudejson">コンテナ起動が <code>.claude.json</code> 関連のマウントエラーで失敗する<a class="headerlink" href="#claudejson" title="Permanent link">&para;</a></h3>
@@ -3975,8 +4024,8 @@
 <li><strong>原因</strong>: ホスト（WSL2）側の <code>~/.claude.json</code> が<strong>ディレクトリ</strong>として存在している。マウント元が存在しない状態で Docker が自動生成すると空ディレクトリになり、ファイルを期待するコンテナ側と型が衝突する。通常は <code>devcontainer.json</code> の <code>initializeCommand</code> が空の JSON ファイル（<code>{}</code>）を事前生成するため発生しないが、一度ディレクトリ化すると以降の起動が失敗し続ける。</li>
 <li><strong>解決策</strong>: WSL2 ターミナルで確認し、<strong>ディレクトリだった場合のみ</strong>削除してから DevContainer を起動し直す（<code>initializeCommand</code> がファイルとして再生成する）。</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>ls<span class="w"> </span>-ld<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># 先頭が d ならディレクトリ化している</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># ディレクトリだった場合のみ実行</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>ls<span class="w"> </span>-ld<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># 先頭が d ならディレクトリ化している</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># ディレクトリだった場合のみ実行</span>
 </span></code></pre></div>
 <p>ファイルとして存在する <code>~/.claude.json</code> は Claude Code の認証、設定情報を含むため削除しないでください。</p>
 <h3 id="claude-command-not-found"><code>claude: command not found</code><a class="headerlink" href="#claude-command-not-found" title="Permanent link">&para;</a></h3>
