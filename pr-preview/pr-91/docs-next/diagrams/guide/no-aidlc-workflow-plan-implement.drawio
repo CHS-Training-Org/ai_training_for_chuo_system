@@ -1,0 +1,89 @@
+<mxfile host="65bd71144e">
+    <diagram name="計画→実装のループ" id="0">
+        <mxGraphModel dx="1380" dy="824" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="700" pageHeight="1030" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="200" value="③④ 計画→実装のループ" style="text;html=1;align=center;verticalAlign=middle;fontSize=13;fontStyle=1;fontColor=#1E293B;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="10" width="620" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="201" value="人間" style="swimlane;startSize=30;horizontal=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="50" width="300" height="930" as="geometry"/>
+                </mxCell>
+                <mxCell id="211" value="③-1 プランモードに入り、計画の作成／見直しを指示する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" parent="201" vertex="1">
+                    <mxGeometry x="20" y="50" width="260" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="213" value="③-3 5つの観点で計画を確認する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" parent="201" vertex="1">
+                    <mxGeometry x="20" y="250" width="260" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="214" value="③-4 プランモードを終了する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" parent="201" vertex="1">
+                    <mxGeometry x="20" y="350" width="260" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="216" value="④-1 次の手順の実装を指示する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" parent="201" vertex="1">
+                    <mxGeometry x="20" y="545" width="260" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="218" value="④-3 動作確認し、コードを読む" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" parent="201" vertex="1">
+                    <mxGeometry x="20" y="735" width="260" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="219" value="⑤ ビルド・テストへ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontColor=#1E293B;fontStyle=1;" parent="201" vertex="1">
+                    <mxGeometry x="20" y="830" width="260" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="202" value="AI" style="swimlane;startSize=30;horizontal=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="50" width="300" height="930" as="geometry"/>
+                </mxCell>
+                <mxCell id="212" value="③-2 計画を提示する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" parent="202" vertex="1">
+                    <mxGeometry x="20" y="150" width="260" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="215" value="③-5 /update-spec で仕様に反映する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" parent="202" vertex="1">
+                    <mxGeometry x="20" y="445" width="260" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="217" value="④-2 手順を実装する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" parent="202" vertex="1">
+                    <mxGeometry x="20" y="640" width="260" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="301" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="211" target="212" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="302" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="212" target="213" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="303" value="問題なし" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#475569;fontSize=11;" parent="1" source="213" target="214" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="304" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="214" target="215" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="305" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="215" target="216" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="306" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="216" target="217" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="307" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="217" target="218" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="308" value="全手順完了" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#475569;fontSize=11;" parent="1" source="218" target="219" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="401" value="問題あり：修正を指示" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#B45309;fontColor=#B45309;fontStyle=1;fontSize=11;dashed=1;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.7;entryDx=0;entryDy=0;" parent="1" source="213" target="212" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="402" value="手順が残っている" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#B45309;fontColor=#B45309;fontStyle=1;fontSize=11;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="218" target="216" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-10" y="813"/>
+                            <mxPoint x="-10" y="623"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="403" value="計画にない判断が必要（プランモードへ戻る）" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#B45309;fontColor=#B45309;fontStyle=1;fontSize=11;dashed=1;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;" parent="1" source="218" target="211" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-40" y="829"/>
+                            <mxPoint x="-40" y="112"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
