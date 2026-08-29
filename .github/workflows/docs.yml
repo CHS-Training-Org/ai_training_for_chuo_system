@@ -1,4 +1,4 @@
-name: Deploy Docs (Zensical + Docusaurus docs-next) to GitHub Pages
+name: Deploy Docs (Docusaurus) to GitHub Pages
 
 # 配信方式は「gh-pages ブランチからの配信」（Settings > Pages > Deploy from a branch）。
 # PR プレビュー（docs-preview.yml）が同じブランチの pr-preview/ 配下に成果物を置くため、
@@ -9,13 +9,10 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Docs/**'
-      - 'zensical.toml'
-      - 'pyproject.toml'
-      - 'uv.lock'
       - 'docs-next/**'
       - 'ops-note/**'
       - '.github/actions/build-docs-site/**'
+      - '.github/scripts/gen-legacy-redirects.mjs'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 

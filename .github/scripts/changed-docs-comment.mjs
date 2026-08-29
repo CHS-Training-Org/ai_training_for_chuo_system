@@ -25,7 +25,6 @@ const previewBase = (process.env.PREVIEW_BASE ?? '').replace(/\/?$/, '/');
 
 const MAX_ROWS = 30;
 const DOCUSAURUS_DOCS_DIR = 'docs-next/docs/';
-const ZENSICAL_DOCS_DIR = 'Docs/';
 const OPS_NOTE_DIR = 'ops-note/';
 const PAGES_ROOT = 'pages-root';
 
@@ -77,21 +76,12 @@ function resolveIfBuilt(relativeUrlPath) {
   return candidates.some((c) => fs.existsSync(c)) ? previewBase + relativeUrlPath : null;
 }
 
-/** Zensical（MkDocs 系）はディレクトリ URL。Docs/a/b.md -> a/b/、index.md はディレクトリ自身。 */
-function zensicalUrlPath(filename) {
-  const rest = filename.slice(ZENSICAL_DOCS_DIR.length).replace(/\.md$/, '');
-  return rest === 'index' ? '' : `${rest.replace(/(^|\/)index$/, '$1').replace(/\/$/, '')}/`;
-}
-
 function previewUrlFor(filename, routes, siteOrigin) {
   if (filename.startsWith(DOCUSAURUS_DOCS_DIR) && /\.mdx?$/.test(filename)) {
     const id = filename.slice(DOCUSAURUS_DOCS_DIR.length).replace(/\.mdx?$/, '');
     const routePath = routes.get(id);
     // globalData の path は DOCS_BASE_URL 適用済み（＝プレビューのパス）なのでそのまま使える
     return routePath ? siteOrigin + routePath : null;
-  }
-  if (filename.startsWith(ZENSICAL_DOCS_DIR) && filename.endsWith('.md')) {
-    return resolveIfBuilt(zensicalUrlPath(filename));
   }
   if (filename.startsWith(OPS_NOTE_DIR)) {
     return resolveIfBuilt(filename);
@@ -128,7 +118,6 @@ const STATUS_LABEL = {
 function isDocFile(filename) {
   return (
     (filename.startsWith(DOCUSAURUS_DOCS_DIR) && /\.mdx?$/.test(filename)) ||
-    (filename.startsWith(ZENSICAL_DOCS_DIR) && filename.endsWith('.md')) ||
     (filename.startsWith(OPS_NOTE_DIR) && filename.endsWith('.html'))
   );
 }
