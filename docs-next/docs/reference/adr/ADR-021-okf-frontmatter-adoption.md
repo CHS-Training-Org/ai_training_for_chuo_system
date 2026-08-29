@@ -100,4 +100,26 @@ references:          # BookFlow 拡張。旧『> 参照』の統合先（リス�
 
 - [OKF v0.1 仕様](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
 - [ADR-020](./ADR-020-aidlc-engine-adoption.md)（AI-DLC エンジン採用。本 ADR と同日の判断）
-- [`Docs/decision/README.md`](./index.md)（ADR テンプレート・frontmatter スキーマ定義）
+- [ADR 一覧](./index.md)（ADR テンプレート・frontmatter スキーマ定義）
+
+## 追記（2026-08-29）— 一本化後のパス
+
+ドキュメントサイトを docs-next に一本化した（[ADR-027](./ADR-027-docusaurus-migration.md) の追記）ため、
+本 ADR が定めた frontmatter 規約の適用範囲は `Docs/` 配下から `docs-next/docs/` 配下へ移った。
+`type` 語彙の対応表にある旧パスは、次のように読み替える。
+
+| 旧パス | 現在のパス |
+|--------|-----------|
+| `Docs/decision/` | `docs-next/docs/reference/adr/` |
+| `Docs/spec/*.md`・`Docs/spec/enhancements/` | `docs-next/docs/spec/`（エンハンス要件シートは難易度のディレクトリを挟む） |
+| `Docs/spec/aidlc-adoption.md` | `docs-next/docs/reference/aidlc/adoption.md` |
+| `Docs/guide/*.md` | `docs-next/docs/learn/`・`develop/`・`operations/`（読者と目的で分割） |
+| `Docs/design.md`・`Docs/ARCHITECTURE.md` | `docs-next/docs/reference/design.md`・`reference/architecture.md` |
+| `Docs/claude/*.md` | `docs-next/docs/reference/claude-code/` |
+
+`Docs/spec/aidlc-state.md`・`aidlc-audit.md`（それぞれ `type: state` / `type: audit`）は
+AI-DLC エンジンの作業ファイルとしてパスを変えずに残している。`Docs/index.md` と
+`Docs/plan/` は削除済みで、対応するページはない。
+
+Zensical 固有の制約として挙げた 2 点（フロー形式 `tags` の誤解析、nav の手動列挙）は
+Docusaurus では発生しない。サイドバーはディレクトリ構造から自動生成される。
