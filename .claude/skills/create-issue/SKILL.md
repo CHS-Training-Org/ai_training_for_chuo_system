@@ -65,7 +65,7 @@ gh auth status
 
 | 項目 | 必須 | 形式 |
 |------|------|------|
-| ビジネス要求シートへのリンク | ○ | テキスト（例 `docs-next/docs/spec/enhancements/<short-desc>.md`） |
+| ビジネス要求シートへのリンク | ○ | テキスト（例 `docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md`） |
 | ゴール | ○ | 複数行 |
 | 依存関係（下記手順で自動転記） | – | 複数行 |
 | 完了条件（受入条件の詳細は再掲しない・自己チェック用の要約） | ○ | 複数行 |

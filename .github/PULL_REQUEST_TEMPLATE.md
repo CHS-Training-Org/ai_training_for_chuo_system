@@ -7,10 +7,10 @@ PR は Claude Code の `/create-pr` スキルで作成できます（コミッ�
 
 ## 対応 Issue / ビジネス要求シート
 
-<!-- 対応する Issue と、該当するビジネス要求シート（../docs-next/docs/spec/enhancements/<課題>.md）へのリンク。受入条件はシート側が真実の源なので再掲しない。 -->
+<!-- 対応する Issue と、該当するビジネス要求シート（../docs-next/docs/spec/enhancements/<難易度>/<課題>.md）へのリンク。受入条件はシート側が真実の源なので再掲しない。 -->
 
 - 対応 Issue: Closes #
-- ビジネス要求シート: <!-- 例：../docs-next/docs/spec/enhancements/<short-desc>.md（様式・一覧は ../docs-next/docs/spec/enhancements/index.md） -->
+- ビジネス要求シート: <!-- 例：../docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md（様式・一覧は ../docs-next/docs/spec/enhancements/index.md） -->
 
 ## 実装概要
 

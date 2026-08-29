@@ -24,7 +24,7 @@ description: BookFlow の仕様書 docs-next/docs/spec/（requirements / screen-
 | 画面の追加・変更 | `screen-spec.md`（画面一覧表 ＋ 画面遷移図 ＋ 該当 §セクション） | requirements の画面アクセス権限表、呼び出す API（api-spec） |
 | API の追加・変更 | `api-spec.md`（エンドポイント一覧表 ＋ 該当 §セクション。§共通の認証/日時/エラー/ページネーションに影響するならそちらも） | requirements の API 権限マトリクス、呼び出す画面（screen-spec） |
 | データモデル変更 | `er-diagram.md`（Mermaid ER 図 ＋ エンティティ定義表 ＋ インデックス方針表） | **正は Flyway マイグレーション**（`backend/src/main/resources/db/migration/`）。必ず突合する |
-| エンハンス課題（ビジネス要求シート） | `docs-next/docs/spec/enhancements/<課題>.md`（新規作成。様式は §5 参照） | 課題に応じて requirements / screen-spec / api-spec / er-diagram も確認 |
+| エンハンス課題（ビジネス要求シート） | `docs-next/docs/spec/enhancements/<難易度>/<課題>.md`（新規作成。様式は §5 参照） | 課題に応じて requirements / screen-spec / api-spec / er-diagram も確認 |
 
 > **注意**：ER 図の正は ER 図そのものではなく Flyway の SQL。データモデルを変えるときは新しいマイグレーション（`V0xx__*.sql`）と er-diagram.md を同時に整合させる。
 

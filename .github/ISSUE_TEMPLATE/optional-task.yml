@@ -7,14 +7,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        対応するビジネス要求シート（`docs-next/docs/spec/enhancements/<課題>.md`）を先に読んでから記入してください。
+        対応するビジネス要求シート（`docs-next/docs/spec/enhancements/<難易度>/<課題>.md`）を先に読んでから記入してください。
         **受入条件・完了条件はシート側が真実の源です**。本 Issue では概要のみを記載し、二重管理しないようにしてください。
   - type: input
     id: requirement-sheet
     attributes:
       label: ビジネス要求シートへのリンク
-      description: "`docs-next/docs/spec/enhancements/<課題>.md` へのパス・リンクを記載してください。"
-      placeholder: "例：docs-next/docs/spec/enhancements/<short-desc>.md"
+      description: "`docs-next/docs/spec/enhancements/<難易度>/<課題>.md` へのパス・リンクを記載してください。"
+      placeholder: "例：docs-next/docs/spec/enhancements/beginner/resource-list-sort.md"
     validations:
       required: true
   - type: textarea

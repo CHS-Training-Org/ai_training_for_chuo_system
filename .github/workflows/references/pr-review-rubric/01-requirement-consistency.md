@@ -6,7 +6,7 @@
 
 ## 確認手順
 
-1. `gh pr view <PR番号>` でPR本文を取得し、「対応 Issue / ビジネス要求シート」欄からシート（`docs-next/docs/spec/enhancements/<課題>.md`）のリンクを読み取る
+1. `gh pr view <PR番号>` でPR本文を取得し、「対応 Issue / ビジネス要求シート」欄からシート（`docs-next/docs/spec/enhancements/<難易度>/<課題>.md`）のリンクを読み取る
 2. シートを `Read` で読み、「要件」節の要件ID一覧と「受入条件」節のチェックリストを取り出す
 3. `gh pr diff <PR番号>` で差分を取得する
 4. 要件IDごとに、対応する変更が差分に存在するかを確認する
@@ -44,7 +44,7 @@
 
 **判定：OK**
 
-ビジネス要求シート `docs-next/docs/spec/enhancements/<課題>.md` の要件表と差分を対応づけました。
+ビジネス要求シート `docs-next/docs/spec/enhancements/<難易度>/<課題>.md` の要件表と差分を対応づけました。
 
 | 要件 | 差分での裏付け | 判定 |
 |---|---|---|

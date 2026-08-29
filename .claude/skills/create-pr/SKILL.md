@@ -46,7 +46,7 @@ git rev-parse --abbrev-ref --symbolic-full-name <head>@{u}
 
 **本文**：以下の各セクションを埋めた Markdown 全文を組み立てる。
 
-- **対応 Issue / ビジネス要求シート**：head ブランチ名 `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` から Issue 番号を抽出して `Closes #<番号>` を記載する。ビジネス要求シート（`docs-next/docs/spec/enhancements/<課題>.md`）への言及がコミットメッセージや diff にあれば、そのパスをリンクとして補う。判別できない場合は空欄のまま残し、ユーザーに確認を促す。
+- **対応 Issue / ビジネス要求シート**：head ブランチ名 `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` から Issue 番号を抽出して `Closes #<番号>` を記載する。ビジネス要求シート（`docs-next/docs/spec/enhancements/<難易度>/<課題>.md`）への言及がコミットメッセージや diff にあれば、そのパスをリンクとして補う。判別できない場合は空欄のまま残し、ユーザーに確認を促す。
 - **実装概要**：`git diff <base>...<head> --stat` と主要なコミットメッセージから、何を変更したか（FE/BE どちらに触れたか含む）を簡潔にまとめる。
 - **AI ツールを使った箇所（必須）**：「Workflow Planning で提示された実装計画」「補完・解説・テスト／ドキュメント生成等で AI を使った箇所」は、このセッションでの作業内容から要約して埋めてよい。
 - **Spec-first チェック**：`git diff <base>...<head> --stat` に `docs-next/docs/spec/` 配下のファイルが含まれるかを確認する（独立した `docs(spec):` コミットか、実装コミットへの同梱かは問わない — [仕様更新ルール（Spec-first）](../../../docs-next/docs/spec/index.md#spec-first) 参照）。
