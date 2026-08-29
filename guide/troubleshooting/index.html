@@ -1668,6 +1668,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#reopen-in-container-devcontainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        「Reopen in Container」を選んでも DevContainer に接続されない
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#windowsreopen-in-container-dockersock" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3288,6 +3299,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#reopen-in-container-devcontainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        「Reopen in Container」を選んでも DevContainer に接続されない
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#windowsreopen-in-container-dockersock" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3772,6 +3794,19 @@
 </div>
 <hr />
 <h2 id="devcontainer">DevContainer・Docker 関連<a class="headerlink" href="#devcontainer" title="Permanent link">&para;</a></h2>
+<h3 id="reopen-in-container-devcontainer">「Reopen in Container」を選んでも DevContainer に接続されない<a class="headerlink" href="#reopen-in-container-devcontainer" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>症状</strong>: DevContainer に自動接続されない。VS Code を開いてもコンテナで開き直すかを尋ねるプロンプトが出ない、またはコマンドパレットから「Reopen in Container」を選んでも反応がない。エラーメッセージは出ない。</li>
+<li><strong>原因</strong>: VS Code で開いているフォルダが、リポジトリのルート（<code>.devcontainer</code> ディレクトリがある階層）になっていない。<code>frontend/</code> や <code>backend/</code> などのサブディレクトリや、リポジトリの親フォルダを開いていると、Dev Containers 拡張が <code>.devcontainer/devcontainer.json</code> を検出できず、起動そのものが始まりません。エラーで失敗するのではなく何も起きないため、他の起動失敗と症状が異なります。</li>
+<li><strong>切り分け</strong>: VS Code のエクスプローラーのルート表示、またはウィンドウのタイトルバーのフォルダ名を確認します。開いているのがリポジトリのルートであれば、エクスプローラーの直下に <code>.devcontainer</code> が見えます。</li>
+<li>
+<p><strong>解決策</strong>: リポジトリのルートを開き直します。WSL2 ターミナルでルートへ移動して <code>code .</code> を実行するか、VS Code の <strong>File → Open Folder</strong> でルートを選び直してください。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>~/projects/ai_training_for_chuo_system
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>code<span class="w"> </span>.
+</span></code></pre></div>
+<p>開き直してもプロンプトが出ない場合は、コマンドパレット（<span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-shift">Shift</kbd><span>+</span><kbd class="key-p">P</kbd></span>）から「<strong>Dev Containers: Reopen in Container</strong>」を手動で実行します。</p>
+</li>
+</ul>
 <h3 id="windowsreopen-in-container-dockersock">（Windows）「Reopen in Container」が docker.sock への接続エラーで失敗する<a class="headerlink" href="#windowsreopen-in-container-dockersock" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>症状</strong>: DevContainer 起動時に <code>failed to connect to the docker API at unix:///var/run/docker.sock ... no such file or directory</code> のようなエラーで失敗する。WSL2 ターミナルで <code>docker ps</code> を実行しても接続エラーになる。</li>
@@ -3800,7 +3835,7 @@
 <ul>
 <li><strong>症状</strong>: WSLg 有効環境で DevContainer 起動時に Wayland ソケット関連のマウントエラーで失敗する。</li>
 <li><strong>解決策</strong>: VS Code のグローバル設定（<code>Preferences: Open User Settings (JSON)</code>）に以下を追加する。
-  <div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">&quot;dev.containers.mountWaylandSocket&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+  <div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">&quot;dev.containers.mountWaylandSocket&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
 </span></code></pre></div></li>
 </ul>
 <h3 id="_2">上記のいずれにも当てはまらず起動に失敗する<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
@@ -3820,9 +3855,9 @@
 <li><strong>原因</strong>: <strong>DevContainer の外</strong>（WSL2 やホストのターミナル）でコマンドを実行している。ツールチェーン（Node 24、pnpm 11、Java 25、Gradle 9.5）はすべて DevContainer 内にのみ導入されている。</li>
 <li><strong>解決策</strong>: VS Code のウィンドウ左下が「<strong>Dev Container: BookFlow Full Stack</strong>」表示になっていることを確認し、VS Code の統合ターミナル（= コンテナ内）で実行する。確認コマンド（コンテナ内）：</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>node<span class="w"> </span>-v<span class="w">         </span><span class="c1"># v24.x</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pnpm<span class="w"> </span>-v<span class="w">         </span><span class="c1"># 11.x</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>java<span class="w"> </span>-version<span class="w">   </span><span class="c1"># openjdk 25</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>node<span class="w"> </span>-v<span class="w">         </span><span class="c1"># v24.x</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pnpm<span class="w"> </span>-v<span class="w">         </span><span class="c1"># 11.x</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>java<span class="w"> </span>-version<span class="w">   </span><span class="c1"># openjdk 25</span>
 </span></code></pre></div>
 <h3 id="pnpm-install-node_modules"><code>pnpm install</code> が失敗する・<code>node_modules</code> が壊れた<a class="headerlink" href="#pnpm-install-node_modules" title="Permanent link">&para;</a></h3>
 <ul>
@@ -3833,9 +3868,9 @@
 <li>改善しなければ <code>pnpm install --force</code>（pnpm ストアから全パッケージを再配置）</li>
 <li>
 <p>それでも直らない場合は中身を空にして入れ直す：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">cd</span><span class="w"> </span>/workspace/frontend
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>find<span class="w"> </span>node_modules<span class="w"> </span>-mindepth<span class="w"> </span><span class="m">1</span><span class="w"> </span>-delete
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>pnpm<span class="w"> </span>install
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">cd</span><span class="w"> </span>/workspace/frontend
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>find<span class="w"> </span>node_modules<span class="w"> </span>-mindepth<span class="w"> </span><span class="m">1</span><span class="w"> </span>-delete
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>pnpm<span class="w"> </span>install
 </span></code></pre></div>
 <p><code>node_modules</code> ディレクトリ自体は named volume のマウントポイントのため削除できません（中身だけ消します）。</p>
 </li>
@@ -3859,9 +3894,9 @@
 <li><strong>症状</strong>: DevContainer は起動したが、作成時ログにエラーがあり、pnpm install / Gradle 依存解決 / Cognito provisioning が完了していない。</li>
 <li><strong>解決策</strong>: 失敗したステップ以降をコンテナ内で個別に再実行する（いずれも再実行可能）。</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">cd</span><span class="w"> </span>/workspace/frontend<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pnpm<span class="w"> </span>install
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>/workspace/backend<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sh<span class="w"> </span>./gradlew<span class="w"> </span>dependencies
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nb">cd</span><span class="w"> </span>/workspace<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>bash<span class="w"> </span>scripts/provision-cognito.sh
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">cd</span><span class="w"> </span>/workspace/frontend<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pnpm<span class="w"> </span>install
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">cd</span><span class="w"> </span>/workspace/backend<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sh<span class="w"> </span>./gradlew<span class="w"> </span>dependencies
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nb">cd</span><span class="w"> </span>/workspace<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>bash<span class="w"> </span>scripts/provision-cognito.sh
 </span></code></pre></div>
 <p>provisioning が出力する Pool ID / Client ID の <code>.env.local</code> への設定は <a href=".././getting-started/">getting-started.md</a> ステップ 3 を参照。</p>
 <hr />
@@ -3879,11 +3914,11 @@
 <ul>
 <li>原因 1（バックエンド未起動）の場合：VS Code の「Run and Debug」（<span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-shift">Shift</kbd><span>+</span><kbd class="key-d">D</kbd></span>）→「<strong>Backend</strong>」で起動する。ターミナルから起動する場合は以下を実行する。</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">cd</span><span class="w"> </span>backend<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>./gradlew<span class="w"> </span>bootRun
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>backend<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>./gradlew<span class="w"> </span>bootRun
 </span></code></pre></div>
 <p>起動確認：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>curl<span class="w"> </span>http://localhost:8080/actuator/health
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1"># {&quot;status&quot;:&quot;UP&quot;} が返れば OK</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>curl<span class="w"> </span>http://localhost:8080/actuator/health
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1"># {&quot;status&quot;:&quot;UP&quot;} が返れば OK</span>
 </span></code></pre></div>
 <ul>
 <li>原因 2（初期データ未投入）の場合：<a href=".././getting-started/">getting-started.md</a> の「ステップ 5：初期データ投入・動作確認」を実行してから、再度サインインする。</li>
@@ -3904,8 +3939,8 @@
 <li>WSL2（またはコンテナ内）で <code>docker ps</code> を実行し、同じポートを公開している別コンテナがあれば <code>docker stop &lt;コンテナ名&gt;</code> で停止する</li>
 <li>
 <p>コンテナ以外のプロセスは Windows 側 PowerShell で特定する：</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">netstat</span> <span class="n">-ano</span> <span class="p">|</span> <span class="n">findstr</span> <span class="p">:</span><span class="n">5432</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">tasklist</span> <span class="p">/</span><span class="n">FI</span> <span class="s2">&quot;PID eq &lt;表示されたPID&gt;&quot;</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">netstat</span> <span class="n">-ano</span> <span class="p">|</span> <span class="n">findstr</span> <span class="p">:</span><span class="n">5432</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">tasklist</span> <span class="p">/</span><span class="n">FI</span> <span class="s2">&quot;PID eq &lt;表示されたPID&gt;&quot;</span>
 </span></code></pre></div>
 </li>
 </ol>
@@ -3916,7 +3951,7 @@
 <li><strong>症状</strong>: バックエンドは起動しているのに、サインイン画面のロール別ボタンでログインに失敗する。</li>
 <li><strong>原因</strong>: cognito-local の User Pool、シードユーザーが provisioning されていない。または <code>.env.local</code> の <code>COGNITO_USER_POOL_ID</code> / <code>COGNITO_CLIENT_ID</code> が現在の Pool と一致していない。認証はポート 9229 で動く cognito-local コンテナが担う（9229 は Node.js のデバッグポートではありません）。</li>
 <li><strong>解決策</strong>: コンテナ内で provisioning を再実行し、出力された Pool ID / Client ID を <code>frontend/.env.local</code> に反映して <code>pnpm dev</code> を再起動する。
-  <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">cd</span><span class="w"> </span>/workspace<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>bash<span class="w"> </span>scripts/provision-cognito.sh
+  <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">cd</span><span class="w"> </span>/workspace<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>bash<span class="w"> </span>scripts/provision-cognito.sh
 </span></code></pre></div></li>
 </ul>
 <hr />
@@ -3927,9 +3962,9 @@
 <li><strong>原因</strong>: postgres コンテナが停止しているか、まだ起動完了（healthy）になっていない。</li>
 <li><strong>解決策</strong>: 状態を確認し、停止していれば起動する（コンテナ内・WSL2 どちらでも可）。</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>ps<span class="w"> </span>-a<span class="w"> </span>--format<span class="w"> </span><span class="s2">&quot;table {{.Names}}\t{{.Status}}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>postgres
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># Up ... (healthy) 以外の場合：</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>docker<span class="w"> </span>start<span class="w"> </span>&lt;postgres<span class="w"> </span>コンテナ名&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docker<span class="w"> </span>ps<span class="w"> </span>-a<span class="w"> </span>--format<span class="w"> </span><span class="s2">&quot;table {{.Names}}\t{{.Status}}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>postgres
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="c1"># Up ... (healthy) 以外の場合：</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>docker<span class="w"> </span>start<span class="w"> </span>&lt;postgres<span class="w"> </span>コンテナ名&gt;
 </span></code></pre></div>
 <h3 id="flyway-migration-checksum-mismatch">Flyway の <code>Migration checksum mismatch</code> で起動に失敗する<a class="headerlink" href="#flyway-migration-checksum-mismatch" title="Permanent link">&para;</a></h3>
 <ul>
@@ -3942,8 +3977,8 @@
 <li><strong>状況</strong>: データを壊してしまった・チェックサムエラーを解消したい・まっさらな状態からやり直したい。</li>
 <li><strong>解決策</strong>: スキーマごと削除すれば、次回のバックエンド起動時に Flyway がマイグレーションを再適用する。</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-i<span class="w"> </span>&lt;postgres<span class="w"> </span>コンテナ名&gt;<span class="w"> </span>psql<span class="w"> </span>-U<span class="w"> </span>bookflow<span class="w"> </span>-d<span class="w"> </span>bookflow<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>-c<span class="w"> </span><span class="s2">&quot;DROP SCHEMA public CASCADE; CREATE SCHEMA public;&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-i<span class="w"> </span>&lt;postgres<span class="w"> </span>コンテナ名&gt;<span class="w"> </span>psql<span class="w"> </span>-U<span class="w"> </span>bookflow<span class="w"> </span>-d<span class="w"> </span>bookflow<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>-c<span class="w"> </span><span class="s2">&quot;DROP SCHEMA public CASCADE; CREATE SCHEMA public;&quot;</span>
 </span></code></pre></div>
 <p>その後バックエンドを起動し直し、<a href=".././getting-started/">getting-started.md</a> §初期データ投入の手順で seed を再投入する（postgres コンテナ名の確認方法と <code>docker exec -i</code> を使う理由も同節を参照）。</p>
 <div class="admonition warning">
@@ -3963,10 +3998,10 @@
 <ul>
 <li><strong>症状</strong>: 作成したブランチを push すると、次のように 2 種類のエラーが続けて出る。</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$ git push -u origin &lt;ブランチ名&gt;
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>fatal: could not read Username for &#39;https://github.com&#39;: terminal prompts disabled
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>remote: Permission to CHS-Training-Org/ai_training_for_chuo_system.git denied to &lt;ユーザー名&gt;.
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>fatal: unable to access &#39;https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git/&#39;: The requested URL returned error: 403
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>$ git push -u origin &lt;ブランチ名&gt;
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>fatal: could not read Username for &#39;https://github.com&#39;: terminal prompts disabled
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>remote: Permission to CHS-Training-Org/ai_training_for_chuo_system.git denied to &lt;ユーザー名&gt;.
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>fatal: unable to access &#39;https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git/&#39;: The requested URL returned error: 403
 </span></code></pre></div>
 <ul>
 <li><strong>原因</strong>: 1 つのログに 2 つの異なる原因が混ざっています。<ul>
@@ -3976,8 +4011,8 @@
 </li>
 <li>
 <p><strong>切り分け</strong>: DevContainer 内のターミナルで次を実行します。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>gh<span class="w"> </span>auth<span class="w"> </span>status
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>gh<span class="w"> </span>api<span class="w"> </span>repos/CHS-Training-Org/ai_training_for_chuo_system<span class="w"> </span>--jq<span class="w"> </span>.permissions
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>gh<span class="w"> </span>auth<span class="w"> </span>status
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>gh<span class="w"> </span>api<span class="w"> </span>repos/CHS-Training-Org/ai_training_for_chuo_system<span class="w"> </span>--jq<span class="w"> </span>.permissions
 </span></code></pre></div>
 <p><code>"push": true</code> が返れば Write 権限はあるので <strong>(a)</strong> が原因、<code>false</code> なら <strong>(b)</strong> が原因です。
 - <strong>解決策</strong>:
@@ -3999,9 +4034,9 @@
 <ol>
 <li>
 <p>リモートを付け替える。<code>upstream</code> という名前で共有リポジトリが登録済みなら <code>git remote rename origin fork</code> と <code>git remote rename upstream origin</code> の 2 つを、<code>origin</code>（fork）しか無ければ次を実行する。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>git<span class="w"> </span>remote<span class="w"> </span>rename<span class="w"> </span>origin<span class="w"> </span>fork
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>origin<span class="w"> </span>https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>git<span class="w"> </span>fetch<span class="w"> </span>origin
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>git<span class="w"> </span>remote<span class="w"> </span>rename<span class="w"> </span>origin<span class="w"> </span>fork
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>origin<span class="w"> </span>https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>git<span class="w"> </span>fetch<span class="w"> </span>origin
 </span></code></pre></div>
 </li>
 <li>
@@ -4024,8 +4059,8 @@
 <li><strong>原因</strong>: ホスト（WSL2）側の <code>~/.claude.json</code> が<strong>ディレクトリ</strong>として存在している。マウント元が存在しない状態で Docker が自動生成すると空ディレクトリになり、ファイルを期待するコンテナ側と型が衝突する。通常は <code>devcontainer.json</code> の <code>initializeCommand</code> が空の JSON ファイル（<code>{}</code>）を事前生成するため発生しないが、一度ディレクトリ化すると以降の起動が失敗し続ける。</li>
 <li><strong>解決策</strong>: WSL2 ターミナルで確認し、<strong>ディレクトリだった場合のみ</strong>削除してから DevContainer を起動し直す（<code>initializeCommand</code> がファイルとして再生成する）。</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>ls<span class="w"> </span>-ld<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># 先頭が d ならディレクトリ化している</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># ディレクトリだった場合のみ実行</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>ls<span class="w"> </span>-ld<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># 先頭が d ならディレクトリ化している</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>~/.claude.json<span class="w">   </span><span class="c1"># ディレクトリだった場合のみ実行</span>
 </span></code></pre></div>
 <p>ファイルとして存在する <code>~/.claude.json</code> は Claude Code の認証、設定情報を含むため削除しないでください。</p>
 <h3 id="claude-command-not-found"><code>claude: command not found</code><a class="headerlink" href="#claude-command-not-found" title="Permanent link">&para;</a></h3>
