@@ -1,58 +1,85 @@
 <mxfile host="65bd71144e">
     <diagram name="標準開発フロー" id="0">
-        <mxGraphModel dx="280" dy="659" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="941" dy="1113" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="700" pageHeight="1520" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="2" value="ビジネス要求シート（Issue）を選択" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#1E293B;" parent="1" vertex="1">
-                    <mxGeometry x="260" y="20" width="280" height="55" as="geometry"/>
+                <mxCell id="17" value="どちらが主導して進めるか" style="text;html=1;align=center;verticalAlign=middle;fontSize=13;fontStyle=1;fontColor=#1E293B;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="10" width="620" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="3" value="ブランチ作成&#xa;feature/＜GitHubユーザー名＞/＜issue番号＞-＜short-desc＞" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" parent="1" vertex="1">
-                    <mxGeometry x="270" y="130" width="260" height="65" as="geometry"/>
+                <mxCell id="2" value="人間" style="swimlane;startSize=30;horizontal=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="50" width="300" height="1290" as="geometry"/>
                 </mxCell>
-                <mxCell id="4" value="/aidlc を起動&#xa;AI-DLC エンジンが INCEPTION フェーズを実行&#xa;（Workspace Detection → Requirements Analysis&#xa;→ Workflow Planning → セルフ承認）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" parent="1" vertex="1">
-                    <mxGeometry x="230" y="260" width="340" height="90" as="geometry"/>
+                <mxCell id="5" value="① Issue を選ぶ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontColor=#1E293B;fontStyle=1;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="50" width="260" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="6" value="Spec-first で仕様更新&#xa;（/update-spec スキル）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" parent="1" vertex="1">
-                    <mxGeometry x="270" y="420" width="260" height="65" as="geometry"/>
+                <mxCell id="6" value="② フィーチャーブランチ作成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="140" width="260" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="7" value="AI-DLC CONSTRUCTION フェーズ&#xa;（設計 → Code Generation）&#xa;縦切り実装" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" parent="1" vertex="1">
-                    <mxGeometry x="250" y="550" width="300" height="80" as="geometry"/>
+                <mxCell id="7" value="③ /aidlc を起動する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="240" width="260" height="55" as="geometry"/>
                 </mxCell>
-                <mxCell id="8" value="Build and Test ステージ&#xa;（lint・テスト・CI）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#1E293B;arcSize=8;" parent="1" vertex="1">
-                    <mxGeometry x="270" y="700" width="260" height="65" as="geometry"/>
+                <mxCell id="9" value="③ 計画を承認" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="460" width="260" height="55" as="geometry"/>
                 </mxCell>
-                <mxCell id="9" value="PR 作成（/create-pr スキル）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" parent="1" vertex="1">
-                    <mxGeometry x="270" y="830" width="260" height="60" as="geometry"/>
+                <mxCell id="14" value="⑧ セルフレビュー" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="980" width="260" height="55" as="geometry"/>
                 </mxCell>
-                <mxCell id="11" value="セルフレビュー・マージ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#1E293B;arcSize=8;" parent="1" vertex="1">
-                    <mxGeometry x="290" y="960" width="220" height="55" as="geometry"/>
+                <mxCell id="16" value="⑧ 自分のトランクへマージ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontColor=#1E293B;fontStyle=1;" parent="2" vertex="1">
+                    <mxGeometry x="20" y="1190" width="260" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="12" value="Issue クローズ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#1E293B;" parent="1" vertex="1">
-                    <mxGeometry x="295" y="1080" width="210" height="55" as="geometry"/>
+                <mxCell id="3" value="AI" style="swimlane;startSize=30;horizontal=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="50" width="300" height="1290" as="geometry"/>
                 </mxCell>
-                <mxCell id="13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="2" target="3" edge="1">
+                <mxCell id="8" value="③ INCEPTION 実行&#xa;（要件整理・計画提示）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" parent="3" vertex="1">
+                    <mxGeometry x="20" y="340" width="260" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="⑧ AI レビュー&#xa;（3観点判定）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" parent="3" vertex="1">
+                    <mxGeometry x="30" y="1080" width="260" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="④ Spec-first で仕様更新" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" parent="3" vertex="1">
+                    <mxGeometry x="20" y="550" width="260" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="⑤ CONSTRUCTION で設計・実装" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" parent="3" vertex="1">
+                    <mxGeometry x="20" y="650" width="260" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="⑥ Build and Test&#xa;（lint・テスト・CI）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" parent="3" vertex="1">
+                    <mxGeometry x="20" y="770" width="260" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="⑦ PR 作成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" parent="3" vertex="1">
+                    <mxGeometry x="20" y="880" width="260" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="3" source="10" target="11" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="3" target="4" edge="1">
+                <mxCell id="36" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="3" source="11" target="12" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="4" target="6" edge="1">
+                <mxCell id="37" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="3" source="12" target="13" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="6" target="7" edge="1">
+                <mxCell id="30" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="5" target="6" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="7" target="8" edge="1">
+                <mxCell id="31" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="6" target="7" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="8" target="9" edge="1">
+                <mxCell id="32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="7" target="8" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="9" target="11" edge="1">
+                <mxCell id="33" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="8" target="9" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="11" target="12" edge="1">
+                <mxCell id="34" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="9" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="38" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="13" target="14" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="14" target="15" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="40" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" parent="1" source="15" target="16" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
             </root>
