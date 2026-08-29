@@ -69,7 +69,7 @@ Content-Type: application/json
 ````
 
 - リクエストボディがある場合は「**リクエストフィールド（XxxRequest）**」表（列＝`フィールド / 型 / 必須 / バリデーション`）を付ける。
-- エンドポイント固有のエラーは末尾に表（`| HTTP | \`code\` | 条件 |`）でまとめる。汎用エラーは [§共通 共通エラーレスポンス](../../../Docs/spec/api-spec.md#common-error) に集約済みなので重複させない。
+- エンドポイント固有のエラーは末尾に表（`| HTTP | \`code\` | 条件 |`）でまとめる。汎用エラーは [§共通 共通エラーレスポンス](../../../../docs-next/docs/spec/api-spec.md#common-error) に集約済みなので重複させない。
 - 認証・日時・エラー・ページネーションの共通事項は §共通へのリンクで済ませる（各エンドポイントに再掲しない）。
 
 ### screen-spec.md — 画面 1 件のテンプレート
@@ -128,7 +128,7 @@ UC を足すときは、(1) 「主要ユースケース一覧」表に `[UC-XX](
 
 ### enhancements/\<課題\>.md — ビジネス要求シートのテンプレート
 
-エンハンス課題（学習者向け拡張課題）の要件を `Docs/spec/enhancements/<short-desc>.md` に 1 課題 1 ファイルで作成する。配置規約・運用原則は [enhancements/index.md](../../../../Docs/spec/enhancements/index.md) を参照。
+エンハンス課題（学習者向け拡張課題）の要件を `docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md` に 1 課題 1 ファイルで作成する。難易度のディレクトリは `beginner/` `intermediate/` `advanced/` の 3 つ。配置規約・運用原則は [enhancements/index.md](../../../../docs-next/docs/spec/enhancements/index.md) を参照。
 
 ```markdown
 # <課題名>

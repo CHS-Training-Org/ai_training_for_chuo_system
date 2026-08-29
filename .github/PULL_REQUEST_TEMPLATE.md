@@ -1,16 +1,16 @@
 <!--
 このテンプレートは BookFlow の PR 文面の様式（真実の源）です。
 PR は Claude Code の `/create-pr` スキルで作成できます（コミット履歴・diff からこの様式に沿って本文を組み立て、head/base ブランチと下書きのみか実際に作成するかを確認したうえで `gh pr create` を実行します。コミットの分割・push 自体は `/commit-push` スキルの役割です）。
-開発フロー全体は ../Docs/guide/dev-workflow.md（標準フロー）を参照してください。セルフレビュー後、自分でマージします。
+開発フロー全体は ../docs-next/docs/develop/dev-workflow.md（標準フロー）を参照してください。セルフレビュー後、自分でマージします。
 受入条件などはビジネス要求シート／Issue 側が真実の源です。本文に再掲せず、リンク参照にとどめてください。
 -->
 
 ## 対応 Issue / ビジネス要求シート
 
-<!-- 対応する Issue と、該当するビジネス要求シート（../Docs/spec/enhancements/<課題>.md）へのリンク。受入条件はシート側が真実の源なので再掲しない。 -->
+<!-- 対応する Issue と、該当するビジネス要求シート（../docs-next/docs/spec/enhancements/<課題>.md）へのリンク。受入条件はシート側が真実の源なので再掲しない。 -->
 
 - 対応 Issue: Closes #
-- ビジネス要求シート: <!-- 例：../Docs/spec/enhancements/<short-desc>.md（様式・一覧は ../Docs/spec/enhancements/index.md） -->
+- ビジネス要求シート: <!-- 例：../docs-next/docs/spec/enhancements/<short-desc>.md（様式・一覧は ../docs-next/docs/spec/enhancements/index.md） -->
 
 ## 実装概要
 
@@ -18,14 +18,14 @@ PR は Claude Code の `/create-pr` スキルで作成できます（コミッ�
 
 ## AI ツールを使った箇所（必須）
 
-<!-- AI 活用箇所の明記は必須です（../Docs/guide/ai-tools-guide.md の §AI 利用ポリシー）。生成コードの責任はマージした開発者が負います。 -->
+<!-- AI 活用箇所の明記は必須です（../docs-next/docs/learn/ai-tools-guide.md の §AI 利用ポリシー）。生成コードの責任はマージした開発者が負います。 -->
 
 - plan mode で提示された実装計画: <!-- 計画の要約、または該当する Issue コメント等へのリンク -->
 - 補完・解説・テスト／ドキュメント生成等で AI を使った箇所:
 
 ## Spec-first チェック
 
-<!-- 仕様変更がある場合のみ。ルールは ../Docs/spec/index.md「仕様更新ルール（Spec-first）」を参照。 -->
+<!-- 仕様変更がある場合のみ。ルールは ../docs-next/docs/spec/index.md「仕様更新ルール（Spec-first）」を参照。 -->
 
 - [ ] 仕様変更がある場合、仕様更新をコミットに含めた（実装コミットへの同梱・独立した `docs(spec): ...` コミットのいずれでも可）
 - [ ] このPRに仕様変更はない
@@ -40,10 +40,10 @@ PR は Claude Code の `/create-pr` スキルで作成できます（コミッ�
 
 ## セルフレビュー
 
-<!-- ../Docs/guide/coding-conventions.md §コミット・PR 規約「PR 提出前のセルフレビュー」と対応。 -->
+<!-- ../docs-next/docs/develop/coding-conventions.md §コミット・PR 規約「PR 提出前のセルフレビュー」と対応。 -->
 
 - [ ] §共通方針のフォーマット・Lint・テストをすべて通した
-- [ ] 仕様（`Docs/spec/`）と実装が一致している（仕様にない挙動を勝手に追加していない）
+- [ ] 仕様（`docs-next/docs/spec/`）と実装が一致している（仕様にない挙動を勝手に追加していない）
 - [ ] AI が生成したコードを自分で読み、説明できる状態になっている
 - [ ] 動作確認の手順と結果を上に書いた
 

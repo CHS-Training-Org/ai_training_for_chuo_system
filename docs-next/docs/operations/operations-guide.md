@@ -115,19 +115,20 @@ AI レビューの採用は [ADR-024](../reference/adr/ADR-024-ai-first-review-a
 | 項目 | 値 |
 |------|---|
 | 公開先 URL | `https://chs-training-org.github.io/ai_training_for_chuo_system/` |
-| Docusaurus（docs-next） | `https://chs-training-org.github.io/ai_training_for_chuo_system/docs-next/` |
 | 運営ノート | `https://chs-training-org.github.io/ai_training_for_chuo_system/ops-note/` |
 | 配信方式 | `gh-pages` ブランチ配信（Settings → Pages → Deploy from a branch） |
-| ビルドツール | Zensical（`zensical.toml`）＋ Docusaurus（`docs-next/`） |
+| ビルドツール | Docusaurus（`docs-next/`） |
+
+旧 Zensical 版の URL と、並行運用期間の `/docs-next/` 配下の URL は、`.github/scripts/gen-legacy-redirects.mjs` が生成するリダイレクトで新しい URL へ転送されます。共有済みのリンクを貼り直す必要はありません。
 
 ### 自動デプロイの仕組み
 
 `.github/workflows/docs.yml` が次のタイミングでビルドし、`gh-pages` ブランチへ push します。
 
-- **main への push**：`Docs/**`・`docs-next/**`・`ops-note/**`・`zensical.toml`・`pyproject.toml`・`uv.lock`・共通ビルド action・`docs.yml` のいずれかが変更された場合
+- **main への push**：`docs-next/**`・`ops-note/**`・共通ビルド action・リダイレクト生成スクリプト・`docs.yml` のいずれかが変更された場合
 - **手動実行**（`workflow_dispatch`）：GitHub Actions の UI からいつでも実行可能
 
-ビルド手順は composite action `.github/actions/build-docs-site` に集約されており、Zensical の出力（`site/`）・Docusaurus の出力（`docs-next/build/`）・`ops-note/` を `pages-root/` に合成します（ブランチ配信では Jekyll が `_` 始まりのパスを無視するため `.nojekyll` も配置します）。本番デプロイは `clean-exclude: pr-preview/` を指定しており、PR プレビューを消しません。
+ビルド手順は composite action `.github/actions/build-docs-site` に集約されており、Docusaurus の出力（`docs-next/build/`）・`ops-note/`・旧 URL のリダイレクトスタブを `pages-root/` に合成します（ブランチ配信では Jekyll が `_` 始まりのパスを無視するため `.nojekyll` も配置します）。本番デプロイは `clean-exclude: pr-preview/` を指定しており、PR プレビューを消しません。
 
 ### PR プレビュー（修正途中のドキュメントを確認する） {#pr-preview}
 
@@ -138,7 +139,7 @@ AI レビューの採用は [ADR-024](../reference/adr/ADR-024-ai-first-review-a
 3. プレビュー URL が PR にコメントで投稿される
 4. ラベルを外すか PR をクローズすると、プレビューは自動的に削除される
 
-学習者の PR でプレビューが生成されないよう、**ラベルが付いた PR のみ**を対象にしています（学習者の PR は Spec-first 運用のため必ず `Docs/` 配下を変更するため、変更パスや base ブランチでは絞り込めません）。fork からの PR ではプレビューは生成されません。プレビューは公開されるため、未公開情報を含む PR にはラベルを付けないでください。
+学習者の PR でプレビューが生成されないよう、**ラベルが付いた PR のみ**を対象にしています（学習者の PR は Spec-first 運用のため必ず仕様のページを変更するため、変更パスや base ブランチでは絞り込めません）。fork からの PR ではプレビューは生成されません。プレビューは公開されるため、未公開情報を含む PR にはラベルを付けないでください。
 
 ### 管理者による設定（申し送り）
 
@@ -158,22 +159,15 @@ AI レビューの採用は [ADR-024](../reference/adr/ADR-024-ai-first-review-a
 ローカルで以下のコマンドで再現できます（docs コンテナが起動している必要があります）：
 
 ```bash
-# Zensical（site/ へ出力）
-docker compose exec docs uv run zensical build
-
-# Docusaurus（docs-next/build へ出力。リンク・アンカー破損があれば失敗する）
 cd docs-next && npm ci && npm run build
 ```
-
-> DevContainer 外から実行する場合：`docker exec ai_training_for_chuo_system_devcontainer-docs-1 sh -c 'cd /workspace && uv run zensical build'`
 
 **主なビルド失敗パターン：**
 
 | 症状 | 原因 | 対処 |
 |------|------|------|
-| `page does not exist` | `zensical.toml` の nav に追記したが対応ファイルが存在しない（または逆） | nav とファイルを揃える |
-| `page does not exist`（警告のみ） | `Docs/` 外のファイルへのリンク（`.claude/`・`vendor/` 等） | サイト外リンクのため無視してよい（既存の既知警告） |
-| Docusaurus の `Broken link` / `Broken anchor` | 移動・改名したページへのリンクが残っている | リンク先を修正する（`onBrokenLinks: 'throw'` のため必ず失敗する） |
+| `Broken link` / `Broken anchor` | 移動・改名したページへのリンクが残っている | リンク先を修正する（`onBrokenLinks` / `onBrokenAnchors` が `'throw'` のため必ず失敗する） |
+| リダイレクト生成で「既存ページと衝突」 | 旧 URL と新 URL のパスが同じになった | `.github/scripts/gen-legacy-redirects.mjs` の対応表から該当行を外す（転送は不要で、実ページが応答する） |
 | ビルドエラー | Markdown 構文エラー・Mermaid 構文ミス | エラー箇所を修正する |
 
 環境・コンテナ起動に関するトラブルは [troubleshooting.md](../develop/troubleshooting.md) を参照してください。

@@ -67,7 +67,7 @@ BookFlow の業務ドメイン（施設・備品予約 + 承認ワークフロ�
 | **OPERATIONS フェーズ** | AI-DLC の第 3 フェーズ。BookFlow では CI 品質ゲート（`CI Frontend` / `CI Backend`）がこれに相当する |
 | **units of work** | CONSTRUCTION で並行実行可能な作業単位。BookFlow では縦切り課題 Issue（`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 単位）に対応する |
 | **縦切り実装** | フロントエンド・バックエンドなど複数レイヤーにまたがる変更を機能単位でまとめて実装する方針 |
-| **Spec-first** | 実装より先に `Docs/spec/` を更新し、それを真実の源とする原則 |
+| **Spec-first** | 実装より先に `docs-next/docs/spec/` を更新し、それを真実の源とする原則 |
 | **セルフレビュー・マージ** | PR テンプレートのチェックリストを学習者自身が満たしたうえでマージする運用。運営者の承認は不要（[ADR-023](../reference/adr/ADR-023-mentor-gate-removal.md) 参照） |
-| **ADR（Architecture Decision Record）** | 技術選定・設計上の重要な意思決定を記録するドキュメント。`Docs/decision/` に格納（[decision/README.md](../reference/adr/index.md) 参照） |
+| **ADR（Architecture Decision Record）** | 技術選定・設計上の重要な意思決定を記録するドキュメント。`docs-next/docs/reference/adr/` に格納（[ADR 一覧](../reference/adr/index.md) 参照） |
 | **OKF（Open Knowledge Format）** | Markdown + YAML frontmatter で知識メタデータを表現するベンダー中立フォーマット。BookFlow は frontmatter 規律のみを採用（[ADR-021](../reference/adr/ADR-021-okf-frontmatter-adoption.md) 参照） |

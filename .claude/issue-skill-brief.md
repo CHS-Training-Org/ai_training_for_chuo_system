@@ -41,14 +41,14 @@
   - `required-task.yml` … 「必須課題（STEP）」。`title: "[STEP-XX] "`、`labels: [required]`
   - `optional-task.yml` … 「選択課題（エンハンス）」。`title: "[Enhance] "`、`labels: [optional]`
   - `config.yml` … `blank_issues_enabled: false`（**Web UI からの自由記述 issue は禁止**）
-- **ラベル運用**（`.github/labels.yml` が真実の源、`Docs/guide/issue-registration.md` に手順）:
+- **ラベル運用**（`.github/labels.yml` が真実の源、`docs-next/docs/operations/issue-registration.md` に手順）:
   - `required` / `optional` … テンプレートが自動付与。ただし **gh 起票ではテンプレート自動ラベルが効かないため `--label` で明示必須**。
   - `level:beginner|intermediate|advanced`、`type:frontend|backend|fullstack`、`sequential`、`in-progress` … **メンターが起票後に手動付与**。スキルでは付けない（任意で案内文に含める）。
   - ラベル実体がリポジトリに無いと **付与がサイレントに無視される**（label-sync 前提）。
 - **既存スキルの置き場所**: `.claude/skills/`（`aidlc` / `draft-pr` / `drawio-skill` / `update-spec`）。
   - **最も近い既存スキル = `draft-pr`**。ただし draft-pr は「gh が無いので本文の下書きまで。作成は学習者が行う」方針。本スキルは方針が異なり **gh で実起票する**点が新しい。
 - このリポは **Claude Code 専一**（`AGENTS.md` は導入しない）。
-- 起票手順の正典: [`Docs/guide/issue-registration.md`](../Docs/guide/issue-registration.md)（必読。ラベルマッピング §mapping、gh 起票例 §howto あり）。
+- 起票手順の正典: [`docs-next/docs/operations/issue-registration.md`](../docs-next/docs/operations/issue-registration.md)（必読。ラベルマッピング §mapping、gh 起票例 §howto あり）。
 
 ---
 
@@ -80,7 +80,7 @@
 #### 必須課題（STEP）— `required-task.yml` 準拠
 | 項目 | 必須 | 形式 |
 |------|------|------|
-| 対応する要件ドキュメントへのリンク | ○ | テキスト（例 `Docs/guide/curriculum.md#step-01`） |
+| 対応する要件ドキュメントへのリンク | ○ | テキスト（例 `docs-next/docs/learn/curriculum.md#step-01`） |
 | ゴール | ○ | 複数行 |
 | 前提条件 | – | 複数行 |
 | 完了条件（自己チェック項目。受入条件はドキュメント側が真実の源、再掲しない） | ○ | 複数行 |
@@ -93,7 +93,7 @@
 #### 選択課題（エンハンス）— `optional-task.yml` 準拠
 | 項目 | 必須 | 形式 |
 |------|------|------|
-| ビジネス要求シートへのリンク | ○ | テキスト（例 `Docs/spec/enhancements/<short-desc>.md`） |
+| ビジネス要求シートへのリンク | ○ | テキスト（例 `docs-next/docs/spec/enhancements/<short-desc>.md`） |
 | ゴール | ○ | 複数行 |
 | 前提条件 | – | 複数行 |
 | 完了条件（同上・再掲しない） | ○ | 複数行 |
@@ -126,7 +126,7 @@
     --label "optional" \
     --body-file /path/to/body.md
   ```
-- **テンプレート自動ラベルは gh では効かない**ので `--label` は必ず明示（`Docs/guide/issue-registration.md` §gh 注意書きと整合）。
+- **テンプレート自動ラベルは gh では効かない**ので `--label` は必ず明示（`docs-next/docs/operations/issue-registration.md` §gh 注意書きと整合）。
 
 ### 4.5 質問様式の規律（`.claude/rules/aidlc-questions.md` 準拠）
 
@@ -138,7 +138,7 @@
 ## 5. Gotchas（スキルの「Gotchas」節に必ず書く）
 
 - gh 起票はテンプレートのフォーム/自動ラベルをバイパスする → `--label` 明示が必須。
-- ラベル実体がリポジトリに無いと付与がサイレントに無視される（label-sync 前提。`Docs/guide/issue-registration.md` §label-sync）。
+- ラベル実体がリポジトリに無いと付与がサイレントに無視される（label-sync 前提。`docs-next/docs/operations/issue-registration.md` §label-sync）。
 - PowerShell のクォート問題 → 本文は `--body-file` で渡す。
 - `config.yml` は Web UI の自由記述を禁止しているが、**gh 起票はこれをバイパスできる**。
   「汎用 Issue」を gh で作るとリポの「自由記述禁止」方針と緊張関係になる点を明記する。
@@ -162,6 +162,6 @@
 - `.github/ISSUE_TEMPLATE/optional-task.yml`
 - `.github/ISSUE_TEMPLATE/config.yml`
 - `.github/labels.yml`
-- `Docs/guide/issue-registration.md`（起票手順・ラベルマッピングの正典）
+- `docs-next/docs/operations/issue-registration.md`（起票手順・ラベルマッピングの正典）
 - `.claude/skills/draft-pr/SKILL.md`（最も近い既存スキル。体裁の参考）
 - `.claude/rules/aidlc-questions.md` / `.claude/rules/aidlc-guardrails.md`（質問・出力の規律）

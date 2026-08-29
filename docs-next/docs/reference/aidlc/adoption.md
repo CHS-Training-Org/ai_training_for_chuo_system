@@ -67,7 +67,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 | `common/depth-levels.md` | 問題の複雑さに応じた出力粒度の調整 | `.claude/rules/aidlc-guardrails.md` §2 | rules 化（既存） | plan-first での計画粒度判断に有用 |
 | `common/error-handling.md` | ワークフローエンジンのエラー処理・復旧手順 | `.aidlc-rule-details/common/error-handling.md`（翻案済み） | **エンジン採用（翻案・活性化）** | エンジン導入により前提（`aidlc-state.md` / `audit.md`）が揃った。状態ファイルパスを BookFlow 写像先に翻案済み |
 | `common/overconfidence-prevention.md` | 過信防止（不確実なら質問する） | `.claude/rules/aidlc-guardrails.md` §1 | rules 化（既存） | 「プロセスの厳格さは簡略化しない」方針と直結する中核的ガードレール |
-| `common/process-overview.md` | AI-DLC 3フェーズワークフローの技術参照（Mermaid 図含む） | `Docs/guide/dev-workflow.md` の写像表・標準フロー図 | **参照のみ（写像済み）** | フェーズ構造は `dev-workflow.md #aidlc-mapping` で写像済み（エンジン採用に更新）。重複再構成はしない |
+| `common/process-overview.md` | AI-DLC 3フェーズワークフローの技術参照（Mermaid 図含む） | `docs-next/docs/develop/dev-workflow.md` の写像表・標準フロー図 | **参照のみ（写像済み）** | フェーズ構造は `dev-workflow.md #aidlc-mapping` で写像済み（エンジン採用に更新）。重複再構成はしない |
 | `common/question-format-guide.md` | 確認質問の様式（専用ファイル＋選択肢＋Other） | `.claude/rules/aidlc-questions.md` | rules 化（既存） | 様式上の規律は Claude Code の `AskUserQuestion` 運用に翻案して有用 |
 | `common/session-continuity.md` | `aidlc-state.md` 再開時のアーティファクト読み込み手順 | `.aidlc-rule-details/common/session-continuity.md`（翻案済み） | **エンジン採用（翻案・活性化）** | エンジン導入により前提が揃った。`Docs/spec/aidlc-state.md` からの first unchecked item レジューム機構として機能 |
 | `common/terminology.md` | AI-DLC 独自用語集（Phase/Stage/Unit of Work 等） | `.aidlc-rule-details/common/terminology.md`（翻案済み） | **エンジン採用（翻案・活性化）** | エンジン採用により用語体系が BookFlow の正式用語となった。用語集としてそのまま採用可 |
@@ -80,7 +80,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 |---|---|---|---|---|
 | `inception/workspace-detection.md` | ワークスペース検出・state 初期化（必須・最初） | `.aidlc-rule-details/inception/workspace-detection.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。`Docs/spec/aidlc-state.md` の初期化・Brownfield/Greenfield 判定 |
 | `inception/reverse-engineering.md` | 既存コード解析（Brownfield のみ・条件付き） | `.aidlc-rule-details/inception/reverse-engineering.md`（翻案済み）+ 将来 `/reverse-engineering` スキル化 | **エンジン採用（翻案・活性化）** | 学習者向け「コードベース理解ガイド」（[`curriculum.md#codebase-understanding`](../../learn/curriculum.md#codebase-understanding)）に直結（台帳「今後の候補」から実装済みに昇格） |
-| `inception/requirements-analysis.md` | 要件分析（必須・深さ適応型） | `.aidlc-rule-details/inception/requirements-analysis.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。成果は `Docs/spec/requirements.md` に統合 |
+| `inception/requirements-analysis.md` | 要件分析（必須・深さ適応型） | `.aidlc-rule-details/inception/requirements-analysis.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。成果は `docs-next/docs/spec/requirements.md` に統合 |
 | `inception/user-stories.md` | ユーザーストーリー作成（条件付き） | `.aidlc-rule-details/inception/user-stories.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。ユーザー影響のある機能開発時に実行 |
 | `inception/workflow-planning.md` | ワークフロー計画・ステージ EXECUTE/SKIP 判断（必須） | `.aidlc-rule-details/inception/workflow-planning.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。通常（agent）モードで実行計画を提示し、学習者自身がチャットで確認・承認する |
 | `inception/application-design.md` | コンポーネント・サービス設計（条件付き） | `.aidlc-rule-details/inception/application-design.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。新コンポーネント・サービスが必要な場合に実行 |
@@ -94,7 +94,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 | `construction/nfr-requirements.md` | 非機能要件・技術スタック選定（条件付き・ユニット別） | `.aidlc-rule-details/construction/nfr-requirements.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。BookFlow の Spring Boot + Next.js スタックに対応 |
 | `construction/nfr-design.md` | NFR パターン・論理コンポーネント設計（条件付き・ユニット別） | `.aidlc-rule-details/construction/nfr-design.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。NFR Requirements 実行時に続けて実行 |
 | `construction/infrastructure-design.md` | インフラ・デプロイアーキテクチャ設計（条件付き・ユニット別） | `.aidlc-rule-details/construction/infrastructure-design.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。BookFlow の Docker Compose / DevContainer 環境に対応 |
-| `construction/code-generation.md` | コード生成（必須・ユニット別。計画→生成の 2 段階） | `.aidlc-rule-details/construction/code-generation.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。Spec-first との統合：コード生成前に `Docs/spec/` 更新（`/update-spec` スキル） |
+| `construction/code-generation.md` | コード生成（必須・ユニット別。計画→生成の 2 段階） | `.aidlc-rule-details/construction/code-generation.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。Spec-first との統合：コード生成前に `docs-next/docs/spec/` 更新（`/update-spec` スキル） |
 | `construction/build-and-test.md` | ビルド・テスト手順生成（必須・全ユニット完了後） | `.aidlc-rule-details/construction/build-and-test.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。CI 品質ゲート（`CI Frontend` / `CI Backend`）に対応 |
 
 ### operations（フェーズ3、1ファイル）
@@ -107,7 +107,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 
 | 上流ファイル | 役割 | BookFlow 反映先 | 採用状態 | 根拠 |
 |---|---|---|---|---|
-| `extensions/security/baseline/security-baseline.md` | セキュリティベースラインルール（フルルール） | `.aidlc-rule-details/extensions/security/baseline/security-baseline.md`（翻案済み） | **エンジン採用（opt-in 時にロード）** | 既存セキュリティ監査（`Docs/decision/` ADR）と相補的 |
+| `extensions/security/baseline/security-baseline.md` | セキュリティベースラインルール（フルルール） | `.aidlc-rule-details/extensions/security/baseline/security-baseline.md`（翻案済み） | **エンジン採用（opt-in 時にロード）** | 既存セキュリティ監査（`docs-next/docs/reference/adr/` の ADR）と相補的 |
 | `extensions/security/baseline/security-baseline.opt-in.md` | セキュリティ拡張のオプトイン質問 | `.aidlc-rule-details/extensions/security/baseline/security-baseline.opt-in.md`（翻案済み） | **エンジン採用（Requirements Analysis で表示）** | Requirements Analysis で学習者にセキュリティ適用有無を問う |
 | `extensions/resiliency/baseline/resiliency-baseline.md` | レジリエンシーベースラインルール（フルルール） | `.aidlc-rule-details/extensions/resiliency/baseline/resiliency-baseline.md`（翻案済み） | **エンジン採用（opt-in 時にロード）** | AWS Well-Architected ベース。BookFlow の Spring Boot + Docker 環境に対応 |
 | `extensions/resiliency/baseline/resiliency-baseline.opt-in.md` | レジリエンシー拡張のオプトイン質問 | `.aidlc-rule-details/extensions/resiliency/baseline/resiliency-baseline.opt-in.md`（翻案済み） | **エンジン採用（Requirements Analysis で表示）** | Requirements Analysis で学習者にレジリエンシー適用有無を問う |

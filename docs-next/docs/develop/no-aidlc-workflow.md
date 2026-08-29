@@ -24,7 +24,7 @@ AI-DLC エンジン（`/aidlc`）を使わず、選択課題を Claude Code へ�
 
 AI-DLC エンジンを使わないことは、Claude Code を使わないことも、計画を立てずに実装を始めることも意味しません。コード補完・設計相談・生成コードの相棒として、このフローでも通常どおり Claude Code を使います。  
 使わないのは `/aidlc` が代行する計画立案の自動オーケストレーション（段階分割・承認ゲート）だけです。  
-**Spec-first**（実装より先に `Docs/spec/` を更新する原則）やセルフレビューも、AI-DLC の有無にかかわらずリポジトリ全体の必須ルールなので、このフローでも維持します。
+**Spec-first**（実装より先に `docs-next/docs/spec/` を更新する原則）やセルフレビューも、AI-DLC の有無にかかわらずリポジトリ全体の必須ルールなので、このフローでも維持します。
 
 :::tip[AI-DLCが起動したかどうかの確認方法]
 
@@ -54,7 +54,7 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 
 ### 1. 取り組む課題を選ぶ
 
-[初級の選択課題](./enhancement-catalog.md#beginner) から1つ選びます。各課題には**ビジネス要求シート**（`Docs/spec/enhancements/<short-desc>.md`。背景・依存関係・要件・受入条件・影響範囲・AI 活用ポイントの6節で実装対象を定義する文書）があります。  
+[初級の選択課題](./enhancement-catalog.md#beginner) から1つ選びます。各課題には**ビジネス要求シート**（`docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md`。背景・依存関係・要件・受入条件・影響範囲・AI 活用ポイントの6節で実装対象を定義する文書）があります。  
 対応する GitHub Issue は運営者が起票済みです。
 
 ### 2. ブランチを作成する
@@ -83,7 +83,7 @@ Claude Code を[探索→計画→実装→コミット](../learn/claude-code-be
 問題があれば、プランモードのまま指摘して計画を修正させます。納得したらプランモードを終了して次に進みます。運営者の承認は不要です。
 
 この計画がそのまま設計の全体です。AI-DLC のように、実装の途中で詳細を確定させる設計ステージはありません。変更が DB スキーマや API に及ぶ場合は、計画の段階でカラム定義やエンドポイントの詳細まで確定させてください（あとから確定させる場を持たないため）。  
-計画が固まったら、`/update-spec` スキルを使って、計画の内容を既存の仕様書（要件定義 `requirements.md`、画面仕様書 `screen-spec.md`、API 仕様書 `api-spec.md`、ER 図 `er-diagram.md`。いずれも `Docs/spec/` 配下）に反映してください。  
+計画が固まったら、`/update-spec` スキルを使って、計画の内容を既存の仕様書（要件定義 `requirements.md`、画面仕様書 `screen-spec.md`、API 仕様書 `api-spec.md`、ER 図 `er-diagram.md`。いずれも `docs-next/docs/spec/` 配下）に反映してください。  
 
 ### 4. 実装する
 
