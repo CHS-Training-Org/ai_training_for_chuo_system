@@ -48,6 +48,8 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 :::tip[前提：リポジトリへの Write 権限]
 
 Organization からの招待を承諾し、リポジトリへの Write 権限がある状態で実施してください（`gh api repos/CHS-Training-Org/ai_training_for_chuo_system --jq .permissions` で `"push": true` を確認できます）。権限がない状態、または `gh auth login` で git の資格情報設定を No にした状態では push が失敗します。エラーが出た場合の切り分けは [troubleshooting.md §Git・GitHub 関連](./troubleshooting.md#git) を参照してください。
+
+push が失敗しても、VS Code の GitHub 拡張が出す「Would you like to create a fork?」に Yes と答えないでください。fork を作ると push 先が自分のアカウント配下に切り替わり、共有リポジトリから作業が見えなくなります（[Git・GitHub 関連のトラブル](./troubleshooting.md#git) に復旧手順があります）。
 :::
 
 **GitHub の画面から作成する場合**：リポジトリのブランチ一覧画面で `main` を選択し、ブランチ名の入力欄に `learner/<GitHubユーザー名>/main` と入力して作成します。
