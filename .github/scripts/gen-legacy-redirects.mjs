@@ -118,8 +118,48 @@ for (const slug of ADR_SLUGS) {
   ZENSICAL_MAP[`decision/${slug}/`] = `reference/adr/${slug}/`;
 }
 
-/** AI-DLC の作業成果物はサイトの読み物ではないため、まとめてトップページへ送る。 */
-const AIDLC_DOCS_PREFIX = 'spec/aidlc-docs/';
+/**
+ * 旧 Zensical 版が公開していた AI-DLC の作業成果物（`Docs/spec/aidlc-docs/` 配下）の URL。
+ * サイトの読み物ではないため、まとめてトップページへ送る。
+ *
+ * ディレクトリは新しい学習者が最初から記録できるよう削除したので、実ファイルからは
+ * 起こせない。公開されていた時点の一覧をここに固定で持つ（過去の URL は増減しない）。
+ */
+const AIDLC_DOCS_URLS = [
+  'spec/aidlc-docs/construction/build-and-test/build-and-test-summary/',
+  'spec/aidlc-docs/construction/build-and-test/build-instructions/',
+  'spec/aidlc-docs/construction/build-and-test/unit-test-instructions/',
+  'spec/aidlc-docs/construction/calendar-view/code/business-logic-summary/',
+  'spec/aidlc-docs/construction/calendar-view/code/frontend-components-summary/',
+  'spec/aidlc-docs/construction/calendar-view/code/summary/',
+  'spec/aidlc-docs/construction/calendar-view/functional-design/business-logic-model/',
+  'spec/aidlc-docs/construction/calendar-view/functional-design/business-rules/',
+  'spec/aidlc-docs/construction/calendar-view/functional-design/domain-entities/',
+  'spec/aidlc-docs/construction/calendar-view/functional-design/frontend-components/',
+  'spec/aidlc-docs/construction/plans/calendar-view-code-generation-plan/',
+  'spec/aidlc-docs/construction/plans/calendar-view-functional-design-plan/',
+  'spec/aidlc-docs/construction/plans/resource-list-sort-code-generation-plan/',
+  'spec/aidlc-docs/construction/resource-list-sort/code/summary/',
+  'spec/aidlc-docs/construction/resource-list-sort/functional-design/business-logic-model/',
+  'spec/aidlc-docs/construction/resource-list-sort/functional-design/business-rules/',
+  'spec/aidlc-docs/construction/resource-list-sort/functional-design/domain-entities/',
+  'spec/aidlc-docs/construction/resource-list-sort/functional-design/frontend-components/',
+  'spec/aidlc-docs/inception/plans/execution-plan/',
+  'spec/aidlc-docs/inception/plans/story-generation-plan/',
+  'spec/aidlc-docs/inception/plans/user-stories-assessment/',
+  'spec/aidlc-docs/inception/requirements/requirements/',
+  'spec/aidlc-docs/inception/reverse-engineering/api-documentation/',
+  'spec/aidlc-docs/inception/reverse-engineering/architecture/',
+  'spec/aidlc-docs/inception/reverse-engineering/business-overview/',
+  'spec/aidlc-docs/inception/reverse-engineering/code-quality-assessment/',
+  'spec/aidlc-docs/inception/reverse-engineering/code-structure/',
+  'spec/aidlc-docs/inception/reverse-engineering/component-inventory/',
+  'spec/aidlc-docs/inception/reverse-engineering/dependencies/',
+  'spec/aidlc-docs/inception/reverse-engineering/reverse-engineering-timestamp/',
+  'spec/aidlc-docs/inception/reverse-engineering/technology-stack/',
+  'spec/aidlc-docs/inception/user-stories/personas/',
+  'spec/aidlc-docs/inception/user-stories/stories/',
+];
 
 function stubHtml(targetUrl) {
   return `<!doctype html>
@@ -185,22 +225,9 @@ for (const [from, to] of Object.entries(ZENSICAL_MAP)) {
   writeStub(from, to);
 }
 
-// 2. 旧 Zensical の AI-DLC 作業成果物（`Docs/spec/aidlc-docs/**`）
-//    リポジトリに実ファイルが残っているので、そこから URL を起こす。
-const aidlcDocsRoot = 'Docs/spec/aidlc-docs';
-if (fs.existsSync(aidlcDocsRoot)) {
-  const walk = (dir) => {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const p = path.join(dir, entry.name);
-      if (entry.isDirectory()) walk(p);
-      else if (entry.name.endsWith('.md')) {
-        const rel = path.relative(aidlcDocsRoot, p).replace(/\.md$/, '').replace(/\\/g, '/');
-        const urlPath = rel === 'index' ? AIDLC_DOCS_PREFIX : `${AIDLC_DOCS_PREFIX}${rel}/`;
-        writeStub(urlPath, '');
-      }
-    }
-  };
-  walk(aidlcDocsRoot);
+// 2. 旧 Zensical の AI-DLC 作業成果物
+for (const url of AIDLC_DOCS_URLS) {
+  writeStub(url, '');
 }
 
 // 3. 並行運用期間の docs-next URL（`/docs-next/<route>/` -> `/<route>/`）

@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-08-14
+timestamp: 2026-08-29
 ---
 
 # AI-DLC State Tracking
@@ -17,13 +17,10 @@ timestamp: 2026-08-14
 
 ## Project Information
 
-- **Project Type**: Brownfield
-- **Start Date**: 2026-08-14T08:39:36Z
-- **Current Stage**: INCEPTION - Requirements Analysis
+- **Project Type**: [Greenfield/Brownfield]
+- **Start Date**: [ISO 8601 timestamp]
+- **Current Stage**: [INCEPTION - Workspace Detection]
 - **Workspace Root**: /workspace
-- **対象タスク**: Issue #27 / `Docs/spec/enhancements/calendar-view.md`（カレンダービュー）
-- **Unit 名**: `calendar-view`（ブランチ短縮名 `resource-calendarview` とはシート名の方を正として採用。詳細は `aidlc-audit.md` 参照）
-- **前回ワークフロー**: Issue #22（resource-list-sort）は OPERATIONS フェーズで完了・PR #78 マージ済み。今回は別タスクとして本ファイルをリセットして新規起動。
 
 ## Code Location Rules
 
@@ -35,38 +32,38 @@ timestamp: 2026-08-14
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | No | Requirements Analysis（2026-08-14T08:50:00Z） |
-| Resiliency Baseline | No | Requirements Analysis（2026-08-14T08:50:00Z） |
-| Property-Based Testing | No | Requirements Analysis（2026-08-14T08:50:00Z） |
+| Security Baseline | — | — |
+| Resiliency Baseline | — | — |
+| Property-Based Testing | — | — |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [x] Workspace Detection - Completed on 2026-08-14T08:39:36Z（既存ワークスペース、Brownfield 継続と判定）
-- [x] Reverse Engineering（Brownfield の場合） - SKIP（`Docs/spec/aidlc-docs/inception/reverse-engineering/` に既存成果物あり。ただし対象ファイル（`/resources/[id]/page.tsx`・`resources.ts` 等）は個別に読み直して最新状態を確認する）
-- [x] Requirements Analysis - Completed on 2026-08-14T09:12:00Z（成果物: `Docs/spec/aidlc-docs/inception/requirements/requirements.md`、ユーザー承認済み）
-- [x] User Stories（条件付き） - EXECUTE と判定（2026-08-14T09:12:00Z）。Completed on 2026-08-14T09:37:00Z（成果物: `Docs/spec/aidlc-docs/inception/user-stories/personas.md`・`stories.md`、ユーザー承認済み）
-- [x] Workflow Planning - Completed on 2026-08-20T16:53:25Z（成果物: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md`、ユーザー承認済み）
-- [x] Application Design（条件付き） - SKIP（既存画面内への機能追加のみ。新規サービス間契約の新設なし）
-- [x] Units Generation（条件付き） - SKIP（単一ユニット扱い、frontendのみ）
+- [ ] Workspace Detection
+- [ ] Reverse Engineering（Brownfield の場合）
+- [ ] Requirements Analysis
+- [ ] User Stories（条件付き）
+- [ ] Workflow Planning
+- [ ] Application Design（条件付き）
+- [ ] Units Generation（条件付き）
 
-### CONSTRUCTION PHASE（Unit: calendar-view）
+### CONSTRUCTION PHASE
 
-- [x] Functional Design（条件付き、ユニット別） - EXECUTE。Completed on 2026-08-20T17:10:18Z（成果物: `Docs/spec/aidlc-docs/construction/calendar-view/functional-design/`、ユーザー承認済み。既存コード再検証によりRSV-05・08・09を新設し`requirements.md`/`execution-plan.md`を修正）
-- [x] NFR Requirements（条件付き、ユニット別） - SKIP（拡張機能不適用、新規NFR要求なし）
-- [x] NFR Design（条件付き、ユニット別） - SKIP（NFR Requirements未実行のため連動）
-- [x] Infrastructure Design（条件付き、ユニット別） - SKIP（インフラ変更なし）
-- [x] Code Generation（必須、ユニット別） - Completed on 2026-08-20T17:36:04Z（成果物: `Docs/spec/aidlc-docs/construction/calendar-view/code/`、`calendar-view-code-generation-plan.md`全7ステップ完了、ユーザー承認済み）
-- [x] Build and Test（必須） - Completed on 2026-08-20T17:57:36Z（成果物: `Docs/spec/aidlc-docs/construction/build-and-test/`。frontend全113件成功・lint/build成功に加え、`run`スキル経由の一時的なブラウザ動作確認を実施、ユーザー承認済み）
+- [ ] Functional Design（条件付き、ユニット別）
+- [ ] NFR Requirements（条件付き、ユニット別）
+- [ ] NFR Design（条件付き、ユニット別）
+- [ ] Infrastructure Design（条件付き、ユニット別）
+- [ ] Code Generation（必須、ユニット別）
+- [ ] Build and Test（必須）
 
 ### OPERATIONS PHASE
 
-- [ ] Operations（プレースホルダー） - BookFlow翻案によりCI品質ゲート運用（`/commit-push`・`/create-pr`）に委譲予定。`/update-spec`完了（2026-08-20T18:15:24Z、`requirements.md`RES-10〜13・`screen-spec.md`§`/resources/{id}`・§`/reservations/new`を更新）
+- [ ] Operations（プレースホルダー）
 
 ## Current Status
 
-- **Lifecycle Phase**: OPERATIONS
-- **Current Stage**: `/update-spec`完了
-- **Next Stage**: `/commit-push` → `/create-pr`
-- **Status**: In Progress
+- **Lifecycle Phase**: [INCEPTION/CONSTRUCTION/OPERATIONS]
+- **Current Stage**: [Stage Name]
+- **Next Stage**: [Next stage to execute]
+- **Status**: [In Progress/Complete/Waiting for Approval]

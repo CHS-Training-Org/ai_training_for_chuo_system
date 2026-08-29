@@ -67,7 +67,7 @@ public class ResourceService {
    *
    * <p>ソート（{@code pageable.getSort()}）は DB の {@code ORDER BY} には委譲せず、候補リスト取得後に {@link Comparator}
    * で適用する。DB 委譲では null 定員の末尾固定（BR-03）や大文字小文字非依存（BR-05）を DB のロケール・NULLS
-   * 順序既定に依存させてしまい、環境によって結果が変わるため（詳細は {@code aidlc-audit.md} 参照）。
+   * 順序既定に依存させてしまい、環境によって結果が変わるため。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
