@@ -35,7 +35,7 @@
 
 `gh pr checks <PR番号>` でCIの結果を取得し、次のとおり判定する。
 
-- **OK**：必須のチェック（`CI Frontend / ci`・`CI Backend / ci`）がすべて success
+- **OK**：必須のチェック（`CI Frontend`・`CI Backend`）がすべて success
 - **NG**：いずれかが failure
 - **判定不能**：チェックが未完了（pending）、または1件も報告されていない
 
