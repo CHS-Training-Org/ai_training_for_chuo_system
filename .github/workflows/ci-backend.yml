@@ -25,6 +25,12 @@ on:
 
 jobs:
   ci:
+    # check 名はジョブ名（name。無ければジョブ ID）であり、UI に出る
+    # 「<ワークフロー名> / <ジョブ名>」は表示形式にすぎない。ブランチ保護の必須
+    # status check は check 名の文字列一致で判定するため、ci-frontend / ci-backend の
+    # ジョブ ID がどちらも ci のままだと 2 つの check が同名になり区別できない。
+    # そのため name で一意にする（ジョブ ID は needs 参照互換のため変えない）。
+    name: CI Backend
     runs-on: ubuntu-latest
     defaults:
       run:
