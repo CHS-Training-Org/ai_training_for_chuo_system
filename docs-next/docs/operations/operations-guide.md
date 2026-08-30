@@ -12,7 +12,7 @@ references:
   - ../develop/dev-workflow.md
   - ../develop/review-criteria.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-08-29T00:00:00+09:00'
 ---
 
 # 運用ガイド
@@ -88,6 +88,7 @@ GitHub の Settings → Branches でブランチ保護ルールを設定する�
 
 - `main` はマージ元をリポジトリ管理者のみに制限し、学習者からのマージを技術的に禁止してください。
 - 学習者のトランクブランチ（`learner/*/main`）は、必須 status check に `CI Frontend / ci`、`CI Backend / ci` を指定してください。承認レビューは必須にしません（「Require approvals」はオフ）。
+  - この 2 つの check は、PR が frontend / backend の片方しか触っていない場合でも必ず報告されます（対象外のときはジョブ内でステップをスキップし success で終了します）。そのため両方を必須に指定してもマージがブロックされることはありません。
 
 本リポジトリでは CODEOWNERS は使用しません。
 
