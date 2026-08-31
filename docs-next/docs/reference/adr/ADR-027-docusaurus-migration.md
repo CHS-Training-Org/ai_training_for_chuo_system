@@ -5,7 +5,7 @@ tags:
   - docs
   - infrastructure
   - migration
-status: proposed
+status: accepted
 date: 2026-08-01T00:00:00.000Z
 deciders:
   - '@tomaf'
@@ -96,3 +96,35 @@ Docusaurus のテンプレート雛形（`intro.mdx`・`tutorial-basics/`・`tut
 **再発防止**：`onBrokenLinks` / `onBrokenAnchors` / `onBrokenMarkdownLinks` を `'throw'` に上げ、
 PR 時点でビルド検証する workflow（`.github/workflows/docs-check.yml`）を追加した。
 破損を生んだ使い捨ての移行スクリプトは `docs-next/scripts/migration/` に隔離した。
+
+## 追記（2026-08-29）— 一本化と Zensical 版の廃止
+
+ADR-027 が想定した並行運用期間は「数日〜1 週間」だったが、実際には 1 か月近く
+両方が公開され続けた。二重管理のコストと内容の乖離（ADR-029〜031 は docs-next
+側にしか存在せず、逆にソート機能とカレンダービューの仕様は Zensical 側にしか
+反映されていなかった）が実害として出たため、docs-next に一本化した。
+
+**公開の一本化**：Docusaurus の `baseUrl` をサイトのルートへ移し、共通ビルド
+action から Zensical のビルドを外した。並行運用の案内バナーも撤去した。
+
+**旧 URL の扱い**：ADR-027 は旧 URL の扱いを決めていなかったが、Teams・OneNote・
+運営ノートに共有済みのリンクを 404 にしないため、旧 Zensical 版の URL と並行運用
+期間の `/docs-next/` 配下の URL から新しい URL へ転送するリダイレクトスタブを
+`.github/scripts/gen-legacy-redirects.mjs` で生成することにした。GitHub Pages の
+ブランチ配信ではサーバ側リダイレクトが使えないため、meta refresh の静的 HTML を
+置く方式を採っている。新サイトと同じパスのページは Docusaurus のビルド成果物が
+すでに占めているため、既存ファイルがある場所には書き込まず、衝突を検知したら
+ビルドを失敗させる。
+
+**`Docs/` の扱いの再判断**：ADR-027 は `zensical.toml`・`pyproject.toml`・`uv.lock`
+を「アーカイブ（削除せず残置）」としていたが、残しても参照されず二重管理が続く
+だけなので削除した。ただし `Docs/spec/aidlc-state.md`・`aidlc-audit.md`・
+`aidlc-docs/` は残置する。これらはサイトの読み物ではなく AI-DLC エンジンが実行中に
+読み書きする作業ファイルで、`.claude/skills/aidlc/SKILL.md` と
+`.aidlc-rule-details/` が直接このパスを参照しているため、移動するとエンジンが
+壊れる。したがって完了状態は「`Docs/` を削除する」ではなく「サイト掲載ページだけ
+を削除し、エンジンの作業ファイルは `Docs/spec/` に残す」となった。
+
+**DevContainer**：ローカルプレビュー用の `docs` サービスは uv/Python イメージで
+`zensical serve` を起動していたため、Node イメージで Docusaurus の開発サーバーを
+起動する構成に差し替えた。公開ポート（`:8000`）は変えていない。

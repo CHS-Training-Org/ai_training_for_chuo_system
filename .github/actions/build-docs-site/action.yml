@@ -1,0 +1,61 @@
+name: Build docs site
+description: >
+  Docusaurus（docs-next/）・運営ノート（ops-note/）・旧 URL のリダイレクトスタブを
+  pages-root/ に合成する。本番デプロイと PR プレビューで同じ手順を使うための共通化。
+
+inputs:
+  docs-next-base-url:
+    description: >
+      Docusaurus の baseUrl。PR プレビューは本番と別パスで配信されるため、
+      プレビュー側から `/ai_training_for_chuo_system/pr-preview/pr-<N>/` を渡す。
+      空文字のときは docusaurus.config.ts の既定値（本番のパス）を使う。
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: docs-next/package-lock.json
+
+    - name: Install docs-next dependencies
+      shell: bash
+      working-directory: docs-next
+      run: npm ci
+
+    - name: Generate last_updated from git log
+      shell: bash
+      working-directory: docs-next
+      run: node scripts/gen-last-updated.mjs
+
+    - name: Build docs-next (Docusaurus)
+      shell: bash
+      working-directory: docs-next
+      run: npm run build
+      env:
+        DOCS_BASE_URL: ${{ inputs.docs-next-base-url }}
+
+    - name: Assemble combined Pages artifact
+      shell: bash
+      run: |
+        set -euo pipefail
+        rm -rf pages-root
+        mkdir -p pages-root
+        cp -r docs-next/build/. pages-root/
+        # 運営ノート（素の静的HTML）を /ops-note/ にパススルー配置
+        mkdir -p pages-root/ops-note
+        cp -r ops-note/. pages-root/ops-note/
+        # ブランチ配信では GitHub が Jekyll ビルドを挟み、`_` 始まりのパスを無視する
+        touch pages-root/.nojekyll
+
+    # 旧 Zensical 版の URL と、並行運用期間の `/docs-next/` 配下の URL を新 URL へ飛ばす。
+    # Teams・OneNote・運営ノートに共有済みのリンクを 404 にしないため。
+    - name: Generate legacy redirect stubs
+      shell: bash
+      run: node .github/scripts/gen-legacy-redirects.mjs
+      env:
+        DOCS_BASE_URL: ${{ inputs.docs-next-base-url }}

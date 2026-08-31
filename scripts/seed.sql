@@ -1,7 +1,7 @@
 -- BookFlow 初期データ (seed)
 -- 用途：ローカル開発環境での動作確認・STEP-01 環境構築・コードベース理解ガイドのテスト観点読解
 -- 前提：PostgreSQL 16 専用（H2 非対応）。Flyway 対象外のため自動ロードされない。
---       DevContainer 起動後に手動で psql から投入する（実行方法は Docs/guide/getting-started.md §初期データ投入 参照）
+--       DevContainer 起動後に手動で psql から投入する（実行方法は docs-next/docs/learn/getting-started.md §初期データ投入 参照）
 -- 再実行：冒頭の DELETE で既存データをクリアしてから INSERT するため再実行可（冪等）
 
 -- ============================================================
