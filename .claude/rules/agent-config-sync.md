@@ -1,10 +1,10 @@
 # Claude Code 設定台帳の同期
 
-`Docs/claude/agent-config.md` は「このリポジトリの `.claude/` 配下に何がインストールされていて、どう呼び出すか」を学習者・メンターに示す台帳である。台帳が実態とずれると、参照した学習者が存在しないスキルを探したり、変更済みの挙動を古い説明のまま信じたりする。
+`docs-next/docs/reference/claude-code/agent-config.md` は「このリポジトリの `.claude/` 配下に何がインストールされていて、どう呼び出すか」を学習者・メンターに示す台帳である。台帳が実態とずれると、参照した学習者が存在しないスキルを探したり、変更済みの挙動を古い説明のまま信じたりする。
 
 ## 適用対象
 
-次のいずれかを追加・変更・削除するときは、**同じ変更の中で** `Docs/claude/agent-config.md` の該当箇所も更新する。
+次のいずれかを追加・変更・削除するときは、**同じ変更の中で** `docs-next/docs/reference/claude-code/agent-config.md` の該当箇所も更新する。
 
 - `.claude/rules/*.md`（Rules セクション）
 - `.claude/skills/*/SKILL.md`（Skills セクションのリポジトリ独自スキル表。frontmatter の `description` や、呼び出し方・役割に影響する本文の変更を含む）

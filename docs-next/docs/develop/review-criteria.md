@@ -11,7 +11,7 @@ references:
   - ./dev-workflow.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
   - ../spec/index.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-08-30T00:00:00+09:00'
 ---
 
 # 評価基準・レビュー観点
@@ -26,8 +26,8 @@ last_updated: '2026-08-01T11:56:18+09:00'
 ## 評価基準（完了条件チェックリスト） {#completion-criteria}
 PR を提出する前に、以下の項目をすべて自分で確認してください。
 
-- [ ] **受入条件**：該当の要件シート（[`spec/enhancements/<課題>.md`](../spec/enhancements/index.md)）の受入条件をすべて満たしている。選択課題の難易度、レイヤー確認は [enhancement-catalog.md §カタログの使い方](./enhancement-catalog.md#catalog) を参照。
-- [ ] **CI green**：`CI Frontend / ci`・`CI Backend / ci` がいずれも通過している（[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) §8 参照）。
+- [ ] **受入条件**：該当の[要件シート](../spec/enhancements/index.md)の受入条件をすべて満たしている。選択課題の難易度、レイヤー確認は [enhancement-catalog.md §カタログの使い方](./enhancement-catalog.md#catalog) を参照。
+- [ ] **CI green**：`CI Frontend`・`CI Backend` がいずれも通過している（[dev-workflow.md §標準開発フロー](./dev-workflow.md#flow) §8 参照）。
 - [ ] **セルフレビュー済み**：PR 作成者が [coding-conventions.md §コミット・PR 規約](./coding-conventions.md#commit-pr) のセルフレビューを実施している。
 - [ ] **Spec-first 遵守**：仕様変更が伴う場合、[spec/index.md §レビュー観点（セルフチェック）](../spec/index.md#spec-review-checklist) の観点で仕様差分を先にレビューしている。
 - [ ] **PR テンプレート記入**：[`.github/PULL_REQUEST_TEMPLATE.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.github/PULL_REQUEST_TEMPLATE.md) の必須項目（対応 Issue リンク・Spec-first チェック・AI 活用箇所）がすべて記入されている。

@@ -17,7 +17,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 このセクションでは、BookFlow リポジトリにインストールされている Claude Code の設定資産（Rules / Skills / Hooks / その他）を一覧します。
 
-「採用の経緯・由来」は [`Docs/spec/aidlc-adoption.md`](../aidlc/adoption.md)、「ワークフローでの使い方」は [`Docs/guide/dev-workflow.md`](../../develop/dev-workflow.md) を参照してください。
+「採用の経緯・由来」は [AI-DLC 採用台帳](../aidlc/adoption.md)、「ワークフローでの使い方」は [開発ワークフローガイド](../../develop/dev-workflow.md) を参照してください。
 
 ---
 

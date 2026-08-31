@@ -16,15 +16,29 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 環境構築、開発中によくあるトラブルと解決策をまとめています。各項目は「症状 → 原因 → 解決策」の形式で記載します。
 
-:::tip コマンドの「実行場所」に注意
-    本リポジトリではコマンドの実行場所が 3 つあります。**DevContainer 内**（VS Code の統合ターミナル。`pnpm` / `gradlew` / `claude` はここ）、**WSL2 ターミナル**（`~/.claude` などホスト側ファイルの操作）、**Windows 側**（PowerShell。`wsl --shutdown` 等）。  
-    場所の取り違えが「コマンドが無い」「バージョンが違う」系トラブルの最大の原因です。各項目の解決策には実行場所を明記しています。  
-    なお `docker` コマンドは DevContainer 内、WSL2 のどちらからでも同じ Docker デーモンに接続できます。
-
+:::tip[コマンドの「実行場所」に注意]
+本リポジトリではコマンドの実行場所が 3 つあります。**DevContainer 内**（VS Code の統合ターミナル。`pnpm` / `gradlew` / `claude` はここ）、**WSL2 ターミナル**（`~/.claude` などホスト側ファイルの操作）、**Windows 側**（PowerShell。`wsl --shutdown` 等）。  
+場所の取り違えが「コマンドが無い」「バージョンが違う」系トラブルの最大の原因です。各項目の解決策には実行場所を明記しています。  
+なお `docker` コマンドは DevContainer 内、WSL2 のどちらからでも同じ Docker デーモンに接続できます。
 :::
+
 ---
 
 ## DevContainer・Docker 関連 {#devcontainer}
+### 「Reopen in Container」を選んでも DevContainer に接続されない
+
+- **症状**: DevContainer に自動接続されない。VS Code を開いてもコンテナで開き直すかを尋ねるプロンプトが出ない、またはコマンドパレットから「Reopen in Container」を選んでも反応がない。エラーメッセージは出ない。
+- **原因**: VS Code で開いているフォルダが、リポジトリのルート（`.devcontainer` ディレクトリがある階層）になっていない。`frontend/` や `backend/` などのサブディレクトリや、リポジトリの親フォルダを開いていると、Dev Containers 拡張が `.devcontainer/devcontainer.json` を検出できず、起動そのものが始まりません。エラーで失敗するのではなく何も起きないため、他の起動失敗と症状が異なります。
+- **切り分け**: VS Code のエクスプローラーのルート表示、またはウィンドウのタイトルバーのフォルダ名を確認します。開いているのがリポジトリのルートであれば、エクスプローラーの直下に `.devcontainer` が見えます。
+- **解決策**: リポジトリのルートを開き直します。WSL2 ターミナルでルートへ移動して `code .` を実行するか、VS Code の **File → Open Folder** でルートを選び直してください。
+
+    ```bash
+    cd ~/projects/ai_training_for_chuo_system
+    code .
+    ```
+
+    開き直してもプロンプトが出ない場合は、コマンドパレット（<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>）から「**Dev Containers: Reopen in Container**」を手動で実行します。
+
 ### （Windows）「Reopen in Container」が docker.sock への接続エラーで失敗する
 
 - **症状**: DevContainer 起動時に `failed to connect to the docker API at unix:///var/run/docker.sock ... no such file or directory` のようなエラーで失敗する。WSL2 ターミナルで `docker ps` を実行しても接続エラーになる。
@@ -59,11 +73,11 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 - **解決策**: コマンドパレット →「**Dev Containers: Show Container Log**」で失敗箇所のログを確認する。`.claude.json` 関連のマウントエラーであれば [§AI ツール関連](#ai-tools) を参照。原因を解消したら「**Dev Containers: Rebuild Container**」で再作成する（named volume は消えないため `node_modules` や DB データは保持される）。
 
-:::note `docker ps -a` に `k8s_` で始まるコンテナが大量に表示される場合
-    Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本プロジェクトとは無関係です。  
-    使わない場合は **Preferences → Kubernetes** で無効化するとリソース消費を抑えられます。
-
+:::note[docker ps -a に k8s_ で始まるコンテナが大量に表示される場合]
+Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本プロジェクトとは無関係です。  
+使わない場合は **Preferences → Kubernetes** で無効化するとリソース消費を抑えられます。
 :::
+
 ---
 
 ## 依存インストール関連 {#install}
@@ -207,16 +221,75 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
   その後バックエンドを起動し直し、[getting-started.md](../learn/getting-started.md) §初期データ投入の手順で seed を再投入する（postgres コンテナ名の確認方法と `docker exec -i` を使う理由も同節を参照）。
 
-:::warning `docker compose down -v` は使わない
-    `-v` はすべての named volume を削除するため、DB データだけでなく `node_modules`、pnpm ストア、cognito-local のユーザーデータまで消えてしまいます。  
-    リセットは上記の `DROP SCHEMA` 方式で DB だけを対象にしてください。
-
+:::warning[docker compose down -v は使わない]
+`-v` はすべての named volume を削除するため、DB データだけでなく `node_modules`、pnpm ストア、cognito-local のユーザーデータまで消えてしまいます。  
+リセットは上記の `DROP SCHEMA` 方式で DB だけを対象にしてください。
 :::
+
 ### `relation "..." does not exist` のような SQL エラーが出る
 
 - **症状**: API アクセス時や起動時のスキーマ検証で `relation "reservations" does not exist` のようなエラーが出る。
 - **原因**: マイグレーション未適用の DB に接続している（DB リセット後にバックエンドを再起動していない等）。
 - **解決策**: バックエンドを再起動し、起動ログで Flyway の適用結果（`Successfully applied 1 migration` 等）を確認する。
+
+---
+
+## Git・GitHub 関連 {#git}
+### トランクブランチを push できない（`could not read Username` / `403 Permission denied`）
+
+- **症状**: 自分のトランクブランチを push すると、次のように 2 種類のエラーが続けて出る。
+
+  ```
+  $ git push -u origin learner/<ユーザー名>/main
+  fatal: could not read Username for 'https://github.com': terminal prompts disabled
+  remote: Permission to CHS-Training-Org/ai_training_for_chuo_system.git denied to <ユーザー名>.
+  fatal: unable to access 'https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git/': The requested URL returned error: 403
+  ```
+
+- **原因**: 1 つのログに 2 つの異なる原因が混ざっています。
+    - **(a) git に資格情報が渡っていない**：`gh auth login` の際に「Authenticate Git with your GitHub credentials?」を No にした、または SSH を選んだ場合、`gh` にはログインできていても git 単体には credential helper が設定されません。DevContainer のターミナルは非対話（`terminal prompts disabled`）のため入力を求められず、`could not read Username` で失敗します。
+    - **(b) リポジトリへの Write 権限がない**：Organization の招待が未承諾、ロールが Read、または `gh` のトークンに `repo` scope が不足している場合、`403 Permission denied` になります。`Permission to ... denied to <ユーザー名>` とユーザー名が表示されている場合はこちらです。
+- **切り分け**: DevContainer 内のターミナルで次を実行します。
+
+    ```bash
+    gh auth status
+    gh api repos/CHS-Training-Org/ai_training_for_chuo_system --jq .permissions
+    ```
+
+    `"push": true` が返れば Write 権限はあるので **(a)** が原因、`false` なら **(b)** が原因です。
+- **解決策**:
+    - **(a)** の場合：`gh auth setup-git` を実行して git に credential helper を設定してから、push し直す。
+    - **(b)** の場合：`gh auth refresh -s repo,workflow` でトークンに scope を付与し直す。それでも `"push": false` のままなら、GitHub からの招待メールを承諾済みかを確認し、未着・未承諾であれば運営担当者へ連絡する。
+
+:::note[ブランチ保護ルールによる拒否は別のエラーになります]
+
+ブランチ保護ルール（[ADR-030](../reference/adr/ADR-030-personal-trunk-branch-strategy.md)）で拒否された場合は `protected branch hook declined` / `GH006` という別のメッセージになります。上記のエラーが出ている場合は保護ルールではなく認証・権限が原因です。
+:::
+
+### push 先が自分の fork になっている（PR に変更が表示されない）
+
+- **症状**: PR を作成しても、変更したはずのファイルが差分に出てこない。GitHub の自分のアカウント配下に同名のリポジトリがあり、`forked from CHS-Training-Org/ai_training_for_chuo_system` と表示される。
+- **原因**: push が権限エラーになったとき、VS Code の GitHub 拡張が「You don't have permission to push to this repository. Would you like to create a fork?」と尋ねます。ここで fork を作ると、`origin` が自分のアカウント配下の fork に切り替わります。以降のコミットはすべて fork へ push されるため、共有リポジトリ側からは何も見えません。
+- **切り分け**: `git remote -v` を実行し、`origin` の URL を確認します。`CHS-Training-Org/ai_training_for_chuo_system` 以外（自分のユーザー名配下）になっていれば、この状態です。
+- **解決策**: リモートを共有リポジトリに戻し、作業ブランチを push し直します。コミットはそのまま使えます。
+
+    1. リモートを付け替える。`upstream` という名前で共有リポジトリが登録済みなら `git remote rename origin fork` と `git remote rename upstream origin` の 2 つを、`origin`（fork）しか無ければ次を実行する。
+
+        ```bash
+        git remote rename origin fork
+        git remote add origin https://github.com/CHS-Training-Org/ai_training_for_chuo_system.git
+        git fetch origin
+        ```
+
+    2. トランクブランチをまだ作っていなければ [トランクブランチの作成](./coding-conventions.md#trunk-branch) の手順で作成する。
+    3. 作業ブランチに切り替え、`git push -u origin <ブランチ名>` で共有リポジトリへ push する。`-u` を付けると以降の追跡先も共有リポジトリになる。
+    4. base を自分のトランクブランチにして PR を作成し直す。fork 側に作ってしまった PR は close する。
+    5. fork リポジトリは不要なので、共有リポジトリ側にコミットが揃っていることを確認してから削除してよい（自分のアカウントの当該リポジトリ → Settings → Danger Zone → Delete this repository）。削除は取り消せないため、確認してから実行する。ローカルの参照だけ外す場合は `git remote remove fork`。
+
+:::warning[fork のまま進めない]
+
+fork 側では、AI レビュー（`@claude pr-review`）が依存する secrets、ラベル、Issue、ブランチ保護がいずれも用意されていません。PR も共有リポジトリに現れないため、運営者からレビューも進捗把握もできません。fork ではなく共有リポジトリ内のトランクブランチで作業する理由は [ADR-030](../reference/adr/ADR-030-personal-trunk-branch-strategy.md) を参照してください。
+:::
 
 ---
 

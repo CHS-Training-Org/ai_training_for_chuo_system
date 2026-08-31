@@ -48,122 +48,124 @@ DevContainer では postgres / localstack / cognito-local / docs の各コンテ
 
 ### OS 別の事前準備
 
-=== "Windows（WSL2 必須）"
+#### Windows（WSL2 必須）
 
-    Windows では **WSL2（Ubuntu 等の Linux）上にリポジトリを配置**してください。
+Windows では **WSL2（Ubuntu 等の Linux）上にリポジトリを配置**してください。
 
-    !!! warning "Windows 側（`C:\...`）にソースを置かない"
-        Windows 側（WSL2 からは `/mnt/c/...`）にソースを置くと、クロスファイルシステムアクセスによりファイル I/O が著しく遅くなり、ホットリロード（HMR / devtools）も効かなくなることがあります。  
-        必ず WSL2 ネイティブファイルシステム（`/home/<user>/...`）に配置してください。
+:::warning[Windows 側（C:\...）にソースを置かない]
+Windows 側（WSL2 からは `/mnt/c/...`）にソースを置くと、クロスファイルシステムアクセスによりファイル I/O が著しく遅くなり、ホットリロード（HMR / devtools）も効かなくなることがあります。  
+必ず WSL2 ネイティブファイルシステム（`/home/<user>/...`）に配置してください。
+:::
 
-    1. **VS Code のインストール**（PowerShell を管理者で実行）
+1. **VS Code のインストール**（PowerShell を管理者で実行）
 
-        ```powershell
-        winget install -e --id Microsoft.VisualStudioCode
-        ```
+    ```powershell
+    winget install -e --id Microsoft.VisualStudioCode
+    ```
 
-    2. **WSL2 / Ubuntu のインストール**（PowerShell を管理者で実行）
+2. **WSL2 / Ubuntu のインストール**（PowerShell を管理者で実行）
 
-        ```powershell
-        wsl --install -d Ubuntu
-        ```
+    ```powershell
+    wsl --install -d Ubuntu
+    ```
 
-    3. **Rancher Desktop のインストール**（PowerShell を管理者で実行）
+3. **Rancher Desktop のインストール**（PowerShell を管理者で実行）
 
-        ```powershell
-        winget install -e --id SUSE.RancherDesktop
-        ```
+    ```powershell
+    winget install -e --id SUSE.RancherDesktop
+    ```
 
-        初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください（既定は `containerd` ですが、本リポジトリは `dockerd (moby)` を前提としています）。
+    初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください（既定は `containerd` ですが、本リポジトリは `dockerd (moby)` を前提としています）。
 
-    4. **Rancher Desktop の WSL2 統合を有効化**（重要）：Rancher Desktop は既定では専用ディストロ内でのみ Docker デーモンが動きます。開発に使う `Ubuntu` ディストロに統合を有効化しないと `/var/run/docker.sock` が現れず、DevContainer 起動が失敗します。
+4. **Rancher Desktop の WSL2 統合を有効化**（重要）：Rancher Desktop は既定では専用ディストロ内でのみ Docker デーモンが動きます。開発に使う `Ubuntu` ディストロに統合を有効化しないと `/var/run/docker.sock` が現れず、DevContainer 起動が失敗します。
 
-        トレイアイコン → **Preferences → WSL → Integrations** → **`Ubuntu`** を **ON** → **Apply**
+    トレイアイコン → **Preferences → WSL → Integrations** → **`Ubuntu`** を **ON** → **Apply**
 
-        反映後、PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直してください。  
-        Ubuntu ターミナルで `docker ps` が権限エラーなく通れば OK です。
+    反映後、PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直してください。  
+    Ubuntu ターミナルで `docker ps` が権限エラーなく通れば OK です。
 
-    5. **WSL2 ターミナルに入る**（いずれかの方法）
+5. **WSL2 ターミナルに入る**（いずれかの方法）
 
-        - **Windows Terminal** を起動し、タブのドロップダウンから「Ubuntu」を選択（推奨）
-        - スタートメニューで「Ubuntu」を検索して起動
-        - PowerShell / コマンドプロンプトで `wsl`（ディストリ指定は `wsl -d Ubuntu`）
-        - VS Code 統合ターミナルのドロップダウンで「Ubuntu (WSL)」を選択
+    - **Windows Terminal** を起動し、タブのドロップダウンから「Ubuntu」を選択（推奨）
+    - スタートメニューで「Ubuntu」を検索して起動
+    - PowerShell / コマンドプロンプトで `wsl`（ディストリ指定は `wsl -d Ubuntu`）
+    - VS Code 統合ターミナルのドロップダウンで「Ubuntu (WSL)」を選択
 
-    6. **git のインストール**：`wsl --install` が作る Ubuntu イメージには git が含まれていないため、次のステップの `git clone` の前に入れておく必要があります。
+6. **git のインストール**：`wsl --install` が作る Ubuntu イメージには git が含まれていないため、次のステップの `git clone` の前に入れておく必要があります。
 
-        ```bash
-        sudo apt-get update && sudo apt-get install -y git
-        ```
+    ```bash
+    sudo apt-get update && sudo apt-get install -y git
+    ```
 
-    7. **VS Code 拡張のインストール**：手順1でインストールした VS Code の PATH は WSL2 側にも引き継がれるため、WSL2 のターミナルから `code` コマンドで拡張機能をインストールできます。
+7. **VS Code 拡張のインストール**：手順1でインストールした VS Code の PATH は WSL2 側にも引き継がれるため、WSL2 のターミナルから `code` コマンドで拡張機能をインストールできます。
 
-        ```bash
-        code --install-extension ms-vscode-remote.remote-wsl
-        code --install-extension ms-vscode-remote.remote-containers
-        ```
+    ```bash
+    code --install-extension ms-vscode-remote.remote-wsl
+    code --install-extension ms-vscode-remote.remote-containers
+    ```
 
-    !!! tip "WSL2 ネイティブ FS 上にいるかの確認"
-        プロンプトが `user@host:~$` 形式で、`pwd` が `/home/<user>/...` を返せば WSL2 ネイティブ FS 上です。  
-        `/mnt/c/...` を返す場合は Windows 側なので、`cd ~` で WSL2 側へ移動してから次のステップに進んでください。
+:::tip[WSL2 ネイティブ FS 上にいるかの確認]
+プロンプトが `user@host:~$` 形式で、`pwd` が `/home/<user>/...` を返せば WSL2 ネイティブ FS 上です。  
+`/mnt/c/...` を返す場合は Windows 側なので、`cd ~` で WSL2 側へ移動してから次のステップに進んでください。
+:::
 
-=== "macOS"
+#### macOS
 
-    1. **Rancher Desktop のインストール**：[rancherdesktop.io](https://rancherdesktop.io/) から dmg をダウンロードしてインストールしてください（Homebrew の `rancher` cask は Rancher Desktop 開発チームの公式メンテナンスではないため、公式サイトからのインストールを推奨します）。初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください。
+1. **Rancher Desktop のインストール**：[rancherdesktop.io](https://rancherdesktop.io/) から dmg をダウンロードしてインストールしてください（Homebrew の `rancher` cask は Rancher Desktop 開発チームの公式メンテナンスではないため、公式サイトからのインストールを推奨します）。初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください。
 
-    2. **VS Code のインストール**
+2. **VS Code のインストール**
 
-        ```bash
-        brew install --cask visual-studio-code
-        ```
+    ```bash
+    brew install --cask visual-studio-code
+    ```
 
-    3. **VS Code 拡張のインストール**
+3. **VS Code 拡張のインストール**
 
-        ```bash
-        code --install-extension ms-vscode-remote.remote-containers
-        ```
+    ```bash
+    code --install-extension ms-vscode-remote.remote-containers
+    ```
 
-    4. **git の確認**：git が未インストールの場合、初回実行時に Xcode Command Line Tools のインストールを促すダイアログが出るので、指示に従ってインストールしてください（`git --version` で確認できます）。
+4. **git の確認**：git が未インストールの場合、初回実行時に Xcode Command Line Tools のインストールを促すダイアログが出るので、指示に従ってインストールしてください（`git --version` で確認できます）。
 
-=== "Linux"
+#### Linux
 
-    1. **Rancher Desktop のインストール**（Ubuntu / Debian 系、公式 apt リポジトリ経由）
+1. **Rancher Desktop のインストール**（Ubuntu / Debian 系、公式 apt リポジトリ経由）
 
-        ```bash
-        curl -s https://download.opensuse.org/repositories/isv:/Rancher:/stable/deb/Release.key | gpg --dearmor | sudo dd status=none of=/usr/share/keyrings/isv-rancher-stable-archive-keyring.gpg
-        echo 'deb [signed-by=/usr/share/keyrings/isv-rancher-stable-archive-keyring.gpg] https://download.opensuse.org/repositories/isv:/Rancher:/stable/deb/ ./' | sudo dd status=none of=/etc/apt/sources.list.d/isv-rancher-stable.list
-        sudo apt update
-        sudo apt install rancher-desktop
-        ```
+    ```bash
+    curl -s https://download.opensuse.org/repositories/isv:/Rancher:/stable/deb/Release.key | gpg --dearmor | sudo dd status=none of=/usr/share/keyrings/isv-rancher-stable-archive-keyring.gpg
+    echo 'deb [signed-by=/usr/share/keyrings/isv-rancher-stable-archive-keyring.gpg] https://download.opensuse.org/repositories/isv:/Rancher:/stable/deb/ ./' | sudo dd status=none of=/etc/apt/sources.list.d/isv-rancher-stable.list
+    sudo apt update
+    sudo apt install rancher-desktop
+    ```
 
-        初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください。
+    初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください。
 
-    2. **VS Code のインストール**
+2. **VS Code のインストール**
 
-        ```bash
-        sudo snap install code --classic
-        ```
+    ```bash
+    sudo snap install code --classic
+    ```
 
-    3. **VS Code 拡張のインストール**
+3. **VS Code 拡張のインストール**
 
-        ```bash
-        code --install-extension ms-vscode-remote.remote-containers
-        ```
+    ```bash
+    code --install-extension ms-vscode-remote.remote-containers
+    ```
 
-    4. **git のインストール**（未インストールの場合）
+4. **git のインストール**（未インストールの場合）
 
-        ```bash
-        sudo apt-get update && sudo apt-get install -y git
-        ```
+    ```bash
+    sudo apt-get update && sudo apt-get install -y git
+    ```
 
 ---
 
 ## ステップ 1：リポジトリのクローン
 
-:::note Windows ユーザーへ
-    必ず **WSL2（Ubuntu）のターミナル内で**実行してください（上記「OS 別の事前準備」参照）。
-
+:::note[Windows ユーザーへ]
+必ず **WSL2（Ubuntu）のターミナル内で**実行してください（上記「OS 別の事前準備」参照）。
 :::
+
 ```bash
 cd ~
 mkdir -p projects && cd projects
@@ -196,6 +198,8 @@ gh auth login
 
 画面の指示に従って GitHub アカウントで認証してください。この認証は、以降の実習でブランチを push したり Issue / PR を作成する際に必要になります（`gh` 自体は `.devcontainer/devcontainer.json` の feature でインストール済みです）。
 
+認証方式は **HTTPS** を選び、「Authenticate Git with your GitHub credentials?」には **Yes** と答えてください。No にすると git 単体に資格情報が渡らず、後の `git push` が `could not read Username` で失敗します（後から `gh auth setup-git` を実行すれば修正できます）。
+
 **Claude Code**
 
 ```bash
@@ -220,19 +224,19 @@ COGNITO_USER_POOL_ID=local_XXXXXXXX
 COGNITO_CLIENT_ID=XXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-:::warning この設定を省略すると 500 エラーになる
-    `.env.local` の作成と Cognito 環境変数の設定を行わないと、フロントエンドにアクセスした際に、  
-    Better Auth の初期化エラー（`[BetterAuthError]: DOMAIN_AND_REGION_REQUIRED`）が発生し、`/` が 500 エラーになります。
-
+:::warning[この設定を省略すると 500 エラーになる]
+`.env.local` の作成と Cognito 環境変数の設定を行わないと、フロントエンドにアクセスした際に、  
+Better Auth の初期化エラー（`[BetterAuthError]: DOMAIN_AND_REGION_REQUIRED`）が発生し、`/` が 500 エラーになります。
 :::
-:::tip Pool ID / Client ID を見逃した場合
-    `postCreate.sh` の provisioning が失敗していた、または出力を見逃した場合は、手動で再実行できます。
 
-    ```bash
-    bash scripts/provision-cognito.sh
-    ```
+:::tip[Pool ID / Client ID を見逃した場合]
+`postCreate.sh` の provisioning が失敗していた、または出力を見逃した場合は、手動で再実行できます。
 
+```bash
+bash scripts/provision-cognito.sh
+```
 :::
+
 ## ステップ 4：サービスの起動
 
 VS Code の「Run and Debug」（<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>）からフロントエンドとバックエンドをそれぞれ起動します。
@@ -243,25 +247,25 @@ VS Code の「Run and Debug」（<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>�
 
 「Backend」はネイティブ Java デバッグが有効なため、ブレークポイントをそのまま利用できます。
 
-:::tip ターミナルから起動する場合
-    VS Code の Run and Debug を使わない場合は、ターミナルから直接起動できます。
+:::tip[ターミナルから起動する場合]
+VS Code の Run and Debug を使わない場合は、ターミナルから直接起動できます。
 
-    ```bash
+```bash
+# ターミナル 1：フロントエンド（`http://localhost:3000`）
+cd frontend && pnpm dev
+```
+
+```bash
+# ターミナル 2：バックエンド（`http://localhost:8080`）
+cd backend && ./gradlew bootRun
+```
 :::
-    # ターミナル 1：フロントエンド（`http://localhost:3000`）
-    cd frontend && pnpm dev
-    ```
 
-    ```bash
-    # ターミナル 2：バックエンド（`http://localhost:8080`）
-    cd backend && ./gradlew bootRun
-    ```
-
-:::warning バックエンド未起動のままアクセスしない
-    バックエンドを起動せずにフロントエンドにアクセスすると、認証後に `/auth/signin` へリダイレクトされ続けます。  
-    先に下記「初期データ投入・動作確認」でバックエンドの起動を確認してください。
-
+:::warning[バックエンド未起動のままアクセスしない]
+バックエンドを起動せずにフロントエンドにアクセスすると、認証後に `/auth/signin` へリダイレクトされ続けます。  
+先に下記「初期データ投入・動作確認」でバックエンドの起動を確認してください。
 :::
+
 ## ステップ 5：初期データ投入・動作確認
 
 ロール別ログイン（開発用ログイン）は、バックエンドが Cognito トークンの `sub` で `users` テーブルを検索する仕組みのため、初期データを投入する前に試すとサインイン画面へのリダイレクトを繰り返します（原因は [troubleshooting.md](../develop/troubleshooting.md#startup) 参照）。先に初期データを投入してから、起動確認に進みます。
@@ -297,11 +301,11 @@ docker exec -i ai_training_for_chuo_system_devcontainer-postgres-1 \
   psql -U bookflow -d bookflow < scripts/seed.sql
 ```
 
-:::note docker compose exec を使う場合
-    compose プロジェクト名が環境によって異なるため、`docker compose exec postgres psql ...` は「service is not running」と誤判定されることがあります。  
-    コンテナ名を直接指定する `docker exec -i` の方法を推奨します。
-
+:::note[docker compose exec を使う場合]
+compose プロジェクト名が環境によって異なるため、`docker compose exec postgres psql ...` は「service is not running」と誤判定されることがあります。  
+コンテナ名を直接指定する `docker exec -i` の方法を推奨します。
 :::
+
 #### 投入後の確認
 
 以下のクエリでデータが入ったことを確認できます。
@@ -339,10 +343,10 @@ docker exec -i <postgres コンテナ名> psql -U bookflow -d bookflow \
 | 予約 | 2 件（APPROVED 1 件・PENDING 1 件） |
 | 承認待ち（`/approvals`） | 1 件（第1会議室の申請） |
 
-:::warning サインインが `/auth/signin` に戻ってしまう場合
-    上記の初期データ投入を先に済ませたか確認してください。原因の切り分けは [troubleshooting.md](../develop/troubleshooting.md#startup) を参照してください。
-
+:::warning[サインインが /auth/signin に戻ってしまう場合]
+上記の初期データ投入を先に済ませたか確認してください。原因の切り分けは [troubleshooting.md](../develop/troubleshooting.md#startup) を参照してください。
 :::
+
 ---
 
 ## 手動セットアップ（DevContainer なし）
@@ -443,20 +447,20 @@ cd ~/projects/ai_training_for_chuo_system
 claude
 ```
 
-:::tip `which claude` が `/mnt/c/...` を指す場合
-    Windows 側の Node パスが PATH 上で優先されています。`~/.local/bin` を前に出してください。
+:::tip[which claude が /mnt/c/... を指す場合]
+Windows 側の Node パスが PATH 上で優先されています。`~/.local/bin` を前に出してください。
 
-    ```bash
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-    source ~/.bashrc
-    which claude   # 再確認
-    ```
-
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+which claude   # 再確認
+```
 :::
-:::note DevContainer 内で使う場合
-    `.devcontainer/devcontainer.json` に Claude Code の feature が含まれているため、DevContainer 内のターミナルから起動すれば別途インストール不要です。
 
+:::note[DevContainer 内で使う場合]
+`.devcontainer/devcontainer.json` に Claude Code の feature が含まれているため、DevContainer 内のターミナルから起動すれば別途インストール不要です。
 :::
+
 ---
 
 ## よくあるトラブル
@@ -471,5 +475,6 @@ claude
 | 認証後に `/auth/signin` へ戻され続ける | バックエンド未起動、または初期データ未投入が原因（[troubleshooting.md §起動・接続エラー](../develop/troubleshooting.md#startup)参照） |
 | `[BetterAuthError]: DOMAIN_AND_REGION_REQUIRED` で 500 エラー | `.env.local` 未設定が原因（ステップ 3 参照） |
 | DB 接続エラー・Flyway マイグレーション失敗 | [troubleshooting.md §DB・マイグレーション関連](../develop/troubleshooting.md#database) |
+| Git の push が `could not read Username` / `403 Permission denied` で失敗する | [troubleshooting.md §Git・GitHub 関連](../develop/troubleshooting.md#git) |
 | Claude Code が動かない・コンテナ起動が `.claude.json` で失敗する | [troubleshooting.md §AI ツール関連](../develop/troubleshooting.md#ai-tools) |
 | `@claude pr-review` に反応がない・観点3の回答が読み取られない | [troubleshooting.md §AI レビュー関連](../develop/troubleshooting.md#ai-review-trouble) |

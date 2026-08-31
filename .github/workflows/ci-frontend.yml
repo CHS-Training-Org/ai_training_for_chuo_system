@@ -1,15 +1,36 @@
 name: CI Frontend
 
+# トリガー条件について（ADR-030 / Issue #92）
+#
+# branches: 学習者の PR の base は個人トランクブランチ（learner/<ユーザー名>/main）である。
+#   main だけを対象にしていると、トランク宛 PR で CI がまったく起動しない。GitHub の
+#   ブランチフィルタでは `*` が `/` にマッチしないため、'learner/*/main' は
+#   learner/<ユーザー名>/main の形にのみ一致する。
+#
+# paths: 以前は paths フィルタで frontend/** の変更時のみ起動していたが、これだと
+#   backend しか触らない PR では check がひとつも報告されない。報告されない check は
+#   (a) ブランチ保護の必須 status check を永久に満たせず、(b) AI レビューの
+#   「前提条件 CI green」（.github/workflows/references/pr-review-rubric/04-output-format.md）で
+#   「1件も報告されていない」＝判定不能になり、総合判定が「完了」にならない。
+#   そのため paths フィルタは使わず、ジョブは常に実行してステップ側で変更有無を判定する。
+#   ジョブ自体を if: でスキップしないのは、スキップされた check の結論が success ではなく
+#   skipped になり、上記 (b) の判定不能を再び踏むためである。
+
 on:
   pull_request:
-    branches: [main]
-    paths:
-      - "frontend/**"
-      - ".github/workflows/ci-frontend.yml"
+    branches:
+      - main
+      - 'learner/*/main'
   workflow_dispatch:
 
 jobs:
   ci:
+    # check 名はジョブ名（name。無ければジョブ ID）であり、UI に出る
+    # 「<ワークフロー名> / <ジョブ名>」は表示形式にすぎない。ブランチ保護の必須
+    # status check は check 名の文字列一致で判定するため、ci-frontend / ci-backend の
+    # ジョブ ID がどちらも ci のままだと 2 つの check が同名になり区別できない。
+    # そのため name で一意にする（ジョブ ID は needs 参照互換のため変えない）。
+    name: CI Frontend
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -27,29 +48,58 @@ jobs:
       PNPM_CONFIG_STORE_DIR: ${{ github.workspace }}/../pnpm-store
 
     steps:
+      # 変更検出で base との差分を取るため全履歴が要る（既定の fetch-depth: 1 では base.sha を持たない）
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 対象変更の検出
+        id: changes
+        working-directory: ${{ github.workspace }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD" \
+            | grep -qE '^(frontend/|\.github/workflows/ci-frontend\.yml$)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 対象変更なし（スキップ）
+        if: steps.changes.outputs.run != 'true'
+        run: echo "frontend/ に変更がないため、以降のステップを実行せず success で終了する。"
 
       - uses: pnpm/action-setup@v4
+        if: steps.changes.outputs.run == 'true'
         with:
           version: 11
 
       - uses: actions/setup-node@v4
+        if: steps.changes.outputs.run == 'true'
         with:
           node-version: 24
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Install dependencies
+        if: steps.changes.outputs.run == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Lint
+        if: steps.changes.outputs.run == 'true'
         run: pnpm lint
 
       - name: Format check (oxfmt)
+        if: steps.changes.outputs.run == 'true'
         run: pnpm format:check
 
       - name: Build
+        if: steps.changes.outputs.run == 'true'
         run: pnpm build
 
       - name: Test
+        if: steps.changes.outputs.run == 'true'
         run: pnpm test

@@ -26,7 +26,7 @@
       "assertions": [
         "main 上で直接コミットせず、新規ブランチを作成している",
         "予約キャンセル機能のFE(reservation.ts)とBE(ReservationController.java / ReservationService.java)の変更が同じコミットにまとまっている",
-        "Docs/guide/getting-started.md の誤字修正は別コミットになっている",
+        "docs-next/docs/learn/getting-started.md の誤字修正は別コミットになっている",
         "push は実行していない",
         "ブランチを新規作成するか現在のブランチのままかを毎回確認している"
       ]

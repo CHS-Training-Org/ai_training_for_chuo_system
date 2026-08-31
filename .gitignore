@@ -81,11 +81,10 @@ playwright/.cache/
 # ===== Docker / DevContainer ローカル =====
 .devcontainer/.env
 
-# ===== Zensical / Python =====
-/site/
-/.venv/
-*.pyc
-__pycache__/
+# ===== ドキュメントサイト =====
+# build-docs-site が合成する配信物（Docusaurus のビルド結果・運営ノート・
+# リダイレクトスタブ）。CI とローカル検証で生成される。
+/pages-root/
 
 # Claude Code local settings (per-developer, not tracked)
 .claude/settings.local.json

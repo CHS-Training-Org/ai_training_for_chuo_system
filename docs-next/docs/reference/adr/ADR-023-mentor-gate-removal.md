@@ -9,7 +9,7 @@ tags:
   - review
   - mentor
   - process
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-08-30T00:00:00+09:00'
 ---
 
 # ADR-023 — 運用プロセス：承認ゲート廃止・セルフ完結運用への移行
@@ -39,7 +39,7 @@ ADR-020（AI-DLC エンジン完全採用）により、BookFlow は「plan mode
 - **Workflow Planning**：提示後、学習者自身がチャットで計画に納得したことを示して実装に進む。メンターの承認は不要。
 - **PR**：`review-criteria.md` のチェックリストを学習者自身がセルフレビューで満たしたら、自分でマージする。メンターの Approve は不要。
 - **メンターの役割**：承認者から、Issue・PR への**任意の**質問対応・コメント役に変わる（ブロッキングではない）。既存の「質問サポートフロー（Issue コメント優先）」はそのまま活用する。
-- **ブランチ保護**：必須 status check（`CI Frontend / ci`・`CI Backend / ci`）は維持し、「Require approvals」を無効化する（GitHub Settings での変更が必要。[操作手順](../../operations/operations-guide.md#self-merge)参照）。
+- **ブランチ保護**：必須 status check（`CI Frontend`・`CI Backend`）は維持し、「Require approvals」を無効化する（GitHub Settings での変更が必要。[操作手順](../../operations/operations-guide.md#self-merge)参照）。
 - **推定工数**：ゲート待ちが前提から外れるため、選択課題・STEP の推定工数を「学習者が着手からセルフマージするまでの純粋な作業時間（初回のみのツール習熟コストの小バッファを含む）」に再定義し、値を再計算する。
 
 AI-DLC エンジン本体（`.claude/skills/aidlc/SKILL.md` と `.aidlc-rule-details/` 配下の per-stage な "Wait for Explicit Approval"）は変更しない。これは学習者自身がそのセッションで AI 生成物を確認してから次に進むための汎用的な一時停止であり、外部のメンターへの依存ではないため、本決定の対象外である。

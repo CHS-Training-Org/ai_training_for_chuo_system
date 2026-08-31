@@ -18,7 +18,12 @@ const config: Config = {
   url: 'https://CHS-Training-Org.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/ai_training_for_chuo_system/docs-next/',
+  // PR プレビュー（docs-preview.yml）は本番と別パスで配信されるため、
+  // ワークフローから DOCS_BASE_URL で差し替えられるようにしている。
+  // 未設定・空文字のときは本番のパスを使う（`??` だと空文字が通ってしまうので `||`）。
+  // 一本化（Issue #93）でサイトのルートへ移した。旧 `/docs-next/` 配下の URL は
+  // .github/scripts/gen-legacy-redirects.mjs が生成するスタブで救う。
+  baseUrl: process.env.DOCS_BASE_URL || '/ai_training_for_chuo_system/',
 
   // GitHub pages deployment config.
   organizationName: 'CHS-Training-Org', // Usually your GitHub org/user name.
@@ -82,15 +87,6 @@ const config: Config = {
   themeConfig: {
     colorMode: {
       respectPrefersColorScheme: true,
-    },
-    // docs-next 並行運用期間限定の案内バナー（ADR-027 Phase 5 で撤去）
-    announcementBar: {
-      id: 'docs-next-preview-notice',
-      content:
-        '📣 現在プレビュー中の新デザインです。従来のドキュメントサイトは <a href="/ai_training_for_chuo_system/">こちら</a>。ご意見は <a href="https://github.com/CHS-Training-Org/ai_training_for_chuo_system/issues/new/choose">Issue</a> へどうぞ。',
-      backgroundColor: '#fff5cc',
-      textColor: '#333',
-      isCloseable: true,
     },
     navbar: {
       title: 'BookFlow Docs',
