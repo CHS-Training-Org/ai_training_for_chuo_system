@@ -21,9 +21,9 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 このページは「今このリポジトリに何がインストールされていて、どう呼び出すか」を確認するためのリファレンスです。
 
-- **採用の経緯・由来**: [`Docs/spec/aidlc-adoption.md`](../aidlc/adoption.md)
-- **ワークフローでの使い方**: [`Docs/guide/dev-workflow.md`](../../develop/dev-workflow.md)
-- **Claude Code の基本操作**: [`Docs/guide/ai-tools-guide.md`](../../learn/ai-tools-guide.md)
+- **採用の経緯・由来**: [AI-DLC 採用台帳](../aidlc/adoption.md)
+- **ワークフローでの使い方**: [開発ワークフローガイド](../../develop/dev-workflow.md)
+- **Claude Code の基本操作**: [AI ツール活用ガイド](../../learn/ai-tools-guide.md)
 
 ---
 
@@ -49,8 +49,8 @@ last_updated: '2026-08-01T11:56:18+09:00'
 | スキル | 呼び出し | 役割 |
 |-------|---------|------|
 | `create-issue` | `/create-issue`、または「issueを起票して」「課題issueを立てたい」等 | GitHub Issue を対話形式で聞き取り、テンプレート様式の本文を組み立てて `gh issue create` で実際に起票する。選択課題（エンハンス）と汎用 Issue の2種別に対応する。選択課題ではビジネス要求シートの存在確認を起票前に必須で行い、シートの依存関係節を Issue の `依存関係` 欄へ自動転記する（リンクは Issue 番号表記へ変換） |
-| `aidlc` | `/aidlc`、または「AI-DLC で進めて」等の明示的な意図指定 | AI-DLC エンジン本体。BookFlow 標準開発ワークフロー（INCEPTION → CONSTRUCTION → OPERATIONS の3フェーズ・per-stage 承認ゲート・監査ログ）を駆動する。起動条件を満たさない小修正・質問では発動しない（`aidlc-core.md` が起動判断を担う）。特別な指示がない限り `Docs/spec/enhancements/` 配下のビジネス要求シートをタスクの既定の源として扱う。エンジン開始前の Pre-flight で、新規ワークフロー開始時のみ（レジューム時はスキップ）対象エンハンス課題を特定し、ブランチ作成し忘れを検知した場合は short-desc・Issue 番号（`gh issue list` 検索。失敗時は手動確認）から組み立てたブランチ名を提案し、承認を得てから作成する |
-| `update-spec` | `/update-spec` | `Docs/spec/`（requirements / screen-spec / api-spec / er-diagram）を Spec-first ルールに沿って更新・新規作成する。実装より**先**に起動するのが正解 |
+| `aidlc` | `/aidlc`、または「AI-DLC で進めて」等の明示的な意図指定 | AI-DLC エンジン本体。BookFlow 標準開発ワークフロー（INCEPTION → CONSTRUCTION → OPERATIONS の3フェーズ・per-stage 承認ゲート・監査ログ）を駆動する。起動条件を満たさない小修正・質問では発動しない（`aidlc-core.md` が起動判断を担う）。特別な指示がない限り `docs-next/docs/spec/enhancements/` 配下のビジネス要求シートをタスクの既定の源として扱う。エンジン開始前の Pre-flight で、新規ワークフロー開始時のみ（レジューム時はスキップ）対象エンハンス課題を特定し、ブランチ作成し忘れを検知した場合は short-desc・Issue 番号（`gh issue list` 検索。失敗時は手動確認）から組み立てたブランチ名を提案し、承認を得てから作成する |
+| `update-spec` | `/update-spec` | `docs-next/docs/spec/`（requirements / screen-spec / api-spec / er-diagram）を Spec-first ルールに沿って更新・新規作成する。実装より**先**に起動するのが正解 |
 | `commit-push` | `/commit-push`、または「差分をコミットして」「いい感じに分割してコミットして」等 | 差分を意味のある単位に分割し、ブランチ・分割内容・push有無をまとめて確認したうえで `git commit`（複数回）・`git push` を実行する |
 | `create-pr` | `/create-pr` | PR タイトル・本文を `.github/PULL_REQUEST_TEMPLATE.md` の様式で組み立てる。head/base ブランチと、下書きのみか `gh pr create` で実際に作成するかを実行前にまとめて確認する。コミットの分割・push は `commit-push` の役割 |
 | `drawio-skill` | `/drawio-skill` または「図を描いて」「ER図を作って」「アーキ図を書いて」などのトリガーで自動発動 | `.drawio` 図（アーキ図・ER図・フローチャート・UML など）を生成・編集する。draw.io CLI は使用せず、VSCode の `hediet.vscode-drawio` 拡張でレンダリング・エクスポートする。上流: [Agents365-ai/drawio-skill v1.14.0](https://github.com/Agents365-ai/drawio-skill/tree/v1.14.0)（MIT）の BookFlow 翻案 |

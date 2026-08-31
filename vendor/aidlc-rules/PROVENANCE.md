@@ -80,13 +80,13 @@ raw URL の共通プレフィクス: `https://raw.githubusercontent.com/awslabs/
 
 - このディレクトリの内容は**改変しない**（上流 diff の基準とするため）。
 - BookFlow 向けに再構成・翻案した活性資産は `.claude/rules/` に別途配置する。
-- 採用状況・反映先・上流追従の手順は [`Docs/spec/aidlc-adoption.md`](../../Docs/spec/aidlc-adoption.md) を参照。
-- `Docs/` 配下や Zensical のサイト nav には含めない（上流参照であり BookFlow の仕様ではないため）。
+- 採用状況・反映先・上流追従の手順は [`docs-next/docs/reference/aidlc/adoption.md`](../../docs-next/docs/reference/aidlc/adoption.md) を参照。
+- ドキュメントサイト（`docs-next/docs/`）には含めない（上流参照であり BookFlow の仕様ではないため）。
 
 ## 上流同期手順
 
 1. `awslabs/aidlc-workflows` の最新コミットを確認する。
 2. 各サブディレクトリ（`common/` / `inception/` / `construction/` / `operations/` / `extensions/` / `aws-aidlc-rules/`）の各ファイルを新しい上流コミットの内容と diff する（このディレクトリが基準スナップショット）。
-3. 差分があった内容について、`Docs/spec/aidlc-adoption.md` の採用台帳・`.claude/rules/`・`.claude/skills/` を更新する。
+3. 差分があった内容について、`docs-next/docs/reference/aidlc/adoption.md` の採用台帳・`.claude/rules/`・`.claude/skills/` を更新する。
 4. このディレクトリの内容・`PROVENANCE.md` の固定コミット・取得日を新しい値に更新する。
-5. `Docs/spec/aidlc-adoption.md` の固定コミット表記も合わせて更新する。
+5. `docs-next/docs/reference/aidlc/adoption.md` の固定コミット表記も合わせて更新する。

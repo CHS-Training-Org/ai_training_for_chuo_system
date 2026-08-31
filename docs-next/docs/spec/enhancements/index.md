@@ -18,7 +18,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ## このディレクトリについて
 
-学習者が取り組む拡張課題（エンハンス課題）の要件を、**1 課題＝1 ファイル**のビジネス要求シートとして管理します。ファイルはリポジトリの `Docs/spec/enhancements/` 直下に、ケバブケースのファイル名（`<short-desc>.md`）で配置します。難易度によるディレクトリ分けはしません（難易度は[選択課題カタログ](../../develop/enhancement-catalog.md)が管理します）。
+学習者が取り組む拡張課題（エンハンス課題）の要件を、**1 課題＝1 ファイル**のビジネス要求シートとして管理します。ファイルはリポジトリの `docs-next/docs/spec/enhancements/` 配下に、難易度のディレクトリ（`beginner/` `intermediate/` `advanced/`）を挟んで、ケバブケースのファイル名（`<short-desc>.md`）で配置します。難易度そのものの定義と推定工数は[選択課題カタログ](../../develop/enhancement-catalog.md)が管理します。
 
 ## 原則（真実の源）
 
@@ -38,7 +38,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 選択課題の一覧（難易度・推定工数・対象レイヤー）は [選択課題カタログ](../../develop/enhancement-catalog.md) を参照してください。
 
-新しい課題を追加するときは、`Docs/spec/enhancements/<short-desc>.md` を作成し、難易度に対応する下表に追記します。
+新しい課題を追加するときは、`docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md` を作成し、難易度に対応する下表に追記します。
 
 ### 初級 {#beginner}
 

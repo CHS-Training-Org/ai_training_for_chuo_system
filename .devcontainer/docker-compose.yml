@@ -100,48 +100,28 @@ services:
       - cognito-data:/app/.cognito
 
   docs:
-    image: ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+    # ドキュメントサイト（Docusaurus）のローカルプレビュー。
+    # Zensical 版の廃止（Issue #93）に伴い、uv/Python イメージから Node へ移した。
+    image: node:24-slim
     restart: on-failure
-    working_dir: /workspace
+    working_dir: /workspace/docs-next
     volumes:
       - ..:/workspace:cached
-      # .venv（生成物・約95MB / 多数のファイル）を named volume に隔離する。
-      # 残す理由: frontend-node-modules と同様、生成物を bind mount 側のツリーから
-      # 隔離して IDE のファイル監視・検索対象を減らすため（規模はより小さい）。
-      #
-      # マウント先を /workspace の *外*（/opt/uv-venv）にする。
-      # 理由: named volume を bind mount（..:/workspace）の内側にネストすると、
-      #   Rancher Desktop / WSL2 のバックエンドが異常終了（VS Code を閉じて WSL が
-      #   シャットダウン・Rancher 再起動・スリープ等）したとき、そのマウントポイント
-      #   （空ディレクトリ）が /mnt/wsl/rancher-desktop/run/docker-mounts/<uuid> の
-      #   proxy ディレクトリ内に残骸として残り、次回 `docker compose up` で munger の
-      #   rmdir が「directory not empty」で失敗して起動できなくなる。
-      #   /workspace の外に出せばネストが解消し、この残骸は発生しない。
-      #   （env の UV_PROJECT_ENVIRONMENT と command の `uv venv /opt/uv-venv` を対で維持する。）
-      #
-      # volume 名を docs-venv → docs-venv-v2 に変更している。
-      # 理由: 旧 docs-venv には /workspace/.venv 向けに作られた venv（スクリプトのシェバンに
-      #   /workspace/.venv の絶対パスが焼き込まれている）が入っている。これを /opt/uv-venv に
-      #   マウントし直しても `uv sync` は「導入済み」と判定してスクリプトを書き換えず、シェバンが
-      #   壊れたまま残り zensical が起動しない。venv はビルド生成物なので、名前を変えて
-      #   クリーンに再構築させる。旧 docs-venv は不要（`docker volume rm <project>_docs-venv` で削除可）。
-      - docs-venv-v2:/opt/uv-venv
+      # node_modules（生成物・多数のファイル）を named volume に隔離する。
+      # 理由は frontend サービスの frontend-node-modules と同じで、bind mount 側の
+      # ツリーから外して IDE のファイル監視・検索対象を減らすため。
+      - docs-node-modules:/workspace/docs-next/node_modules
     ports:
       - "8000:8000"
     environment:
-      UV_LINK_MODE: copy
-      # uv の sync/run が使う仮想環境を /workspace 外の /opt/uv-venv に固定する
-      # （docs-venv volume のマウント先と一致させる。上の volumes コメント参照）。
-      UV_PROJECT_ENVIRONMENT: /opt/uv-venv
-      # uv / zensical を非対話モードで動作させ、確認プロンプトでの停止を防ぐ
-      CI: "true"
       # CI=true によるカラー抑制を上書きし、Claude Code 等の CLI ツールで色付き表示を維持する
       FORCE_COLOR: "1"
-    # 初回起動時に venv 作成・依存関係同期を行ってから zensical serve を起動する。
-    # zensical serve は inotify ベースの自動再ビルド・ライブリロードを内蔵しているため
-    # （WSL2 ネイティブ FS では inotify が正常に伝播する）、Docs/ 配下を編集すると
-    # ブラウザが自動更新される。追加の監視プロセスは不要。
-    command: sh -c "uv venv /opt/uv-venv --allow-existing && uv sync && exec uv run zensical serve -a 0.0.0.0:8000"
+    # 初回起動時に依存をインストールしてから開発サーバーを起動する。
+    # Docusaurus の開発サーバーは HMR を内蔵しているため、docs-next/docs 配下を
+    # 編集するとブラウザが自動更新される。追加の監視プロセスは不要。
+    #
+    # --host 0.0.0.0 でコンテナ外へ公開し、--no-open でブラウザ起動を抑止する。
+    command: sh -c "npm ci && exec npm run start -- --host 0.0.0.0 --port 8000 --no-open"
 
 volumes:
   postgres-data:
@@ -149,8 +129,8 @@ volumes:
   cognito-data:
   frontend-node-modules:
   pnpm-store:
-  # docs の uv venv。/opt/uv-venv にマウント（旧 docs-venv からの改名理由は docs サービスのコメント参照）。
-  docs-venv-v2:
+  # docs（Docusaurus）の node_modules。詳細は docs サービスの volumes のコメントを参照。
+  docs-node-modules:
   # Claude Code の設定ディレクトリ(.claude)をホストと分離するための専用ボリューム。
   # 詳細は frontend サービスの claude-config マウントのコメントを参照。
   claude-config:

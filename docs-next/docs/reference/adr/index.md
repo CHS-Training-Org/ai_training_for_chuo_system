@@ -151,6 +151,7 @@ Accepted（YYYY-MM-DD）
 | [ADR-028](./ADR-028-training-purpose.md) | 研修リポジトリの目的と学習範囲 | Accepted |
 | [ADR-029](./ADR-029-single-learning-path.md) | 学習パスの分岐を廃止し全員共通の一本道にする | Accepted |
 | [ADR-030](./ADR-030-personal-trunk-branch-strategy.md) | 学習者ごとの個人トランクブランチ導入 | Accepted |
+| [ADR-031](./ADR-031-docs-pr-preview.md) | ドキュメントの PR プレビュー（gh-pages 配信＋ラベル駆動） | Accepted |
 
 ### 開発環境（ADR-022〜）
 

@@ -5,7 +5,7 @@ description: AI-DLC のガードレール（過信防止・コンテンツ検証
 
 # AI 駆動開発のガードレール
 
-AI-DLC（[awslabs/aidlc-workflows](https://github.com/awslabs/aidlc-workflows)、固定コミット `b19c81928bdf1b8d13856f462fcf2ede1720b4cb`、VERSION 0.1.8）の `common/` 配下のガードレール群を、BookFlow の開発フロー（[`Docs/guide/dev-workflow.md`](../../Docs/guide/dev-workflow.md)）に合わせて再構成したもの。元ファイルは [`vendor/aidlc-rules/common/`](../../vendor/aidlc-rules/common/) に逐語保存されている。採用状況は [`Docs/spec/aidlc-adoption.md`](../../Docs/spec/aidlc-adoption.md) を参照。
+AI-DLC（[awslabs/aidlc-workflows](https://github.com/awslabs/aidlc-workflows)、固定コミット `b19c81928bdf1b8d13856f462fcf2ede1720b4cb`、VERSION 0.1.8）の `common/` 配下のガードレール群を、BookFlow の開発フロー（[`docs-next/docs/develop/dev-workflow.md`](../../docs-next/docs/develop/dev-workflow.md)）に合わせて再構成したもの。元ファイルは [`vendor/aidlc-rules/common/`](../../vendor/aidlc-rules/common/) に逐語保存されている。採用状況は [`docs-next/docs/reference/aidlc/adoption.md`](../../docs-next/docs/reference/aidlc/adoption.md) を参照。
 
 ## 1. 過信を防ぐ（`overconfidence-prevention.md` より）
 
@@ -13,13 +13,13 @@ AI-DLC（[awslabs/aidlc-workflows](https://github.com/awslabs/aidlc-workflows)�
 
 - ユーザーの要求が複雑・曖昧、または影響範囲が広い場合は、仮定で進めず質問する。
 - 「たぶん」「おそらく」「一般的には」で済ませている箇所があれば、それは質問すべき箇所のサイン。
-- AI-DLC の Workflow Planning（[`Docs/guide/dev-workflow.md` §3](../../Docs/guide/dev-workflow.md)）では、計画提示前に疑問点を解消しておく。曖昧なまま計画を提示しない。
+- AI-DLC の Workflow Planning（[`docs-next/docs/develop/dev-workflow.md` §3](../../docs-next/docs/develop/dev-workflow.md)）では、計画提示前に疑問点を解消しておく。曖昧なまま計画を提示しない。
 - 「質問しすぎ」より「誤った前提で実装してしまう」方がコストが高い、という前提で判断する。
 
 ## 2. 出力粒度を問題の複雑さに合わせる（`depth-levels.md` より）
 
 - 単純な修正（タイポ・小さなバグ修正等）には、最小限の説明・最小限のドキュメント更新で対応する。
-- 複数レイヤー・複数ファイルにまたがる変更や、仕様（`Docs/spec/`）に影響する変更では、Spec-first の原則に従い必要な範囲を網羅的に更新する。
+- 複数レイヤー・複数ファイルにまたがる変更や、仕様（`docs-next/docs/spec/`）に影響する変更では、Spec-first の原則に従い必要な範囲を網羅的に更新する。
 - 「このタスクに必要な詳細さは何か」を都度判断する。過不足のいずれも避ける。
 
 ## 3. コンテンツ検証（`content-validation.md` より）

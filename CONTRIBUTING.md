@@ -4,7 +4,7 @@
 
 ## ブランチ命名規則
 
-ブランチ命名規則は [`Docs/guide/coding-conventions.md` §共通方針](Docs/guide/coding-conventions.md#common) を参照してください。
+ブランチ命名規則は [`docs-next/docs/develop/coding-conventions.md` §共通方針](docs-next/docs/develop/coding-conventions.md#common) を参照してください。
 
 - `main` への直接 push は禁止。必ず PR 経由でマージする。
 - `main` からブランチを切って作業する（Fork 方式は採用しない）。
@@ -46,7 +46,7 @@ docs: README にクイックスタートを追記
 2. 実装・コミットする
 3. PR を作成する（GitHub の PR テンプレートを埋める）
 4. CI（GitHub Actions）がグリーンになることを確認する
-5. [セルフレビューチェックリスト](#セルフレビューチェックリスト)を満たしたら、自分で PR をマージする（メンターの承認は不要。[ADR-023](Docs/decision/ADR-023-mentor-gate-removal.md) 参照）
+5. [セルフレビューチェックリスト](#セルフレビューチェックリスト)を満たしたら、自分で PR をマージする（メンターの承認は不要。[ADR-023](docs-next/docs/reference/adr/ADR-023-mentor-gate-removal.md) 参照）
 
 ---
 
@@ -63,7 +63,7 @@ PR を出す前に以下を確認する。
 
 ## メンターのサポート（任意）
 
-メンターの承認はマージの条件ではない。メンターは Issue・PR に任意のタイミングでコメントする役割であり、レビュー依頼を出す・待つ必要はない（[ADR-023](Docs/decision/ADR-023-mentor-gate-removal.md) 参照）。
+メンターの承認はマージの条件ではない。メンターは Issue・PR に任意のタイミングでコメントする役割であり、レビュー依頼を出す・待つ必要はない（[ADR-023](docs-next/docs/reference/adr/ADR-023-mentor-gate-removal.md) 参照）。
 
 TODO: `@claude` 等のメンションで自動 PR レビューを行わせる仕組みを導入予定だが、現時点では未実装。導入までは上記のセルフレビューのみで完結する。
 
