@@ -19,6 +19,7 @@ interface ListResourcesParams {
   category?: string;
   from?: string;
   to?: string;
+  keyword?: string;
   page?: number;
   size?: number;
 }
@@ -32,6 +33,7 @@ interface ListResourcesParams {
  *
  * ADMIN は is_active=false のリソースも含む（BE 側でロール判定）。
  * from/to を指定した場合は当該時間帯に占有予約のあるリソースを除外した結果を返す。
+ * keyword を指定した場合はリソース名または説明文への部分一致（大文字小文字非区別）で絞り込む。
  */
 export async function listResourcesAction(params?: ListResourcesParams) {
   const client = createApiClient(getAccessToken);
@@ -39,6 +41,7 @@ export async function listResourcesAction(params?: ListResourcesParams) {
   if (params?.category) queryParams.category = params.category;
   if (params?.from) queryParams.from = params.from;
   if (params?.to) queryParams.to = params.to;
+  if (params?.keyword) queryParams.keyword = params.keyword;
   if (params?.page !== undefined) queryParams.page = String(params.page);
   if (params?.size !== undefined) queryParams.size = String(params.size);
 

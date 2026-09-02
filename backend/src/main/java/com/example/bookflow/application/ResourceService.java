@@ -60,12 +60,14 @@ public class ResourceService {
    * リソース一覧を返す。
    *
    * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を指定した場合は、当該時間帯に {@code
-   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
+   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。 {@code keyword}
+   * を指定した場合は、リソース名または説明文への部分一致（大文字小文字非区別）で絞り込む。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
+   * @param keyword キーワード検索（null・空文字・空白のみの場合はフィルタしない）
    * @param pageable ページネーション
    * @return {@link ResourceResponse} のページ
    */
@@ -75,28 +77,19 @@ public class ResourceService {
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
+      String keyword,
       Pageable pageable) {
+    String normalizedKeyword = normalizeKeyword(keyword);
     if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+      return listWithAvailabilityFilter(category, from, to, isAdmin, normalizedKeyword, pageable);
     }
-    return listPaginated(category, isAdmin, pageable);
+    return listPaginated(category, isAdmin, normalizedKeyword, pageable);
   }
 
   /** from/to 指定なし：通常ページネーション。 */
   private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
-    Page<Resource> page;
-    if (isAdmin) {
-      page =
-          category != null
-              ? resourceRepository.findByCategory(category, pageable)
-              : resourceRepository.findAll(pageable);
-    } else {
-      page =
-          category != null
-              ? resourceRepository.findByCategoryAndIsActiveTrue(category, pageable)
-              : resourceRepository.findByIsActiveTrue(pageable);
-    }
+      ResourceCategory category, boolean isAdmin, String keyword, Pageable pageable) {
+    Page<Resource> page = resourceRepository.search(category, !isAdmin, keyword, pageable);
     return page.map(ResourceResponse::from);
   }
 
@@ -110,9 +103,10 @@ public class ResourceService {
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
+      String keyword,
       Pageable pageable) {
     // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    List<Resource> candidates = fetchAllCandidates(category, isAdmin, keyword);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -138,16 +132,26 @@ public class ResourceService {
     return new PageImpl<>(content, pageable, total);
   }
 
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
-    if (isAdmin) {
-      return category != null
-          ? resourceRepository.findByCategory(category)
-          : resourceRepository.findAll();
-    } else {
-      return category != null
-          ? resourceRepository.findByCategoryAndIsActiveTrue(category)
-          : resourceRepository.findByIsActiveTrue();
+  private List<Resource> fetchAllCandidates(
+      ResourceCategory category, boolean isAdmin, String keyword) {
+    return resourceRepository.search(category, !isAdmin, keyword, Pageable.unpaged()).getContent();
+  }
+
+  /**
+   * キーワードを正規化する（null・空文字・空白のみは {@code null} に統一）。
+   *
+   * <p>{@code null} を渡すと {@link ResourceRepository#search} 側でキーワード条件そのものを適用しない
+   * （resource-list-filter エンハンス課題 RES-01 の受入条件「空にして絞り込むとキーワード条件が解除される」に対応）。
+   *
+   * @param keyword 入力されたキーワード（null 可）
+   * @return 正規化後のキーワード（trim 後に空であれば null）
+   */
+  private static String normalizeKeyword(String keyword) {
+    if (keyword == null) {
+      return null;
     }
+    String trimmed = keyword.trim();
+    return trimmed.isEmpty() ? null : trimmed;
   }
 
   // ---------------------------------------------------------------------------

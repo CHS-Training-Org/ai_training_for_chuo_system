@@ -65,6 +65,7 @@ public class ResourceController {
    * @param category カテゴリフィルタ（任意）
    * @param from 空き確認の開始日時（任意・to と同時指定）
    * @param to 空き確認の終了日時（任意・from と同時指定）
+   * @param keyword キーワード検索（任意・リソース名または説明文への部分一致・大文字小文字非区別）
    * @param pageable ページネーション（デフォルト: size=20）
    * @param currentUser 認証済みユーザー（ロール判定に使用）
    * @return {@link ResourceResponse} のページ
@@ -74,6 +75,7 @@ public class ResourceController {
       @RequestParam(required = false) ResourceCategory category,
       @RequestParam(required = false) LocalDateTime from,
       @RequestParam(required = false) LocalDateTime to,
+      @RequestParam(required = false) String keyword,
       @PageableDefault(size = 20) Pageable pageable,
       @CurrentUser User currentUser) {
     // from / to は同時指定必須（api-spec.md §リソース一覧 参照）
@@ -81,7 +83,7 @@ public class ResourceController {
       throw new ValidationException("from と to は同時に指定してください。");
     }
     boolean isAdmin = currentUser.getRole() == Role.ADMIN;
-    return resourceService.list(category, from, to, isAdmin, pageable);
+    return resourceService.list(category, from, to, isAdmin, keyword, pageable);
   }
 
   /**

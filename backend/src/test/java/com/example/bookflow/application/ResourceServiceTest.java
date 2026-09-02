@@ -198,10 +198,10 @@ class ResourceServiceTest {
 
     @Test
     void list_memberWithoutFilter_returnsActiveOnly() {
-      when(resourceRepository.findByIsActiveTrue(pageable))
+      when(resourceRepository.search(null, true, null, pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, false, null, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
@@ -209,12 +209,24 @@ class ResourceServiceTest {
 
     @Test
     void list_adminWithoutFilter_returnsAllIncludingInactive() {
-      when(resourceRepository.findAll(pageable))
+      when(resourceRepository.search(null, false, null, pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, true, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, true, null, pageable);
 
       assertThat(result.getContent()).hasSize(2);
+    }
+
+    @Test
+    void list_blankKeyword_normalizesToNullBeforeSearch() {
+      // 空白のみの keyword はキーワード条件解除として扱う（RES-01 受入条件・BR-03）
+      when(resourceRepository.search(null, true, null, pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, false, "   ", pageable);
+
+      assertThat(result.getContent()).hasSize(1);
     }
 
     @Test
@@ -222,7 +234,8 @@ class ResourceServiceTest {
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
-      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+      when(resourceRepository.search(null, true, null, Pageable.unpaged()))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
       // 完全重複する予約が存在する
       Reservation occupying =
@@ -235,7 +248,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, false, null, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }
@@ -245,7 +258,8 @@ class ResourceServiceTest {
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
-      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+      when(resourceRepository.search(null, true, null, Pageable.unpaged()))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
       // 隣接（to == 既存開始）→ 非重複なので除外しない
       Reservation adjacent =
@@ -254,7 +268,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, false, null, pageable);
 
       assertThat(result.getContent()).hasSize(1);
     }
