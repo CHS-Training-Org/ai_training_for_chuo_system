@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="4層アーキテクチャ">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- presentation -->
+        <mxCell id="2" value="presentation&#xa;Controller・DTO&#xa;例外→HTTPの変換" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="190" height="80" as="geometry" />
+        </mxCell>
+        <!-- application -->
+        <mxCell id="3" value="application&#xa;ユースケース Service&#xa;業務例外" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="80" width="190" height="80" as="geometry" />
+        </mxCell>
+        <!-- domain -->
+        <mxCell id="4" value="domain&#xa;Entity・Enum&#xa;Repository interface" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="550" y="80" width="190" height="80" as="geometry" />
+        </mxCell>
+        <!-- infrastructure -->
+        <mxCell id="5" value="infrastructure&#xa;config・security" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="50" y="240" width="190" height="70" as="geometry" />
+        </mxCell>
+        <!-- presentation -> application -->
+        <mxCell id="6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="2" target="3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- application -> domain -->
+        <mxCell id="7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- infrastructure -.横断設定.-> presentation (dashed) -->
+        <mxCell id="8" value="横断設定" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;dashed=1;fontColor=#1E293B;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="5" target="2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
