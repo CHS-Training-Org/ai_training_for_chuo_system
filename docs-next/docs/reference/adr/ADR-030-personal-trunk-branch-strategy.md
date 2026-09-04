@@ -7,7 +7,7 @@ tags:
   - workflow
   - branching
   - process
-timestamp: 2026-08-11
+timestamp: 2026-09-04
 ---
 
 # ADR-030 — 運用プロセス：学習者ごとの個人トランクブランチ導入
@@ -59,3 +59,13 @@ AI レビュー（`.github/workflows/claude.yml` の `claude-review` ジョブ�
 - 前提課題（依存関係）がある選択課題（例：[resource-list-sort.md](../../spec/enhancements/beginner/resource-list-sort.md) は resource-list-filter を前提とする）は、学習者自身のトランクブランチに前提課題の実装が積み上がっていることが必要になる。必須パス（Beginner 1 課題を 2 回実装、Intermediate 1 課題）では現状この依存は発生しないが、Advanced（任意課題）で複数課題に取り組む学習者は順序に注意する必要がある。
 - `.claude/skills/aidlc/SKILL.md` の Pre-flight ブランチ確認（`main`/`master` 上にいることを検知するロジック）は、トランクブランチ上に直接いる場合も検知対象に含めるよう、別途実装側の追従が必要である（本 ADR は docs-next 側の記述変更のみを扱う。実装側の変更は別タスクとする）。
 - GitHub のブランチ保護設定変更（`main` のマージ元制限）は本環境から実施できず、リポジトリオーナーへの申し送り事項となる（[operations-guide.md](../../operations/operations-guide.md#roles)）。
+
+---
+
+## 追記（2026-09-04）：2 回目実装のブランチ命名
+
+本 ADR は STEP-03 の PR をトランクブランチへもマージしないことまでを決めたが、STEP-04 でブランチをどう用意するかは定めていなかった。Issue は課題ごとの共通の 1 つを参照し、`<short-desc>` はビジネス要求シートのファイル名を使うため、命名規則をそのまま適用すると 2 回目のブランチ名が 1 回目と一致してしまう。
+
+**2 回目（STEP-04、AI-DLC あり）のフィーチャーブランチは、末尾に `-aidlc` を付けて `feature/<GitHubユーザー名>/<issue番号>-<short-desc>-aidlc` と命名する。** 1 回目のブランチは振り返りの記録として残し、2 回目は 1 回目のブランチからではなく自分のトランクブランチから切る。STEP-03 の実装はトランクブランチに入っていないため、同じ課題を AI-DLC ありで作り直すという設計がこれで成立する。手順は[同じ課題を 2 回実装するときのブランチ名](../../develop/coding-conventions.md#branch-redo)に記述した。
+
+**留意点（実装側の追従）**：`.claude/skills/aidlc/SKILL.md` の Pre-flight は現在のブランチ名から `<short-desc>` を取り出し、`docs-next/docs/spec/enhancements/*/<short-desc>.md` を探して対象のビジネス要求シートを特定する。`-aidlc` が付いた名前ではシートが見つからず、エンハンス課題以外のタスクとして扱われる。当面は学習者が `/aidlc` の起動時に課題名を伝えることで回避し（会話から一意に特定できる場合、エンジンは対象シートをそのまま採用する）、Pre-flight 側で接尾辞を除いて照合する変更は上記のトランクブランチ検知と合わせて別タスクとする。

@@ -13,7 +13,7 @@ references:
   - ../learn/ai-tools-guide.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
   - ../spec/index.md
-last_updated: '2026-08-12T00:00:00+09:00'
+last_updated: '2026-09-04T00:00:00+09:00'
 ---
 
 # 開発ワークフローガイド
@@ -49,6 +49,13 @@ last_updated: '2026-08-12T00:00:00+09:00'
 :::note[作り忘れた場合]
 
 作り忘れたまま `/aidlc` を起動しても、エンジン起動前の事前確認（Pre-flight）がブランチ名を推測・提案するので、確認して承認するだけで済みます（詳細は [`.claude/skills/aidlc/SKILL.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/skills/aidlc/SKILL.md) の Pre-flight 節を参照）。
+
+:::
+
+:::warning[STEP-04 はブランチを切り直す]
+
+STEP-04（初級課題2回目）は STEP-03 と同じ課題を実装するため、素直に命名するとブランチ名が STEP-03 と重複します。末尾に `-aidlc` を付けた `feature/<GitHubユーザー名>/<issue番号>-<short-desc>-aidlc` で、自分のトランクブランチから切り直してください（[同じ課題を 2 回実装するときのブランチ名](./coding-conventions.md#branch-redo)）。  
+STEP-03 のブランチに乗ったまま `/aidlc` を起動すると、事前確認はブランチ名が命名規則に合致していると判断して何も尋ねずに続行するため、STEP-03 の実装が残ったブランチの上で 2 回目が始まってしまいます。起動前に現在のブランチを確認してください。
 
 :::
 
