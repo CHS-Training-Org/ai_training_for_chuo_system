@@ -1,7 +1,6 @@
 package com.example.bookflow.presentation;
 
 import com.example.bookflow.application.ResourceService;
-import com.example.bookflow.application.ResourceSortField;
 import com.example.bookflow.application.exception.ValidationException;
 import com.example.bookflow.domain.ResourceCategory;
 import com.example.bookflow.domain.Role;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -68,7 +66,7 @@ public class ResourceController {
    * @param keyword キーワード検索（任意・{@code name} / {@code description} への部分一致、大文字小文字非依存）
    * @param from 空き確認の開始日時（任意・to と同時指定）
    * @param to 空き確認の終了日時（任意・from と同時指定）
-   * @param pageable ページネーション（デフォルト: size=20、sort=createdAt,asc）
+   * @param pageable ページネーション（デフォルト: size=20）
    * @param currentUser 認証済みユーザー（ロール判定に使用）
    * @return {@link ResourceResponse} のページ
    */
@@ -78,38 +76,14 @@ public class ResourceController {
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) LocalDateTime from,
       @RequestParam(required = false) LocalDateTime to,
-      @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC)
-          Pageable pageable,
+      @PageableDefault(size = 20) Pageable pageable,
       @CurrentUser User currentUser) {
     // from / to は同時指定必須（api-spec.md §リソース一覧 参照）
     if ((from == null) != (to == null)) {
       throw new ValidationException("from と to は同時に指定してください。");
     }
-    validateSort(pageable.getSort());
     boolean isAdmin = currentUser.getRole() == Role.ADMIN;
     return resourceService.list(category, keyword, from, to, isAdmin, pageable);
-  }
-
-  /**
-   * {@code sort} パラメータの許可フィールド（BR-01）・単一フィールド指定であることを検証する。
-   *
-   * <p>issue #22 の UI は単一フィールドの選択のみを提供する（複数フィールドの複合ソートはスコープ外）。 {@code sort}
-   * を複数指定した場合、各フィールド自体は個別に許可されていても 400 で拒否する（黙って先頭のみ適用しない）。
-   *
-   * @param sort 検証対象のソート指定
-   * @throws ValidationException 許可外のフィールド名、または複数フィールドが指定された場合（BR-04）
-   */
-  private void validateSort(Sort sort) {
-    int orderCount = 0;
-    for (Sort.Order order : sort) {
-      orderCount++;
-      if (!ResourceSortField.isAllowed(order.getProperty())) {
-        throw new ValidationException("不正なソートフィールドです: " + order.getProperty());
-      }
-    }
-    if (orderCount > 1) {
-      throw new ValidationException("sort は単一フィールドのみ指定できます。");
-    }
   }
 
   /**

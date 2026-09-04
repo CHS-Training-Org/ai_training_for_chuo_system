@@ -16,14 +16,14 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 # コーディング規約
 
-BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../reference/adr/index.md) に、API、画面の**仕様**は [Docs/spec/](../spec/index.md) に書かれています。  
+BookFlow で開発するときの約束事をまとめたガイドです。技術選定の**理由**は各 [ADR](../reference/adr/index.md) に、API、画面の**仕様**は [docs-next/docs/spec/](../spec/index.md) に書かれています。  
 本書は「実装時に迷わないためのルールと実例」に絞っています。
 
-:::tip 最大の規約は「既存コードに合わせる」
-    本書に書かれていないことで迷ったら、**同じ種類の既存ファイルを開いてパターンを真似る**のが正解です。
-    ベース実装は ADR と本規約に沿って書かれているため、既存コードがそのまま生きた手本になります。
-
+:::tip[最大の規約は「既存コードに合わせる」]
+本書に書かれていないことで迷ったら、**同じ種類の既存ファイルを開いてパターンを真似る**のが正解です。
+ベース実装は ADR と本規約に沿って書かれているため、既存コードがそのまま生きた手本になります。
 :::
+
 ---
 
 ## 共通方針 {#common}
@@ -33,7 +33,7 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 | フィーチャーブランチ命名 | `feature/<GitHubユーザー名>/<issue番号>-<short-desc>`（例：`feature/taro/42-resource-detail`） |
 | コミット | Conventional Commits 形式（詳細は[§コミット・PR 規約](#commit-pr)） |
 | 言語 | コメント・コミットメッセージ・ドキュメントは日本語で書いてよい（識別子は英語） |
-| 仕様の扱い | `Docs/spec/` が真実の源。仕様と実装が食い違ったら仕様を確認し、必要なら仕様の更新を先に行う |
+| 仕様の扱い | `docs-next/docs/spec/` が真実の源。仕様と実装が食い違ったら仕様を確認し、必要なら仕様の更新を先に行う |
 
 `main` は誰からもマージされません。完了した課題は各自のトランクブランチに積み上げます（トランクを導入した理由は [ADR-030](../reference/adr/ADR-030-personal-trunk-branch-strategy.md) を参照）。同じ選択課題（カタログ項目）に複数の学習者が着手しても、各自のトランクブランチが独立しているため衝突しません。Issue はカタログ課題ごとに運営者が起票済みの共通の 1 つを参照するため、同じ課題を選んだ学習者同士は Issue 番号が同じになります。番号だけでは `git branch -a` や GitHub の branch 一覧から誰の作業か判別できないため、先頭に GitHub ユーザー名を入れて担当者を明示します。
 
@@ -44,6 +44,13 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 ### トランクブランチの作成（初回のみ） {#trunk-branch}
 
 学習を始める前に、自分のトランクブランチを 1 本だけ作成します。
+
+:::tip[前提：リポジトリへの Write 権限]
+
+Organization からの招待を承諾し、リポジトリへの Write 権限がある状態で実施してください（`gh api repos/CHS-Training-Org/ai_training_for_chuo_system --jq .permissions` で `"push": true` を確認できます）。権限がない状態、または `gh auth login` で git の資格情報設定を No にした状態では push が失敗します。エラーが出た場合の切り分けは [troubleshooting.md §Git・GitHub 関連](./troubleshooting.md#git) を参照してください。
+
+push が失敗しても、VS Code の GitHub 拡張が出す「Would you like to create a fork?」に Yes と答えないでください。fork を作ると push 先が自分のアカウント配下に切り替わり、共有リポジトリから作業が見えなくなります（[Git・GitHub 関連のトラブル](./troubleshooting.md#git) に復旧手順があります）。
+:::
 
 **GitHub の画面から作成する場合**：リポジトリのブランチ一覧画面で `main` を選択し、ブランチ名の入力欄に `learner/<GitHubユーザー名>/main` と入力して作成します。
 
@@ -120,11 +127,11 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
 - 各 Action に JSDoc で「何をするか・必要なロール」を書く
 - レスポンスは Zod スキーマ（`@/lib/types/api`）で検証してから返す
 
-:::warning Zod スキーマは `'use server'` ファイルに置けない
-    Next.js の制約により、`'use server'` ファイルからは非同期関数以外（Zod スキーマオブジェクト等）を export できません。  
-    入力スキーマは `src/lib/schemas/`（例：`src/lib/schemas/resource.ts`）に分離し、Action 側では `z.infer` で導出した**型のみ**をインポートしたうえで再エクスポートします。
-
+:::warning[Zod スキーマは 'use server' ファイルに置けない]
+Next.js の制約により、`'use server'` ファイルからは非同期関数以外（Zod スキーマオブジェクト等）を export できません。  
+入力スキーマは `src/lib/schemas/`（例：`src/lib/schemas/resource.ts`）に分離し、Action 側では `z.infer` で導出した**型のみ**をインポートしたうえで再エクスポートします。
 :::
+
 ### 命名規則
 
 | 対象 | 規則 | 例 |
@@ -234,25 +241,25 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 | `test` | テストの追加・修正 |
 | `chore` | ビルド設定・依存更新等 |
 
-=== "Good な例"
+#### Good な例
 
-    ```text
-    feat: リソース詳細画面を追加
-    fix: 予約重複チェックで終了時刻ちょうどの予約を許可
-    test: ReservationService の境界値テストを追加
-    ```
+```text
+feat: リソース詳細画面を追加
+fix: 予約重複チェックで終了時刻ちょうどの予約を許可
+test: ReservationService の境界値テストを追加
+```
 
-    → type が変更の性質と一致し、何が変わるかが要約から分かる。
+→ type が変更の性質と一致し、何が変わるかが要約から分かる。
 
-=== "Bad な例"
+#### Bad な例
 
-    ```text
-    update
-    fix: いろいろ修正
-    feat: 画面追加とバグ修正とリファクタ
-    ```
+```text
+update
+fix: いろいろ修正
+feat: 画面追加とバグ修正とリファクタ
+```
 
-    → 内容が分からない、複数の関心事が 1 コミットに混在している。
+→ 内容が分からない、複数の関心事が 1 コミットに混在している。
 
 ### コミットの粒度
 
@@ -262,7 +269,7 @@ SLF4J の Logger を使います（`private static final Logger LOG = LoggerFact
 ### PR 提出前のセルフレビュー
 
 - [ ] [§共通方針](#common)のフォーマット・Lint・テストをすべて通した
-- [ ] 仕様（`Docs/spec/`）と実装が一致している（仕様にない挙動を勝手に追加していない）
+- [ ] 仕様（`docs-next/docs/spec/`）と実装が一致している（仕様にない挙動を勝手に追加していない）
 - [ ] AI が生成したコードを自分で読み、説明できる状態になっている（→ [ai-tools-guide.md §AI 利用ポリシー](../learn/ai-tools-guide.md#prohibited)）
 - [ ] 動作確認の手順と結果を PR に書ける状態になっている
 
@@ -326,8 +333,7 @@ Controller テストで認証ユーザーが必要な場合は、`src/test/java/
 カバレッジの数値基準は設けていません。  
 その代わり、**新規に追加または変更したコードには必ず対応するテストを付ける**こと、既存テストを green に保つことを必須とします。
 
-:::tip テスト作成は AI の得意分野
-    既存テストファイルを参照させたうえで Claude Code に生成させると、命名規約、モックパターンに沿ったテストの叩き台が得られます（→ [ai-tools-guide.md](../learn/ai-tools-guide.md)）。  
-    生成後は必ず実行して検証してください。
-
+:::tip[テスト作成は AI の得意分野]
+既存テストファイルを参照させたうえで Claude Code に生成させると、命名規約、モックパターンに沿ったテストの叩き台が得られます（→ [ai-tools-guide.md](../learn/ai-tools-guide.md)）。  
+生成後は必ず実行して検証してください。
 :::

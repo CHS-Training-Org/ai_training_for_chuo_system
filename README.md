@@ -7,13 +7,13 @@
 
 ## 環境構築
 
-手順の詳細（DevContainer・手動セットアップ・OS 別の事前準備）は **[環境構築・起動手順](Docs/guide/getting-started.md)** を参照してください。
+手順の詳細（DevContainer・手動セットアップ・OS 別の事前準備）は **[環境構築・起動手順](docs-next/docs/learn/getting-started.md)** を参照してください。
 
 ---
 
 ## 学習の始め方
 
-1. [`Docs/guide/curriculum.md`](Docs/guide/curriculum.md) の必須ステップ STEP-01〜03 を順に完了する（環境構築は [`Docs/guide/getting-started.md`](Docs/guide/getting-started.md) を参照）
+1. [`docs-next/docs/learn/curriculum.md`](docs-next/docs/learn/curriculum.md) の必須ステップ STEP-01〜03 を順に完了する（環境構築は [`docs-next/docs/learn/getting-started.md`](docs-next/docs/learn/getting-started.md) を参照）
 2. GitHub Issues の `[Level: Beginner]` タグが付いた課題から着手する
 3. [`CONTRIBUTING.md`](CONTRIBUTING.md) に従ってブランチを切り、PR を送る
 
@@ -21,13 +21,13 @@
 
 ## ドキュメントサイト
 
-ドキュメントは **Zensical** で静的サイトとして公開しています。
+ドキュメントは **Docusaurus** で静的サイトとして公開しています。
 
-- **公開サイト**: https://github.com/CHS-Training-Org/ai_training_for_chuo_system
+- **公開サイト**: https://chs-training-org.github.io/ai_training_for_chuo_system/
 - **ローカルプレビュー**: devcontainer 起動時に自動で http://localhost:8000 が立ち上がります。
-- **手動ビルド**（`site/` への静的出力が必要な場合）:
+- **手動ビルド**（`docs-next/build/` への静的出力が必要な場合）:
   ```bash
-  docker compose exec docs uv run zensical build
+  cd docs-next && npm run build
   ```
 
 ---
@@ -36,15 +36,16 @@
 
 | ドキュメント                                   | 内容                                                    |
 | ---------------------------------------------- | ------------------------------------------------------- |
-| [`Docs/guide/index.md`](Docs/guide/index.md)   | 学習者向けガイド（カリキュラム・環境構築・AI ツール・規約・トラブル） |
-| [`Docs/spec/overview.md`](Docs/spec/overview.md) | リポジトリ概要（目的・対象者・役割・用語集）          |
-| [`Docs/spec/index.md`](Docs/spec/index.md)     | 実装仕様（要件・画面・API・ER 図）                      |
-| [`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md) | システムアーキテクチャ（リファレンス）                  |
-| [`Docs/decision/`](Docs/decision/)             | ADR（アーキテクチャ決定記録、リファレンス）             |
+| [`docs-next/docs/learn/`](docs-next/docs/learn/) | 学習者向けガイド（カリキュラム・環境構築・AI ツール・用語集） |
+| [`docs-next/docs/develop/`](docs-next/docs/develop/) | 開発ガイド（開発フロー・規約・レビュー基準・トラブルシューティング） |
+| [`docs-next/docs/spec/overview.md`](docs-next/docs/spec/overview.md) | リポジトリ概要（目的・対象者・役割・用語集）          |
+| [`docs-next/docs/spec/index.md`](docs-next/docs/spec/index.md)     | 実装仕様（要件・画面・API・ER 図）                      |
+| [`docs-next/docs/reference/architecture.md`](docs-next/docs/reference/architecture.md) | システムアーキテクチャ（リファレンス）                  |
+| [`docs-next/docs/reference/adr/`](docs-next/docs/reference/adr/)             | ADR（アーキテクチャ決定記録、リファレンス）             |
 
 ---
 
 ## コントリビュート
 
 [`CONTRIBUTING.md`](CONTRIBUTING.md) を参照。  
-ブランチ命名規則は [`Docs/guide/coding-conventions.md` §共通方針](Docs/guide/coding-conventions.md#common) を参照してください。
+ブランチ命名規則は [`docs-next/docs/develop/coding-conventions.md` §共通方針](docs-next/docs/develop/coding-conventions.md#common) を参照してください。

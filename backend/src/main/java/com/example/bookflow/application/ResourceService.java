@@ -1,7 +1,6 @@
 package com.example.bookflow.application;
 
 import com.example.bookflow.application.exception.ResourceNotFoundException;
-import com.example.bookflow.application.exception.ValidationException;
 import com.example.bookflow.domain.Reservation;
 import com.example.bookflow.domain.ReservationRepository;
 import com.example.bookflow.domain.ReservationStatus;
@@ -14,7 +13,6 @@ import com.example.bookflow.presentation.dto.ResourceResponse;
 import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -23,7 +21,6 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,12 +61,8 @@ public class ResourceService {
    * リソース一覧を返す。
    *
    * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を指定した場合は、当該時間帯に {@code
-   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
-   *
-   * <p>ソート（{@code pageable.getSort()}）は DB の {@code ORDER BY} には委譲せず、候補リスト取得後に {@link Comparator}
-   * で適用する。DB 委譲では null 定員の末尾固定（BR-03）や大文字小文字非依存（BR-05）を DB のロケール・NULLS
-   * 順序既定に依存させてしまい、環境によって結果が変わるため（詳細は {@code aidlc-audit.md} 参照）。{@code keyword} によるフィルタも同じ理由から DB の
-   * {@code ILIKE} 等には委譲せず、候補リスト取得後に Java 側（{@link Locale#ROOT} での大文字小文字非依存比較）で判定する。
+   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。{@code keyword}
+   * を指定した場合も同様に、候補リスト取得後に Java 側（{@link Locale#ROOT} での大文字小文字非依存比較）で判定する。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
    * @param keyword キーワード検索（null または空白のみの場合はフィルタしない。{@code name} / {@code description}
@@ -77,7 +70,7 @@ public class ResourceService {
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
-   * @param pageable ページネーション・ソート
+   * @param pageable ページネーション
    * @return {@link ResourceResponse} のページ
    */
   @Transactional(readOnly = true)
@@ -88,23 +81,73 @@ public class ResourceService {
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
+    if (hasKeyword(keyword) || (from != null && to != null)) {
+      return listFiltered(category, keyword, from, to, isAdmin, pageable);
+    }
+    return listPaginated(category, isAdmin, pageable);
+  }
+
+  /** from/to 指定なし：通常ページネーション。 */
+  private Page<ResourceResponse> listPaginated(
+      ResourceCategory category, boolean isAdmin, Pageable pageable) {
+    Page<Resource> page;
+    if (isAdmin) {
+      page =
+          category != null
+              ? resourceRepository.findByCategory(category, pageable)
+              : resourceRepository.findAll(pageable);
+    } else {
+      page =
+          category != null
+              ? resourceRepository.findByCategoryAndIsActiveTrue(category, pageable)
+              : resourceRepository.findByIsActiveTrue(pageable);
+    }
+    return page.map(ResourceResponse::from);
+  }
+
+  /**
+   * {@code keyword} または {@code from}/{@code to} 指定あり：全候補を取得し Java 側で絞り込んでから手動ページネーション。
+   *
+   * <p>候補リストは {@code keyword} で絞り込んだうえで、{@code from}/{@code to} 指定時は占有済みリソースを除外する。DB の {@code
+   * ILIKE} 等には委譲せず、候補リスト取得後に Java 側（{@link Locale#ROOT} での大文字小文字非依存比較）で判定する。
+   */
+  private Page<ResourceResponse> listFiltered(
+      ResourceCategory category,
+      String keyword,
+      LocalDateTime from,
+      LocalDateTime to,
+      boolean isAdmin,
+      Pageable pageable) {
+    // 1. 候補リソースを全取得（ページネーション前）
     List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+
+    // 2. keyword で絞り込む
     candidates = filterByKeyword(candidates, keyword);
+
+    // 3. from/to 指定時は占有済み予約があるリソース ID を特定して除外（1 クエリ）
     if (from != null && to != null) {
-      candidates = excludeOccupied(candidates, from, to);
+      List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
+      if (!candidateIds.isEmpty()) {
+        Set<UUID> occupiedIds =
+            reservationRepository
+                .findByResource_IdInAndStatusIn(candidateIds, OCCUPIED_STATUSES)
+                .stream()
+                .filter(r -> overlaps(r.getStartAt(), r.getEndAt(), from, to))
+                .map(r -> r.getResource().getId())
+                .collect(Collectors.toSet());
+        candidates = candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
+      }
     }
 
-    Comparator<Resource> comparator = resolveComparator(pageable.getSort());
-    List<Resource> sorted = candidates.stream().sorted(comparator).toList();
-
-    int total = sorted.size();
-    long offset = pageable.getOffset();
+    // 4. フィルタ後リストを手動ページネーション
     // offset は total（int の候補件数）と比較してから int にキャストする。
     // 大きな page 値では offset が int の範囲を超え得るため、先にキャストすると負数に折り返る。
+    int total = candidates.size();
+    long offset = pageable.getOffset();
     List<ResourceResponse> content =
         offset >= total
             ? List.of()
-            : sorted
+            : candidates
                 .subList((int) offset, (int) Math.min(offset + pageable.getPageSize(), total))
                 .stream()
                 .map(ResourceResponse::from)
@@ -124,6 +167,10 @@ public class ResourceService {
     }
   }
 
+  private boolean hasKeyword(String keyword) {
+    return keyword != null && !keyword.isBlank();
+  }
+
   /**
    * 候補リストを {@code keyword} で絞り込む（{@code name} / {@code description} への部分一致、大文字小文字非依存）。
    *
@@ -132,7 +179,7 @@ public class ResourceService {
    * @return 絞り込み後のリスト
    */
   private List<Resource> filterByKeyword(List<Resource> candidates, String keyword) {
-    if (keyword == null || keyword.isBlank()) {
+    if (!hasKeyword(keyword)) {
       return candidates;
     }
     String needle = keyword.toLowerCase(Locale.ROOT);
@@ -143,59 +190,6 @@ public class ResourceService {
                     || (r.getDescription() != null
                         && r.getDescription().toLowerCase(Locale.ROOT).contains(needle)))
         .toList();
-  }
-
-  /** 占有済み予約があるリソースを候補リストから除外する（重複するリソース ID を一括取得、1 クエリ）。 */
-  private List<Resource> excludeOccupied(
-      List<Resource> candidates, LocalDateTime from, LocalDateTime to) {
-    List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
-    if (candidateIds.isEmpty()) {
-      return candidates;
-    }
-    Set<UUID> occupiedIds =
-        reservationRepository
-            .findByResource_IdInAndStatusIn(candidateIds, OCCUPIED_STATUSES)
-            .stream()
-            .filter(r -> overlaps(r.getStartAt(), r.getEndAt(), from, to))
-            .map(r -> r.getResource().getId())
-            .collect(Collectors.toSet());
-    return candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
-  }
-
-  /**
-   * {@link Pageable#getSort()} から {@link Resource} 比較用の {@link Comparator} を導出する。
-   *
-   * <p>issue #22 の UI は単一フィールドの選択のみを提供するため、最初の {@link Sort.Order} 1 件のみを見る（複数フィールドの複合ソートは {@link
-   * com.example.bookflow.presentation.ResourceController#list} が事前に 400 で拒否する）。 {@code sort}
-   * が未指定（unsorted）の場合は {@code createdAt} 昇順にフォールバックする（BR-02）。
-   *
-   * @param sort ページネーションの並び順
-   * @return リソースの比較器
-   */
-  private static Comparator<Resource> resolveComparator(Sort sort) {
-    Sort.Order order = sort.isSorted() ? sort.iterator().next() : Sort.Order.asc("createdAt");
-    boolean desc = order.getDirection().isDescending();
-    ResourceSortField field = ResourceSortField.fromProperty(order.getProperty());
-    if (field == null) {
-      throw new ValidationException("不正なソートフィールドです: " + order.getProperty());
-    }
-    return switch (field) {
-      case NAME -> {
-        Comparator<Resource> byName =
-            Comparator.comparing(Resource::getName, String.CASE_INSENSITIVE_ORDER);
-        yield desc ? byName.reversed() : byName;
-      }
-      case CAPACITY -> {
-        // null は昇順・降順いずれでも末尾固定（BR-03）。値部分のみ方向に応じて反転し、null 判定は変えない。
-        Comparator<Integer> byValue =
-            desc ? Comparator.<Integer>naturalOrder().reversed() : Comparator.naturalOrder();
-        yield Comparator.comparing(Resource::getCapacity, Comparator.nullsLast(byValue));
-      }
-      case CREATED_AT -> {
-        Comparator<Resource> byCreatedAt = Comparator.comparing(Resource::getCreatedAt);
-        yield desc ? byCreatedAt.reversed() : byCreatedAt;
-      }
-    };
   }
 
   // ---------------------------------------------------------------------------

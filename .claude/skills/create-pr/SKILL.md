@@ -46,14 +46,14 @@ git rev-parse --abbrev-ref --symbolic-full-name <head>@{u}
 
 **本文**：以下の各セクションを埋めた Markdown 全文を組み立てる。
 
-- **対応 Issue / ビジネス要求シート**：head ブランチ名 `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` から Issue 番号を抽出して `Closes #<番号>` を記載する。ビジネス要求シート（`Docs/spec/enhancements/<課題>.md`）への言及がコミットメッセージや diff にあれば、そのパスをリンクとして補う。判別できない場合は空欄のまま残し、ユーザーに確認を促す。
+- **対応 Issue / ビジネス要求シート**：head ブランチ名 `feature/<GitHubユーザー名>/<issue番号>-<short-desc>` から Issue 番号を抽出して `Closes #<番号>` を記載する。ビジネス要求シート（`docs-next/docs/spec/enhancements/<難易度>/<課題>.md`）への言及がコミットメッセージや diff にあれば、そのパスをリンクとして補う。判別できない場合は空欄のまま残し、ユーザーに確認を促す。
 - **実装概要**：`git diff <base>...<head> --stat` と主要なコミットメッセージから、何を変更したか（FE/BE どちらに触れたか含む）を簡潔にまとめる。
 - **AI ツールを使った箇所（必須）**：「Workflow Planning で提示された実装計画」「補完・解説・テスト／ドキュメント生成等で AI を使った箇所」は、このセッションでの作業内容から要約して埋めてよい。
-- **Spec-first チェック**：`git diff <base>...<head> --stat` に `Docs/spec/` 配下のファイルが含まれるかを確認する（独立した `docs(spec):` コミットか、実装コミットへの同梱かは問わない — [仕様更新ルール（Spec-first）](../../../Docs/spec/index.md#spec-first) 参照）。
-  - `Docs/spec/` への変更が含まれる → 「仕様変更がある場合、仕様更新をコミットに含めた」にチェックし、独立コミットに分けているか実装コミットに同梱しているかを注釈で一言添える。
-  - `Docs/spec/` への変更が diff に一切ない → 「このPRに仕様変更はない」にチェック。
+- **Spec-first チェック**：`git diff <base>...<head> --stat` に `docs-next/docs/spec/` 配下のファイルが含まれるかを確認する（独立した `docs(spec):` コミットか、実装コミットへの同梱かは問わない — [仕様更新ルール（Spec-first）](../../../docs-next/docs/spec/index.md#spec-first) 参照）。
+  - `docs-next/docs/spec/` への変更が含まれる → 「仕様変更がある場合、仕様更新をコミットに含めた」にチェックし、独立コミットに分けているか実装コミットに同梱しているかを注釈で一言添える。
+  - `docs-next/docs/spec/` への変更が diff に一切ない → 「このPRに仕様変更はない」にチェック。
 - **動作確認結果**：**AI は記入しない**。テンプレートのプレースホルダーのままにし、「実際に確認した結果を書いてください」とユーザーに伝える。
-- **セルフレビュー**：チェックは入れず、[coding-conventions.md §コミット・PR 規約](../../../Docs/guide/coding-conventions.md#commit-pr) の「PR 提出前のセルフレビュー」を見て自分で確認するようユーザーに案内する。
+- **セルフレビュー**：チェックは入れず、[coding-conventions.md §コミット・PR 規約](../../../docs-next/docs/develop/coding-conventions.md#commit-pr) の「PR 提出前のセルフレビュー」を見て自分で確認するようユーザーに案内する。
 - **任意メモ（メンターへ・あれば）**：実装中に判断に迷った点・設計上のトレードオフがあれば記載する。なければ空欄でよい（メンターレビューは必須ではない）。
 
 ## 4. 下書きを提示する
@@ -72,7 +72,7 @@ gh pr create --title "予約キャンセル操作を追加 (#42)" --body-file <s
 ```
 
 - `--base` は §1 で確定したブランチを明示する（省略すると既定ブランチに向いてしまう）。head が現在のブランチと同じ場合は `--head` を省略してよいが、別ブランチを指定された場合は明示する。
-- **`--draft` は使わない**。BookFlow はセルフレビュー後に学習者自身がマージする運用（[dev-workflow.md §8](../../../Docs/guide/dev-workflow.md)）なので、GitHub の Draft PR 状態のまま作ると自分でマージできず後から `gh pr ready` が要る。最初から通常の PR として作成する。
+- **`--draft` は使わない**。BookFlow はセルフレビュー後に学習者自身がマージする運用（[dev-workflow.md §8](../../../docs-next/docs/develop/dev-workflow.md)）なので、GitHub の Draft PR 状態のまま作ると自分でマージできず後から `gh pr ready` が要る。最初から通常の PR として作成する。
 - 成功すると `gh` が PR の URL を標準出力に返す。**作成された PR の URL をそのままユーザーに提示する。**
 
 ## 6. 案内

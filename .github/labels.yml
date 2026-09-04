@@ -50,3 +50,8 @@
 - name: ドキュメント改善
   color: 0052CC
   description: Docs や仕様書の誤り・改善提案
+
+# ── ドキュメント運用 ─────────────────────────────────────────────────────────
+- name: ドキュメントプレビュー
+  color: 5319E7
+  description: この PR のドキュメントを gh-pages の pr-preview/ へデプロイする（docs-preview.yml）

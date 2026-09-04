@@ -12,16 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RESOURCE_CATEGORY_LABELS, RESOURCE_SORT_OPTIONS } from "@/lib/labels";
-
-export const DEFAULT_SORT = "createdAt,asc";
+import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 interface ResourceFilterFormProps {
   defaultCategory?: string;
   defaultKeyword?: string;
   defaultFrom?: string;
   defaultTo?: string;
-  defaultSort?: string;
 }
 
 interface ResourceFilterValues {
@@ -29,19 +26,16 @@ interface ResourceFilterValues {
   keyword?: string;
   from?: string;
   to?: string;
-  sort?: string;
 }
 
 /**
  * フィルタフォームの入力値から /resources 遷移先の query 文字列を組み立てる純関数。
- * sort は選択値がデフォルト（DEFAULT_SORT）と一致する場合は URL に付与しない。
  */
 export function buildResourceFilterQuery({
   category,
   keyword,
   from,
   to,
-  sort,
 }: ResourceFilterValues): string {
   const params = new URLSearchParams();
 
@@ -49,7 +43,6 @@ export function buildResourceFilterQuery({
   if (keyword && keyword.trim()) params.set("keyword", keyword.trim());
   if (from) params.set("from", from);
   if (to) params.set("to", to);
-  if (sort && sort !== DEFAULT_SORT) params.set("sort", sort);
 
   return params.toString();
 }
@@ -57,7 +50,7 @@ export function buildResourceFilterQuery({
 /**
  * リソース一覧のフィルタフォーム（クライアントコンポーネント）。
  *
- * カテゴリフィルタ・空き確認（from/to）の入力を受け取り、
+ * カテゴリ・キーワード・空き確認（from/to）の入力を受け取り、
  * URL の searchParams を更新してサーバーコンポーネントに伝える。
  */
 export function ResourceFilterForm({
@@ -65,7 +58,6 @@ export function ResourceFilterForm({
   defaultKeyword,
   defaultFrom,
   defaultTo,
-  defaultSort,
 }: ResourceFilterFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,7 +73,6 @@ export function ResourceFilterForm({
         keyword: data.get("keyword") as string,
         from: data.get("from") as string,
         to: data.get("to") as string,
-        sort: data.get("sort") as string,
       });
 
       router.push(`/resources?${query}`);
@@ -96,7 +87,7 @@ export function ResourceFilterForm({
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4 space-y-4">
       <h2 className="text-sm font-semibold">フィルタ・空き確認</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         {/* キーワード */}
         <div className="space-y-1">
           <Label htmlFor="keyword">キーワード</Label>
@@ -121,23 +112,6 @@ export function ResourceFilterForm({
               <SelectItem value="ROOM">{RESOURCE_CATEGORY_LABELS.ROOM}</SelectItem>
               <SelectItem value="EQUIPMENT">{RESOURCE_CATEGORY_LABELS.EQUIPMENT}</SelectItem>
               <SelectItem value="VEHICLE">{RESOURCE_CATEGORY_LABELS.VEHICLE}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 並び替え */}
-        <div className="space-y-1">
-          <Label htmlFor="sort">並び替え</Label>
-          <Select name="sort" defaultValue={defaultSort ?? DEFAULT_SORT}>
-            <SelectTrigger id="sort" data-testid="resource-filter-form-sort-select">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {RESOURCE_SORT_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
             </SelectContent>
           </Select>
         </div>

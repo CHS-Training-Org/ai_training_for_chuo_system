@@ -18,4 +18,4 @@ AI-DLC エンジン本体は **`.claude/skills/aidlc/SKILL.md`** に移設した
 - 設計成果物: `Docs/spec/aidlc-docs/`
 - ステージ詳細: `.aidlc-rule-details/`（エンジンがオンデマンドで読む）
 
-移設経緯は `Docs/decision/ADR-020-aidlc-engine-adoption.md`（2026-06-24 追記）を参照。
+移設経緯は `docs-next/docs/reference/adr/ADR-020-aidlc-engine-adoption.md`（2026-06-24 追記）を参照。

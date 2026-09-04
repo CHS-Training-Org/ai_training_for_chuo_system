@@ -70,7 +70,7 @@ BookFlow ではそれぞれ次の形で現れます。
 | **Methodology first** | 特別なインストールを必要としない方法論であること | Markdown（`.claude/skills/aidlc/SKILL.md` と `.aidlc-rule-details/`）だけで成立している |
 | **Reproducible** | モデルが違っても結果のばらつきを抑える | 2 択メッセージの固定、計画のチェックボックス更新の強制 |
 | **Agnostic** | プラットフォーム・ベンダーに依存しない | BookFlow は Claude Code 専一に翻案（`AGENTS.md` は導入しない） |
-| **No duplication** | 単一の真実の源を持ち、派生物はそこから導く | Spec-first（`Docs/spec/` が真実の源）と、上流の逐語スナップショット |
+| **No duplication** | 単一の真実の源を持ち、派生物はそこから導く | Spec-first（`docs-next/docs/spec/` が真実の源）と、上流の逐語スナップショット |
 
 この 7 行のうち、学習者が最も直接触るのは **Human in the loop** です。  
 AI-DLC における承認は、確認したという意思表示ではなく**ワークフローの停止条件**です。
@@ -136,7 +136,7 @@ BookFlow は学習者 1 人・セルフ承認のため、この部分は形を�
 |---|---|---|---|---|
 | Workspace Detection（ワークスペース検出） | 必須 | 常に最初に実行 | 進捗トラッカーの有無を見て新規開始か再開かを判定し、既存コードベースの有無（brownfield / greenfield）を判定する | なし（自動で次へ） |
 | Reverse Engineering（既存コード解析） | 条件付き | 既存コードベースがあり、かつ解析成果物が未作成のときに実行 | 業務概要・アーキテクチャ・コード構造・API・コンポーネント一覧・技術スタック・依存関係を洗い出す | あり |
-| Requirements Analysis（要件分析） | 必須（深さ適応） | 常に実行。深さは要求の明確さと複雑さで Minimal / Standard / Comprehensive を選ぶ | ビジネス要求シート（`Docs/spec/enhancements/<short-desc>.md`。選択課題ごとに背景・依存関係・要件・受入条件・影響範囲・AI 活用ポイントを定義した文書）の背景・要件・受入条件を入力として要件をまとめる。セキュリティ・レジリエンシー・プロパティベーステストの各拡張を適用するかもここで問われる | あり |
+| Requirements Analysis（要件分析） | 必須（深さ適応） | 常に実行。深さは要求の明確さと複雑さで Minimal / Standard / Comprehensive を選ぶ | ビジネス要求シート（`docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md`。選択課題ごとに背景・依存関係・要件・受入条件・影響範囲・AI 活用ポイントを定義した文書）の背景・要件・受入条件を入力として要件をまとめる。セキュリティ・レジリエンシー・プロパティベーステストの各拡張を適用するかもここで問われる | あり |
 | User Stories（ユーザーストーリー） | 条件付き | ユーザー向け機能の追加・動線の変更・複数ペルソナ・複雑な業務要件・顧客向け API のときに実行。内部リファクタのみ、単純なバグ修正、インフラのみ、ドキュメントのみならスキップ | 計画（Part 1）で作成方針と疑問点を出し、承認後に生成（Part 2）する | あり |
 | Workflow Planning（実行計画） | 必須 | 常に実行 | ここまでの文脈を読み、どのステージを実行しどれをスキップするかを決めて図で提示する。**plan-first のゲートはここ**（[plan-first のセルフ承認](#plan-first)） | あり |
 | Application Design（コンポーネント設計） | 条件付き | 新しいコンポーネント・サービスが必要、メソッドやサービス層の設計が必要なときに実行。既存の境界内で収まる変更ならスキップ | コンポーネントの責務・メソッド・業務ルール・依存関係を設計する | あり |
@@ -162,7 +162,7 @@ BookFlow は学習者 1 人・セルフ承認のため、この部分は形を�
 
 エンジンは INCEPTION の成果を `Docs/spec/aidlc-docs/` に置くだけで、既存の仕様書
 （要件定義 `requirements.md`、画面仕様書 `screen-spec.md`、API 仕様書 `api-spec.md`、ER 図 `er-diagram.md`。
-いずれも `Docs/spec/` 配下）には統合しません。  
+いずれも `docs-next/docs/spec/` 配下）には統合しません。  
 統合は `/update-spec` スキルで行い、**Code Generation より前に**終えます。タイミングの判断は
 [標準開発フロー](./dev-workflow.md#flow) のステップ 4・5 を参照してください。
 
@@ -213,7 +213,7 @@ AI-DLC の中核は、実装より先に計画を立てて人間が納得して�
 - エンジン本体（`/aidlc` スキル）: [`.claude/skills/aidlc/SKILL.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/skills/aidlc/SKILL.md)
 - 起動判断のポインタ: [`.claude/rules/aidlc-core.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/.claude/rules/aidlc-core.md)
 - ステージ詳細（翻案済み）: [`.aidlc-rule-details/`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/.aidlc-rule-details)
-- [進捗トラッカー](../reference/aidlc/state.md) / [監査ログ](../reference/aidlc/audit.md) / [採用台帳](../reference/aidlc/adoption.md)
+- [採用台帳](../reference/aidlc/adoption.md)。エンジンが実行中に読み書きする進捗トラッカー（[`Docs/spec/aidlc-state.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/Docs/spec/aidlc-state.md)）と監査ログ（[`Docs/spec/aidlc-audit.md`](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/Docs/spec/aidlc-audit.md)）はリポジトリ内のファイルで、サイトには載せていない
 
 **上流・一次情報**
 

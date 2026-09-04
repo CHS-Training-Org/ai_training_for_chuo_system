@@ -5,8 +5,8 @@ description: AI-DLC ワークフロー（INCEPTION→CONSTRUCTION→OPERATIONS�
 
 # BookFlow AI-DLC エンジン（`/aidlc` スキル）
 
-> **移設経緯**: AI-DLC エンジン本体は `.claude/rules/aidlc-core.md`（常時読込・soft 委譲）から、このスキルに移設した。移設理由は (a) 発火の確定性（明示・意図ベース起動）、(b) 常時読込コンテキストの軽量化、(c) 硬い per-stage 意味論の保持。詳細は `Docs/decision/ADR-020-aidlc-engine-adoption.md`（2026-06-24 追記）を参照。
-> **BookFlow 翻案**: `Docs/spec/aidlc-adoption.md` 参照
+> **移設経緯**: AI-DLC エンジン本体は `.claude/rules/aidlc-core.md`（常時読込・soft 委譲）から、このスキルに移設した。移設理由は (a) 発火の確定性（明示・意図ベース起動）、(b) 常時読込コンテキストの軽量化、(c) 硬い per-stage 意味論の保持。詳細は `docs-next/docs/reference/adr/ADR-020-aidlc-engine-adoption.md`（2026-06-24 追記）を参照。
+> **BookFlow 翻案**: `docs-next/docs/reference/aidlc/adoption.md` 参照
 
 ## Pre-flight（BookFlow 独自）: 対象タスクの特定とブランチ確認
 
@@ -15,16 +15,16 @@ description: AI-DLC ワークフロー（INCEPTION→CONSTRUCTION→OPERATIONS�
 1. `Docs/spec/aidlc-state.md` の存在を確認する。
    - **存在する場合**：既存ワークフローの再開（レジューム）とみなし、この節はスキップして次節（エンジン起動）に進む。
 2. 存在しない場合（新規ワークフロー開始時のみ）、現在の git ブランチを確認する。
-   - **`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 規約に既に合致**：`Docs/guide/dev-workflow.md` 手順2で作成済みのケースなので、ブランチ操作は行わない。**質問はせず**、ブランチ名の `<short-desc>` をそのまま対象タスクの識別子として採用する（`Docs/spec/enhancements/<short-desc>.md` が存在すればそれが対象シート、存在しなければエンハンス課題以外のタスクとみなす）。次節に進む。
+   - **`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 規約に既に合致**：`docs-next/docs/develop/dev-workflow.md` 手順2で作成済みのケースなので、ブランチ操作は行わない。**質問はせず**、ブランチ名の `<short-desc>` をそのまま対象タスクの識別子として採用する（`docs-next/docs/spec/enhancements/*/<short-desc>.md` が存在すればそれが対象シート。難易度のディレクトリ（`beginner/` `intermediate/` `advanced/`）を 1 段挟むため、直下ではなくグロブで探す。存在しなければエンハンス課題以外のタスクとみなす）。次節に進む。
    - **`main` または `master` 上にいる**：下記「A. 対象タスクの特定」→「B. ブランチの作成」の順に進める。
    - **`main`/`master` でも規約準拠でもない**（別の作業ブランチに乗ったまま起動した場合）：現在のブランチ名を明示したうえで「このまま続ける」か「新しく feature ブランチを作成する」かを `AskUserQuestion` で確認する。「このまま続ける」場合はブランチ名が規約に合致していれば上記と同様に `<short-desc>` を抽出し（合致していなければエンハンス課題以外のタスクとみなし）次節に進む。「新しく作成する」場合は下記 A → B に従う。
 3. ブランチの作成・切り替えは `git checkout -b` のみを使う。既存の変更を破棄する操作（`git reset --hard` 等）は行わない。
 
 ### A. 対象タスクの特定
 
-- 特別な指示がない限り、`/aidlc` が扱うタスクは `Docs/spec/enhancements/` 配下のビジネス要求シート（`Docs/spec/enhancements/index.md` の課題一覧）を既定の対象とみなす。
+- 特別な指示がない限り、`/aidlc` が扱うタスクは `docs-next/docs/spec/enhancements/` 配下のビジネス要求シート（`docs-next/docs/spec/enhancements/index.md` の課題一覧）を既定の対象とみなす。
 - ユーザーの発言（シートのファイル名・課題名の明示、既存の Issue 番号、これまでの会話文脈）から対象シートを一意に特定できる場合は、そのまま採用する（改めて聞き直さない）。
-- 特定できず、かつメンター指定のバグ修正・運用タスク等エンハンス課題以外であることが会話から明らかでない場合は、`Docs/spec/enhancements/index.md` の課題一覧を提示し `AskUserQuestion` でどの課題に取り組むか確認する（選択肢に「該当なし（エンハンス課題以外のタスク）」を含める）。
+- 特定できず、かつメンター指定のバグ修正・運用タスク等エンハンス課題以外であることが会話から明らかでない場合は、`docs-next/docs/spec/enhancements/index.md` の課題一覧を提示し `AskUserQuestion` でどの課題に取り組むか確認する（選択肢に「該当なし（エンハンス課題以外のタスク）」を含める）。
 - 「該当なし」が選ばれた場合、または最初からエンハンス課題以外であることが明らかな場合は、以降の short-desc・Issue 番号の自動特定を行わない（下記 B の非特定時フォールバックに進む）。
 
 ### B. ブランチの作成
@@ -32,7 +32,7 @@ description: AI-DLC ワークフロー（INCEPTION→CONSTRUCTION→OPERATIONS�
 - **対象エンハンス課題を特定できている場合**：
   1. short-desc は対象シートのファイル名（拡張子を除く）をそのまま使う。
   2. GitHub ユーザー名は `gh api user -q .login` で取得する（取得できない場合のみユーザーに確認する）。
-  3. `gh auth status` が成功する場合に限り、`gh issue list --state open --search "in:body <short-desc>"` 等で候補を取得し、本文に `Docs/spec/enhancements/<short-desc>.md` の文字列を含む Issue に絞り込んで番号の一意特定を試みる。`gh` が使えない場合・絞り込み後に複数件残った場合・該当なしの場合は、Issue 番号をユーザーに確認する（未起票なら `/create-issue` で先に起票するよう案内する）。
+  3. `gh auth status` が成功する場合に限り、`gh issue list --state open --search "in:body <short-desc>"` 等で候補を取得し、本文に `<short-desc>.md` の文字列を含む Issue に絞り込んで番号の一意特定を試みる。`gh` が使えない場合・絞り込み後に複数件残った場合・該当なしの場合は、Issue 番号をユーザーに確認する（未起票なら `/create-issue` で先に起票するよう案内する）。
   4. 組み立てたブランチ名 `feature/<user>/<issue番号>-<short-desc>` を `AskUserQuestion` で提示し、「提案通り作成」または自由記述での修正を確認してから `git checkout -b` を実行する。
 - **対象エンハンス課題を特定できていない場合**：従来どおり Issue 番号と短い説明をユーザーに確認し、`git checkout -b feature/<user>/<issue>-<desc>` を実行する。
 
@@ -52,13 +52,13 @@ description: AI-DLC ワークフロー（INCEPTION→CONSTRUCTION→OPERATIONS�
 
 ## BookFlow 統合ノート
 
-- **デフォルトのタスク源**: 特別な指示がない限り、`Docs/spec/enhancements/` 配下のビジネス要求シートをタスクの真実の源として扱う。Pre-flight で対象シートを特定済みの場合、Requirements Analysis はそのシートの背景・要件・受入条件を入力として使う（改めてゼロから要件を聞き直さない）。ユーザーが明示的に別のタスク（メンター指定のバグ修正・運用タスク等）を指定した場合はそちらを優先する。
+- **デフォルトのタスク源**: 特別な指示がない限り、`docs-next/docs/spec/enhancements/` 配下のビジネス要求シートをタスクの真実の源として扱う。Pre-flight で対象シートを特定済みの場合、Requirements Analysis はそのシートの背景・要件・受入条件を入力として使う（改めてゼロから要件を聞き直さない）。ユーザーが明示的に別のタスク（メンター指定のバグ修正・運用タスク等）を指定した場合はそちらを優先する。
 - **チャットでのセルフ承認**: Workflow Planning ステージの完了時、エンジンが提示した実行計画に対して学習者自身がチャットで直接承認する（メンターの承認は不要）。`ExitPlanMode` は使わない。
 - **ルール解決パス**: `.aidlc-rule-details/`（ワークスペースルートに配置、BookFlow 翻案済みステージファイルが入っている）
 - **状態ファイル**: `Docs/spec/aidlc-state.md`（上流 `aidlc-docs/aidlc-state.md` に相当）
 - **監査ログ**: `Docs/spec/aidlc-audit.md`（上流 `aidlc-docs/audit.md` に相当・追記専用）
-- **設計成果物**: `Docs/spec/aidlc-docs/` 配下に生成する（既存の `Docs/spec/requirements.md` 等への統合はエンジンが行わない。`/update-spec` で Code Generation より前に統合する）
-- **既存スキルとの補完**: `/update-spec` でエンジン成果を `Docs/spec/` へ統合する。`/create-pr` で PR 文面を組み立て・作成する。
+- **設計成果物**: `Docs/spec/aidlc-docs/` 配下に生成する（既存の `docs-next/docs/spec/requirements.md` 等への統合はエンジンが行わない。`/update-spec` で Code Generation より前に統合する）
+- **既存スキルとの補完**: `/update-spec` でエンジン成果を `docs-next/docs/spec/` へ統合する。`/create-pr` で PR 文面を組み立て・作成する。
 - **AGENTS.md**: 非採用（Claude Code 専一）。
 
 ---
@@ -136,7 +136,7 @@ Depth: Minimal / Standard / Comprehensive based on request clarity and complexit
 
 1. **MANDATORY**: Log user input in `Docs/spec/aidlc-audit.md`
 2. Load `inception/requirements-analysis.md`
-3. Execute（Pre-flight で対象エンハンス課題を特定済みの場合は、BookFlow 統合ノート「デフォルトのタスク源」に従い `Docs/spec/enhancements/<short-desc>.md` の背景・要件・受入条件を分析対象の入力として使う。load RE artifacts if brownfield, analyze request, determine depth, generate requirements document）
+3. Execute（Pre-flight で対象エンハンス課題を特定済みの場合は、BookFlow 統合ノート「デフォルトのタスク源」に従い Pre-flight で特定したビジネス要求シート（`docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md`）の背景・要件・受入条件を分析対象の入力として使う。load RE artifacts if brownfield, analyze request, determine depth, generate requirements document）
 4. **Wait for Explicit Approval** — DO NOT PROCEED until user confirms
 5. **MANDATORY**: Log response in `Docs/spec/aidlc-audit.md`
 
@@ -274,7 +274,7 @@ Two parts: Part 1 (Planning: numbered steps + checkboxes + approval), Part 2 (Ge
 
 **Status**: Placeholder for future deployment and monitoring workflows. All build/test activities are in CONSTRUCTION phase.
 
-**BookFlow 翻案**: エンジン定義上は未実装のプレースホルダーだが、BookFlow では CI 品質ゲート（`CI Frontend` / `CI Backend`）を Operations 相当として運用する（詳細は `Docs/guide/dev-workflow.md#phases` §OPERATIONS フェーズ参照）。
+**BookFlow 翻案**: エンジン定義上は未実装のプレースホルダーだが、BookFlow では CI 品質ゲート（`CI Frontend` / `CI Backend`）を Operations 相当として運用する（詳細は `docs-next/docs/develop/aidlc-guide.md#phases` の OPERATIONS フェーズ参照）。
 
 ---
 
@@ -319,7 +319,7 @@ Two parts: Part 1 (Planning: numbered steps + checkboxes + approval), Part 2 (Ge
 <WORKSPACE-ROOT>/
 ├── [BookFlow project structure]          # アプリケーションコードはここ
 │
-├── Docs/spec/                            # ドキュメント（真実の源）
+├── docs-next/docs/spec/                            # ドキュメント（真実の源）
 │   ├── requirements.md                   # 要件定義（エンジン成果を統合）
 │   ├── screen-spec.md                    # 画面仕様（同上）
 │   ├── api-spec.md                       # API仕様（同上）

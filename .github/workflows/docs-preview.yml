@@ -1,0 +1,75 @@
+name: Docs Preview (PR)
+
+# main への push でしか Pages が更新されないため、PR で修正途中のドキュメントを
+# 実サイトの見た目で確認できなかった。ラベル「ドキュメントプレビュー」が付いた
+# main 宛の PR に対して、gh-pages ブランチの pr-preview/pr-<N>/ へプレビューを
+# デプロイし、URL を PR にコメントする（ADR-031）。
+#
+# ラベル方式にしているのは、学習者の PR（Spec-first 運用のため必ず Docs を触る）で
+# プレビューを生成させないため。ラベルを外すか PR を閉じるとプレビューは自動削除される。
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: docs-preview-pr-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: deploy preview
+    # ラベルが外されたときは「そのラベルが対象ラベルだったか」で判定する。
+    # それ以外のイベントでは、PR に対象ラベルが付いていることを条件にする。
+    if: >-
+      (github.event.action == 'unlabeled' && github.event.label.name == 'ドキュメントプレビュー') ||
+      (github.event.action != 'unlabeled' &&
+       contains(github.event.pull_request.labels.*.name, 'ドキュメントプレビュー'))
+    runs-on: ubuntu-latest
+    steps:
+      # 削除時も checkout が要る（デプロイ先の git 操作がワークスペース上で行われるため）
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build docs site
+        if: github.event.action != 'closed' && github.event.action != 'unlabeled'
+        uses: ./.github/actions/build-docs-site
+        with:
+          # プレビューは本番と別パスで配信されるため baseUrl を差し替える
+          docs-next-base-url: /ai_training_for_chuo_system/pr-preview/pr-${{ github.event.number }}/
+
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: pages-root
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: >-
+            ${{ (github.event.action == 'closed' || github.event.action == 'unlabeled')
+                && 'remove' || 'deploy' }}
+
+      # 「どのページを直したか」を PR 説明から探す手間をなくすため、変更ページへの
+      # 直リンクを PR にコメントする。プレビュー URL は PR 番号だけで決まり、
+      # deploy の後なので実体も存在する。
+      - name: Build changed-docs comment
+        if: github.event.action != 'closed' && github.event.action != 'unlabeled'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+          PREVIEW_BASE: https://chs-training-org.github.io/ai_training_for_chuo_system/pr-preview/pr-${{ github.event.number }}/
+        run: node .github/scripts/changed-docs-comment.mjs > changed-docs-comment.md
+
+      # pr-preview-action 自身のコメントとは header を分ける（統合すると互いに上書きし合う）
+      - name: Comment changed docs
+        if: github.event.action != 'closed' && github.event.action != 'unlabeled'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: docs-preview-changed-pages
+          path: changed-docs-comment.md

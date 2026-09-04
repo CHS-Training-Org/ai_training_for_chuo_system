@@ -4,16 +4,16 @@ SKILL.md の手順 2 で「対象ファイルを既存規約に合わせて書�
 
 ---
 
-## 明示アンカー `{ #id }` の付与基準
+## 明示アンカー `{#id}` の付与基準
 
-Zensical（`markdown_extensions.toc`・`permalink = true`）は ASCII 見出しには自動アンカーを生成するが、**日本語見出しには安定したアンカーを生成しない**。そのため**他所からリンクされる日本語見出しには明示アンカー `{ #id }` を必ず付ける**。
+Docusaurus は日本語見出しの自動 ID を URL エンコードするため、リンクが読めなくなる。そのため**他所からリンクされる日本語見出しには明示 ID `{#id}` を必ず付ける**。エスケープ（`\{#...}`）はしない。`.md` は `markdown.format: 'detect'` により CommonMark として解釈されるため、そのまま書ける。
 
-書き方（見出し行末にスペース区切りで付ける）：
+書き方（見出し行末に付ける。`{` の直後にスペースを入れない）：
 
 ```markdown
-### UC-05：承認必要リソースの予約が承認者に回覧される { #uc-05 }
-### 日時フォーマット { #datetime-format }
-## 仕様更新ルール（Spec-first） { #spec-first }
+### UC-05：承認必要リソースの予約が承認者に回覧される {#uc-05}
+### 日時フォーマット {#datetime-format}
+## 仕様更新ルール（Spec-first） {#spec-first}
 ```
 
 リンク側は相対パス＋アンカー：`[UC-05](./requirements.md#uc-05)`、同一ファイル内は `[§共通 日時フォーマット](#datetime-format)`。
@@ -26,7 +26,7 @@ Zensical（`markdown_extensions.toc`・`permalink = true`）は ASCII 見出し�
 | `requirements.md` | `#learner-extensions`・`#uc-01`〜`#uc-08` |
 | `api-spec.md` | `#auth-method`・`#datetime-format`・`#common-error` |
 
-> ASCII 見出し（`### \`GET /api/users/me\`` など）は自動アンカー（`#get-apiusersme`）が効く。api-spec.md 内で実際にこの形で相互参照している（`[\`GET /api/users/me\`](#get-apiusersme)`）。新規参照時は実際に生成されるアンカーを確認すること。
+> ASCII 見出し（`### \`GET /api/users/me\`` など）も自動 ID は生成されるが、記号の落とし方が直感と合わないことがある（この見出しの ID は `#get-api-users-me`）。他所からリンクする見出しは ASCII でも明示 ID を付けるのが安全。リンクを追加・変更したら `cd docs-next && npm run build` で確認する（`onBrokenAnchors: 'throw'` のため、存在しないアンカーを指すとビルドが失敗する）。
 
 ---
 
@@ -69,7 +69,7 @@ Content-Type: application/json
 ````
 
 - リクエストボディがある場合は「**リクエストフィールド（XxxRequest）**」表（列＝`フィールド / 型 / 必須 / バリデーション`）を付ける。
-- エンドポイント固有のエラーは末尾に表（`| HTTP | \`code\` | 条件 |`）でまとめる。汎用エラーは [§共通 共通エラーレスポンス](../../../Docs/spec/api-spec.md#common-error) に集約済みなので重複させない。
+- エンドポイント固有のエラーは末尾に表（`| HTTP | \`code\` | 条件 |`）でまとめる。汎用エラーは [§共通 共通エラーレスポンス](../../../../docs-next/docs/spec/api-spec.md#common-error) に集約済みなので重複させない。
 - 認証・日時・エラー・ページネーションの共通事項は §共通へのリンクで済ませる（各エンドポイントに再掲しない）。
 
 ### screen-spec.md — 画面 1 件のテンプレート
@@ -99,7 +99,7 @@ Content-Type: application/json
 UC を足すときは、(1) 「主要ユースケース一覧」表に `[UC-XX](#uc-xx)` リンク付きで行を追加、(2) 該当 § に UC 見出しと機能要件表を追加する。
 
 ```markdown
-### UC-09：<ユースケース名> { #uc-09 }
+### UC-09：<ユースケース名> {#uc-09}
 
 #### 機能要件
 
@@ -128,7 +128,7 @@ UC を足すときは、(1) 「主要ユースケース一覧」表に `[UC-XX](
 
 ### enhancements/\<課題\>.md — ビジネス要求シートのテンプレート
 
-エンハンス課題（学習者向け拡張課題）の要件を `Docs/spec/enhancements/<short-desc>.md` に 1 課題 1 ファイルで作成する。配置規約・運用原則は [enhancements/index.md](../../../../Docs/spec/enhancements/index.md) を参照。
+エンハンス課題（学習者向け拡張課題）の要件を `docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md` に 1 課題 1 ファイルで作成する。難易度のディレクトリは `beginner/` `intermediate/` `advanced/` の 3 つ。配置規約・運用原則は [enhancements/index.md](../../../../docs-next/docs/spec/enhancements/index.md) を参照。
 
 ```markdown
 # <課題名>
@@ -175,7 +175,7 @@ UC を足すときは、(1) 「主要ユースケース一覧」表に `[UC-XX](
 - 受入条件は**チェックリスト形式**（`- [ ] …`）で、レビュー時に完了条件として個別にチェックできる単位に分割する。
 - **依存関係**節は、複数の学習者が課題を並行着手したときのマージ競合を事前に避けるための情報を書く。同一の `ApprovalService` メソッド・同一テーブルへの Flyway マイグレーション（番号衝突）・同一画面コンポーネント等を共有する課題は「競合する課題」に明記する。
 - **前提課題と推奨着手順序の区別**：本課題の**受入条件**が他課題の成果物（新しい API・UI 要素等）の存在を前提として初めて成立する場合は「前提課題」に書く（例：ソート機能の受入条件に「キーワード検索との組み合わせでも動作する」とあれば、キーワード検索課題は前提課題）。単に「先にやっておくと効率がよい」程度の順序の好みは「推奨着手順序」に書く。前提課題に該当する場合、通常は同じ相手が「競合する課題」にも重複して現れる必要はない（前提課題の完了を待つため、実質的に並行着手にならない）。
-- ファイル名は英小文字ケバブケース（`<short-desc>.md`）。他所から参照する明示アンカーが必要な見出しには `{ #id }` を付与する。
+- ファイル名は英小文字ケバブケース（`<short-desc>.md`）。他所から参照する明示 ID が必要な見出しには `{#id}` を付与する。
 
 ---
 
