@@ -14,6 +14,7 @@ import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -60,9 +61,12 @@ public class ResourceService {
    * リソース一覧を返す。
    *
    * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を指定した場合は、当該時間帯に {@code
-   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
+   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。{@code keyword}
+   * を指定した場合も同様に、候補リスト取得後に Java 側（{@link Locale#ROOT} での大文字小文字非依存比較）で判定する。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param keyword キーワード検索（null または空白のみの場合はフィルタしない。{@code name} / {@code description}
+   *     への部分一致・大文字小文字非依存）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
@@ -72,12 +76,13 @@ public class ResourceService {
   @Transactional(readOnly = true)
   public Page<ResourceResponse> list(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
-    if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+    if (hasKeyword(keyword) || (from != null && to != null)) {
+      return listFiltered(category, keyword, from, to, isAdmin, pageable);
     }
     return listPaginated(category, isAdmin, pageable);
   }
@@ -101,12 +106,14 @@ public class ResourceService {
   }
 
   /**
-   * from/to 指定あり：全候補を取得し Java で重複判定してから手動ページネーション。
+   * {@code keyword} または {@code from}/{@code to} 指定あり：全候補を取得し Java 側で絞り込んでから手動ページネーション。
    *
-   * <p>重複するリソース ID を一括取得（1 クエリ）し、候補リストから除外する。
+   * <p>候補リストは {@code keyword} で絞り込んだうえで、{@code from}/{@code to} 指定時は占有済みリソースを除外する。DB の {@code
+   * ILIKE} 等には委譲せず、候補リスト取得後に Java 側（{@link Locale#ROOT} での大文字小文字非依存比較）で判定する。
    */
-  private Page<ResourceResponse> listWithAvailabilityFilter(
+  private Page<ResourceResponse> listFiltered(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
@@ -114,27 +121,37 @@ public class ResourceService {
     // 1. 候補リソースを全取得（ページネーション前）
     List<Resource> candidates = fetchAllCandidates(category, isAdmin);
 
-    // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
-    List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
-    if (!candidateIds.isEmpty()) {
-      Set<UUID> occupiedIds =
-          reservationRepository
-              .findByResource_IdInAndStatusIn(candidateIds, OCCUPIED_STATUSES)
-              .stream()
-              .filter(r -> overlaps(r.getStartAt(), r.getEndAt(), from, to))
-              .map(r -> r.getResource().getId())
-              .collect(Collectors.toSet());
-      candidates = candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
+    // 2. keyword で絞り込む
+    candidates = filterByKeyword(candidates, keyword);
+
+    // 3. from/to 指定時は占有済み予約があるリソース ID を特定して除外（1 クエリ）
+    if (from != null && to != null) {
+      List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
+      if (!candidateIds.isEmpty()) {
+        Set<UUID> occupiedIds =
+            reservationRepository
+                .findByResource_IdInAndStatusIn(candidateIds, OCCUPIED_STATUSES)
+                .stream()
+                .filter(r -> overlaps(r.getStartAt(), r.getEndAt(), from, to))
+                .map(r -> r.getResource().getId())
+                .collect(Collectors.toSet());
+        candidates = candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
+      }
     }
 
-    // 3. フィルタ後リストを手動ページネーション
+    // 4. フィルタ後リストを手動ページネーション
+    // offset は total（int の候補件数）と比較してから int にキャストする。
+    // 大きな page 値では offset が int の範囲を超え得るため、先にキャストすると負数に折り返る。
     int total = candidates.size();
-    int start = (int) pageable.getOffset();
-    int end = Math.min(start + pageable.getPageSize(), total);
+    long offset = pageable.getOffset();
     List<ResourceResponse> content =
-        start >= total
+        offset >= total
             ? List.of()
-            : candidates.subList(start, end).stream().map(ResourceResponse::from).toList();
+            : candidates
+                .subList((int) offset, (int) Math.min(offset + pageable.getPageSize(), total))
+                .stream()
+                .map(ResourceResponse::from)
+                .toList();
     return new PageImpl<>(content, pageable, total);
   }
 
@@ -148,6 +165,31 @@ public class ResourceService {
           ? resourceRepository.findByCategoryAndIsActiveTrue(category)
           : resourceRepository.findByIsActiveTrue();
     }
+  }
+
+  private boolean hasKeyword(String keyword) {
+    return keyword != null && !keyword.isBlank();
+  }
+
+  /**
+   * 候補リストを {@code keyword} で絞り込む（{@code name} / {@code description} への部分一致、大文字小文字非依存）。
+   *
+   * @param candidates 候補リスト
+   * @param keyword キーワード（null または空白のみの場合は絞り込みをスキップする）
+   * @return 絞り込み後のリスト
+   */
+  private List<Resource> filterByKeyword(List<Resource> candidates, String keyword) {
+    if (!hasKeyword(keyword)) {
+      return candidates;
+    }
+    String needle = keyword.toLowerCase(Locale.ROOT);
+    return candidates.stream()
+        .filter(
+            r ->
+                r.getName().toLowerCase(Locale.ROOT).contains(needle)
+                    || (r.getDescription() != null
+                        && r.getDescription().toLowerCase(Locale.ROOT).contains(needle)))
+        .toList();
   }
 
   // ---------------------------------------------------------------------------

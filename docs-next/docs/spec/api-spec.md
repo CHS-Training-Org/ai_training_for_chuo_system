@@ -260,7 +260,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
+GET /api/resources?category=ROOM&keyword=会議室&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -269,12 +269,15 @@ Authorization: Bearer <JWT>
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
+| `keyword` | string | ❌ | `name` / `description` への部分一致検索（大文字小文字を区別しない） |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
 > `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
+>
+> `keyword` は `name` または `description` のいずれかに部分一致すれば結果に含める。未指定または空文字の場合はキーワード条件を適用しない（全件が対象）。`category` / `from` / `to` と同時に指定した場合は AND 条件で組み合わせる。
 
 #### レスポンス（200 OK）
 

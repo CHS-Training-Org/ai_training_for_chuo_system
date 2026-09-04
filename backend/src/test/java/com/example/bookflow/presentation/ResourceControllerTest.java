@@ -197,6 +197,116 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
   }
 
+  private void deleteResources(UUID... ids) {
+    for (UUID id : ids) {
+      jdbcTemplate.update("DELETE FROM resources WHERE id = ?", id);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /api/resources — キーワード検索（issue #23）
+  //
+  // 既存シード（ROOM / EQUIPMENT）と干渉しないよう、キーワード検索専用テストは
+  // 既存シードが使わない VEHICLE カテゴリで絞り込んだ上でテスト用リソースを検証する。
+  // ---------------------------------------------------------------------------
+
+  private UUID insertResourceForKeywordTest(String name, String description) {
+    UUID id = UUID.randomUUID();
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, description, requires_approval, is_active,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        id,
+        name,
+        "VEHICLE",
+        description,
+        false,
+        true,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    return id;
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsMatchingResourceOnly() throws Exception {
+    UUID alpha = insertResourceForKeywordTest("アルファ号", null);
+    UUID beta = insertResourceForKeywordTest("ベータ号", null);
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources")
+                  .param("category", "VEHICLE")
+                  .param("keyword", "アルファ")
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[?(@.id == '" + alpha + "')]").exists())
+          .andExpect(jsonPath("$.content[?(@.id == '" + beta + "')]").doesNotExist());
+    } finally {
+      deleteResources(alpha, beta);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingDescription_returnsMatchingResourceOnly() throws Exception {
+    UUID withMatch = insertResourceForKeywordTest("車両X", "プロジェクター完備");
+    UUID withoutMatch = insertResourceForKeywordTest("車両Y", "ホワイトボードあり");
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources")
+                  .param("category", "VEHICLE")
+                  .param("keyword", "プロジェクター")
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[?(@.id == '" + withMatch + "')]").exists())
+          .andExpect(jsonPath("$.content[?(@.id == '" + withoutMatch + "')]").doesNotExist());
+    } finally {
+      deleteResources(withMatch, withoutMatch);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordDifferentCase_matchesCaseInsensitively() throws Exception {
+    UUID resource = insertResourceForKeywordTest("Shuttle Bus", null);
+    try {
+      mockMvc
+          .perform(
+              get("/api/resources")
+                  .param("category", "VEHICLE")
+                  .param("keyword", "SHUTTLE")
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.content[?(@.id == '" + resource + "')]").exists());
+    } finally {
+      deleteResources(resource);
+    }
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordAndCategoryCombined_appliesBothFiltersWithAnd() throws Exception {
+    // シードの ACTIVE_RESOURCE_ID（"第1会議室" / ROOM）は "会議室" を含むが、
+    // EQUIPMENT で絞り込むと除外されることを確認する。
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "EQUIPMENT")
+                .param("keyword", "会議室")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withBlankKeyword_returnsUnfilteredResult() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "  ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
   // ---------------------------------------------------------------------------
   // POST /api/resources — 登録
   // ---------------------------------------------------------------------------

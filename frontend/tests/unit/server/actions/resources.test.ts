@@ -5,7 +5,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "../../msw/server";
-import { MOCK_RESOURCE_RESPONSE, MOCK_AVAILABILITY_SLOTS } from "../../msw/handlers";
+import {
+  MOCK_RESOURCE_RESPONSE,
+  MOCK_RESOURCE_LIST_RESPONSE,
+  MOCK_AVAILABILITY_SLOTS,
+} from "../../msw/handlers";
 
 // Next.js サーバー専用モジュールをモック
 vi.mock("next/navigation", () => ({
@@ -49,6 +53,32 @@ describe("listResourcesAction", () => {
   it("正常時: カテゴリフィルタパラメータを渡せる", async () => {
     // MSW がクエリパラメータを受け取っても同じレスポンスを返す（パラメータ検証はBE側）
     const result = await listResourcesAction({ category: "ROOM" });
+    expect(result.content).toHaveLength(1);
+  });
+
+  it("正常時: keyword パラメータをクエリに渡す（resource-list-filter）", async () => {
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        const url = new URL(request.url);
+        expect(url.searchParams.get("keyword")).toBe("会議室");
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    const result = await listResourcesAction({ keyword: "会議室" });
+    expect(result.content).toHaveLength(1);
+  });
+
+  it("keyword 未指定時: クエリパラメータに keyword を含めない", async () => {
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        const url = new URL(request.url);
+        expect(url.searchParams.has("keyword")).toBe(false);
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    const result = await listResourcesAction();
     expect(result.content).toHaveLength(1);
   });
 
