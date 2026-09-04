@@ -12,7 +12,7 @@ references:
   - ../develop/dev-workflow.md
   - ../develop/review-criteria.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
-last_updated: '2026-08-30T00:00:00+09:00'
+last_updated: '2026-09-04T00:00:00+09:00'
 ---
 
 # 運用ガイド
@@ -137,7 +137,7 @@ AI レビューの採用は [ADR-024](../reference/adr/ADR-024-ai-first-review-a
 
 1. `main` 宛の PR にラベル **`ドキュメントプレビュー`** を付ける
 2. `.github/workflows/docs-preview.yml` がサイトをビルドし、`https://chs-training-org.github.io/ai_training_for_chuo_system/pr-preview/pr-<PR番号>/` へデプロイする
-3. プレビュー URL が PR にコメントで投稿される
+3. プレビュー URL が PR にコメントで投稿される。あわせて、この PR で変更されたドキュメントの一覧が別のコメントで投稿される（ページへの直リンクと、変更された見出しへのアンカー付き直リンク）
 4. ラベルを外すか PR をクローズすると、プレビューは自動的に削除される
 
 学習者の PR でプレビューが生成されないよう、**ラベルが付いた PR のみ**を対象にしています（学習者の PR は Spec-first 運用のため必ず仕様のページを変更するため、変更パスや base ブランチでは絞り込めません）。fork からの PR ではプレビューは生成されません。プレビューは公開されるため、未公開情報を含む PR にはラベルを付けないでください。
