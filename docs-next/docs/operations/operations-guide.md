@@ -12,7 +12,7 @@ references:
   - ../develop/dev-workflow.md
   - ../develop/review-criteria.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
-last_updated: '2026-09-02T00:00:00+09:00'
+last_updated: '2026-08-30T00:00:00+09:00'
 ---
 
 # 運用ガイド
@@ -182,6 +182,5 @@ cd docs-next && npm ci && npm run build
 - ラベル体系・課題起票手順：[issue-registration.md](./issue-registration.md)
 - トラブルシューティング：[troubleshooting.md](../develop/troubleshooting.md)
 - 学習効果測定（満足度アンケート）：[learning-effectiveness.md](./learning-effectiveness.md)
-- 結合テスト自動化の検討（確定した運用ではありません）：[Playwright 導入検討](./playwright-adoption.md)
 - AI レビュー採用の意思決定：[ADR-024](../reference/adr/ADR-024-ai-first-review-adoption.md)
 - AI レビューをタスク完了判定に格上げした意思決定：[ADR-025](../reference/adr/ADR-025-ai-review-completion-gate.md)
