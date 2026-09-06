@@ -61,13 +61,13 @@ timestamp: 2026-08-29
 
 ### OPERATIONS PHASE
 
-- [ ] Operations（プレースホルダー）— BookFlow では CI（Operations 相当）は PR 作成後に確認。次のアクション：`/commit-push` でコミット・push → `/create-pr` で PR 作成 → CI（CI Frontend/CI Backend）確認
+- [x] Operations（プレースホルダー）— PR #111 作成済み（https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/111）。CI（CI Frontend/CI Backend）green 確認は学習者自身が行う
 
 ## Current Status
 
 - **Lifecycle Phase**: OPERATIONS
-- **Current Stage**: PR作成・CI確認（未着手）
-- **Next Stage**: —（CI green を確認したらワークフロー完了）
+- **Current Stage**: PR #111 作成済み、CI確認待ち
+- **Next Stage**: —（CI green・セルフレビュー・マージを学習者自身が実施したらワークフロー完了）
 - **Status**: In Progress
 - **Plan**: `Docs/spec/aidlc-docs/construction/plans/resource-list-filter-code-generation-plan.md`（全ステップ完了）
 - **Build and Test 成果物**: `Docs/spec/aidlc-docs/construction/build-and-test/`

@@ -114,3 +114,11 @@ timestamp: 2026-08-29
 **Context**: CONSTRUCTION 完了 → OPERATIONS（PR作成・CI確認）へ
 
 ---
+
+## OPERATIONS - PR作成
+**Timestamp**: 2026-09-06T00:50:00+09:00
+**User Input**: "コミット分割・pushとPR 作成は別々に実行前に確認してください。まずコミット分割・pushを実行してください。" → /commit-push で4コミットに分割・push 完了 → 「実行してください」（/create-pr の gh pr create 実行承認）
+**AI Response**: "/commit-push で4コミット（docs(spec)/feat(backend)/feat(frontend)/docs(aidlc)）に分割し push。/create-pr で head=feature/CHS-KOBAYASHI-TOSHINORI/23-resource-list-filter-aidlc、base=main、gh pr create で実際に作成することをAskUserQuestionで確認の上、本文を提示して最終確認を得てから gh pr create を実行。PR #111（https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/111）を作成した。動作確認結果・セルフレビューはAIが記入せずプレースホルダーのまま残した。"
+**Context**: OPERATIONS - PR #111 作成完了。CI（CI Frontend/CI Backend）green 確認・セルフレビュー・マージは学習者自身が実施。
+
+---
