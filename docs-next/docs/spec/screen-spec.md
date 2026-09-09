@@ -213,8 +213,10 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 | ステータスバッジ | `PENDING`=黄・`APPROVED`=緑・`REJECTED`=赤・`CANCELLED`=グレー |
 | 「詳細」リンク | 予約詳細（`/reservations/{id}`）へ遷移 |
 | ページネーション | page/size 方式（デフォルト 20 件/ページ） |
+| 期間入力（開始日時・終了日時） | ADMIN のみ表示。`datetime-local` 入力を 2 つ配置し、CSV ダウンロード対象期間を指定する。片方のみ入力した状態では「CSV ダウンロード」ボタンを disabled にする |
+| 「CSV ダウンロード」ボタン | ADMIN のみ表示。現在のステータスフィルター・期間入力値を引き継いで `GET /api/reports/reservations/csv`（[api-spec.md §帳票](./api-spec.md#get-api-reports-reservations-csv)）をダウンロードする。実体は Next.js の Route Handler（`/api/reports/reservations/csv`）経由（[requirements.md UC-09](./requirements.md#uc-09) 参照） |
 
-> ADMIN は全ユーザーの予約一覧を閲覧できる（フィルターに申請者を絞る UI を追加してもよい）。
+> ADMIN は全ユーザーの予約一覧を閲覧できる（フィルターに申請者を絞る UI を追加してもよい）。CSV ダウンロード機能（期間入力・ダウンロードボタン）も ADMIN にのみ表示する。
 
 ---
 

@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-09-03
+timestamp: 2026-09-09
 ---
 
 # AI-DLC State Tracking
@@ -18,11 +18,11 @@ timestamp: 2026-09-03
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-09-03T06:00:00Z
-- **Current Stage**: OPERATIONS
+- **Start Date**: 2026-09-09T05:19:07Z
+- **Current Stage**: OPERATIONS（CI品質ゲート運用への引き継ぎ待ち）
 - **Workspace Root**: /workspace
-- **対象タスク**: Issue #23 / `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`（リソース一覧の検索・フィルタ追加）
-- **前提の経緯**: 本ファイルは Issue #22（resource-list-sort）の完了記録からリセットして新規タスク用に作成した。#22 の記録は `Docs/spec/aidlc-audit.md` にそのまま残る（追記専用のため）。#23 は Code Generation（バックエンド・フロントエンド実装、コミット `e342a96`・`2bbc15b`・`5685d42`）が `/aidlc` のトラッキング外で先行完了していた状態から、Build and Test 以降を本ワークフローで遡及的に実施した（詳細は `aidlc-audit.md` の「`/aidlc` 起動（新規ワークフロー: Issue #23 / resource-list-filter）」以降を参照）。
+- **対象タスク**: Issue #29 / `docs-next/docs/spec/enhancements/intermediate/csv-export.md`（CSV 帳票出力）
+- **前提の経緯**: 本ファイルは Issue #23（resource-list-filter、PR #107 でマージ済み）の完了記録からリセットして新規タスク用に作成した。#23 の記録は `Docs/spec/aidlc-audit.md` にそのまま残る（追記専用のため）。リセットの経緯・ユーザー承認は `aidlc-audit.md`「`/aidlc` 起動（新規ワークフロー: Issue #29 / csv-export）」を参照。
 
 ## Code Location Rules
 
@@ -34,38 +34,38 @@ timestamp: 2026-09-03
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | — | — |
-| Resiliency Baseline | — | — |
-| Property-Based Testing | — | — |
+| Security Baseline | No | Requirements Analysis（遡及確認、2026-09-09） |
+| Resiliency Baseline | No | Requirements Analysis（遡及確認、2026-09-09） |
+| Property-Based Testing | No | Requirements Analysis（遡及確認、2026-09-09） |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [x] Workspace Detection - Completed on 2026-09-03T06:01:00Z（既存 RE 成果物を再利用）
-- [x] Reverse Engineering（Brownfield の場合） - SKIP（#22 実行時の成果物 `Docs/spec/aidlc-docs/inception/reverse-engineering/` が対象領域を含めて有効）
-- [x] Requirements Analysis - Completed on 2026-09-03T06:02:00Z（Minimal深度。入力は `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md` と `docs-next/docs/spec/requirements.md` RES-09。新規ドキュメント生成なし）
-- [x] User Stories（条件付き） - SKIP（単一ペルソナ・単純な要求のため）
-- [x] Workflow Planning - Completed on 2026-09-03T06:02:30Z（検証中心の計画。詳細は監査ログ参照）
-- [x] Application Design（条件付き） - SKIP（新規コンポーネント・新規サービスなし）
+- [x] Workspace Detection - Completed on 2026-09-09T05:19:07Z（Brownfield。RE成果物なし、既存specで代替可能と判断しRESKIP）
+- [x] Reverse Engineering（Brownfield の場合） - SKIP（既存の`architecture.md`・`requirements.md`・`api-spec.md`が対象領域をカバー。#22・#23と同一の判断基準）
+- [x] Requirements Analysis - Completed on 2026-09-09T05:26:00Z（Standard深度。成果物: `Docs/spec/aidlc-docs/inception/requirements/requirements.md`。`csv-export.md`のUC-07参照不整合を発見・記録）
+- [x] User Stories（条件付き） - SKIP（単一ペルソナ・シートが受入条件を既に明確化しているため）
+- [x] Workflow Planning - Completed on 2026-09-09T05:33:00Z（成果物: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md`）
+- [x] Application Design（条件付き） - Completed on 2026-09-09T05:50:00Z（成果物: `Docs/spec/aidlc-docs/inception/application-design/`。認証方式の前提修正を発見・記録）
 - [x] Units Generation（条件付き） - SKIP（単一ユニット扱い）
 
-### CONSTRUCTION PHASE（Unit: リソース一覧検索・フィルタ機能）
+### CONSTRUCTION PHASE（Unit: csv-export）
 
-- [x] Functional Design（条件付き、ユニット別） - SKIP（#22 の「候補リスト取得後に Java 側で処理する」パターンを踏襲する単一 private メソッドの追加であり、新規設計不要）
-- [ ] NFR Requirements（条件付き、ユニット別） - SKIP（新規NFR要求なし）
-- [ ] NFR Design（条件付き、ユニット別） - SKIP（NFR Requirements未実行のため連動）
-- [ ] Infrastructure Design（条件付き、ユニット別） - SKIP（インフラ変更なし）
-- [x] Code Generation（必須、ユニット別） - Completed（遡及的検証）on 2026-09-03T06:05:00Z（成果物: `Docs/spec/aidlc-docs/construction/resource-list-filter/code/summary.md`。実装はコミット `e342a96`・`2bbc15b`・`5685d42` として先行完了済み）
-- [x] Build and Test（必須） - Completed on 2026-09-03T06:12:00Z（成果物: `Docs/spec/aidlc-docs/construction/resource-list-filter/build-and-test/summary.md`。バックエンド150件・フロントエンド96件全成功、spotlessCheck/checkstyle/lint/build いずれも成功）
+- [x] Functional Design（条件付き、ユニット別） - Completed on 2026-09-09T06:05:00Z（成果物: `Docs/spec/aidlc-docs/construction/csv-export/functional-design/`。承認待ち）
+- [x] NFR Requirements（条件付き、ユニット別） - SKIP（性能・認可はRequirements Analysisで決定済み）
+- [x] NFR Design（条件付き、ユニット別） - SKIP（NFR Requirements未実行のため連動）
+- [x] Infrastructure Design（条件付き、ユニット別） - SKIP（インフラ変更なし）
+- [x] Code Generation（必須、ユニット別） - Completed on 2026-09-09T06:22:00Z（成果物: `Docs/spec/aidlc-docs/construction/plans/csv-export-code-generation-plan.md`（全15ステップ）・`Docs/spec/aidlc-docs/construction/csv-export/code/`。承認待ち）
+- [x] Build and Test（必須） - Completed on 2026-09-09T06:30:00Z（成果物: `Docs/spec/aidlc-docs/construction/build-and-test/`。バックエンド154件・フロントエンド93件全成功）。Approved on 2026-09-09T06:33:00Z
 
 ### OPERATIONS PHASE
 
-- [x] Operations（プレースホルダー） - BookFlow翻案によりCI品質ゲート運用に委譲。`/aidlc`スキルとしての成果物生成はBuild and Testで完了。仕様（api-spec.md/requirements.md/screen-spec.md）はコミット `e342a96` で実装と同時に反映済み。以降は`/commit-push`・`/create-pr`スキルでコミット・push・PR作成・CI確認を行う
+- [ ] Operations（プレースホルダー） - CONSTRUCTION完了。CI品質ゲート運用（`/commit-push`→`/create-pr`）への引き継ぎ待ち
 
 ## Current Status
 
-- **Lifecycle Phase**: OPERATIONS
-- **Current Stage**: Build and Test 承認済み。CONSTRUCTIONフェーズ完了
-- **Next Stage**: `/commit-push`（本ワークフローで生成した `Docs/spec/aidlc-docs/`・`aidlc-state.md`・`aidlc-audit.md`・`resource-list-filter.md` の差分をコミット）→ `/create-pr`（PR作成）→ CI品質ゲート確認
-- **Status**: Ready for handoff
+- **Lifecycle Phase**: OPERATIONS（CI品質ゲート運用）
+- **Current Stage**: `/commit-push` → `/update-spec` → `/create-pr` すべて完了。PR #113 作成済み（https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/113）
+- **Next Stage**: ユーザーによる動作確認・セルフレビュー・CI（`CI Frontend`/`CI Backend`）確認のうえマージ
+- **Status**: 全コミットpush済み（`feature/CHS-MIYATO-HIROYUKI/29-csv-export` → `origin`、base: `learner/CHS-MIYATO-HIROYUKI/main`）。コミット: `39cffacd` feat(backend) / `df3e8a2d` feat(frontend) / `3883e9e8`・`5a6e7745` docs(aidlc) / `79500618` docs(spec) / `0528e8cf` docs(aidlc)。`/aidlc`エンジンとしてのIssue #29ワークフローはここで完了。次回`/aidlc`起動時は新規タスクとして扱ってよい

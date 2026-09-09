@@ -1,5 +1,6 @@
 package com.example.bookflow.domain;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -108,4 +109,52 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
       countQuery = "SELECT count(r) FROM Reservation r WHERE r.status IN :statuses")
   Page<Reservation> findByStatusInFetch(
       @Param("statuses") Collection<ReservationStatus> statuses, Pageable pageable);
+
+  // ---------------------------------------------------------------------------
+  // カテゴリ 7（帳票出力・期間フィルタ）
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 指定期間と重なる予約をページネーションで返す（帳票出力用）。
+   *
+   * <p>期間の重複判定は {@code r.startAt < :to AND r.endAt > :from}（{@link
+   * com.example.bookflow.application.ResourceService#overlaps} と同じ考え方）。呼び出し元は {@code
+   * Pageable.unpaged()} を渡し、{@code Page#getContent()} で一括取得する想定。
+   *
+   * @param from 対象期間の開始日時
+   * @param to 対象期間の終了日時
+   * @param pageable ページネーション（帳票出力では {@code Pageable.unpaged()} を渡す）
+   * @return 予約ページ（{@code startAt} 昇順）
+   */
+  @Query(
+      value =
+          "SELECT r FROM Reservation r JOIN FETCH r.resource JOIN FETCH r.requester"
+              + " WHERE r.startAt < :to AND r.endAt > :from"
+              + " ORDER BY r.startAt ASC",
+      countQuery = "SELECT count(r) FROM Reservation r WHERE r.startAt < :to AND r.endAt > :from")
+  Page<Reservation> findByPeriodFetch(
+      @Param("from") LocalDateTime from, @Param("to") LocalDateTime to, Pageable pageable);
+
+  /**
+   * 指定期間と重なり、かつ指定ステータスの予約をページネーションで返す（帳票出力用）。
+   *
+   * @param from 対象期間の開始日時
+   * @param to 対象期間の終了日時
+   * @param statuses フィルタするステータス群
+   * @param pageable ページネーション（帳票出力では {@code Pageable.unpaged()} を渡す）
+   * @return 予約ページ（{@code startAt} 昇順）
+   */
+  @Query(
+      value =
+          "SELECT r FROM Reservation r JOIN FETCH r.resource JOIN FETCH r.requester"
+              + " WHERE r.startAt < :to AND r.endAt > :from AND r.status IN :statuses"
+              + " ORDER BY r.startAt ASC",
+      countQuery =
+          "SELECT count(r) FROM Reservation r"
+              + " WHERE r.startAt < :to AND r.endAt > :from AND r.status IN :statuses")
+  Page<Reservation> findByPeriodAndStatusInFetch(
+      @Param("from") LocalDateTime from,
+      @Param("to") LocalDateTime to,
+      @Param("statuses") Collection<ReservationStatus> statuses,
+      Pageable pageable);
 }

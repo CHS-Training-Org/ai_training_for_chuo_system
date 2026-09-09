@@ -189,6 +189,12 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 | POST | `/api/approvals/{stepId}/approve` | 承認（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
 | POST | `/api/approvals/{stepId}/reject` | 却下（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
 
+### 帳票
+
+| メソッド | パス | 概要 | 権限 |
+|--------|------|------|------|
+| GET | `/api/reports/reservations/csv` | 予約一覧 CSV ダウンロード | ADMIN |
+
 ---
 
 ## §認証
@@ -831,6 +837,51 @@ Content-Type: application/json
 ![承認・却下シーケンス図](/diagrams/spec/api-spec-approval.drawio.svg)
 
 > **[1]** `SELECT 1 FROM reservations WHERE resource_id = ? AND status IN ('PENDING','APPROVED') AND start_at < endAt AND end_at > startAt AND id != reservationId`
+
+---
+
+## §帳票
+
+### `GET /api/reports/reservations/csv`（予約一覧 CSV ダウンロード、ADMIN） {#get-api-reports-reservations-csv}
+
+#### リクエスト
+
+```http
+GET /api/reports/reservations/csv?status=APPROVED&from=2026-06-01T00:00:00&to=2026-06-30T23:59:59
+Authorization: Bearer <JWT>
+```
+
+#### クエリパラメータ
+
+| パラメータ | 型 | 必須 | 説明 |
+|------------|-----|------|------|
+| `status` | string | ❌ | ステータスフィルター（`PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`）。省略時は全ステータス |
+| `from` | TIMESTAMP | ❌ | 対象期間の開始日時（`to` と同時指定必須） |
+| `to` | TIMESTAMP | ❌ | 対象期間の終了日時（`from` と同時指定必須） |
+
+> `from` / `to` を片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。両方省略時は全期間が対象。
+
+#### レスポンス（200 OK）
+
+`Content-Type: text/csv; charset=UTF-8`、`Content-Disposition: attachment; filename="reservations.csv"` の CSV バイト列（UTF-8 BOM 付き。Excel で開いた際の日本語ヘッダの文字化けを防ぐ）。ヘッダ行に続き、条件に合致する予約を 1 行 1 件で出力する（対象 0 件の場合はヘッダ行のみ）。
+
+**CSV 列定義（列順固定）**
+
+| 列 | 内容 | 備考 |
+|----|------|------|
+| 予約ID | `reservations.id` | |
+| リソース名 | `resources.name`（JOIN） | |
+| 申請者名 | `users.name`（JOIN） | |
+| 開始日時 | `startAt` | `yyyy/MM/dd HH:mm` 形式（[§共通 日時フォーマット](#datetime-format) の ISO 8601 とは異なる、CSV 専用の表示形式） |
+| 終了日時 | `endAt` | 同上 |
+| 目的 | `purpose` | |
+| 承認状態 | `status` の日本語ラベル | `PENDING`=承認待ち・`APPROVED`=承認済み・`REJECTED`=却下・`CANCELLED`=キャンセル済み・`DRAFT`=ドラフト（バックエンドの `ReportService` 内で個別定義。フロントエンドの表示ラベルとは別管理） |
+
+セル値にカンマ・改行・ダブルクォートを含む場合は RFC 4180 準拠でダブルクォート囲み・内部ダブルクォートの二重化エスケープを行う。改行コードは CRLF。
+
+**権限**：ADMIN のみ。MEMBER / APPROVER は `403 Forbidden`。
+
+> **フロントエンドの認証方式**：バックエンドは JWT Bearer 認証のみで Cookie セッションに対応しないため、ブラウザからの直接リンクではなく Next.js の Route Handler（`/api/reports/reservations/csv`）が [§共通 認証方式](#auth-method) に基づく認証済みリクエストをバックエンドへ代行し、レスポンスを透過転送する（詳細は [requirements.md UC-09](./requirements.md#uc-09) 参照）。
 
 ---
 
