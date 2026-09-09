@@ -596,3 +596,20 @@ timestamp: 2026-09-03
 **Context**: OPERATIONSフェーズ（`/commit-push`部分）完了。残る作業は`/create-pr`によるPR作成・CI確認・セルフレビューのうえマージ。
 
 ---
+
+## `/create-pr` 起動 → Spec-first未実施を発見（Issue #29 / csv-export）
+
+**Timestamp**: 2026-09-09T07:15:00Z
+**User Input**: "続けて実行してください"
+**AI Response**: "`/create-pr`を起動し、base/headブランチ・実行方法を`AskUserQuestion`で確認する前に`git diff <base>...<head> --stat`で差分を把握したところ、`docs-next/docs/spec/`配下のファイルが一切含まれていないことを検出した。Requirements Analysis時点の申し送り（`Docs/spec/aidlc-docs/inception/requirements/requirements.md`「⚠️発見した不整合」）で`/update-spec`実行が必要と記録されていたが未実施だったため、CLAUDE.mdのSpec-first原則に反する状態でPRを作ることになる旨をユーザーに提示し、`AskUserQuestion`で「先に/update-specを実行」「今回は実装のみでPR作成し未対応と明記」の2択を確認した。"
+**Context**: ユーザー回答は「先に/update-specを実行してからPR作成（推奨）」。`/update-spec`スキルへ処理を委譲する。
+
+---
+
+## `/update-spec` 実行完了（Issue #29 / csv-export）
+
+**Timestamp**: 2026-09-09T07:25:00Z
+**AI Response**: "実装コード（`ReportController`/`ReportService`/`CsvExportControls.tsx`/Route Handler）・Requirements Analysis成果物・functional-design成果物を突合し、以下を更新した。(1) `requirements.md`：新規UC-09（管理者が予約一覧をCSVでダウンロードする）を§帳票として新設し、RPT-01〜05を機能要件として追加、主要ユースケース一覧を8→9件に更新、API権限マトリクスに`GET /api/reports/reservations/csv`の行を追加。(2) `api-spec.md`：§帳票を新設し、エンドポイント一覧・リクエスト/クエリパラメータ/CSV列定義（列順固定）/RFC4180エスケープ/Route Handler経由の認証方式前提を記載。(3) `screen-spec.md`：`/reservations`画面のUI要素表にADMIN限定の期間入力2つ・CSVダウンロードボタンを追記。(4) `csv-export.md`：Requirements Analysis時点で発見した誤記（無関係なUC-07への参照）をUC-09への正しいリンクに訂正した。`cd docs-next && npm run build`でリンク・アンカー破損なしを確認（初回は`requirements.md`から`#auth-method`への同一ファイル内リンクが誤りで検出されたため`./api-spec.md#auth-method`に修正し再ビルドで解消）。独立コミット`79500618`（`docs(spec): ...`）としてコミット・push済み。"
+**Context**: `/update-spec`完了。`/create-pr`に復帰する。
+
+---
