@@ -588,3 +588,11 @@ timestamp: 2026-09-03
 **Context**: `/commit-push`スキルへ処理を委譲する。
 
 ---
+
+## `/commit-push` 実行完了（Issue #29 / csv-export）
+
+**Timestamp**: 2026-09-09T07:10:00Z
+**AI Response**: "現在のブランチ`feature/CHS-MIYATO-HIROYUKI/29-csv-export`のまま、3コミットに分割してコミットした：(1) `39cffacd` feat(backend) — ReportService/ReportController/ReservationRepository（クエリ追加）+ テスト、(2) `df3e8a2d` feat(frontend) — CsvExportControls/api-client.ts/page.tsx/Route Handler + テスト、(3) `3883e9e8` docs(aidlc) — aidlc-state.md/aidlc-audit.md/Docs/spec/aidlc-docs以下一式。未追跡の`site/`（無関係なDocusaurusビルド成果物、Issue #23作業時の副産物と推定）はコミット対象から除外し削除もしていない。`git push -u origin feature/CHS-MIYATO-HIROYUKI/29-csv-export`を実行し成功（リモートに新規ブランチ作成、トラッキング設定完了）。"
+**Context**: OPERATIONSフェーズ（`/commit-push`部分）完了。残る作業は`/create-pr`によるPR作成・CI確認・セルフレビューのうえマージ。
+
+---
