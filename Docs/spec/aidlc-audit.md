@@ -613,3 +613,12 @@ timestamp: 2026-09-03
 **Context**: `/update-spec`完了。`/create-pr`に復帰する。
 
 ---
+
+## `/create-pr` 実行完了（Issue #29 / csv-export）
+
+**Timestamp**: 2026-09-09T07:35:00Z
+**User Input**: "この内容で作成（推奨）"（AskUserQuestion選択）
+**AI Response**: "head=`feature/CHS-MIYATO-HIROYUKI/29-csv-export`・base=`learner/CHS-MIYATO-HIROYUKI/main`で`gh pr create`を実行し、PR #113（https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/113）を作成した。本文の「動作確認結果」「セルフレビュー」はプレースホルダーのまま残し、ユーザー自身の実施・記入が必要である旨を案内した。"
+**Context**: `/aidlc`のOPERATIONSフェーズ（`/commit-push`→`/update-spec`→`/create-pr`）完了。残る作業はユーザーによる動作確認・セルフレビュー・CI（CI Frontend/CI Backend）確認のうえマージ。
+
+---
