@@ -69,6 +69,9 @@ const config: Config = {
   // 移行時に `\{#id}` へエスケープせざるを得なくなっていた（アンカーが全滅する原因）。
   markdown: {
     format: 'detect',
+    // theme-mermaid を themes に入れるだけでは ```mermaid コードブロックは図にならず、
+    // コードのまま表示される。図として描画するにはこのフラグが要る。
+    mermaid: true,
   },
 
   themes: ['@docusaurus/theme-mermaid'],
