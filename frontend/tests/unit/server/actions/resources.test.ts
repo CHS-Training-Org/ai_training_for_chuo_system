@@ -52,6 +52,22 @@ describe("listResourcesAction", () => {
     expect(result.content).toHaveLength(1);
   });
 
+  it("正常時: keyword フィルタパラメータを渡せる", async () => {
+    // モックハンドラが name/description への部分一致で絞り込むため、
+    // 一致するキーワードを渡せば結果は維持される。
+    const result = await listResourcesAction({ keyword: "会議室" });
+    expect(result.content).toHaveLength(1);
+  });
+
+  it("正常時: keyword がリクエストへ転送され、一致しない場合は空配列を返す", async () => {
+    // モックハンドラは keyword を受け取ったときのみ name/description で絞り込む。
+    // listResourcesAction が keyword をクエリパラメータへ転送していなければ
+    // このアサーションは失敗する（転送されていれば0件、されていなければ1件のまま）。
+    const result = await listResourcesAction({ keyword: "存在しないキーワード" });
+    expect(result.content).toHaveLength(0);
+    expect(result.totalElements).toBe(0);
+  });
+
   it("401 時: ApiClientError をスローする", async () => {
     server.use(
       http.get("/api/backend/resources", () => {

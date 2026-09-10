@@ -74,13 +74,15 @@ class ResourceControllerTest extends BaseControllerTest {
 
     // Resources（active + inactive）
     jdbcTemplate.update(
-        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
-            + " VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
         ACTIVE_RESOURCE_ID,
         "第1会議室",
         "ROOM",
         false,
         true,
+        "プロジェクター完備",
         LocalDateTime.of(2025, 4, 1, 9, 0));
     jdbcTemplate.update(
         "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
@@ -195,6 +197,50 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchingName_returnsMatchingResource() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議室").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchingDescription_returnsMatchingResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "プロジェクター").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordNotMatching_returnsEmptyContent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "存在しないキーワード").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithCategory_appliesAndCondition() throws Exception {
+    // カテゴリ（VEHICLE）とキーワード（会議室）は同一リソースにマッチしないため空
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "VEHICLE")
+                .param("keyword", "会議室")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
   }
 
   // ---------------------------------------------------------------------------

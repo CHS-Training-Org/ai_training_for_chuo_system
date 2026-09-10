@@ -119,8 +119,23 @@ export const handlers = [
   }),
 
   // リソース一覧
-  http.get("/api/backend/resources", () => {
-    return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+  // keyword が転送された場合は name/description への部分一致（大文字小文字無視）で
+  // モック側も絞り込む。これにより BFF 層（resources.ts）が keyword をリクエストへ
+  // 転送し忘れた場合にテストが失敗するようになる。
+  http.get("/api/backend/resources", ({ request }) => {
+    const keyword = new URL(request.url).searchParams.get("keyword");
+    if (!keyword) {
+      return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+    }
+    const lowerKeyword = keyword.toLowerCase();
+    const matches =
+      MOCK_RESOURCE_RESPONSE.name.toLowerCase().includes(lowerKeyword) ||
+      MOCK_RESOURCE_RESPONSE.description.toLowerCase().includes(lowerKeyword);
+    return HttpResponse.json(
+      matches
+        ? MOCK_RESOURCE_LIST_RESPONSE
+        : { ...MOCK_RESOURCE_LIST_RESPONSE, content: [], totalElements: 0 },
+    );
   }),
 
   // リソース詳細
