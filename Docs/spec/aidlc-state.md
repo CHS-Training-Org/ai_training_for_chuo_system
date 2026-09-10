@@ -17,10 +17,12 @@ timestamp: 2026-08-29
 
 ## Project Information
 
-- **Project Type**: [Greenfield/Brownfield]
-- **Start Date**: [ISO 8601 timestamp]
-- **Current Stage**: [INCEPTION - Workspace Detection]
+- **Project Type**: Brownfield
+- **Start Date**: 2026-09-06T00:00:00+09:00
+- **Current Stage**: INCEPTION - Reverse Engineering
 - **Workspace Root**: /workspace
+- **対象タスク**: `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`（リソース一覧の検索・フィルタ追加）
+- **Issue/ブランチ**: `feature/CHS-KOBAYASHI-TOSHINORI/23-resource-list-filter-aidlc`
 
 ## Code Location Rules
 
@@ -40,30 +42,32 @@ timestamp: 2026-08-29
 
 ### INCEPTION PHASE
 
-- [ ] Workspace Detection
-- [ ] Reverse Engineering（Brownfield の場合）
-- [ ] Requirements Analysis
-- [ ] User Stories（条件付き）
-- [ ] Workflow Planning
-- [ ] Application Design（条件付き）
-- [ ] Units Generation（条件付き）
+- [x] Workspace Detection
+- [x] Reverse Engineering（Brownfield の場合）— 2026-09-06 完了。ユーザーは承認メッセージを明示せず `/update-spec` に進んだが、内容への Request Changes もなく次工程で参照され続けているため黙示的に承認されたものとして扱う
+- [x] Requirements Analysis — ビジネス要求シート（RES-01〜04・受入条件）が既に確定済みのため、シート自体を入力として採用（改めての質問ファイル生成はスキップ）
+- [ ] User Stories（条件付き）— SKIP：単一画面・単一エンドポイントの拡張で複数ペルソナ・複雑な業務要件を伴わないため
+- [x] Workflow Planning — `/update-spec` 実行 → 設計判断（Specification vs @Query）確認 → Code Generation という順序をチャットで提示し、ユーザーが「その進め方でお願いします」で承認（正式な Mermaid ワークフロー図は生成していない簡略版）
+- [ ] Application Design（条件付き）— SKIP：新規コンポーネント・新規サービス層なし。既存の4レイヤー構成の拡張のみ
+- [ ] Units Generation（条件付き）— SKIP：単一ユニットで完結する規模と判断
 
 ### CONSTRUCTION PHASE
 
-- [ ] Functional Design（条件付き、ユニット別）
-- [ ] NFR Requirements（条件付き、ユニット別）
-- [ ] NFR Design（条件付き、ユニット別）
-- [ ] Infrastructure Design（条件付き、ユニット別）
-- [ ] Code Generation（必須、ユニット別）
-- [ ] Build and Test（必須）
+- [ ] Functional Design（条件付き、ユニット別）— SKIP：新規データモデル・複雑な業務ロジックなし（チャットでの設計判断確認で代替）
+- [ ] NFR Requirements（条件付き、ユニット別）— SKIP：性能・セキュリティ・スケーラビリティ要件の新規発生なし
+- [ ] NFR Design（条件付き、ユニット別）— SKIP（NFR Requirements 未実行のため）
+- [ ] Infrastructure Design（条件付き、ユニット別）— SKIP：インフラ変更なし
+- [x] Code Generation（必須、ユニット別）— resource-list-filter: Part 1・Part 2 完了、承認済み
+- [x] Build and Test（必須）— 2026-09-06 完了・承認済み。Performance/Contract/Security/E2E は本タスクのスコープ外と判断（SKIP、理由は build-and-test-summary.md 参照）
 
 ### OPERATIONS PHASE
 
-- [ ] Operations（プレースホルダー）
+- [x] Operations（プレースホルダー）— PR #111 作成済み（https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/111）。CI（CI Frontend/CI Backend）green 確認は学習者自身が行う
 
 ## Current Status
 
-- **Lifecycle Phase**: [INCEPTION/CONSTRUCTION/OPERATIONS]
-- **Current Stage**: [Stage Name]
-- **Next Stage**: [Next stage to execute]
-- **Status**: [In Progress/Complete/Waiting for Approval]
+- **Lifecycle Phase**: OPERATIONS
+- **Current Stage**: PR #111 作成済み、CI確認待ち
+- **Next Stage**: —（CI green・セルフレビュー・マージを学習者自身が実施したらワークフロー完了）
+- **Status**: In Progress
+- **Plan**: `Docs/spec/aidlc-docs/construction/plans/resource-list-filter-code-generation-plan.md`（全ステップ完了）
+- **Build and Test 成果物**: `Docs/spec/aidlc-docs/construction/build-and-test/`
