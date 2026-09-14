@@ -23,6 +23,7 @@ timestamp: 2026-09-09
 - **Workspace Root**: /workspace
 - **対象タスク**: Issue #29 / `docs-next/docs/spec/enhancements/intermediate/csv-export.md`（CSV 帳票出力）
 - **前提の経緯**: 本ファイルは Issue #23（resource-list-filter、PR #107 でマージ済み）の完了記録からリセットして新規タスク用に作成した。#23 の記録は `Docs/spec/aidlc-audit.md` にそのまま残る（追記専用のため）。リセットの経緯・ユーザー承認は `aidlc-audit.md`「`/aidlc` 起動（新規ワークフロー: Issue #29 / csv-export）」を参照。
+- **追加ラウンド（Round 2）**: PR #113 の AI レビュー観点2（NG）で指摘された、フロントエンド BFF 層（`api-client.ts` の `getRaw`／`route.ts`）のテスト欠落に対応するラウンドを 2026-09-14 に追加。Issue #29 と同一ユニット・同一ブランチの継続作業のため本ファイルはリセットせず追記する。経緯は `aidlc-audit.md`「`/aidlc` 起動（Issue #29 追加ラウンド: PR #113 観点2 テストギャップ対応）」を参照。
 
 ## Code Location Rules
 
@@ -61,11 +62,29 @@ timestamp: 2026-09-09
 
 ### OPERATIONS PHASE
 
-- [ ] Operations（プレースホルダー） - CONSTRUCTION完了。CI品質ゲート運用（`/commit-push`→`/create-pr`）への引き継ぎ待ち
+- [x] Operations（プレースホルダー） - CONSTRUCTION完了。CI品質ゲート運用（`/commit-push`→`/update-spec`→`/create-pr`）完了。PR #113 作成済み（Round 1 完了）
+
+### Round 2（PR #113 観点2 テストギャップ対応）
+
+- [x] Workspace Detection - Completed on 2026-09-14T06:12:00Z（Brownfield・既存ユニットcsv-exportの継続作業。RE不要）
+- [x] Requirements Analysis - Minimal深度で実施（成果物: `Docs/spec/aidlc-docs/inception/requirements/round2-test-gap-requirements.md`）
+- [x] User Stories（条件付き） - SKIP（テスト追加のみ・既存挙動の変更なし・単一ペルソナ不要）
+- [x] Workflow Planning - 実施（成果物: `Docs/spec/aidlc-docs/inception/plans/round2-execution-plan.md`）
+- [x] Application Design（条件付き） - SKIP（新規コンポーネントなし）
+- [x] Units Generation（条件付き） - SKIP（既存ユニットcsv-exportの範囲内）
+- [ ] Functional Design（条件付き、ユニット別） - SKIP（新規ビジネスロジックなし。既存実装の挙動を検証するテストのみ）
+- [ ] NFR Requirements/Design（条件付き） - SKIP
+- [ ] Infrastructure Design（条件付き） - SKIP（インフラ変更なし）
+- [x] Code Generation（必須、ユニット別） - Completed on 2026-09-14T06:22:00Z（成果物: `Docs/spec/aidlc-docs/construction/plans/csv-export-round2-test-gap-code-generation-plan.md`（全2ステップ）・`Docs/spec/aidlc-docs/construction/csv-export/code/round2-test-gap-summary.md`。新規: `frontend/tests/unit/lib/api-client.test.ts`（4テスト）・`frontend/tests/unit/app/api/reports/reservations/csv/route.test.ts`（3テスト）。プロダクションコード差分なし）
+- [x] Build and Test（必須） - Completed on 2026-09-14T06:25:00Z（`pnpm test`全体100件成功、`pnpm lint`エラーなし、`pnpm format:check`成功（自動整形1件後）。健全性チェック（対象コードを一時破壊→テスト失敗確認→復元）2件実施済み）。Approved on 2026-09-14T06:27:00Z
+
+### OPERATIONS PHASE（Round 2）
+
+- [ ] Operations（Round 2） - `/commit-push`実行中。以降 PR #113 への反映方針を確認
 
 ## Current Status
 
-- **Lifecycle Phase**: OPERATIONS（CI品質ゲート運用）
-- **Current Stage**: `/commit-push` → `/update-spec` → `/create-pr` すべて完了。PR #113 作成済み（https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/113）
-- **Next Stage**: ユーザーによる動作確認・セルフレビュー・CI（`CI Frontend`/`CI Backend`）確認のうえマージ
-- **Status**: 全コミットpush済み（`feature/CHS-MIYATO-HIROYUKI/29-csv-export` → `origin`、base: `learner/CHS-MIYATO-HIROYUKI/main`）。コミット: `39cffacd` feat(backend) / `df3e8a2d` feat(frontend) / `3883e9e8`・`5a6e7745` docs(aidlc) / `79500618` docs(spec) / `0528e8cf` docs(aidlc)。`/aidlc`エンジンとしてのIssue #29ワークフローはここで完了。次回`/aidlc`起動時は新規タスクとして扱ってよい
+- **Lifecycle Phase**: OPERATIONS（Round 2: `/commit-push`実行中）
+- **Current Stage**: `/commit-push`
+- **Next Stage**: PR #113 への反映（追いpush、または新規コミット＋push。レビューコメントへの回答方針も含めてユーザーと確認）
+- **Status**: Round 1（Workspace Detection〜Operations/PR #113作成）は完了済み。Round 2（`api-client.ts`の`getRaw`／`route.ts`のテスト追加、計7テスト）はCONSTRUCTION完了・承認済み。OPERATIONSへ移行

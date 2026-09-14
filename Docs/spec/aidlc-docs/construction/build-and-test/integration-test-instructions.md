@@ -28,7 +28,9 @@ CSV 帳票出力のコンポーネント間連携（Controller → Service → R
 
 ## 自動化されていない結合範囲（既知のギャップ）
 
-フロントエンドの Route Handler（`frontend/src/app/api/reports/reservations/csv/route.ts`）→ バックエンドの実際の HTTP 呼び出しチェーンには自動テストがない（`CsvExportControls.test.tsx` は `href` の組み立てのみを検証し、実際のダウンロードは行わない）。この経路はブラウザでの手動確認を推奨する。
+フロントエンドの Route Handler（`frontend/src/app/api/reports/reservations/csv/route.ts`）→ **実際の** バックエンド（Spring Boot）への HTTP 呼び出しチェーンには自動テストがない。この経路はブラウザでの手動確認を推奨する。
+
+**Round 2（PR #113 観点2対応）で追加した範囲**: `frontend/tests/unit/lib/api-client.test.ts`（`getRaw` の `skipAssertOk` によるエラー透過ロジック）・`frontend/tests/unit/app/api/reports/reservations/csv/route.test.ts`（未認証時401分岐・バックエンドの status/`Content-Type`/`Content-Disposition` の透過転送）が、MSWでバックエンドをスタブした上でこれらのロジックをユニットテストレベルで検証する。`CsvExportControls.test.tsx`（`href` の組み立てのみ）と合わせて、Route Handler単体の分岐・契約は自動テストでカバーされた。**ただし、これらはMSWによるスタブであり、実際のSpring Bootバックエンドとの結合ではない**ため、上記の「自動化されていない結合範囲」の性質は変わらない。
 
 ### 手動確認手順（開発者・学習者向け）
 

@@ -622,3 +622,54 @@ timestamp: 2026-09-03
 **Context**: `/aidlc`のOPERATIONSフェーズ（`/commit-push`→`/update-spec`→`/create-pr`）完了。残る作業はユーザーによる動作確認・セルフレビュー・CI（CI Frontend/CI Backend）確認のうえマージ。
 
 ---
+
+## `/aidlc` 起動（Issue #29 追加ラウンド: PR #113 観点2 テストギャップ対応）
+
+**Timestamp**: 2026-09-14T06:10:00Z
+**User Input**: "（/aidlc スラッシュコマンド起動）" → AskUserQuestion「Issue #29（csv-export）のAI-DLCワークフローは完了済み（PR #113作成済み）です。この状態で /aidlc を起動した意図は？」に対し "Issue #29に追加対応が必要" → 続くAskUserQuestion「Issue #29への追加対応は具体的に何ですか？」に対し "PR #113のレビュー指摘対応"
+**AI Response**: "`Docs/spec/aidlc-state.md`が既存（Current Stage: OPERATIONS）だったためPre-flightをスキップしエンジンをレジューム起動。ユーザー回答からOPERATIONS完了後の追加ラウンドと判断し、`gh api repos/.../issues/113/comments`でPR #113の会話コメントを取得。AIレビュー（観点1〜3、ラウンド1）の内容を確認した結果、観点1（要求整合性）はOK、観点3（理解度チェック）はユーザーが2026-09-14T06:02:57Zに`1-C/2-B/3-D/4-A`で回答済み・追加対応不要、観点2（実装と非機能部分の整合性）がNGであり、これが唯一のアクション可能な指摘であると特定した。NG内容：`frontend/src/lib/api-client.ts`の`getRaw`（`skipAssertOk`によるエラー透過ロジック）と`frontend/src/app/api/reports/reservations/csv/route.ts`（未認証時401分岐・status/ヘッダの透過転送）に対応するテストが差分に存在しない。advisorに相談し、スコープを「既存挙動に対するテスト追加のみ」（ヘッダ転送範囲や`toIsoWithSeconds`の仕様自体は変更しない）に確定した。"
+**Context**: Issue #29ユニット（csv-export）を追加ラウンドとして再オープン。以降はINCEPTIONを軽量実施（Requirements AnalysisはMinimal深度）した上でCONSTRUCTION（Code Generation: テスト追加）→ Build and Testを実施する。
+
+---
+
+## Requirements Analysis（Round 2）完了
+
+**Timestamp**: 2026-09-14T06:14:00Z
+**AI Response**: "Minimal深度で`round2-test-gap-requirements.md`を作成。RG2-01（`getRaw`のエラー透過）・RG2-02（`route.ts`の401分岐）・RG2-03（`route.ts`のstatus/ヘッダ転送）の3要件を定義。要求がPRレビューNG本文に具体的に明記されており曖昧性がないため、`requirement-verification-questions.md`の作成はスキップ（根拠を成果物内に明記）。ヘッダ転送範囲・`toIsoWithSeconds`の現行実装は変更対象外と明記。"
+**Context**: Requirements Analysis完了。承認待ち。
+
+---
+
+## Workflow Planning（Round 2）完了
+
+**Timestamp**: 2026-09-14T06:16:00Z
+**AI Response**: "`round2-execution-plan.md`を作成。EXECUTE対象はCode Generation・Build and Testの2ステージのみ（他は全てSKIP、根拠を明記）。対象成果物として`api-client.test.ts`・`route.test.ts`の2新規テストファイルを特定。"
+**Context**: Workflow Planning完了。承認待ち。ユーザー自身がチャットで承認する運用のためAskUserQuestionは使わない。
+
+---
+
+## Requirements Analysis / Workflow Planning（Round 2）承認
+
+**Timestamp**: 2026-09-14T06:17:00Z
+**User Input**: "そのままテスト実装に進んでください"
+**AI Response**: "INCEPTION（Round 2）の承認と解釈。Code Generation Part 1として`csv-export-round2-test-gap-code-generation-plan.md`（Step 1: `api-client.test.ts`新規作成、Step 2: `route.test.ts`新規作成の2ステップ）を作成した。ユーザーの指示（『そのまま進んで』）をPart 1プランの承認としても扱い、Part 2（実装）に連続して着手する。"
+**Context**: Code Generation Part 1完了・承認済み。Part 2（実装）に進む。
+
+---
+
+## Code Generation Part 2（Round 2）実行完了 + Build and Test（Round 2）完了
+
+**Timestamp**: 2026-09-14T06:25:00Z
+**AI Response**: "プラン通りStep 1・Step 2を実行し2ファイルを新規作成した：`frontend/tests/unit/lib/api-client.test.ts`（`getRaw`の403/200透過・`get`との対比、4テスト）、`frontend/tests/unit/app/api/reports/reservations/csv/route.test.ts`（401早期リターン・200/403のstatus/ヘッダ転送、3テスト）。両ファイルとも `pnpm test` で成功を確認後、健全性チェックとして (1) `getRaw`から`skipAssertOk: true`を一時除去→`api-client.test.ts`の403系テストが失敗することを確認→復元、(2) `route.ts`のレスポンスstatusを`200`に固定→`route.test.ts`の403転送テストが失敗することを確認→復元、の2件を実施し、新規テストが実際にロジックを検証していることを裏付けた（`git diff --stat -- frontend/src`が空であることでプロダクションコード差分ゼロを確認）。`pnpm lint`はエラーなし。`pnpm format:check`は初回`api-client.test.ts`に1件の整形差分を検出したため`pnpm format`で自動修正し再チェックで解消した。`pnpm test`全体は100件成功（Round 1時点93件+7件）。`Docs/spec/aidlc-docs/construction/build-and-test/integration-test-instructions.md`の『自動化されていない結合範囲』に、Round 2で追加したユニットテストの範囲（MSWスタブによるRoute Handler単体の契約検証であり、実バックエンドとの結合ではない）を追記した。成果物: `Docs/spec/aidlc-docs/construction/plans/csv-export-round2-test-gap-code-generation-plan.md`（全ステップ[x]）・`Docs/spec/aidlc-docs/construction/csv-export/code/round2-test-gap-summary.md`。"
+**Context**: Code Generation・Build and Test（Round 2）完了。承認待ち。
+
+---
+
+## Code Generation / Build and Test（Round 2）承認 → Operations移行
+
+**Timestamp**: 2026-09-14T06:27:00Z
+**User Input**: "承認しますので、Operations（/commit-push→PR #113への反映）に進んでください"
+**AI Response**: "Round 2のCode Generation・Build and Testを承認済みとして記録。CONSTRUCTIONフェーズ完了、OperationsフェーズとしてBookFlow標準の`/commit-push`スキルに処理を委譲する。"
+**Context**: `/commit-push`スキルへ処理を委譲する。
+
+---
