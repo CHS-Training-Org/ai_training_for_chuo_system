@@ -90,7 +90,11 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
   async function request(
     method: string,
     path: string,
-    options: { body?: unknown; params?: Record<string, string | string[]> } = {},
+    options: {
+      body?: unknown;
+      params?: Record<string, string | string[]>;
+      skipAssertOk?: boolean;
+    } = {},
   ): Promise<Response> {
     const token = await getToken();
 
@@ -133,7 +137,9 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
       cache: "no-store",
     });
 
-    await assertOk(res);
+    if (!options.skipAssertOk) {
+      await assertOk(res);
+    }
     return res;
   }
 
@@ -164,6 +170,19 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
     const res = await request("GET", path, { params });
     const json: unknown = await res.json();
     return schema.parse(json);
+  }
+
+  /**
+   * GET → JSON パース・Zod 検証を行わず、生の {@link Response} を返す（CSV 等のバイナリ/非 JSON レスポンス用）。
+   *
+   * {@code assertOk} は呼ばない。エラーレスポンス（4xx/5xx）もそのまま呼び出し元に返し、
+   * 呼び出し元（Route Handler 等）がステータス・ヘッダ・ボディを透過転送できるようにする。
+   */
+  async function getRaw(
+    path: string,
+    params?: Record<string, string | string[]>,
+  ): Promise<Response> {
+    return request("GET", path, { params, skipAssertOk: true });
   }
 
   /**
@@ -219,7 +238,7 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
     await request("POST", path, { body });
   }
 
-  return { get, getPaginated, getArray, post, put, patch, postEmpty };
+  return { get, getPaginated, getArray, getRaw, post, put, patch, postEmpty };
 }
 
 /**

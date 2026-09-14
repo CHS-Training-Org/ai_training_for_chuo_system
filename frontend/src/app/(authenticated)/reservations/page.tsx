@@ -3,6 +3,7 @@ import { listReservationsAction } from "@/server/actions/reservations";
 import { getProfileAction } from "@/server/actions/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CsvExportControls } from "./CsvExportControls";
 import {
   Table,
   TableBody,
@@ -54,6 +55,8 @@ export default async function ReservationsPage({
   const rawStatus = sp.status;
   const selectedStatuses = rawStatus ? (Array.isArray(rawStatus) ? rawStatus : [rawStatus]) : [];
   const page = Number(sp.page ?? 0);
+  const initialFrom = typeof sp.from === "string" ? sp.from : undefined;
+  const initialTo = typeof sp.to === "string" ? sp.to : undefined;
 
   const [reservations, profile] = await Promise.all([
     listReservationsAction({
@@ -72,9 +75,18 @@ export default async function ReservationsPage({
           <h1 className="text-2xl font-bold">{isAdmin ? "全予約一覧" : "マイ予約"}</h1>
           <p className="text-sm text-muted-foreground">全 {reservations.totalElements} 件</p>
         </div>
-        <Button asChild>
-          <Link href="/resources">リソースを探す</Link>
-        </Button>
+        <div className="flex items-end gap-2">
+          {isAdmin && (
+            <CsvExportControls
+              initialFrom={initialFrom}
+              initialTo={initialTo}
+              statuses={selectedStatuses}
+            />
+          )}
+          <Button asChild>
+            <Link href="/resources">リソースを探す</Link>
+          </Button>
+        </div>
       </div>
 
       {/* ステータスフィルタタブ */}

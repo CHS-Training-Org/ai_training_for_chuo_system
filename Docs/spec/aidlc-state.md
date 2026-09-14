@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-09-03
+timestamp: 2026-09-09
 ---
 
 # AI-DLC State Tracking
@@ -18,11 +18,12 @@ timestamp: 2026-09-03
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-09-03T06:00:00Z
-- **Current Stage**: OPERATIONS
+- **Start Date**: 2026-09-09T05:19:07Z
+- **Current Stage**: OPERATIONS（CI品質ゲート運用への引き継ぎ待ち）
 - **Workspace Root**: /workspace
-- **対象タスク**: Issue #23 / `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`（リソース一覧の検索・フィルタ追加）
-- **前提の経緯**: 本ファイルは Issue #22（resource-list-sort）の完了記録からリセットして新規タスク用に作成した。#22 の記録は `Docs/spec/aidlc-audit.md` にそのまま残る（追記専用のため）。#23 は Code Generation（バックエンド・フロントエンド実装、コミット `e342a96`・`2bbc15b`・`5685d42`）が `/aidlc` のトラッキング外で先行完了していた状態から、Build and Test 以降を本ワークフローで遡及的に実施した（詳細は `aidlc-audit.md` の「`/aidlc` 起動（新規ワークフロー: Issue #23 / resource-list-filter）」以降を参照）。
+- **対象タスク**: Issue #29 / `docs-next/docs/spec/enhancements/intermediate/csv-export.md`（CSV 帳票出力）
+- **前提の経緯**: 本ファイルは Issue #23（resource-list-filter、PR #107 でマージ済み）の完了記録からリセットして新規タスク用に作成した。#23 の記録は `Docs/spec/aidlc-audit.md` にそのまま残る（追記専用のため）。リセットの経緯・ユーザー承認は `aidlc-audit.md`「`/aidlc` 起動（新規ワークフロー: Issue #29 / csv-export）」を参照。
+- **追加ラウンド（Round 2）**: PR #113 の AI レビュー観点2（NG）で指摘された、フロントエンド BFF 層（`api-client.ts` の `getRaw`／`route.ts`）のテスト欠落に対応するラウンドを 2026-09-14 に追加。Issue #29 と同一ユニット・同一ブランチの継続作業のため本ファイルはリセットせず追記する。経緯は `aidlc-audit.md`「`/aidlc` 起動（Issue #29 追加ラウンド: PR #113 観点2 テストギャップ対応）」を参照。
 
 ## Code Location Rules
 
@@ -34,38 +35,56 @@ timestamp: 2026-09-03
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | — | — |
-| Resiliency Baseline | — | — |
-| Property-Based Testing | — | — |
+| Security Baseline | No | Requirements Analysis（遡及確認、2026-09-09） |
+| Resiliency Baseline | No | Requirements Analysis（遡及確認、2026-09-09） |
+| Property-Based Testing | No | Requirements Analysis（遡及確認、2026-09-09） |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [x] Workspace Detection - Completed on 2026-09-03T06:01:00Z（既存 RE 成果物を再利用）
-- [x] Reverse Engineering（Brownfield の場合） - SKIP（#22 実行時の成果物 `Docs/spec/aidlc-docs/inception/reverse-engineering/` が対象領域を含めて有効）
-- [x] Requirements Analysis - Completed on 2026-09-03T06:02:00Z（Minimal深度。入力は `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md` と `docs-next/docs/spec/requirements.md` RES-09。新規ドキュメント生成なし）
-- [x] User Stories（条件付き） - SKIP（単一ペルソナ・単純な要求のため）
-- [x] Workflow Planning - Completed on 2026-09-03T06:02:30Z（検証中心の計画。詳細は監査ログ参照）
-- [x] Application Design（条件付き） - SKIP（新規コンポーネント・新規サービスなし）
+- [x] Workspace Detection - Completed on 2026-09-09T05:19:07Z（Brownfield。RE成果物なし、既存specで代替可能と判断しRESKIP）
+- [x] Reverse Engineering（Brownfield の場合） - SKIP（既存の`architecture.md`・`requirements.md`・`api-spec.md`が対象領域をカバー。#22・#23と同一の判断基準）
+- [x] Requirements Analysis - Completed on 2026-09-09T05:26:00Z（Standard深度。成果物: `Docs/spec/aidlc-docs/inception/requirements/requirements.md`。`csv-export.md`のUC-07参照不整合を発見・記録）
+- [x] User Stories（条件付き） - SKIP（単一ペルソナ・シートが受入条件を既に明確化しているため）
+- [x] Workflow Planning - Completed on 2026-09-09T05:33:00Z（成果物: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md`）
+- [x] Application Design（条件付き） - Completed on 2026-09-09T05:50:00Z（成果物: `Docs/spec/aidlc-docs/inception/application-design/`。認証方式の前提修正を発見・記録）
 - [x] Units Generation（条件付き） - SKIP（単一ユニット扱い）
 
-### CONSTRUCTION PHASE（Unit: リソース一覧検索・フィルタ機能）
+### CONSTRUCTION PHASE（Unit: csv-export）
 
-- [x] Functional Design（条件付き、ユニット別） - SKIP（#22 の「候補リスト取得後に Java 側で処理する」パターンを踏襲する単一 private メソッドの追加であり、新規設計不要）
-- [ ] NFR Requirements（条件付き、ユニット別） - SKIP（新規NFR要求なし）
-- [ ] NFR Design（条件付き、ユニット別） - SKIP（NFR Requirements未実行のため連動）
-- [ ] Infrastructure Design（条件付き、ユニット別） - SKIP（インフラ変更なし）
-- [x] Code Generation（必須、ユニット別） - Completed（遡及的検証）on 2026-09-03T06:05:00Z（成果物: `Docs/spec/aidlc-docs/construction/resource-list-filter/code/summary.md`。実装はコミット `e342a96`・`2bbc15b`・`5685d42` として先行完了済み）
-- [x] Build and Test（必須） - Completed on 2026-09-03T06:12:00Z（成果物: `Docs/spec/aidlc-docs/construction/resource-list-filter/build-and-test/summary.md`。バックエンド150件・フロントエンド96件全成功、spotlessCheck/checkstyle/lint/build いずれも成功）
+- [x] Functional Design（条件付き、ユニット別） - Completed on 2026-09-09T06:05:00Z（成果物: `Docs/spec/aidlc-docs/construction/csv-export/functional-design/`。承認待ち）
+- [x] NFR Requirements（条件付き、ユニット別） - SKIP（性能・認可はRequirements Analysisで決定済み）
+- [x] NFR Design（条件付き、ユニット別） - SKIP（NFR Requirements未実行のため連動）
+- [x] Infrastructure Design（条件付き、ユニット別） - SKIP（インフラ変更なし）
+- [x] Code Generation（必須、ユニット別） - Completed on 2026-09-09T06:22:00Z（成果物: `Docs/spec/aidlc-docs/construction/plans/csv-export-code-generation-plan.md`（全15ステップ）・`Docs/spec/aidlc-docs/construction/csv-export/code/`。承認待ち）
+- [x] Build and Test（必須） - Completed on 2026-09-09T06:30:00Z（成果物: `Docs/spec/aidlc-docs/construction/build-and-test/`。バックエンド154件・フロントエンド93件全成功）。Approved on 2026-09-09T06:33:00Z
 
 ### OPERATIONS PHASE
 
-- [x] Operations（プレースホルダー） - BookFlow翻案によりCI品質ゲート運用に委譲。`/aidlc`スキルとしての成果物生成はBuild and Testで完了。仕様（api-spec.md/requirements.md/screen-spec.md）はコミット `e342a96` で実装と同時に反映済み。以降は`/commit-push`・`/create-pr`スキルでコミット・push・PR作成・CI確認を行う
+- [x] Operations（プレースホルダー） - CONSTRUCTION完了。CI品質ゲート運用（`/commit-push`→`/update-spec`→`/create-pr`）完了。PR #113 作成済み（Round 1 完了）
+
+### Round 2（PR #113 観点2 テストギャップ対応）
+
+- [x] Workspace Detection - Completed on 2026-09-14T06:12:00Z（Brownfield・既存ユニットcsv-exportの継続作業。RE不要）
+- [x] Requirements Analysis - Minimal深度で実施（成果物: `Docs/spec/aidlc-docs/inception/requirements/round2-test-gap-requirements.md`）
+- [x] User Stories（条件付き） - SKIP（テスト追加のみ・既存挙動の変更なし・単一ペルソナ不要）
+- [x] Workflow Planning - 実施（成果物: `Docs/spec/aidlc-docs/inception/plans/round2-execution-plan.md`）
+- [x] Application Design（条件付き） - SKIP（新規コンポーネントなし）
+- [x] Units Generation（条件付き） - SKIP（既存ユニットcsv-exportの範囲内）
+- [ ] Functional Design（条件付き、ユニット別） - SKIP（新規ビジネスロジックなし。既存実装の挙動を検証するテストのみ）
+- [ ] NFR Requirements/Design（条件付き） - SKIP
+- [ ] Infrastructure Design（条件付き） - SKIP（インフラ変更なし）
+- [x] Code Generation（必須、ユニット別） - Completed on 2026-09-14T06:22:00Z（成果物: `Docs/spec/aidlc-docs/construction/plans/csv-export-round2-test-gap-code-generation-plan.md`（全2ステップ）・`Docs/spec/aidlc-docs/construction/csv-export/code/round2-test-gap-summary.md`。新規: `frontend/tests/unit/lib/api-client.test.ts`（4テスト）・`frontend/tests/unit/app/api/reports/reservations/csv/route.test.ts`（3テスト）。プロダクションコード差分なし）
+- [x] Build and Test（必須） - Completed on 2026-09-14T06:25:00Z（`pnpm test`全体100件成功、`pnpm lint`エラーなし、`pnpm format:check`成功（自動整形1件後）。健全性チェック（対象コードを一時破壊→テスト失敗確認→復元）2件実施済み）。Approved on 2026-09-14T06:27:00Z
+
+### OPERATIONS PHASE（Round 2）
+
+- [x] Operations（Round 2） - `/commit-push`完了。コミット`b0d47a15`（test）・`6585a009`（docs(aidlc)）をpush済み、PR #113のHEADに反映確認済み
 
 ## Current Status
 
-- **Lifecycle Phase**: OPERATIONS
-- **Current Stage**: Build and Test 承認済み。CONSTRUCTIONフェーズ完了
-- **Next Stage**: `/commit-push`（本ワークフローで生成した `Docs/spec/aidlc-docs/`・`aidlc-state.md`・`aidlc-audit.md`・`resource-list-filter.md` の差分をコミット）→ `/create-pr`（PR作成）→ CI品質ゲート確認
-- **Status**: Ready for handoff
+- **Lifecycle Phase**: OPERATIONS（Round 2）完了
+- **Current Stage**: Round 2完了
+- **Next Stage**: なし（ユーザーによるPR #113コメント欄での対応報告（任意）・CI確認・マージ判断待ち）
+- **Status**: Round 1（Workspace Detection〜Operations/PR #113作成）・Round 2（PR #113観点2NG対応のテスト追加、計7テスト、コミット`b0d47a15`/`6585a009`をPR #113へpush済み）ともに完了。`/aidlc`エンジンとしてのIssue #29ワークフローはここで完了。次回`/aidlc`起動時は新規タスクとして扱ってよい

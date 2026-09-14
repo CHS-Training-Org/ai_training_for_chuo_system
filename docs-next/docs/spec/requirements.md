@@ -70,7 +70,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ## 主要ユースケース一覧
 
-ベース実装がカバーする 8 ユースケース。詳細は各セクションを参照。
+ベース実装がカバーする 9 ユースケース。詳細は各セクションを参照。
 
 | UC | ユースケース | 主なロール | 記載セクション |
 |----|-------------|-----------|---------------|
@@ -82,6 +82,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 | [UC-06](#uc-06) | 承認者が予約を承認 or 却下する | APPROVER / ADMIN | §承認 |
 | [UC-07](#uc-07) | 社員が自分の予約一覧を確認・編集・キャンセルする | 全員（ADMIN は全件） | §予約 |
 | [UC-08](#uc-08) | 管理者がリソースを登録・編集する | ADMIN | §リソース |
+| [UC-09](#uc-09) | 管理者が予約一覧を CSV でダウンロードする | ADMIN | §帳票 |
 
 ---
 
@@ -118,6 +119,7 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `GET /api/users/me` | ✅ | ✅ | ✅ |
 | `GET /api/users` | ❌ | ❌ | ✅ |
 | `GET /api/departments` | ✅ | ✅ | ✅ |
+| `GET /api/reports/reservations/csv` | ❌ | ❌ | ✅ |
 
 #### 画面アクセス権限
 
@@ -324,6 +326,23 @@ AND end_at > :startAt
 | APRV-07 | MEMBER は `/approvals` にアクセスできない（403 Forbidden） |
 
 > 承認ステップのステータス遷移（`PENDING → APPROVED / REJECTED`）は §共通「承認ステップ ステータス遷移図」を参照。
+
+---
+
+## §帳票
+
+### UC-09：管理者が予約一覧をCSVでダウンロードする {#uc-09}
+#### 機能要件
+
+| # | 要件 |
+|---|------|
+| RPT-01 | `GET /api/reports/reservations/csv` エンドポイントを新設し、`Content-Type: text/csv` で予約一覧を CSV ダウンロードできる |
+| RPT-02 | CSV には予約 ID・リソース名・申請者名・開始日時・終了日時・目的・承認状態を含む |
+| RPT-03 | 出力対象期間（`from`・`to`）と承認ステータス（`status`）をクエリパラメータで絞り込める |
+| RPT-04 | ADMIN ロールのみアクセスできる（Spring Security で保護） |
+| RPT-05 | フロントエンドの管理者ページに「CSV ダウンロード」ボタンを追加し、クリックでブラウザに CSV ファイルをダウンロードさせる |
+
+> **認証方式の前提**：バックエンドは JWT Bearer 認証のみで Cookie セッションに対応しないため、フロントエンドの「CSV ダウンロード」リンクは Next.js の Route Handler（`/api/reports/reservations/csv`）が [§共通 認証方式](./api-spec.md#auth-method) に基づく認証済みリクエストをバックエンドへ代行し、レスポンスを透過転送する（ブラウザから `GET /api/reports/reservations/csv` への直接リンクは 401 になる）。詳細は [api-spec.md §帳票](./api-spec.md#get-api-reports-reservations-csv) を参照。
 
 ---
 
