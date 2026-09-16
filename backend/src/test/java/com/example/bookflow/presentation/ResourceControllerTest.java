@@ -37,11 +37,19 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000010");
   private static final UUID INACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000011");
+  private static final UUID PROJECTOR_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000012");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
+  private static final UUID PROJECTOR_RESERVATION_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000021");
 
   private static final LocalDateTime RESERVATION_START = LocalDateTime.of(2025, 6, 2, 10, 0);
   private static final LocalDateTime RESERVATION_END = LocalDateTime.of(2025, 6, 2, 12, 0);
+  private static final LocalDateTime PROJECTOR_RESERVATION_START =
+      LocalDateTime.of(2025, 6, 3, 10, 0);
+  private static final LocalDateTime PROJECTOR_RESERVATION_END =
+      LocalDateTime.of(2025, 6, 3, 12, 0);
 
   @Autowired private JdbcTemplate jdbcTemplate;
 
@@ -91,6 +99,17 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        PROJECTOR_RESOURCE_ID,
+        "Projector Room A",
+        "ROOM",
+        false,
+        true,
+        "4K projector available for meetings",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
 
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(
@@ -106,13 +125,30 @@ class ResourceControllerTest extends BaseControllerTest {
         "APPROVED",
         LocalDateTime.of(2025, 4, 1, 9, 0),
         LocalDateTime.of(2025, 4, 1, 9, 0));
+
+    // Reservation（PENDING・2025-06-03 10:00〜12:00・Projector Room A を占有）
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        PROJECTOR_RESERVATION_ID,
+        PROJECTOR_RESOURCE_ID,
+        USER_ID,
+        PROJECTOR_RESERVATION_START,
+        PROJECTOR_RESERVATION_END,
+        "テスト用予約（プロジェクター）",
+        "PENDING",
+        LocalDateTime.of(2025, 4, 1, 9, 0),
+        LocalDateTime.of(2025, 4, 1, 9, 0));
   }
 
   @AfterEach
   void deleteSeedData() {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
+    jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", PROJECTOR_RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", PROJECTOR_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -169,6 +205,110 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsMatchingResourceOnly() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "projector").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingDescription_returnsMatchingResource() throws Exception {
+    // "meetings" は description にのみ含まれ、name には含まれない
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "meetings").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordUpperCase_isCaseInsensitive() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "PROJECTOR").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordAndCategory_appliesAndCondition() throws Exception {
+    // Projector Room A は category=ROOM のため、EQUIPMENT と組み合わせると 0 件になる
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "projector")
+                .param("category", "EQUIPMENT")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").doesNotExist());
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "projector")
+                .param("category", "ROOM")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordAndTimeRange_appliesAndCondition() throws Exception {
+    // seed した PENDING 予約（2025-06-03 10:00〜12:00・Projector Room A）と重ならない期間 → 空きあり
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "projector")
+                .param("from", "2025-06-04T09:00:00")
+                .param("to", "2025-06-04T11:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
+
+    // 予約と重なる期間 → 占有中のため除外される
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "projector")
+                .param("from", "2025-06-03T09:00:00")
+                .param("to", "2025-06-03T11:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordNoMatch_returnsEmptyContent() throws Exception {
+    // description が NULL のリソース（ACTIVE_RESOURCE_ID 等）が誤マッチしないことも兼ねて確認
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "nonexistentxyz")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withoutKeyword_returnsUnfilteredResult() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
   }
 
   @Test
