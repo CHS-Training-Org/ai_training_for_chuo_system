@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-09-16T11:50:34+09:00'
 ---
 
 # REST API 仕様書
@@ -269,12 +269,15 @@ Authorization: Bearer <JWT>
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
+| `keyword` | string | ❌ | リソース名または説明文への部分一致でフィルタ（大文字小文字を区別しない） |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
 > `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
+
+> `keyword` を指定した場合、`resources.name` または `resources.description` に当該文字列を含むリソースのみを返す。大文字小文字は区別しない。`category` や `from` / `to` と同時に指定したときは AND 条件で絞り込む。空文字のみを指定した場合は未指定と同じ扱いになる。
 
 #### レスポンス（200 OK）
 
