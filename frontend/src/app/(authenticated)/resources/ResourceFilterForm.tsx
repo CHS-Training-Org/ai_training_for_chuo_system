@@ -16,6 +16,7 @@ import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 interface ResourceFilterFormProps {
   defaultCategory?: string;
+  defaultKeyword?: string;
   defaultFrom?: string;
   defaultTo?: string;
 }
@@ -28,6 +29,7 @@ interface ResourceFilterFormProps {
  */
 export function ResourceFilterForm({
   defaultCategory,
+  defaultKeyword,
   defaultFrom,
   defaultTo,
 }: ResourceFilterFormProps) {
@@ -42,10 +44,12 @@ export function ResourceFilterForm({
       const params = new URLSearchParams();
 
       const category = data.get("category") as string;
+      const keyword = data.get("keyword") as string;
       const from = data.get("from") as string;
       const to = data.get("to") as string;
 
       if (category && category !== "ALL") params.set("category", category);
+      if (keyword && keyword.trim()) params.set("keyword", keyword.trim());
       if (from) params.set("from", from);
       if (to) params.set("to", to);
 
@@ -61,7 +65,7 @@ export function ResourceFilterForm({
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4 space-y-4">
       <h2 className="text-sm font-semibold">フィルタ・空き確認</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* カテゴリ */}
         <div className="space-y-1">
           <Label htmlFor="category">カテゴリ</Label>
@@ -76,6 +80,18 @@ export function ResourceFilterForm({
               <SelectItem value="VEHICLE">{RESOURCE_CATEGORY_LABELS.VEHICLE}</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* キーワード */}
+        <div className="space-y-1">
+          <Label htmlFor="keyword">キーワード</Label>
+          <Input
+            id="keyword"
+            name="keyword"
+            type="text"
+            placeholder="リソース名・説明で検索"
+            defaultValue={defaultKeyword}
+          />
         </div>
 
         {/* 開始日時 */}

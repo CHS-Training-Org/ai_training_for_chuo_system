@@ -37,6 +37,8 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000010");
   private static final UUID INACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000011");
+  private static final UUID PROJECTOR_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000012");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -91,6 +93,18 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
+    // description に部分一致するキーワード検索・大文字小文字区別なしの検証用（ASCII 名を持つ active リソース）
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        PROJECTOR_RESOURCE_ID,
+        "Projector Room",
+        "ROOM",
+        false,
+        true,
+        "Portable projector unit",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
 
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(
@@ -113,6 +127,7 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", PROJECTOR_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -169,6 +184,90 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsMatchingResource() throws Exception {
+    // category 未指定 + keyword のみ。JPQL の "パラメータ単独で成立する式"
+    // （:category IS NULL・:activeOnly = false）が Hibernate で実行できることの確認も兼ねる。
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingDescription_returnsMatchingResource() throws Exception {
+    // "portable" は名前ではなく description にのみ含まれる。
+    // description が NULL の ACTIVE_RESOURCE_ID が誤ってヒットしないことも合わせて確認する。
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "portable").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordUpperCase_matchesRegardlessOfCase() throws Exception {
+    // RES-02: 大文字・小文字を区別しない
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "PROJECTOR").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withMatchingCategoryAndKeyword_returnsResource() throws Exception {
+    // RES-04: category（一致）と keyword の AND 条件
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "ROOM")
+                .param("keyword", "projector")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withMismatchedCategoryAndKeyword_excludesResource() throws Exception {
+    // RES-04: category（不一致）と keyword の AND 条件 → keyword が一致しても除外される
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "EQUIPMENT")
+                .param("keyword", "projector")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberWithKeywordMatchingInactiveResource_excludesInactiveResource() throws Exception {
+    // activeOnly の渡し漏れ検知：MEMBER は is_active=false の "旧備品A" を keyword 検索でも見られない
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminWithKeywordMatchingInactiveResource_includesInactiveResource() throws Exception {
+    // ADMIN は is_active=false のリソースも keyword 検索でヒットする
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").exists());
   }
 
   @Test
