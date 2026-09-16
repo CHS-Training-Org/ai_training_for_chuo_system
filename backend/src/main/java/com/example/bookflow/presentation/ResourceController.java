@@ -3,6 +3,7 @@ package com.example.bookflow.presentation;
 import com.example.bookflow.application.ResourceService;
 import com.example.bookflow.application.exception.ValidationException;
 import com.example.bookflow.domain.ResourceCategory;
+import com.example.bookflow.domain.ResourceSpecifications;
 import com.example.bookflow.domain.Role;
 import com.example.bookflow.domain.User;
 import com.example.bookflow.infrastructure.security.CurrentUser;
@@ -50,6 +51,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/resources")
 public class ResourceController {
 
+  /** キーワードの最大長。検索対象である {@code resources.name} の列長（varchar 100）に合わせる。 */
+  private static final int KEYWORD_MAX_LENGTH = 100;
+
   private final ResourceService resourceService;
 
   public ResourceController(ResourceService resourceService) {
@@ -60,9 +64,11 @@ public class ResourceController {
    * リソース一覧を返す（全ロール・認証必須）。
    *
    * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を同時指定した場合は、当該時間帯に
-   * {@code PENDING} / {@code APPROVED} の予約が存在しないリソースのみを返す。
+   * {@code PENDING} / {@code APPROVED} の予約が存在しないリソースのみを返す。 {@code keyword}
+   * を指定した場合は、リソース名または説明文への部分一致で絞り込む。
    *
    * @param category カテゴリフィルタ（任意）
+   * @param keyword キーワードフィルタ（任意・名称または説明文への部分一致・100 文字以内）
    * @param from 空き確認の開始日時（任意・to と同時指定）
    * @param to 空き確認の終了日時（任意・from と同時指定）
    * @param pageable ページネーション（デフォルト: size=20）
@@ -72,6 +78,7 @@ public class ResourceController {
   @GetMapping
   public Page<ResourceResponse> list(
       @RequestParam(required = false) ResourceCategory category,
+      @RequestParam(required = false) String keyword,
       @RequestParam(required = false) LocalDateTime from,
       @RequestParam(required = false) LocalDateTime to,
       @PageableDefault(size = 20) Pageable pageable,
@@ -80,8 +87,13 @@ public class ResourceController {
     if ((from == null) != (to == null)) {
       throw new ValidationException("from と to は同時に指定してください。");
     }
+    // キーワードは前後の空白を除いた長さで検証する（貼り付け時の空白を超過の原因にしないため）
+    String normalizedKeyword = ResourceSpecifications.normalizeKeyword(keyword);
+    if (normalizedKeyword != null && normalizedKeyword.length() > KEYWORD_MAX_LENGTH) {
+      throw new ValidationException("キーワードは " + KEYWORD_MAX_LENGTH + " 文字以内で入力してください。");
+    }
     boolean isAdmin = currentUser.getRole() == Role.ADMIN;
-    return resourceService.list(category, from, to, isAdmin, pageable);
+    return resourceService.list(category, keyword, from, to, isAdmin, pageable);
   }
 
   /**

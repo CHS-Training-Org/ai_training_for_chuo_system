@@ -52,6 +52,50 @@ describe("listResourcesAction", () => {
     expect(result.content).toHaveLength(1);
   });
 
+  it("正常時: keyword をクエリパラメータに載せて送信する", async () => {
+    let requestUrl: string | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        requestUrl = request.url;
+        return HttpResponse.json({
+          content: [MOCK_RESOURCE_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    await listResourcesAction({ keyword: "会議" });
+
+    expect(new URL(requestUrl!).searchParams.get("keyword")).toBe("会議");
+  });
+
+  it("正常時: keyword 未指定のときはクエリパラメータに載せない", async () => {
+    let requestUrl: string | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        requestUrl = request.url;
+        return HttpResponse.json({
+          content: [MOCK_RESOURCE_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    await listResourcesAction({ category: "ROOM" });
+
+    expect(new URL(requestUrl!).searchParams.has("keyword")).toBe(false);
+  });
+
   it("401 時: ApiClientError をスローする", async () => {
     server.use(
       http.get("/api/backend/resources", () => {
