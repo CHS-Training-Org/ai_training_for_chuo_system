@@ -41,6 +41,11 @@ describe("buildHref", () => {
       expect(href).toBe("/resources?category=ROOM&page=2");
     });
 
+    it("keyword フィルタをページ送り後も引き継ぐ", () => {
+      const href = buildHref("/resources", { keyword: "会議", category: "ROOM" }, 1);
+      expect(href).toBe("/resources?keyword=%E4%BC%9A%E8%AD%B0&category=ROOM&page=1");
+    });
+
     it("undefined 値は除外する", () => {
       const href = buildHref("/resources", { category: undefined, from: undefined }, 1);
       expect(href).toBe("/resources?page=1");
