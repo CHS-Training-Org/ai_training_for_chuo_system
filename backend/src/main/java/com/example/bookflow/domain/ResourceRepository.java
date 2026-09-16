@@ -56,4 +56,42 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
   List<Resource> findByCategory(ResourceCategory category);
+
+  // ---- キーワード検索（name/description 部分一致、大文字小文字を区別しない）----
+
+  /**
+   * キーワードで name/description を部分一致検索し、ページネーションで返す。
+   *
+   * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param activeOnly true の場合 is_active = true のみ（非 ADMIN 用）
+   * @param keyword 検索キーワード（null 不可・空文字不可、呼び出し側でトリム済みを渡す）
+   * @param pageable ページネーション
+   */
+  @Query(
+      """
+      SELECT r FROM Resource r
+      WHERE (:category IS NULL OR r.category = :category)
+        AND (:activeOnly = false OR r.isActive = true)
+        AND (LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+             OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      """)
+  Page<Resource> searchByKeyword(
+      @Param("category") ResourceCategory category,
+      @Param("activeOnly") boolean activeOnly,
+      @Param("keyword") String keyword,
+      Pageable pageable);
+
+  /** {@link #searchByKeyword(ResourceCategory, boolean, String, Pageable)} の全件版（from/to フィルタ用）。 */
+  @Query(
+      """
+      SELECT r FROM Resource r
+      WHERE (:category IS NULL OR r.category = :category)
+        AND (:activeOnly = false OR r.isActive = true)
+        AND (LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+             OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      """)
+  List<Resource> searchByKeyword(
+      @Param("category") ResourceCategory category,
+      @Param("activeOnly") boolean activeOnly,
+      @Param("keyword") String keyword);
 }

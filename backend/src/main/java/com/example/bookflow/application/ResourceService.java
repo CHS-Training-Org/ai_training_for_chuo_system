@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 /**
  * リソース（施設・備品）のユースケース Service。
@@ -65,6 +66,7 @@ public class ResourceService {
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
+   * @param keyword キーワード検索（name/description 部分一致、null または空文字の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
    * @param pageable ページネーション
    * @return {@link ResourceResponse} のページ
@@ -74,17 +76,24 @@ public class ResourceService {
       ResourceCategory category,
       LocalDateTime from,
       LocalDateTime to,
+      String keyword,
       boolean isAdmin,
       Pageable pageable) {
+    String normalizedKeyword = StringUtils.hasText(keyword) ? keyword.trim() : null;
     if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+      return listWithAvailabilityFilter(category, from, to, normalizedKeyword, isAdmin, pageable);
     }
-    return listPaginated(category, isAdmin, pageable);
+    return listPaginated(category, normalizedKeyword, isAdmin, pageable);
   }
 
   /** from/to 指定なし：通常ページネーション。 */
   private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
+      ResourceCategory category, String keyword, boolean isAdmin, Pageable pageable) {
+    if (keyword != null) {
+      Page<Resource> page =
+          resourceRepository.searchByKeyword(category, !isAdmin, keyword, pageable);
+      return page.map(ResourceResponse::from);
+    }
     Page<Resource> page;
     if (isAdmin) {
       page =
@@ -109,10 +118,11 @@ public class ResourceService {
       ResourceCategory category,
       LocalDateTime from,
       LocalDateTime to,
+      String keyword,
       boolean isAdmin,
       Pageable pageable) {
     // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    List<Resource> candidates = fetchAllCandidates(category, keyword, isAdmin);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -138,7 +148,11 @@ public class ResourceService {
     return new PageImpl<>(content, pageable, total);
   }
 
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
+  private List<Resource> fetchAllCandidates(
+      ResourceCategory category, String keyword, boolean isAdmin) {
+    if (keyword != null) {
+      return resourceRepository.searchByKeyword(category, !isAdmin, keyword);
+    }
     if (isAdmin) {
       return category != null
           ? resourceRepository.findByCategory(category)
