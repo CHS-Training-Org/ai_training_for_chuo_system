@@ -178,7 +178,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 | GET | `/api/reservations` | 予約一覧（自分の予約。ADMIN は全件） | 全ロール |
 | POST | `/api/reservations` | 予約申請 | 全ロール |
 | GET | `/api/reservations/{id}` | 予約詳細 | 全ロール（本人 or APPROVER/ADMIN） |
-| PUT | `/api/reservations/{id}` | 予約内容更新（PENDING のみ） | 申請者本人 |
+| PUT | `/api/reservations/{id}` | 予約内容更新・正式申請（PENDING/DRAFT のみ） | 申請者本人 |
 | POST | `/api/reservations/{id}/cancel` | キャンセル | 申請者本人 or ADMIN |
 
 ### 承認
@@ -486,7 +486,7 @@ Authorization: Bearer <JWT>
 
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
-| `status` | string | ❌ | ステータスフィルター（`PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`） |
+| `status` | string | ❌ | ステータスフィルター（`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`） |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
@@ -534,7 +534,7 @@ Authorization: Bearer <JWT>
 | `endAt` | TIMESTAMP | 利用終了日時 |
 | `purpose` | string | 利用目的 |
 | `attendeesCount` | integer / null | 参加人数 |
-| `status` | string | `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`（DB の CHECK 制約には `DRAFT` も定義されているがベース実装では未使用。[er-diagram.md](./er-diagram.md) 参照） |
+| `status` | string | `DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`。`DRAFT` は下書き保存時のステータス（下記「下書き保存」参照） |
 | `createdAt` | TIMESTAMP | 申請日時 |
 | `updatedAt` | TIMESTAMP | 最終更新日時 |
 
@@ -554,7 +554,8 @@ Content-Type: application/json
   "startAt": "2025-06-02T10:00:00",
   "endAt": "2025-06-02T12:00:00",
   "purpose": "週次ミーティング",
-  "attendeesCount": 5
+  "attendeesCount": 5,
+  "draft": false
 }
 ```
 
@@ -567,11 +568,20 @@ Content-Type: application/json
 | `endAt` | TIMESTAMP | ✅ | `endAt > startAt`（違反時は `422`・`code: VALIDATION_ERROR`） |
 | `purpose` | string | ✅ | 255 文字以内 |
 | `attendeesCount` | integer / null | ❌ | 1 以上 |
+| `draft` | boolean | ❌ | 省略時は `false`。`true` の場合は下記「下書き保存」を参照 |
 
 #### レスポンス（201 Created）
 
-- `requires_approval = false` の場合：`status = "APPROVED"`（即時確定）
-- `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`・`step_order = 1`）を 1 件生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](./requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
+- `draft = true` の場合：`status = "DRAFT"`（下記「下書き保存」参照）
+- `draft = false`（省略時）の場合：
+  - `requires_approval = false` の場合：`status = "APPROVED"`（即時確定）
+  - `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`・`step_order = 1`）を 1 件生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](./requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
+
+#### 下書き保存
+
+`draft: true` を指定すると、`requires_approval` 分岐・重複予約チェック・`approval_steps` 生成をいずれも行わず、`status = "DRAFT"` で保存する（`DRAFT` は他者の予約枠を占有しないため作成時点では重複チェックの対象にしない）。必須項目は通常の申請と変わらない。
+
+`DRAFT` の予約は申請者本人と ADMIN のみ閲覧でき、編集・正式申請は申請者本人のみ、キャンセルは申請者本人または ADMIN が行える（`GET /api/reservations/{id}` 参照）。正式申請（`DRAFT → APPROVED`/`PENDING`）は `PUT /api/reservations/{id}` の `submit: true` で行う（後述）。
 
 ```json
 {
@@ -590,7 +600,7 @@ Content-Type: application/json
 }
 ```
 
-重複予約の場合は `409 Conflict`（`code: "RESERVATION_CONFLICT"`）を返す。
+重複予約の場合は `409 Conflict`（`code: "RESERVATION_CONFLICT"`）を返す（`draft: true` の場合はこのチェックを行わないため発生しない）。
 
 ---
 
@@ -607,7 +617,7 @@ Authorization: Bearer <JWT>
 
 ReservationResponse 型。
 
-**アクセス制御**：MEMBER は本人の予約のみ取得可。他人の予約へのアクセスは `403 Forbidden`。
+**アクセス制御**：MEMBER は本人の予約のみ取得可。他人の予約へのアクセスは `403 Forbidden`。対象予約が `DRAFT` の場合は APPROVER も本人以外は `403 Forbidden`（`PENDING` 以降の予約は既存どおり APPROVER は全件取得可）。ADMIN は例外なく全件取得可。
 
 ---
 
@@ -624,12 +634,17 @@ Content-Type: application/json
   "startAt": "2025-06-02T13:00:00",
   "endAt": "2025-06-02T15:00:00",
   "purpose": "週次ミーティング（時間変更）",
-  "attendeesCount": 6
+  "attendeesCount": 6,
+  "submit": false
 }
 ```
 
-**制約**：`status = 'PENDING'` の予約のみ更新可（`APPROVED` への更新は不可）。申請者本人のみ操作可能。日時変更時は重複予約チェックを再実行する（自分自身を除外）。  
-リクエストフィールド、バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可）。
+**制約**：`status = 'PENDING'` または `'DRAFT'` の予約のみ更新可（`APPROVED`/`REJECTED`/`CANCELLED` への更新は不可）。申請者本人のみ操作可能（ADMIN 不可）。`PENDING` の更新時は日時変更に伴う重複予約チェックを再実行する（自分自身を除外）。`DRAFT` の更新時（`submit` を指定しない場合）はこのチェックを行わない（`POST /api/reservations` の `draft: true` と同様、下書きである間は他者の予約枠を占有しないため）。  
+リクエストフィールド、バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可）。`submit` フィールドの意味は下記「下書きの正式申請」を参照。
+
+#### 下書きの正式申請
+
+対象予約が `DRAFT` のとき、`submit: true` を指定すると正式申請となる。`POST /api/reservations`（下書き保存でない申請）と同じ `requires_approval` 分岐で `status` を決定する（`false` → `APPROVED`、`true` → `PENDING` ＋ `approval_steps` 生成）。このときに限り重複予約チェックを実行する（下書き保存中に他の予約で枠が埋まっている可能性があるため）。`submit` を省略または `false` の場合は内容を更新するのみでステータスは変わらず（`DRAFT` は `DRAFT` のまま）、重複予約チェックも行わない。対象予約が `PENDING` のときに `submit: true` を指定した場合は不正遷移として `422`（`VALIDATION_ERROR`）を返す。
 
 #### レスポンス（200 OK）
 
@@ -639,7 +654,7 @@ Content-Type: application/json
 |------|--------|------|
 | 403 | `FORBIDDEN` | 申請者本人以外が操作 |
 | 409 | `RESERVATION_CONFLICT` | 変更後の時間帯に重複予約あり |
-| 422 | `VALIDATION_ERROR` | `PENDING` 以外の予約を更新、または `endAt ≦ startAt` |
+| 422 | `VALIDATION_ERROR` | `PENDING`/`DRAFT` 以外の予約を更新、`PENDING` の予約に `submit: true` を指定、または `endAt ≦ startAt` |
 
 ---
 
