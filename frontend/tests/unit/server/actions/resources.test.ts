@@ -5,7 +5,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "../../msw/server";
-import { MOCK_RESOURCE_RESPONSE, MOCK_AVAILABILITY_SLOTS } from "../../msw/handlers";
+import {
+  MOCK_RESOURCE_RESPONSE,
+  MOCK_RESOURCE_LIST_RESPONSE,
+  MOCK_AVAILABILITY_SLOTS,
+} from "../../msw/handlers";
 
 // Next.js サーバー専用モジュールをモック
 vi.mock("next/navigation", () => ({
@@ -50,6 +54,20 @@ describe("listResourcesAction", () => {
     // MSW がクエリパラメータを受け取っても同じレスポンスを返す（パラメータ検証はBE側）
     const result = await listResourcesAction({ category: "ROOM" });
     expect(result.content).toHaveLength(1);
+  });
+
+  it("正常時: keyword パラメータをリクエストに含める", async () => {
+    let capturedUrl: string | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction({ keyword: "projector" });
+
+    expect(new URL(capturedUrl!).searchParams.get("keyword")).toBe("projector");
   });
 
   it("401 時: ApiClientError をスローする", async () => {

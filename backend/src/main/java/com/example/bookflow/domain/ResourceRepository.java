@@ -35,25 +35,35 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   @Query("SELECT r FROM Resource r WHERE r.id = :id")
   Optional<Resource> findByIdForUpdate(@Param("id") UUID id);
 
-  // ---- 非 ADMIN 用（is_active = true のみ）----
+  // ---- 一覧検索（カテゴリ・有効フラグ・キーワードで絞り込み）----
 
-  /** 有効リソース一覧をページネーションで返す。 */
-  Page<Resource> findByIsActiveTrue(Pageable pageable);
+  /**
+   * カテゴリ・有効フラグ・キーワード（name/description 部分一致・大文字小文字非区別）で リソースを絞り込みページネーションで返す。
+   *
+   * @param category カテゴリ（null の場合は絞り込まない）
+   * @param isActiveOnly true の場合 {@code is_active = true} のみ（ADMIN 以外）
+   * @param pattern LOWER 済み LIKE パターン（例: {@code "%projector%"}。未指定時は {@code "%%"}）
+   * @param pageable ページネーション
+   */
+  @Query(
+      "SELECT r FROM Resource r "
+          + "WHERE (:isActiveOnly = false OR r.isActive = true) "
+          + "AND (:category IS NULL OR r.category = :category) "
+          + "AND (LOWER(r.name) LIKE :pattern OR LOWER(COALESCE(r.description, '')) LIKE :pattern)")
+  Page<Resource> search(
+      @Param("category") ResourceCategory category,
+      @Param("isActiveOnly") boolean isActiveOnly,
+      @Param("pattern") String pattern,
+      Pageable pageable);
 
-  /** 有効リソース全件を返す（from/to フィルタ用）。 */
-  List<Resource> findByIsActiveTrue();
-
-  /** 有効リソースをカテゴリで絞り込んでページネーションで返す。 */
-  Page<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category, Pageable pageable);
-
-  /** 有効リソースをカテゴリで絞り込んで全件返す（from/to フィルタ用）。 */
-  List<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category);
-
-  // ---- ADMIN 用（inactive 含む）----
-
-  /** リソースをカテゴリで絞り込んでページネーションで返す（inactive 含む）。 */
-  Page<Resource> findByCategory(ResourceCategory category, Pageable pageable);
-
-  /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
-  List<Resource> findByCategory(ResourceCategory category);
+  /** {@link #search(ResourceCategory, boolean, String, Pageable)} の全件版（from/to フィルタ用）。 */
+  @Query(
+      "SELECT r FROM Resource r "
+          + "WHERE (:isActiveOnly = false OR r.isActive = true) "
+          + "AND (:category IS NULL OR r.category = :category) "
+          + "AND (LOWER(r.name) LIKE :pattern OR LOWER(COALESCE(r.description, '')) LIKE :pattern)")
+  List<Resource> search(
+      @Param("category") ResourceCategory category,
+      @Param("isActiveOnly") boolean isActiveOnly,
+      @Param("pattern") String pattern);
 }
