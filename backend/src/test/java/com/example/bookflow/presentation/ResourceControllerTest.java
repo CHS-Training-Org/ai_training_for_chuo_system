@@ -250,7 +250,8 @@ class ResourceControllerTest extends BaseControllerTest {
                 .param("category", "EQUIPMENT")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").doesNotExist());
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").doesNotExist());
 
     mockMvc
         .perform(
@@ -285,7 +286,8 @@ class ResourceControllerTest extends BaseControllerTest {
                 .param("to", "2025-06-03T11:00:00")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").doesNotExist());
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").doesNotExist());
   }
 
   @Test
