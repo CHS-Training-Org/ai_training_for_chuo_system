@@ -71,7 +71,11 @@ export function SubmitButton({ reservationId, currentValues }: SubmitButtonProps
           <Button variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
             戻る
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending} data-testid="reservation-detail-submit-confirm-button">
+          <Button
+            onClick={handleSubmit}
+            disabled={isPending}
+            data-testid="reservation-detail-submit-confirm-button"
+          >
             {isPending ? "申請中..." : "正式申請する"}
           </Button>
         </div>
