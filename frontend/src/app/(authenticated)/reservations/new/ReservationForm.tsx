@@ -59,11 +59,11 @@ export function ReservationForm({
     },
   });
 
-  const handleSubmit = (values: FormValues) => {
+  const handleSubmit = (values: FormValues, draft: boolean) => {
     setConflictError(null);
     startTransition(async () => {
       try {
-        await createReservationAction(values);
+        await createReservationAction({ ...values, draft });
         router.push("/reservations");
       } catch (err) {
         if (err instanceof ApiClientError && err.code === "RESERVATION_CONFLICT") {
@@ -79,7 +79,10 @@ export function ReservationForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit((values) => handleSubmit(values, false))}
+        className="space-y-4"
+      >
         {/* リソース選択 */}
         <FormField
           control={form.control}
@@ -179,8 +182,17 @@ export function ReservationForm({
         {conflictError && <p className="text-sm font-medium text-destructive">{conflictError}</p>}
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending} data-testid="reservation-form-submit-button">
             {isPending ? "申請中..." : "予約を申請する"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isPending}
+            onClick={form.handleSubmit((values) => handleSubmit(values, true))}
+            data-testid="reservation-form-draft-button"
+          >
+            {isPending ? "保存中..." : "下書き保存"}
           </Button>
           <Button
             type="button"

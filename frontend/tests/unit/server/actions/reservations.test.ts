@@ -142,6 +142,18 @@ describe("createReservationAction", () => {
       }),
     ).rejects.toThrow();
   });
+
+  it("draft: true を指定した場合: status=DRAFT で作成される", async () => {
+    const result = await createReservationAction({
+      resourceId: MOCK_RESERVATION_RESPONSE.resourceId,
+      startAt: "2025-07-01T10:00:00",
+      endAt: "2025-07-01T12:00:00",
+      purpose: "下書きテスト",
+      draft: true,
+    });
+
+    expect(result.status).toBe("DRAFT");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -174,6 +186,47 @@ describe("updateReservationAction", () => {
         startAt: "2025-07-01T10:00:00",
         endAt: "2025-07-01T12:00:00",
         purpose: "テスト",
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("submit: true を指定した場合: 正式申請され status=APPROVED になる", async () => {
+    const result = await updateReservationAction(MOCK_RESERVATION_RESPONSE.id, {
+      startAt: "2025-07-01T14:00:00",
+      endAt: "2025-07-01T16:00:00",
+      purpose: "正式申請テスト",
+      submit: true,
+    });
+
+    expect(result.status).toBe("APPROVED");
+  });
+
+  it("submit を指定しない場合: DRAFT の再編集として status=DRAFT のまま", async () => {
+    const result = await updateReservationAction(MOCK_RESERVATION_RESPONSE.id, {
+      startAt: "2025-07-01T14:00:00",
+      endAt: "2025-07-01T16:00:00",
+      purpose: "下書き再編集テスト",
+    });
+
+    expect(result.status).toBe("DRAFT");
+  });
+
+  it("422 時（DRAFT 以外への submit）: ApiClientError をスローする", async () => {
+    server.use(
+      http.put("/api/backend/reservations/:id", () => {
+        return HttpResponse.json(
+          { code: "VALIDATION_ERROR", message: "submit は DRAFT 状態の予約にのみ指定できます。" },
+          { status: 422 },
+        );
+      }),
+    );
+
+    await expect(
+      updateReservationAction(MOCK_RESERVATION_RESPONSE.id, {
+        startAt: "2025-07-01T10:00:00",
+        endAt: "2025-07-01T12:00:00",
+        purpose: "テスト",
+        submit: true,
       }),
     ).rejects.toThrow();
   });

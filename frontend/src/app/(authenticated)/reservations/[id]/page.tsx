@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CancelButton } from "./CancelButton";
+import { SubmitButton } from "./SubmitButton";
 import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
 
 /**
@@ -18,6 +19,15 @@ import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
 
 const STATUS_LABELS = RESERVATION_STATUS_LABELS;
 
+// 一覧画面（reservations/page.tsx）の STATUS_VARIANTS と統一し、バッジの見た目を揃える
+const STATUS_VARIANTS = {
+  PENDING: "secondary",
+  APPROVED: "default",
+  REJECTED: "destructive",
+  CANCELLED: "outline",
+  DRAFT: "outline",
+} as const;
+
 function statusBadgeClass(status: string): string {
   const map: Record<string, string> = {
     PENDING: "bg-yellow-100 text-yellow-700",
@@ -29,7 +39,7 @@ function statusBadgeClass(status: string): string {
   return map[status] ?? "";
 }
 
-const CANCELLABLE_STATUSES = ["PENDING", "APPROVED"];
+const CANCELLABLE_STATUSES = ["DRAFT", "PENDING", "APPROVED"];
 
 export default async function ReservationDetailPage({
   params,
@@ -44,9 +54,11 @@ export default async function ReservationDetailPage({
 
   const isAdmin = profile?.role === "ADMIN";
   const isOwner = profile?.id === reservation.requesterId;
-  // 編集可能条件: PENDING かつ本人（ADMIN は PUT 権限なし: api-spec.md §権限マトリクス L108）
-  const canEdit = reservation.status === "PENDING" && isOwner && !isAdmin;
+  // 編集可能条件: PENDING/DRAFT かつ本人（ADMIN は PUT 権限なし: api-spec.md §権限マトリクス）
+  const canEdit = ["PENDING", "DRAFT"].includes(reservation.status) && isOwner && !isAdmin;
   const canCancel = CANCELLABLE_STATUSES.includes(reservation.status) && (isOwner || isAdmin);
+  // 正式申請可能条件: DRAFT かつ本人のみ（ADMIN は PUT 権限なし、canEdit と同じ制約）
+  const canSubmit = reservation.status === "DRAFT" && isOwner && !isAdmin;
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -56,7 +68,12 @@ export default async function ReservationDetailPage({
 
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">予約詳細</h1>
-        <Badge className={statusBadgeClass(reservation.status)}>
+        <Badge
+          variant={
+            STATUS_VARIANTS[reservation.status as keyof typeof STATUS_VARIANTS] ?? "secondary"
+          }
+          className={statusBadgeClass(reservation.status)}
+        >
           {STATUS_LABELS[reservation.status] ?? reservation.status}
         </Badge>
       </div>
@@ -96,15 +113,32 @@ export default async function ReservationDetailPage({
         </CardContent>
       </Card>
 
-      {/* 編集ボタン（PENDING・本人のみ） */}
-      {canEdit && (
-        <Button asChild variant="outline">
-          <Link href={`/reservations/${reservation.id}/edit`}>予約内容を編集する</Link>
-        </Button>
-      )}
+      <div className="flex gap-3">
+        {/* 編集ボタン（PENDING/DRAFT・本人のみ） */}
+        {canEdit && (
+          <Button asChild variant="outline">
+            <Link href={`/reservations/${reservation.id}/edit`}>
+              {reservation.status === "DRAFT" ? "下書きを編集する" : "予約内容を編集する"}
+            </Link>
+          </Button>
+        )}
 
-      {/* キャンセルボタン（PENDING/APPROVED・本人 or ADMIN のみ） */}
-      {canCancel && <CancelButton reservationId={reservation.id} />}
+        {/* 正式申請ボタン（DRAFT・本人のみ） */}
+        {canSubmit && (
+          <SubmitButton
+            reservationId={reservation.id}
+            currentValues={{
+              startAt: reservation.startAt,
+              endAt: reservation.endAt,
+              purpose: reservation.purpose,
+              attendeesCount: reservation.attendeesCount,
+            }}
+          />
+        )}
+
+        {/* キャンセルボタン（PENDING/APPROVED/DRAFT・本人 or ADMIN のみ） */}
+        {canCancel && <CancelButton reservationId={reservation.id} />}
+      </div>
 
       {/* カテゴリ 6 TODO: 承認ステップ表示（ApprovalStepResponse） */}
     </div>

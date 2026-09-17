@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.bookflow.support.BaseControllerTest;
 import com.example.bookflow.support.WithMockAdmin;
+import com.example.bookflow.support.WithMockApprover;
 import com.example.bookflow.support.WithMockMember;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -63,6 +64,14 @@ class ReservationControllerTest extends BaseControllerTest {
   /** MEMBER の PENDING 予約（後で UPDATE/CANCEL テストに使用・2025-06-12 14:00-16:00） */
   private static final UUID RESERVATION_PENDING_ID =
       UUID.fromString("30000000-0000-0000-0000-000000000022");
+
+  /** MEMBER の DRAFT 予約（承認不要リソース・2025-06-13 10:00-12:00） */
+  private static final UUID RESERVATION_DRAFT_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000023");
+
+  /** MEMBER の DRAFT 予約（承認要リソース・正式申請テスト用・2025-06-14 10:00-12:00） */
+  private static final UUID RESERVATION_DRAFT_APPROVAL_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000024");
 
   @Autowired private JdbcTemplate jdbcTemplate;
 
@@ -175,6 +184,36 @@ class ReservationControllerTest extends BaseControllerTest {
         "PENDING",
         LocalDateTime.of(2025, 6, 1, 9, 0),
         LocalDateTime.of(2025, 6, 1, 9, 0));
+
+    // MEMBER の DRAFT 予約（承認不要リソース・2025-06-13 10:00-12:00）
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        RESERVATION_DRAFT_ID,
+        RESOURCE_NO_APPROVAL_ID,
+        MEMBER_ID,
+        LocalDateTime.of(2025, 6, 13, 10, 0),
+        LocalDateTime.of(2025, 6, 13, 12, 0),
+        "MEMBER の下書き予約",
+        "DRAFT",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
+
+    // MEMBER の DRAFT 予約（承認要リソース・正式申請テスト用・2025-06-14 10:00-12:00）
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        RESERVATION_DRAFT_APPROVAL_ID,
+        RESOURCE_WITH_APPROVAL_ID,
+        MEMBER_ID,
+        LocalDateTime.of(2025, 6, 14, 10, 0),
+        LocalDateTime.of(2025, 6, 14, 12, 0),
+        "MEMBER の下書き予約（要承認）",
+        "DRAFT",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
   }
 
   @AfterEach
@@ -192,10 +231,12 @@ class ReservationControllerTest extends BaseControllerTest {
             + " (SELECT id FROM reservations WHERE requester_id = ?)",
         MEMBER_ID);
     jdbcTemplate.update(
-        "DELETE FROM reservations WHERE id IN (?, ?, ?)",
+        "DELETE FROM reservations WHERE id IN (?, ?, ?, ?, ?)",
         RESERVATION_MEMBER_ID,
         RESERVATION_OTHER_ID,
-        RESERVATION_PENDING_ID);
+        RESERVATION_PENDING_ID,
+        RESERVATION_DRAFT_ID,
+        RESERVATION_DRAFT_APPROVAL_ID);
     // POST テストで追加された動的予約も削除
     jdbcTemplate.update("DELETE FROM reservations WHERE requester_id = ?", MEMBER_ID);
     jdbcTemplate.update(
@@ -314,6 +355,59 @@ class ReservationControllerTest extends BaseControllerTest {
         .andExpect(status().isUnauthorized());
   }
 
+  @Test
+  @WithMockMember
+  void create_draftTrue_returns201Draft() throws Exception {
+    String body =
+        """
+        {
+          "resourceId": "%s",
+          "startAt": "2025-08-01T10:00:00",
+          "endAt": "2025-08-01T12:00:00",
+          "purpose": "下書きテスト",
+          "draft": true
+        }
+        """
+            .formatted(RESOURCE_NO_APPROVAL_ID);
+
+    mockMvc
+        .perform(post("/api/reservations").contentType(MediaType.APPLICATION_JSON).content(body))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.status").value("DRAFT"));
+
+    jdbcTemplate.update(
+        "DELETE FROM reservations WHERE requester_id = ? AND start_at = ?",
+        MEMBER_ID,
+        LocalDateTime.of(2025, 8, 1, 10, 0));
+  }
+
+  @Test
+  @WithMockMember
+  void create_draftTrue_ignoresConflict_returns201Draft() throws Exception {
+    // RESERVATION_MEMBER_ID（2025-06-10 10:00-12:00）と重複するが draft=true では 409 にならない
+    String body =
+        """
+        {
+          "resourceId": "%s",
+          "startAt": "2025-06-10T11:00:00",
+          "endAt": "2025-06-10T13:00:00",
+          "purpose": "下書き重複テスト",
+          "draft": true
+        }
+        """
+            .formatted(RESOURCE_NO_APPROVAL_ID);
+
+    mockMvc
+        .perform(post("/api/reservations").contentType(MediaType.APPLICATION_JSON).content(body))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.status").value("DRAFT"));
+
+    jdbcTemplate.update(
+        "DELETE FROM reservations WHERE requester_id = ? AND start_at = ?",
+        MEMBER_ID,
+        LocalDateTime.of(2025, 6, 10, 11, 0));
+  }
+
   // ---------------------------------------------------------------------------
   // GET /api/reservations — 予約一覧
   // ---------------------------------------------------------------------------
@@ -387,6 +481,33 @@ class ReservationControllerTest extends BaseControllerTest {
   @WithMockMember
   void get_nonExistentId_returns404() throws Exception {
     mockMvc.perform(get("/api/reservations/" + UUID.randomUUID())).andExpect(status().isNotFound());
+  }
+
+  @Test
+  @WithMockMember
+  void get_ownDraftReservation_returns200() throws Exception {
+    mockMvc
+        .perform(get("/api/reservations/" + RESERVATION_DRAFT_ID))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("DRAFT"));
+  }
+
+  @Test
+  @WithMockApprover
+  void get_otherMemberDraftReservationByApprover_returns403() throws Exception {
+    // DRAFT は PENDING 以降と異なり APPROVER も本人以外は閲覧不可（requirements.md D4）
+    mockMvc
+        .perform(get("/api/reservations/" + RESERVATION_DRAFT_ID))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockAdmin
+  void get_otherMemberDraftReservationByAdmin_returns200() throws Exception {
+    mockMvc
+        .perform(get("/api/reservations/" + RESERVATION_DRAFT_ID))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("DRAFT"));
   }
 
   // ---------------------------------------------------------------------------
@@ -475,6 +596,120 @@ class ReservationControllerTest extends BaseControllerTest {
         .andExpect(status().isNotFound());
   }
 
+  @Test
+  @WithMockMember
+  void update_draftReservationBySubmitFalse_returns200Draft() throws Exception {
+    String body =
+        """
+        {
+          "startAt": "2025-06-13T11:00:00",
+          "endAt": "2025-06-13T13:00:00",
+          "purpose": "下書き再編集",
+          "submit": false
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + RESERVATION_DRAFT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("DRAFT"))
+        .andExpect(jsonPath("$.purpose").value("下書き再編集"));
+  }
+
+  @Test
+  @WithMockMember
+  void update_draftReservationBySubmitFalseWithConflict_returns200Draft() throws Exception {
+    // RESERVATION_MEMBER_ID（同一リソース、2025-06-10 10:00-12:00、APPROVED）と重複するが
+    // DRAFT の再編集（submit=false）では重複予約チェックをスキップするため 409 にならない
+    String body =
+        """
+        {
+          "startAt": "2025-06-10T11:00:00",
+          "endAt": "2025-06-10T13:00:00",
+          "purpose": "重複する下書き再編集",
+          "submit": false
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + RESERVATION_DRAFT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("DRAFT"))
+        .andExpect(jsonPath("$.purpose").value("重複する下書き再編集"));
+  }
+
+  @Test
+  @WithMockMember
+  void update_draftReservationBySubmitTrueNoApprovalRequired_returns200Approved() throws Exception {
+    String body =
+        """
+        {
+          "startAt": "2025-06-13T10:00:00",
+          "endAt": "2025-06-13T12:00:00",
+          "purpose": "正式申請テスト",
+          "submit": true
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + RESERVATION_DRAFT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("APPROVED"));
+  }
+
+  @Test
+  @WithMockMember
+  void update_draftReservationBySubmitTrueApprovalRequired_returns200Pending() throws Exception {
+    String body =
+        """
+        {
+          "startAt": "2025-06-14T10:00:00",
+          "endAt": "2025-06-14T12:00:00",
+          "purpose": "正式申請テスト（要承認）",
+          "submit": true
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + RESERVATION_DRAFT_APPROVAL_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("PENDING"));
+  }
+
+  @Test
+  @WithMockMember
+  void update_pendingReservationBySubmitTrue_returns422() throws Exception {
+    // RESERVATION_PENDING_ID は既に PENDING のため submit=true は不正遷移
+    String body =
+        """
+        {
+          "startAt": "2025-06-12T15:00:00",
+          "endAt": "2025-06-12T17:00:00",
+          "purpose": "不正遷移テスト",
+          "submit": true
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + RESERVATION_PENDING_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isUnprocessableEntity());
+  }
+
   // ---------------------------------------------------------------------------
   // POST /api/reservations/{id}/cancel — キャンセル
   // ---------------------------------------------------------------------------
@@ -510,5 +745,14 @@ class ReservationControllerTest extends BaseControllerTest {
     mockMvc
         .perform(post("/api/reservations/" + RESERVATION_PENDING_ID + "/cancel"))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @WithMockMember
+  void cancel_draftReservationByOwner_returnsCancelled() throws Exception {
+    mockMvc
+        .perform(post("/api/reservations/" + RESERVATION_DRAFT_ID + "/cancel"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CANCELLED"));
   }
 }

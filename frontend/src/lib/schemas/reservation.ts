@@ -25,6 +25,7 @@ export const CreateReservationSchema = z.object({
     .min(1, "利用目的は必須です")
     .max(255, "利用目的は 255 文字以内で入力してください"),
   attendeesCount: z.number().int().positive().nullable().optional(),
+  draft: z.boolean().optional(),
 });
 
 /**
@@ -40,6 +41,7 @@ export const UpdateReservationSchema = z.object({
     .min(1, "利用目的は必須です")
     .max(255, "利用目的は 255 文字以内で入力してください"),
   attendeesCount: z.number().int().positive().nullable().optional(),
+  submit: z.boolean().optional(),
 });
 
 export type CreateReservationInput = z.infer<typeof CreateReservationSchema>;

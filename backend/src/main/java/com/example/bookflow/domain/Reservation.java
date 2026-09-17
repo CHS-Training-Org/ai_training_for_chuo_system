@@ -96,7 +96,7 @@ public class Reservation {
   }
 
   /**
-   * 予約内容を更新する（PUT 対応・{@code PENDING} 状態のみ許可）。
+   * 予約内容を更新する（PUT 対応）。ステータスガードは呼び出し元の Service 層が行う（無条件セッター）。
    *
    * @param startAt 新しい開始日時
    * @param endAt 新しい終了日時
@@ -131,6 +131,17 @@ public class Reservation {
    */
   public void markApproved() {
     this.status = ReservationStatus.APPROVED;
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  /**
+   * 予約を承認待ちにする（下書きの正式申請用）。
+   *
+   * <p>ステータスを {@link ReservationStatus#PENDING} に変更する。 呼び出し前に Service 層で遷移可否（現在 {@code DRAFT}
+   * であること）を確認すること。
+   */
+  public void markPending() {
+    this.status = ReservationStatus.PENDING;
     this.updatedAt = LocalDateTime.now();
   }
 
