@@ -17,9 +17,10 @@ export const ROLE_LABELS: Record<string, string> = {
  *
  * - APPROVED = "承認済み"（ダッシュボード・一覧・詳細で統一）
  * - CANCELLED = "キャンセル済み"（screen-spec L224 の表記に準拠）
+ * - DRAFT = "下書き"（screen-spec.md §マイ予約のステータスフィルター表記、下書き保存関連のボタン・見出し文言に準拠）
  */
 export const RESERVATION_STATUS_LABELS: Record<string, string> = {
-  DRAFT: "ドラフト",
+  DRAFT: "下書き",
   PENDING: "承認待ち",
   APPROVED: "承認済み",
   REJECTED: "却下",

@@ -51,7 +51,8 @@ interface ReservationEditFormProps {
  * 予約編集フォーム（screen-spec.md §予約編集 /reservations/{id}/edit 準拠）。
  *
  * - リソースは変更不可。現在のリソース名を読み取り専用で表示する。
- * - 対象は PENDING の予約のみ。PENDING 以外は BE が 422 で弾く。
+ * - 対象は PENDING/DRAFT の予約のみ。それ以外は BE が 422 で弾く。
+ * - DRAFT の場合、submit は指定しない（再編集として保存し、DRAFT のまま維持する）。
  * - 重複時は 409 Conflict → エラーメッセージを表示する。
  * - 更新成功後は予約詳細（/reservations/{id}）へリダイレクトする。
  */

@@ -1,51 +1,45 @@
-# Execution Plan — リソース一覧の検索・フィルタ追加（Issue #23）
+# Execution Plan — 予約の下書き保存（Issue #30）
 
 ## Detailed Analysis Summary
 
-### Transformation Scope (Brownfield Only)
+### Transformation Scope（Brownfield）
 
-- **Transformation Type**: Single component change（`ResourceService`/`ResourceRepository`/`ResourceController` と `ResourceFilterForm` 周辺の拡張のみ。アーキテクチャ変更・デプロイモデル変更はない）
-- **Primary Changes**:
-  - backend: `GET /api/resources` に `keyword` クエリパラメータを追加し、`ResourceService.list()` の分岐を再構成して Java 側フィルタ経路（`listWithAvailabilityFilter` 相当）に `keyword` を組み込む。
-  - frontend: `ResourceFilterForm.tsx` にキーワード入力欄を追加し、`resources.ts`（Server Action）の `ListResourcesParams`/`listResourcesAction` と `resources/page.tsx` の `SearchParams`/`listResourcesAction` 呼び出しに `keyword` を通す。
-- **Related Components**: なし（他のバックエンド Service・他画面への影響はない）
+- **Transformation Type**: Single component change（既存の `ReservationService`/`ReservationController`/`Reservation` ドメインエンティティの拡張。新規サービス・新規テーブルは作らない）
+- **Primary Changes**: 予約に `DRAFT` ライフサイクル（作成・再編集・正式申請・キャンセル）を追加し、`DRAFT` に限定したアクセス制御分岐を導入する
+- **Related Components**: `ApprovalService`（`createInitialStep` の呼び出しタイミングが変わる。ロジック自体は無変更）、`ResourceService.overlaps`（重複チェックで再利用、無変更）
 
 ### Change Impact Assessment
 
-- **User-facing changes**: Yes — `/resources` 画面のフィルタフォームにキーワード入力欄が追加される。
-- **Structural changes**: No — 新規パッケージ・新規レイヤーの追加はない。
-- **Data model changes**: No — 新規エンティティ・新規カラム・新規マイグレーションは不要（既存の `resources.name`/`resources.description` を対象とする）。
-- **API changes**: Yes（後方互換）— `GET /api/resources` に任意の `keyword` クエリパラメータを追加。既存クライアントの挙動は変わらない。
-- **NFR impact**: Minor — `requirements.md` に記載の設計方針（DB側フィルタを行わず Java 側の全件取得後フィルタパターンを踏襲）のみ。新規の性能・セキュリティ要件はない。
+- **User-facing changes**: Yes（予約申請フォーム・予約一覧・予約詳細・予約編集の4画面）
+- **Structural changes**: Minor（`Reservation` に無条件セッター `markPending()` を追加。既存の `cancel()`/`markApproved()`/`markRejected()` と同じ形。新しい層・新しいクラスは作らない）
+- **Data model changes**: No（新規テーブル・カラムはなし。V001 の CHECK 制約に既に定義済みの `DRAFT` をアプリ層で有効化するのみ）
+- **API changes**: Yes（`POST /api/reservations` に `draft`、`PUT /api/reservations/{id}` に `submit` という任意フィールドを追加。新規エンドポイントの追加はなし）
+- **NFR impact**: No（Extension 3種はすべて Disabled 判定済み）
 
-### Component Relationships (Brownfield Only)
+### Component Relationships（Brownfield）
 
-- **Primary Component**: `backend/application/ResourceService.java`, `backend/domain/ResourceRepository.java`, `backend/presentation/ResourceController.java`
-- **Infrastructure Components**: なし
-- **Shared Components**: なし
-- **Dependent Components**:
-  - `frontend/src/app/(authenticated)/resources/ResourceFilterForm.tsx`（キーワード入力欄の追加）
-  - `frontend/src/app/(authenticated)/resources/page.tsx`（`SearchParams`/`listResourcesAction` 呼び出しへの `keyword` 追加。エンハンス要求シートに明記はないが、既存の `category`/`from`/`to` と同じ配線パターンのため対応が必要）
-  - `frontend/src/server/actions/resources.ts`（`ListResourcesParams`/`listResourcesAction` への `keyword` 追加）
-- **Supporting Components**: `backend/src/test/java/.../ResourceServiceTest.java`, `ResourceControllerTest.java`（テストケース追加）
+```markdown
+## Component Relationships
+- **Primary Component**: ReservationService / ReservationController / Reservation（domain）
+- **Shared Components**: ResourceService.overlaps（重複チェックの静的メソッド、既存のまま再利用）、ApprovalService.createInitialStep（呼び出し元は変わるがロジックは無変更）
+- **Dependent Components**: ReservationEditForm.tsx / ReservationForm.tsx / reservations 系ページ（frontend）
+- **Supporting Components**: なし（監視・ログ・デプロイへの影響なし）
+```
 
-各コンポーネントの変更種別:
-
-| コンポーネント | Change Type | Change Reason | Change Priority |
+| コンポーネント | 変更種別 | 変更理由 | 優先度 |
 |---|---|---|---|
-| `ResourceController.java` | Minor（既存メソッドへのパラメータ追加） | 直接依存 | Critical |
-| `ResourceService.java` | Minor〜Moderate（分岐の再構成） | 直接依存 | Critical |
-| `ResourceRepository.java` | 変更なし | Java側フィルタ方針のため新規メソッド不要 | - |
-| `ResourceFilterForm.tsx` | Minor | 直接依存 | Critical |
-| `resources.ts`（Server Action） | Minor | 直接依存 | Critical |
-| `resources/page.tsx` | Minor | 直接依存（配線） | Important |
-| `ResourceServiceTest.java` / `ResourceControllerTest.java` | Minor（テスト追加） | 受入条件 | Critical |
+| `ReservationService` | Major | `create()`/`update()`/`cancel()`/`checkReadAccess()` に分岐追加 | Critical |
+| `Reservation`（domain） | Minor | `markPending()` 追加 | Critical |
+| `ReservationController`/DTO | Minor | `draft`/`submit` フィールド追加 | Critical |
+| frontend 予約4画面 | Minor〜Major | ボタン・タブ・導線追加 | Important |
+| spec文書（`docs-next/docs/spec/`） | Minor | `DRAFT`「未使用」注記の更新 | Critical（Spec-first） |
+| drawio資産（予約ステータス遷移図） | Minor | `DRAFT`の遷移を反映 | Important |
 
 ### Risk Assessment
 
-- **Risk Level**: Low（既存の1エンドポイント・1コンポーネントへの限定的な拡張。新規データモデル・新規承認フローはない）
-- **Rollback Complexity**: Easy（`keyword` パラメータは任意であり、未指定時は既存動作と同一。単一コミット/PRの取り消しで復旧できる）
-- **Testing Complexity**: Simple（既存のユニット・統合テストパターンにケースを追加するのみ）
+- **Risk Level**: Medium（複数レイヤーにまたがるが、新規テーブル・新規サービス・インフラ変更はなく、既存の状態遷移パターン（`cancel()`/`markApproved()`/`markRejected()`）を踏襲するため未知要素は少ない）
+- **Rollback Complexity**: Easy（単一 PR の revert で戻せる。DB マイグレーションを伴わないため）
+- **Testing Complexity**: Moderate（状態遷移の組み合わせ（`DRAFT`×`submit`×`requires_approval`）とアクセス制御（ロール×ステータス）の掛け合わせをテストする必要がある）
 
 ## Workflow Visualization
 
@@ -54,142 +48,140 @@ flowchart TD
     Start(["User Request"])
 
     subgraph INCEPTION["INCEPTION PHASE"]
-        WD["Workspace Detection<br/>COMPLETED"]
-        RE["Reverse Engineering<br/>COMPLETED"]
-        RA["Requirements Analysis<br/>COMPLETED"]
-        US["User Stories<br/>SKIPPED"]
-        WP["Workflow Planning<br/>IN PROGRESS"]
-        AD["Application Design<br/>SKIP"]
-        UG["Units Generation<br/>SKIP"]
+        WD["Workspace Detection<br/><b>COMPLETED</b>"]
+        RA["Requirements Analysis<br/><b>COMPLETED</b>"]
+        US["User Stories<br/><b>COMPLETED (EXECUTE)</b>"]
+        WP["Workflow Planning<br/><b>IN PROGRESS</b>"]
+        AD["Application Design<br/><b>SKIP</b>"]
+        UG["Units Generation<br/><b>SKIP</b>"]
     end
 
     subgraph CONSTRUCTION["CONSTRUCTION PHASE"]
-        FD["Functional Design<br/>SKIP"]
-        NFRA["NFR Requirements<br/>SKIP"]
-        NFRD["NFR Design<br/>SKIP"]
-        ID["Infrastructure Design<br/>SKIP"]
-        CG["Code Generation<br/>EXECUTE"]
-        BT["Build and Test<br/>EXECUTE"]
+        FD["Functional Design<br/><b>EXECUTE</b>"]
+        NFRA["NFR Requirements<br/><b>SKIP</b>"]
+        NFRD["NFR Design<br/><b>SKIP</b>"]
+        ID["Infrastructure Design<br/><b>SKIP</b>"]
+        CG["Code Generation<br/>Planning plus Generation<br/><b>EXECUTE</b>"]
+        BT["Build and Test<br/><b>EXECUTE</b>"]
     end
 
     subgraph OPERATIONS["OPERATIONS PHASE"]
-        OPS["Operations<br/>PLACEHOLDER (CI)"]
+        OPS["Operations<br/><b>PLACEHOLDER</b>"]
     end
 
     Start --> WD
-    WD --> RE
-    RE --> RA
+    WD --> RA
     RA --> US
     US --> WP
-    WP --> AD
-    AD --> UG
-    UG --> CG
+    WP -.-> AD
+    WP -.-> UG
+    WP --> FD
+    AD -.-> FD
+    UG -.-> FD
+    FD -.-> NFRA
+    NFRA -.-> NFRD
+    NFRD -.-> ID
+    FD --> CG
+    NFRA --> CG
+    NFRD --> CG
+    ID --> CG
     CG --> BT
-    BT --> OPS
-    OPS --> End(["Complete"])
+    BT -.-> OPS
+    BT --> End(["Complete"])
 
     style WD fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style RE fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style RA fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style US fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+    style US fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style WP fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style FD fill:#FFA726,stroke:#E65100,stroke-width:3px,stroke-dasharray: 5 5,color:#000
+    style CG fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style BT fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style AD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style UG fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style FD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style NFRA fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style NFRD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style ID fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style CG fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style BT fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style OPS fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+    style INCEPTION fill:#BBDEFB,stroke:#1565C0,stroke-width:3px,color:#000
+    style CONSTRUCTION fill:#C8E6C9,stroke:#2E7D32,stroke-width:3px,color:#000
+    style OPERATIONS fill:#FFF59D,stroke:#F57F17,stroke-width:3px,color:#000
     style Start fill:#CE93D8,stroke:#6A1B9A,stroke-width:3px,color:#000
     style End fill:#CE93D8,stroke:#6A1B9A,stroke-width:3px,color:#000
 
     linkStyle default stroke:#333,stroke-width:2px
 ```
 
-### Text Alternative
+### テキスト代替（Mermaid未対応環境向け）
 
 ```
-INCEPTION PHASE
-- Workspace Detection      : COMPLETED
-- Reverse Engineering      : COMPLETED
-- Requirements Analysis    : COMPLETED
-- User Stories             : SKIPPED
-- Workflow Planning        : IN PROGRESS (this document)
-- Application Design       : SKIP
-- Units Generation         : SKIP
+INCEPTION
+  Workspace Detection ......... COMPLETED
+  Reverse Engineering ......... SKIPPED（既存成果物を非陳腐化と判定し再利用）
+  Requirements Analysis ....... COMPLETED
+  User Stories ................ COMPLETED（EXECUTE 判定）
+  Workflow Planning ........... IN PROGRESS（本ドキュメント）
+  Application Design .......... SKIP
+  Units Generation ............ SKIP
 
-CONSTRUCTION PHASE
-- Functional Design        : SKIP
-- NFR Requirements         : SKIP
-- NFR Design               : SKIP
-- Infrastructure Design    : SKIP
-- Code Generation          : EXECUTE
-- Build and Test           : EXECUTE
+CONSTRUCTION（単一unit: reservation-draft）
+  Functional Design ........... EXECUTE
+  NFR Requirements ............ SKIP
+  NFR Design ................... SKIP
+  Infrastructure Design ....... SKIP
+  Code Generation .............. EXECUTE（Part1計画+Part2実装。Part2着手前に /update-spec と drawio更新を挟む）
+  Build and Test ............... EXECUTE
 
-OPERATIONS PHASE
-- Operations (CI)          : PLACEHOLDER（BookFlowではCI品質ゲートに相当）
+OPERATIONS
+  Operations ................... PLACEHOLDER（CI品質ゲートが相当）
 ```
 
 ## Phases to Execute
 
-### INCEPTION PHASE
-
+### 🔵 INCEPTION PHASE
 - [x] Workspace Detection (COMPLETED)
-- [x] Reverse Engineering (COMPLETED)
+- [x] Reverse Engineering (SKIPPED — 既存成果物を非陳腐化と判定し再利用)
 - [x] Requirements Analysis (COMPLETED)
-- [x] User Stories (SKIPPED)
-  - **Rationale**: 既存画面（`/resources`）への1フィールド追加であり、新規ペルソナ・複雑な業務要件・チーム横断的な合意形成を要しない。`requirements.md` の User Scenarios 節が利用シナリオを既に網羅している。
-- [x] Workflow Planning (IN PROGRESS — 本ドキュメント)
-- [ ] Application Design - **SKIP**
-  - **Rationale**: 新規コンポーネント・新規サービスの追加はない。既存の `ResourceService`/`ResourceController` の境界内で完結する変更であり、サービス層設計の見直しは不要。
-- [ ] Units Generation - **SKIP**
-  - **Rationale**: 単一の小さな縦切り変更であり、複数ユニットへの分解価値がない。CONSTRUCTION フェーズは本課題を単一の実装単位（unit）として扱う。
+- [x] User Stories (COMPLETED — EXECUTE)
+- [x] Execution Plan (IN PROGRESS — 本ドキュメント)
+- [ ] Application Design — **SKIP**
+  - **Rationale**: 新規コンポーネント・新規サービスを作らない。既存の `ReservationService`/`ReservationController`/`Reservation` の境界内での拡張にとどまる
+- [ ] Units Generation — **SKIP**
+  - **Rationale**: 新規データモデル・新規エンドポイントはなく（既存エンドポイントへの任意フィールド追加のみ）、複数パッケージへの分割が必要な規模でもない。単一unit「reservation-draft」として扱う
 
-### CONSTRUCTION PHASE
+### 🟢 CONSTRUCTION PHASE（単一unit: `reservation-draft`）
+- [ ] Functional Design — **EXECUTE**
+  - **Rationale**: `DRAFT` の状態遷移（`submit` 分岐×`requires_approval`分岐）と、ステータス限定のアクセス制御分岐（`checkReadAccess` の `DRAFT` 例外）という複雑な業務ロジックの詳細設計が必要（D2/D6/D7 を実装可能な粒度まで具体化する）
+- [ ] NFR Requirements — **SKIP**
+  - **Rationale**: Requirements Analysis で Security/Resiliency/Property-Based Testing の3拡張すべてDisabledと判定済み。新規の性能・可用性要件もない
+- [ ] NFR Design — **SKIP**
+  - **Rationale**: NFR Requirements SKIP に連動
+- [ ] Infrastructure Design — **SKIP**
+  - **Rationale**: インフラ・デプロイ構成の変更なし
+- [ ] Code Generation — EXECUTE (ALWAYS)
+  - **Rationale**: 実装計画の作成とコード生成が必要。Part 2（実装）着手前に `/update-spec`（spec文書のDRAFT関連記述更新）と `drawio-skill`（予約ステータス遷移図の更新）を挟む
+- [ ] Build and Test — EXECUTE (ALWAYS)
+  - **Rationale**: バックエンド（`ReservationServiceTest`/`ReservationControllerTest`）・フロントエンド（Vitest）双方の既存テストへの追加と、lint/format/buildの検証が必要
 
-- [ ] Functional Design - **SKIP**
-  - **Rationale**: 新規データモデル・新規業務ルールはない。`requirements.md` が未解決のまま残した唯一の設計判断（`ResourceService.list()` の分岐再構成）は、Code Generation Part 1（実装計画の作成・承認）で十分にカバーできる粒度であり、独立した Functional Design ステージを設けるほどの複雑さはない。
-- [ ] NFR Requirements - **SKIP**
-  - **Rationale**: Extension opt-in（Security/Resiliency/PBT）はいずれも Requirements Analysis で「無効」と決定済み。新規の性能・セキュリティ・スケーラビリティ要件はない。
-- [ ] NFR Design - **SKIP**
-  - **Rationale**: NFR Requirements を実行しないため連動して SKIP。
-- [ ] Infrastructure Design - **SKIP**
-  - **Rationale**: インフラ・デプロイ構成の変更はない。
-- [ ] Code Generation - **EXECUTE (ALWAYS)**
-  - **Rationale**: 実装計画の作成（Part 1）と実装（Part 2）が必要。**Spec-first の原則により、Part 2（コード生成）に着手する前に `/update-spec` スキルで `docs-next/docs/spec/api-spec.md`（`GET /api/resources` の `keyword` パラメータ）と `docs-next/docs/spec/screen-spec.md`（`/resources` のキーワード入力欄）を更新する**（CLAUDE.md・SKILL.md の Spec-first 原則、および `requirements.md` の Technical Context に明記済み）。
-- [ ] Build and Test - **EXECUTE (ALWAYS)**
-  - **Rationale**: `backend`（`./gradlew test`）・`frontend`（`pnpm test`）双方の既存テストスイートが引き続き pass することを確認し、追加したユニットテストの実行結果を検証する。
+### 🟡 OPERATIONS PHASE
+- [ ] Operations — PLACEHOLDER
+  - **Rationale**: BookFlowではPR作成後のCI品質ゲート（`CI Frontend`/`CI Backend`）が相当
 
-### OPERATIONS PHASE
+## Package Change Sequence（Brownfield）
 
-- [ ] Operations - **PLACEHOLDER**
-  - **Rationale**: BookFlow では CI 品質ゲート（`CI Frontend` / `CI Backend`）が Operations 相当。PR 作成時に自動実行される。
+単一unitのため逐次調整は不要。ただし unit 内の実装順序は Code Generation Part 1（計画）で以下の順とする想定：
 
-## Package Change Sequence (Brownfield Only)
-
-1. **backend**（`ResourceRepository` は変更なし → `ResourceService` → `ResourceController`）— API 契約側を先に固める。
-2. **frontend**（`resources.ts` → `ResourceFilterForm.tsx` → `resources/page.tsx`）— backend の `keyword` パラメータ仕様確定後に配線する。
-
-バックエンドとフロントエンドは同一 PR（縦切り Issue 単位、CLAUDE.md の「縦切り実装」原則）でまとめて実装する。
+1. `/update-spec`（spec文書更新）＋ drawio遷移図更新
+2. backend: domain（`Reservation.markPending()`）→ application（`ReservationService`）→ presentation（DTO/Controller）
+3. frontend: `reservations/new`（下書き保存）→ `reservations`（一覧タブ）→ `reservations/[id]`（再編集・正式申請導線）→ `reservations/[id]/edit`（DRAFT対応）
 
 ## Estimated Timeline
 
-- **Total Phases**: 2（Code Generation, Build and Test。うち Code Generation は Part 1 計画 + Part 2 実装の2段階）
-- **Estimated Duration**: 2〜3時間（エンハンス要求シート記載の見積りと整合）
+- **Total Phases**: 5（Functional Design, Code Generation Part1, Code Generation Part2, Build and Test, Operations相当のCI）
+- **Estimated Duration**: 半日〜1日（要求シートの「影響範囲」見積もりと一致）
 
 ## Success Criteria
 
-- **Primary Goal**: `GET /api/resources` へのキーワード検索追加により、リソース名・説明文の部分一致検索ができる。
-- **Key Deliverables**:
-  - backend: `keyword` クエリパラメータ対応（`ResourceController`/`ResourceService`）
-  - frontend: `ResourceFilterForm` へのキーワード入力欄、`resources.ts`/`resources/page.tsx` の配線
-  - `docs-next/docs/spec/api-spec.md`・`screen-spec.md` の更新（`/update-spec`）
-  - `ResourceServiceTest`/`ResourceControllerTest` への新規テストケース
-- **Quality Gates**:
-  - 既存の `ResourceServiceTest`・`ResourceControllerTest`・frontend `tests/unit` が引き続き pass する
-  - `requirements.md` の受入条件をすべて満たす
-  - CI（`CI Frontend`/`CI Backend`）が green になる
-
-- **Integration Testing**: `ResourceControllerTest`（`@SpringBootTest` + H2）による Controller〜Service〜Repository〜DBスキーマの統合検証。
-- **Operational Readiness**: 対象外（既存の運用監視体制の変更は不要）。
+- **Primary Goal**: `DRAFT` 予約の作成・再編集・正式申請・削除（キャンセル）が、既存の予約ライフサイクルと一貫した形で動作する
+- **Key Deliverables**: backend（`Reservation`/`ReservationService`/`ReservationController`/DTO の変更、テスト追加）、frontend（4画面の変更）、spec文書・drawio資産の更新
+- **Quality Gates**: `./gradlew test spotlessCheck checkstyleMain`（backend）、`pnpm lint`/`pnpm test`/`pnpm build`（frontend）、`cd docs-next && npm run build`（spec文書のリンク・アンカー検証）
+- **Integration Testing**: `DRAFT → PENDING`/`DRAFT → APPROVED` の遷移テスト、DRAFTのアクセス制御（本人/APPROVER/ADMIN）テストを含む

@@ -30,8 +30,9 @@ import org.springframework.web.bind.annotation.RestController;
  * <ul>
  *   <li>{@code GET /api/reservations} — 予約一覧（本人分 or ADMIN は全件、status フィルタ対応）
  *   <li>{@code POST /api/reservations} — 予約申請（全ロール・認証必須）
- *   <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN）
- *   <li>{@code PUT /api/reservations/{id}} — 予約更新（申請者本人・PENDING のみ）
+ *   <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN。ただし {@code DRAFT} は本人/ADMIN
+ *       のみ）
+ *   <li>{@code PUT /api/reservations/{id}} — 予約更新（申請者本人・{@code DRAFT}/{@code PENDING} のみ）
  *   <li>{@code POST /api/reservations/{id}/cancel} — キャンセル（本人 or ADMIN）
  * </ul>
  *
@@ -78,7 +79,7 @@ public class ReservationController {
     return reservationService.get(id, currentUser);
   }
 
-  /** 予約内容を更新する（{@code PENDING} のみ・申請者本人）。 */
+  /** 予約内容を更新する（{@code DRAFT}/{@code PENDING} のみ・申請者本人）。 */
   @PutMapping("/{id}")
   public ReservationResponse update(
       @PathVariable UUID id,
@@ -87,7 +88,7 @@ public class ReservationController {
     return reservationService.update(id, req, currentUser);
   }
 
-  /** 予約をキャンセルする（{@code PENDING}/{@code APPROVED} のみ・本人 or ADMIN）。 */
+  /** 予約をキャンセルする（{@code DRAFT}/{@code PENDING}/{@code APPROVED} のみ・本人 or ADMIN）。 */
   @PostMapping("/{id}/cancel")
   public ReservationResponse cancel(@PathVariable UUID id, @CurrentUser User currentUser) {
     return reservationService.cancel(id, currentUser);

@@ -219,6 +219,7 @@ export const handlers = [
         purpose: body.purpose ?? MOCK_RESERVATION_RESPONSE.purpose,
         startAt: body.startAt ?? MOCK_RESERVATION_RESPONSE.startAt,
         endAt: body.endAt ?? MOCK_RESERVATION_RESPONSE.endAt,
+        status: body.draft === true ? "DRAFT" : MOCK_RESERVATION_RESPONSE.status,
       },
       { status: 201 },
     );
@@ -233,6 +234,8 @@ export const handlers = [
       purpose: body.purpose ?? MOCK_RESERVATION_RESPONSE.purpose,
       startAt: body.startAt ?? MOCK_RESERVATION_RESPONSE.startAt,
       endAt: body.endAt ?? MOCK_RESERVATION_RESPONSE.endAt,
+      // submit: true は正式申請（APPROVED）、それ以外は DRAFT の再編集として扱う
+      status: body.submit === true ? "APPROVED" : "DRAFT",
     });
   }),
 

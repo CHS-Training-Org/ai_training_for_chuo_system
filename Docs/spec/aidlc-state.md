@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-08-29
+timestamp: 2026-09-15
 ---
 
 # AI-DLC State Tracking
@@ -18,18 +18,18 @@ timestamp: 2026-08-29
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-09-08T20:08:40+09:00
-- **Current Stage**: CONSTRUCTION - Code Generation（Part 2 完了・ユーザー承認待ち）
+- **Start Date**: 2026-09-15T19:56:32+09:00
+- **Current Stage**: INCEPTION - Requirements Analysis
 - **Workspace Root**: /workspace
-- **Target Task**: `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`（リソース一覧の検索・フィルタ追加、Issue #23）
+- **Target Task**: `docs-next/docs/spec/enhancements/intermediate/reservation-draft.md`（予約の下書き保存、Issue #30）
 
 ## Workspace State
 
-- **Existing Code**: Yes
+- **Existing Code**: Yes（Brownfield）
 - **Programming Languages**: TypeScript（frontend / Next.js 15 App Router）、Java 25（backend / Spring Boot 4.0）
 - **Build System**: pnpm（frontend）、Gradle Kotlin DSL（backend）
 - **Project Structure**: モノレポ（frontend + backend の2レイヤー構成）
-- **Reverse Engineering Artifacts**: なし（`Docs/spec/aidlc-docs/inception/reverse-engineering/` 未作成）
+- **Reverse Engineering Artifacts**: 既存あり（`Docs/spec/aidlc-docs/inception/reverse-engineering/`、Analysis Date 2026-09-08T20:08:40+09:00）。Issue #23（リソース一覧キーワード検索）関連の変更後だが、対象がResource系に閉じており今回のReservation系タスクのアーキテクチャ理解には影響しないため非陳腐化と判定し再利用（再実行はSKIP）。
 
 ## Code Location Rules
 
@@ -50,41 +50,38 @@ timestamp: 2026-08-29
 ### INCEPTION PHASE
 
 - [x] Workspace Detection
-- [x] Reverse Engineering（Brownfield の場合）
+- [x] Reverse Engineering（Brownfield の場合。SKIP判定: 既存成果物あり・今回タスクの対象範囲に対して非陳腐化のため再利用）
 - [x] Requirements Analysis
-- [x] User Stories（条件付き・SKIP: 新規ペルソナなし、requirements.md の User Scenarios で代替）
+- [x] User Stories（条件付き・EXECUTE判定：新しいユーザーワークフロー（下書き→再編集→正式申請）が加わるため）
 - [x] Workflow Planning
-- [x] Application Design（条件付き・SKIP: 新規コンポーネント/サービスなし）
-- [x] Units Generation（条件付き・SKIP: 単一の小さな縦切り変更、単一unitとして扱う）
+- [ ] Application Design（条件付き・SKIP判定：新規コンポーネント/サービスなし）
+- [ ] Units Generation（条件付き・SKIP判定：単一の小さな縦切り変更、単一unitとして扱う）
 
 ### CONSTRUCTION PHASE
 
-- [ ] Functional Design（条件付き・SKIP判定: Code Generation Part 1 でカバー可能、ユニット別）
-- [ ] NFR Requirements（条件付き・SKIP判定: Extension opt-in済み無効、ユニット別）
-- [ ] NFR Design（条件付き・SKIP判定: NFR Requirements SKIPに連動、ユニット別）
-- [ ] Infrastructure Design（条件付き・SKIP判定: インフラ変更なし、ユニット別）
-- [x] Code Generation（必須、ユニット別。Part 2着手前に `/update-spec` を挟んだ。全8ステップ完了・検証済み）
-- [x] Build and Test（必須。backend 133 tests / frontend 81 tests 全pass、lint/format/build全成功）
+- [x] Functional Design（条件付き、ユニット別・EXECUTE判定：DRAFT状態遷移とアクセス制御分岐の詳細設計が必要）
+- [ ] NFR Requirements（条件付き、ユニット別・SKIP判定：Extension opt-in済み無効）
+- [ ] NFR Design（条件付き、ユニット別・SKIP判定：NFR Requirements SKIPに連動）
+- [ ] Infrastructure Design（条件付き、ユニット別・SKIP判定：インフラ変更なし）
+- [x] Code Generation（必須、ユニット別）
+- [x] Build and Test（必須）
 
 ### OPERATIONS PHASE
 
-- [x] Operations（プレースホルダー。BookFlowではCI品質ゲート`CI Frontend`/`CI Backend`が相当。PR作成後に実行される）
-
-## Execution Plan Summary
-
-- **Total Stages to Execute**: Workspace Detection, Reverse Engineering, Requirements Analysis, Workflow Planning, Code Generation（Part1計画+Part2実装。Part2着手前に `/update-spec`）, Build and Test
-- **Stages Skipped**: User Stories（新規ペルソナなし）, Application Design（新規コンポーネントなし）, Units Generation（単一unit扱い）, Functional Design（Code Generation Part1でカバー）, NFR Requirements/Design（Extension opt-in無効）, Infrastructure Design（インフラ変更なし）
-- **Unit of Work**: 単一unit「resource-list-filter」（backend: ResourceService/ResourceRepository/ResourceController、frontend: ResourceFilterForm/resources.ts/resources/page.tsx）
+- [x] Operations（プレースホルダー） - CONSTRUCTION完了。CI品質ゲート運用（`/commit-push`→`/create-pr`）への引き継ぎ待ち
 
 ## Current Status
 
-- **Lifecycle Phase**: OPERATIONS
-- **Current Stage**: /aidlc ワークフロー完了（INCEPTION・CONSTRUCTION全ステージ完了・承認済み）
-- **Next Stage**: なし（`/aidlc` の範囲外。ユーザー判断で `/commit-push` → `/create-pr` へ）
-- **Status**: Complete
-- **Code Generation Plan**: `Docs/spec/aidlc-docs/construction/plans/resource-list-filter-code-generation-plan.md`（全ステップ [x]）
-- **Code Generation Summary**: `Docs/spec/aidlc-docs/construction/resource-list-filter/code/summary.md`
-- **Build and Test Artifacts**: `Docs/spec/aidlc-docs/construction/build-and-test/`（build-instructions / unit-test-instructions / integration-test-instructions / build-and-test-summary）
-- **Reverse Engineering Artifacts**: `Docs/spec/aidlc-docs/inception/reverse-engineering/`（business-overview / architecture / code-structure / api-documentation / component-inventory / technology-stack / dependencies / code-quality-assessment / reverse-engineering-timestamp）
-- **Requirements Artifacts**: `Docs/spec/aidlc-docs/inception/requirements/requirements.md`
-- **Workflow Planning Artifacts**: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md`
+- **Lifecycle Phase**: OPERATIONS（CI品質ゲート運用）
+- **Current Stage**: `/commit-push`・`/create-pr` への引き継ぎ待ち
+- **Next Stage**: コミット・PR作成 → CI（`CI Frontend`/`CI Backend`）確認 → セルフレビューのうえマージ
+- **Status**: CONSTRUCTION完了・Build and Test承認済み・セルフソースレビュー完了（2026-09-17T00:30:00+09:00、ユーザー主導・対話形式で全差分をレビューし5件の陳腐化コメント・用語不統一・MSWハンドラの死んだ分岐を修正、テスト追加）。`pnpm lint`／`tsc --noEmit`／`pnpm test`（frontend 86件）／`./gradlew test spotlessCheck checkstyleMain checkstyleTest`（backend 157件）いずれも成功を再確認済み。未コミット。次のアクションは`/commit-push`
+- **Code Generation Plan**: `Docs/spec/aidlc-docs/construction/plans/reservation-draft-code-generation-plan.md`（全ステップ [x]・ユーザー承認済み）
+- **Code Generation Summary**: `Docs/spec/aidlc-docs/construction/reservation-draft/code/summary.md`
+- **Build and Test Artifacts**: `Docs/spec/aidlc-docs/construction/build-and-test/`（build-instructions.md／unit-test-instructions.md／integration-test-instructions.md／build-and-test-summary.md）。Approved on 2026-09-16T00:00:00+09:00
+- **既知の未完了事項**: なし（drawio SVG再生成はユーザーがVSCode拡張で対応済み。`pnpm build`のフルビルドは再実行により成功確認済み。いずれも解消）
+- **Workflow Planning Artifacts**: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md`（承認済み）
+- **Functional Design Artifacts**: `Docs/spec/aidlc-docs/construction/reservation-draft/functional-design/`
+- **Reverse Engineering Artifacts**: `Docs/spec/aidlc-docs/inception/reverse-engineering/`（既存流用）
+- **Requirements Artifacts**: `Docs/spec/aidlc-docs/inception/requirements/requirements.md`（承認済み）
+- **User Stories Artifacts**: `Docs/spec/aidlc-docs/inception/user-stories/stories.md`、`Docs/spec/aidlc-docs/inception/user-stories/personas.md`

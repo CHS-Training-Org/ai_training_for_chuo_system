@@ -109,8 +109,8 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `GET /api/resources/{id}/availability` | ✅ | ✅ | ✅ |
 | `GET /api/reservations` | ✅（自分のみ） | ✅（自分のみ） | ✅（全件） |
 | `POST /api/reservations` | ✅ | ✅ | ✅ |
-| `GET /api/reservations/{id}` | ✅（本人のみ） | ✅ | ✅ |
-| `PUT /api/reservations/{id}` | ✅（本人のみ） | ✅（本人のみ） | ❌ |
+| `GET /api/reservations/{id}` | ✅（本人のみ） | ✅（`DRAFT`は本人のみ） | ✅ |
+| `PUT /api/reservations/{id}` | ✅（本人のみ、`PENDING`/`DRAFT`） | ✅（本人のみ、`PENDING`/`DRAFT`） | ❌ |
 | `POST /api/reservations/{id}/cancel` | ✅（本人のみ） | ✅（本人のみ） | ✅（全件） |
 | `GET /api/approvals/pending` | ❌ | ✅ | ✅ |
 | `POST /api/approvals/{stepId}/approve` | ❌ | ✅ | ✅ |
@@ -139,7 +139,7 @@ BookFlow は 3 種のロールで操作権限を制御する。
 
 ![予約ステータス遷移図](/diagrams/spec/requirements-reservation-status.drawio.svg)
 
-> **注意**：`reservations.status` に DB DEFAULT はない。アプリ層（Service）が申請時に `PENDING`（requires_approval=true）または `APPROVED`（requires_approval=false）を設定する。`DRAFT` はベース実装では未使用（下書き保存は拡張課題用の予約値）。
+> **注意**：`reservations.status` に DB DEFAULT はない。アプリ層（Service）が申請時に `PENDING`（requires_approval=true）または `APPROVED`（requires_approval=false）を設定する。`draft: true` を指定した申請は `DRAFT` で保存され、`PUT /api/reservations/{id}` の `submit: true` で正式申請すると `requires_approval` に応じて `APPROVED` または `PENDING` へ遷移する（詳細は [UC-03](#uc-03) の「下書き保存」参照）。
 
 ### 承認ステップ ステータス遷移図
 
@@ -223,13 +223,25 @@ BookFlow は 3 種のロールで操作権限を制御する。
 
 #### ステータス初期値（ワンステップ申請）
 
-`POST /api/reservations` を呼び出すと、対象リソースの `requires_approval` 値に基づいてステータスが即時決定される。  
-下書き保存（DRAFT 生成）はベース実装の対象外。
+`POST /api/reservations` を呼び出すと、対象リソースの `requires_approval` 値に基づいてステータスが即時決定される。
 
 | `requires_approval` | 申請後ステータス | `approval_steps` 生成 |
 |--------------------|---------------|----------------------|
 | `false` | `APPROVED`（即時確定） | 生成しない |
 | `true` | `PENDING`（承認待ち） | 生成する（→ §承認 参照） |
+
+#### 下書き保存
+
+`"draft": true` を指定して `POST /api/reservations` を呼び出すと、`requires_approval` 分岐を行わずステータス `DRAFT` で予約を作成する（重複予約チェック・`approval_steps` 生成もいずれも行わない。DRAFT は他者の予約枠を占有しないため）。入力必須項目は通常の申請と同じ（`resourceId`/`startAt`/`endAt`/`purpose` は必須のまま）。
+
+`DRAFT` の予約は `PUT /api/reservations/{id}` で内容を再編集できる（ステータスは `DRAFT` のまま）。この再編集では重複予約チェックを行わない。作成時に `draft: true` が重複チェック対象外であるのと対称にするためで、下書きである間は重複していても保存・再編集できる。`"submit": true` を指定すると正式申請となり、対象リソースの `requires_approval` に応じて上表と同じ分岐（`false` → `APPROVED`、`true` → `PENDING` ＋ `approval_steps` 生成）でステータスが決定される。正式申請時は重複予約チェックを実行する（下書き保存中に他の予約で枠が埋まっている可能性があるため）。`DRAFT` 以外の予約に対する `submit: true` は不正遷移として扱う（422）。
+
+| # | 要件 |
+|---|------|
+| RSV-08 | `POST /api/reservations` に `draft` を指定すると、承認分岐・重複予約チェック・`approval_steps` 生成を行わずステータス `DRAFT` で保存できる |
+| RSV-09 | `DRAFT` ステータスの予約は、申請者本人と ADMIN のみ閲覧できる。APPROVER も本人以外はアクセス不可（`PENDING` 以降の既存の閲覧範囲とは異なる）。編集・正式申請は申請者本人のみ（ADMIN にも編集権限は与えない。`PENDING` の予約を ADMIN が編集できないのと同じ扱い）。キャンセルは既存の権限（申請者本人 または ADMIN）をそのまま適用する |
+| RSV-10 | `PUT /api/reservations/{id}` の対象ステータスを `DRAFT`/`PENDING` に拡張する。`submit: true` を指定すると、現在 `DRAFT` の予約を正式申請できる。`submit` を指定しない場合は内容を更新するのみでステータスは変わらない |
+| RSV-11 | `DRAFT` ステータスの予約は `POST /api/reservations/{id}/cancel` でキャンセル（`CANCELLED` 化）できる。既存のキャンセル権限（申請者本人 または ADMIN）をそのまま適用する |
 
 ### UC-04：承認不要リソースの予約が即時確定される {#uc-04}
 `requires_approval = false` のリソースを予約申請した場合、`approval_steps` を生成せず即座に `status = APPROVED` で確定する（UC-03 の即時確定パスと同一）。
@@ -263,6 +275,7 @@ AND end_at > :startAt
 - 上記レコードが存在する場合は `409 Conflict`（`code: RESERVATION_CONFLICT`）を返す
 - `PUT` 時は自分自身の予約（`id = :id`）を除外してチェックする
 - V001 に DB 制約（専用 UNIQUE INDEX 等）は定義されていないため、**アプリ層（Service）での排他制御が実装責務**
+- `draft: true` を指定した `POST`（下書き保存）はこのチェックを行わない（`DRAFT` は `status IN ('PENDING', 'APPROVED')` に含まれず他者の予約枠を占有しないため）。`submit: true` を指定した `PUT`（正式申請）はこのチェックを行う
 
 ---
 
