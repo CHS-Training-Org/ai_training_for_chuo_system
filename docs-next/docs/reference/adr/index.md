@@ -123,7 +123,7 @@ Accepted（YYYY-MM-DD）
 | [ADR-009](./ADR-009-frontend-test-strategy.md) | テスト戦略 | Accepted |
 | [ADR-010](./ADR-010-frontend-lint-format.md) | Lint / Format | Accepted |
 
-### バックエンド（ADR-011〜019）
+### バックエンド（ADR-011〜019、ADR-033）
 
 | # | テーマ | Status |
 |---|--------|--------|
@@ -136,6 +136,7 @@ Accepted（YYYY-MM-DD）
 | [ADR-017](./ADR-017-backend-logging.md) | ロギング戦略 | Accepted |
 | [ADR-018](./ADR-018-backend-test-strategy.md) | テスト戦略 | Accepted |
 | [ADR-019](./ADR-019-backend-code-quality.md) | コード品質ツール | Accepted |
+| [ADR-033](./ADR-033-backend-csv-library.md) | CSV 帳票出力ライブラリ | Accepted |
 
 ### AI・ドキュメント（ADR-020〜）
 
