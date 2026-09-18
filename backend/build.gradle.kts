@@ -35,6 +35,8 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
     // ADR-017: 構造化ログ
     implementation("net.logstash.logback:logstash-logback-encoder:8.0")
+    // ADR-033: CSV 帳票出力
+    implementation("com.opencsv:opencsv:5.12.0")
     compileOnly("org.projectlombok:lombok:1.18.38")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor(platform(SpringBootPlugin.BOM_COORDINATES))
