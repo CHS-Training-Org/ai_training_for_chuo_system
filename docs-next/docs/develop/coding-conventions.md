@@ -11,7 +11,7 @@ references:
   - ../reference/adr/index.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
   - ../learn/ai-tools-guide.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-09-04T00:00:00+09:00'
 ---
 
 # コーディング規約
@@ -30,7 +30,7 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 | 項目 | ルール |
 |------|--------|
 | トランクブランチ命名 | `learner/<GitHubユーザー名>/main`（例：`learner/taro/main`）。学習者ごとに 1 本だけ持つ個人の作業基点 |
-| フィーチャーブランチ命名 | `feature/<GitHubユーザー名>/<issue番号>-<short-desc>`（例：`feature/taro/42-resource-detail`） |
+| フィーチャーブランチ命名 | `feature/<GitHubユーザー名>/<issue番号>-<short-desc>`（例：`feature/taro/42-resource-detail`）。同じ課題を 2 回実装する STEP-04 では末尾に `-aidlc` を付ける（詳細は[同じ課題を 2 回実装するときのブランチ名](#branch-redo)） |
 | コミット | Conventional Commits 形式（詳細は[§コミット・PR 規約](#commit-pr)） |
 | 言語 | コメント・コミットメッセージ・ドキュメントは日本語で書いてよい（識別子は英語） |
 | 仕様の扱い | `docs-next/docs/spec/` が真実の源。仕様と実装が食い違ったら仕様を確認し、必要なら仕様の更新を先に行う |
@@ -40,6 +40,27 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 ### 作業ブランチの作成 {#feature-branch}
 
 ブランチは 2 種類あります。**トランクブランチ**（`learner/<GitHubユーザー名>/main`）は学習者ごとに 1 本だけ持つ個人の作業基点で、`main` の代わりにマージ先になります。**フィーチャーブランチ**（`feature/<GitHubユーザー名>/<issue番号>-<short-desc>`）は課題ごとに作成する作業用ブランチで、自分のトランクブランチから切り、実装が終わったら自分のトランクブランチへマージします。どちらも先頭に `<GitHubユーザー名>` が必要なのは、複数の学習者が同時に作業するため、名前だけでは重複や判別ができないからです。
+
+### 同じ課題を 2 回実装するときのブランチ名 {#branch-redo}
+
+STEP-03 と STEP-04 は同じ選択課題を 2 回実装します。Issue は課題ごとに運営者が起票した共通の 1 つを参照し、`<short-desc>` はビジネス要求シートのファイル名を使うため、素直に命名すると 2 回目のブランチ名が 1 回目と同じになります。  
+そこで 2 回目（STEP-04、AI-DLC あり）のブランチは、末尾に `-aidlc` を付けて `feature/<GitHubユーザー名>/<issue番号>-<short-desc>-aidlc` と命名します（例：`feature/taro/42-resource-list-filter-aidlc`）。
+
+1 回目のブランチは削除せず残します。STEP-03 の PR は振り返りの記録として参照するためです（[開発ワークフローガイド](./dev-workflow.md#flow)）。  
+2 回目のブランチは 1 回目のブランチからではなく、自分のトランクブランチから切ります。STEP-03 の PR はトランクブランチへマージしないため、トランクブランチには 1 回目の実装が入っていません。AI-DLC ありでゼロから作り直すという STEP-04 の狙いが、これで成立します。
+
+```bash
+git checkout learner/<GitHubユーザー名>/main
+git pull
+git checkout -b feature/<GitHubユーザー名>/<issue番号>-<short-desc>-aidlc
+```
+
+:::warning[AI-DLC の起動時は課題名を伝える]
+
+`/aidlc` の事前確認（Pre-flight）は、現在のブランチ名から `<short-desc>` を取り出して対象のビジネス要求シートを探します。`-aidlc` が付いた名前ではシートが見つからず、エンハンス課題以外のタスクとして扱われます。  
+STEP-04 で `/aidlc` を起動するときは「resource-list-filter の課題を AI-DLC で進めて」のように課題名を添えてください。会話から対象シートを一意に特定できる場合、エンジンはそれをそのまま採用します。
+
+:::
 
 ### トランクブランチの作成（初回のみ） {#trunk-branch}
 

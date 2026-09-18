@@ -12,8 +12,9 @@ references:
   - ../develop/dev-workflow.md
   - ../develop/no-aidlc-workflow.md
   - ../develop/aidlc-guide.md
+  - ../develop/coding-conventions.md
   - ./ai-tools-guide.md
-last_updated: '2026-08-12T00:00:00+09:00'
+last_updated: '2026-09-04T00:00:00+09:00'
 ---
 
 # 学習カリキュラム
@@ -118,6 +119,9 @@ Claude Code の得意な場面とセットアップ、基本的な使い方（�
 | 推定工数   | 2〜3 時間 |
 | AI 活用例  | `/aidlc` を起動し、提示された Workflow Planning の内容を STEP-03 で自分が組み立てた段取りと突き合わせる |
 | 完了条件   | STEP-03 で選んだ課題を、[標準開発フロー](../develop/dev-workflow.md#flow) に沿って実装する。PR に `@claude pr-review` とコメントし、AI レビューの総合判定が「完了」になったら自分のトランクブランチへマージする |
+
+ブランチは STEP-03 のものを引き継がず、新しく切り直します。自分のトランクブランチには STEP-03 の実装が入っていないため、トランクブランチから切れば AI-DLC ありでゼロから作り直す形になります。  
+2 回目のブランチ名は 1 回目と重複するので、末尾に `-aidlc` を付けて区別します（手順は[同じ課題を 2 回実装するときのブランチ名](../develop/coding-conventions.md#branch-redo)）。STEP-03 のブランチと PR はそのまま残してください。
 
 STEP-03 で書き残した「AI-DLC なしで感じた手間」と照らし合わせながら進めてください。同じ課題を 2 回繰り返すのは、AI-DLC の有無だけを変えて差を観察するためです。
 

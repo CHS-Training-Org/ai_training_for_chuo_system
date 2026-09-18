@@ -24,6 +24,7 @@ const APPROVER_ITEMS: NavItem[] = [{ label: "承認待ち一覧", href: "/approv
 const ADMIN_ITEMS: NavItem[] = [
   { label: "リソース管理", href: "/admin/resources" },
   { label: "ユーザー管理", href: "/admin/users" },
+  { label: "帳票出力", href: "/admin/reports" },
 ];
 
 /**

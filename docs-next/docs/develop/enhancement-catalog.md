@@ -11,8 +11,9 @@ references:
   - ../learn/curriculum.md
   - ../spec/enhancements/index.md
   - ./dev-workflow.md
+  - ./coding-conventions.md
   - ../operations/operations-guide.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-09-04T00:00:00+09:00'
 ---
 
 # 選択課題カタログ
@@ -57,7 +58,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 ## 初級（Beginner） {#beginner}
 フロントエンド中心の局所的な改善、追加課題です。着手前に [コードベース理解ガイド](../learn/curriculum.md#codebase-understanding) を参照すると、実装対象の処理フローを把握しやすくなります。
 
-ここから 1 課題を選び、2 回実装します。1 回目は [curriculum.md §STEP-03](../learn/curriculum.md#step-03) の完了条件に従い、標準開発フロー（AI-DLC）を**使わずに**進めます（この回の PR はマージしません）。2 回目は同じ課題を、下記の[課題の進め方](#catalog)のとおり標準開発フロー（AI-DLC）で進め、自分のトランクブランチへマージします。同じ課題を 2 回繰り返すのは、AI-DLC の有無だけを変えて差を観察するためです。
+ここから 1 課題を選び、2 回実装します。1 回目は [curriculum.md §STEP-03](../learn/curriculum.md#step-03) の完了条件に従い、標準開発フロー（AI-DLC）を**使わずに**進めます（この回の PR はマージしません）。2 回目は同じ課題を、下記の[課題の進め方](#catalog)のとおり標準開発フロー（AI-DLC）で進め、自分のトランクブランチへマージします。2 回目のブランチは 1 回目と名前が重複するため、末尾に `-aidlc` を付けて切り直します（[同じ課題を 2 回実装するときのブランチ名](./coding-conventions.md#branch-redo)）。同じ課題を 2 回繰り返すのは、AI-DLC の有無だけを変えて差を観察するためです。
 
 | 課題名 | 概要 | 推定工数 | 対象レイヤー |
 |--------|------|----------|-------------|

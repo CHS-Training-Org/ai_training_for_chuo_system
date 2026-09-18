@@ -14,7 +14,7 @@ references:
   - ../learn/ai-tools-guide.md
   - ../learn/claude-code-best-practices.md
   - ../learn/curriculum.md
-last_updated: '2026-08-14T18:00:00+09:00'
+last_updated: '2026-09-04T00:00:00+09:00'
 ---
 
 # AI-DLC を使わない開発フロー
@@ -119,7 +119,8 @@ CI（`CI Frontend` / `CI Backend`）は機械的な品質ゲートです。
 
 :::note[この PR はマージしない]
 
-STEP-03 の PR はマージしません。詳しくは [標準開発フロー](./dev-workflow.md#flow) の STEP-03 に関する注記を参照してください。
+STEP-03 の PR はマージしません。詳しくは [標準開発フロー](./dev-workflow.md#flow) の STEP-03 に関する注記を参照してください。  
+ブランチも削除せず残してください。STEP-04 は同じ課題を実装しますが、このブランチを引き継ぐのではなく、トランクブランチから末尾に `-aidlc` を付けた別のブランチを切って実装し直します（[同じ課題を 2 回実装するときのブランチ名](./coding-conventions.md#branch-redo)）。
 
 :::
 

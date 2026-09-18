@@ -1,5 +1,9 @@
 import { http, HttpResponse } from "msw";
 
+export const MOCK_RESERVATIONS_CSV =
+  '\uFEFF"予約ID","リソース名","申請者名","開始日時","終了日時","目的","承認状態"\r\n' +
+  '"40000000-0000-0000-0000-000000000001","第1会議室","テスト会員","2026/09/01 10:00","2026/09/01 12:00","週次ミーティング","承認済み"\r\n';
+
 // ---------------------------------------------------------------------------
 // モックデータ定数
 // ---------------------------------------------------------------------------
@@ -256,6 +260,18 @@ export const handlers = [
       ...MOCK_APPROVAL_STEP,
       id: params.stepId,
       status: "REJECTED",
+    });
+  }),
+
+  // 帳票出力（CSV）
+  // NOTE: Route Handler は api-client のブラウザ分岐（/api/backend/*）を通らず
+  // BACKEND_URL へ直接 fetch するため、この1件だけ絶対 URL で登録する。
+  http.get("http://localhost:8080/api/reports/reservations/csv", () => {
+    return new HttpResponse(MOCK_RESERVATIONS_CSV, {
+      headers: {
+        "Content-Type": "text/csv; charset=UTF-8",
+        "Content-Disposition": 'attachment; filename="reservations_20260901120000.csv"',
+      },
     });
   }),
 ];

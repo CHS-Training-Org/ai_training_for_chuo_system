@@ -10,7 +10,7 @@ audience: 学習者
 references:
   - ../develop/troubleshooting.md
   - ./ai-tools-guide.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-09-03T00:00:00+09:00'
 ---
 
 # 環境構築・起動手順
@@ -182,6 +182,10 @@ code .
 Windows では WSL リモートとして起動し、ウィンドウ左下に「WSL: Ubuntu」と表示されることを確認してください。
 
 続いて、コマンドパレット（<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>）→ **"Dev Containers: Reopen in Container"** を実行します。
+
+:::note[このコマンドが候補に出てこないとき]
+「Dev Containers: Reopen in Container」はコマンドパレットに最初から入っているものではなく、Dev Containers 拡張が追加するコマンドです。候補に出てこない場合は拡張が入っていないか有効になっていないので、[DevContainer・Docker 関連のトラブルシューティング](../develop/troubleshooting.md#devcontainer)の該当項目で確認してください。
+:::
 
 - postgres / localstack / cognito-local / docs の各コンテナが自動起動します（バックエンドはコンテナとしては起動せず、ステップ 4 で開発コンテナ内から手動起動します）
 - このとき `postCreate.sh` が `scripts/provision-cognito.sh` を自動実行し、cognito-local 用の **Pool ID / Client ID をターミナルに出力**します（次のステップで使うので控えておく）

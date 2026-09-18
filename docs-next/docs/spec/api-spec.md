@@ -189,6 +189,12 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 | POST | `/api/approvals/{stepId}/approve` | 承認（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
 | POST | `/api/approvals/{stepId}/reject` | 却下（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
 
+### 帳票出力
+
+| メソッド | パス | 概要 | 権限 |
+|--------|------|------|------|
+| GET | `/api/reports/reservations/csv` | 予約実績の CSV ダウンロード | ADMIN |
+
 ---
 
 ## §認証
@@ -828,6 +834,61 @@ Content-Type: application/json
 ![承認・却下シーケンス図](/diagrams/spec/api-spec-approval.drawio.svg)
 
 > **[1]** `SELECT 1 FROM reservations WHERE resource_id = ? AND status IN ('PENDING','APPROVED') AND start_at < endAt AND end_at > startAt AND id != reservationId`
+
+---
+
+## §帳票出力
+
+### `GET /api/reports/reservations/csv`（予約実績の CSV ダウンロード、ADMIN） {#get-api-reports-reservations-csv}
+
+#### リクエスト
+
+```http
+GET /api/reports/reservations/csv?from=2025-06-01T00:00:00&to=2025-06-30T23:59:59&status=APPROVED
+Authorization: Bearer <JWT>
+```
+
+#### クエリパラメータ
+
+| パラメータ | 型 | 必須 | 説明 |
+|------------|-----|------|------|
+| `from` | TIMESTAMP | ❌ | 出力対象期間の開始（`reservations.start_at` が対象）。省略時は下限なし |
+| `to` | TIMESTAMP | ❌ | 出力対象期間の終了。省略時は上限なし |
+| `status` | string | ❌ | 承認ステータスフィルタ（`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`）。省略時は全ステータス |
+
+`from` と `to` は片方のみの指定もできる。両方指定した場合は両端を含む閉区間で判定する（`from` 以上 `to` 以下）。判定に使うのは `start_at` のみで、`end_at` は見ない。`from` が `to` より後の場合は `400 Bad Request`（`code: VALIDATION_ERROR`）を返す。
+
+> [§共通 日時フォーマット](#datetime-format)のとおり、オフセット付き（`...+09:00` 等）は `400 Bad Request` になる。
+
+出力範囲は常に全ユーザーの予約（ADMIN 限定機能のため、行レベルの絞り込みは行わない）。
+
+#### レスポンス（200 OK）
+
+`Content-Type: text/csv; charset=UTF-8`、`Content-Disposition: attachment; filename="reservations_<タイムスタンプ>.csv"` で CSV 本文を返す。本文は UTF-8 の BOM で始まる。
+
+```csv
+予約ID,リソース名,申請者名,開始日時,終了日時,目的,承認状態
+550e8400-e29b-41d4-a716-446655440030,第1会議室,山田 太郎,2025/06/02 10:00,2025/06/02 12:00,週次ミーティング,承認済み
+```
+
+**列定義**
+
+| 列 | 由来 | 備考 |
+|---|---|---|
+| 予約ID | `reservations.id` | |
+| リソース名 | `resources.name`（JOIN） | |
+| 申請者名 | `users.name`（JOIN） | |
+| 開始日時 / 終了日時 | `reservations.start_at` / `end_at` | `yyyy/MM/dd HH:mm` 形式（JSON レスポンスの ISO 8601 とは異なる。Excel が日付として認識できる形式に変換している） |
+| 目的 | `reservations.purpose` | |
+| 承認状態 | `reservations.status` | 日本語ラベル（`PENDING` → 承認待ち、`APPROVED` → 承認済み 等。フロントエンドの表示ラベルと統一）に変換して出力する |
+
+対象データが0件の場合もヘッダ行のみの CSV を返す（`200 OK`）。
+
+出力件数に上限はなく、サーバー側はストリーミングで返却する。レスポンスのヘッダが確定した後（ストリーミング開始後）に障害が発生した場合、`{code, message}` 形式の JSON エラーは返せず、レスポンスが途中で途絶した CSV としてクライアントに届く。
+
+> **数式インジェクション対策**：リソース名・申請者名・目的はユーザー起因の自由入力であるため、値の先頭が `=` `+` `-` `@` の場合は Excel 等の表計算ソフトが数式として解釈することを防ぐため、先頭にアポストロフィ（`'`）を付与する。予約 ID・日時・承認状態にはこの変換を行わない。
+
+エラーは[§共通 共通エラーレスポンス](#common-error)に従う。本エンドポイント固有のエラーコードはない（`400`/`401`/`403` はいずれも共通のコードで返る）。
 
 ---
 
