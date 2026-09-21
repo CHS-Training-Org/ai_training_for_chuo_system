@@ -1,0 +1,3 @@
+month,runs,measured_runs,unmeasured_runs,input_tokens,output_tokens,cache_read_tokens,cache_creation_tokens,total_tokens,cost_usd
+2026-08,6,6,0,682978,209801,9990658,755847,11639284,21.008768
+2026-09,12,12,0,1294175,441450,20590007,1459191,23784823,41.994566
