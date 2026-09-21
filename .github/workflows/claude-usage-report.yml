@@ -1,0 +1,100 @@
+name: Claude Usage Report
+
+# claude.yml の実行が消費したトークン量・コストを週次で収集し、Job Summary へ出力する。
+#
+# トークン数は Actions のログ本文にしか存在せず、ログの保持期間は既定 90 日である。
+# そのため「後からまとめて集計する」ことができず、消える前に定期的に回収して
+# metrics/claude-usage ブランチへ蓄積する（このブランチが唯一の長期保存先）。
+
+on:
+  schedule:
+    # JST 月曜 09:00（UTC 月曜 00:00）。JST の週（月曜始まり）が閉じた直後に回す。
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+    inputs:
+      since:
+        description: '収集の起点（YYYY-MM-DD）。未指定なら 35 日前。バックフィル時に指定する'
+        required: false
+        type: string
+
+permissions:
+  contents: write # metrics/claude-usage ブランチへの push
+  actions: read # 実行履歴とジョブログの取得
+
+concurrency:
+  # 定期実行と手動バックフィルが並走すると、同じブランチへの push が競合する
+  group: claude-usage-report
+  cancel-in-progress: false
+
+env:
+  DATA_BRANCH: metrics/claude-usage
+  DATA_FILE_NAME: claude-usage.jsonl
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # shallow クローンからデータブランチへ push すると拒否されるため全履歴を取る
+          # （リポジトリの .git は数 MB 程度で、深さ制限による節約効果はほとんどない）。
+          fetch-depth: 0
+
+      - name: データブランチを用意する
+        run: |
+          set -euo pipefail
+          DATA_DIR="$RUNNER_TEMP/metrics"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          if git ls-remote --exit-code --heads origin "$DATA_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$DATA_BRANCH:refs/remotes/origin/$DATA_BRANCH"
+            git worktree add -B "$DATA_BRANCH" "$DATA_DIR" "refs/remotes/origin/$DATA_BRANCH"
+          else
+            # 初回のみ、履歴を持たない空のブランチを作る（main の履歴とは独立させる）。
+            empty_tree=$(git hash-object -t tree /dev/null)
+            initial_commit=$(git commit-tree "$empty_tree" -m 'chore(metrics): initialize usage data branch')
+            git branch "$DATA_BRANCH" "$initial_commit"
+            git push origin "$DATA_BRANCH"
+            git worktree add "$DATA_DIR" "$DATA_BRANCH"
+          fi
+          echo "DATA_DIR=$DATA_DIR" >> "$GITHUB_ENV"
+
+      - name: 収集の起点を決める
+        run: |
+          set -euo pipefail
+          since='${{ inputs.since }}'
+          # 週次実行に対して収集窓を広く取り、1 回失敗しても次回で取り返せるようにする
+          # （レコードは job_id で upsert するため重複取得は無害）。
+          echo "SINCE=${since:-$(date -u -d '35 days ago' +%Y-%m-%d)}" >> "$GITHUB_ENV"
+
+      - name: 使用量を収集する
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATA_FILE: ${{ env.DATA_DIR }}/${{ env.DATA_FILE_NAME }}
+        run: node .github/scripts/collect-claude-usage.mjs
+
+      - name: 集計して Job Summary へ出力する
+        env:
+          DATA_FILE: ${{ env.DATA_DIR }}/${{ env.DATA_FILE_NAME }}
+          OUTPUT_DIR: ${{ env.DATA_DIR }}
+        run: node .github/scripts/render-claude-usage-summary.mjs
+
+      - name: 収集結果をコミットする
+        working-directory: ${{ env.DATA_DIR }}
+        run: |
+          set -euo pipefail
+          git add -A
+          if git diff --cached --quiet; then
+            echo '更新なし（新規の実行が無いか、既に収集済み）'
+            exit 0
+          fi
+          git commit -m "chore(metrics): update Claude usage data ($(date -u +%Y-%m-%d))"
+          for attempt in 1 2 3 4; do
+            if git push origin "HEAD:$DATA_BRANCH"; then
+              exit 0
+            fi
+            sleep $((2 ** attempt))
+          done
+          echo 'データブランチへの push に失敗しました' >&2
+          exit 1
