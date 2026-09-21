@@ -153,6 +153,7 @@ Accepted（YYYY-MM-DD）
 | [ADR-030](./ADR-030-personal-trunk-branch-strategy.md) | 学習者ごとの個人トランクブランチ導入 | Accepted |
 | [ADR-031](./ADR-031-docs-pr-preview.md) | ドキュメントの PR プレビュー（gh-pages 配信＋ラベル駆動） | Accepted |
 | [ADR-032](./ADR-032-integration-test-tutorial-adoption.md) | 結合テストを独立チュートリアルとして導入 | Accepted |
+| [ADR-033](./ADR-033-claude-usage-metrics.md) | トークン消費量を週次で収集し専用ブランチへ蓄積 | Accepted |
 
 ### 開発環境（ADR-022〜）
 
