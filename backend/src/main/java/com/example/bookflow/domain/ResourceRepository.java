@@ -14,9 +14,12 @@ import org.springframework.data.repository.query.Param;
 /**
  * リソースリポジトリ。
  *
- * <p>ADMIN は全リソース（inactive 含む）を参照できるが、それ以外のロールは有効リソース（{@code is_active = true}）のみ。 ページネーション有り / 無し
+ * <p>
+ * ADMIN は全リソース（inactive 含む）を参照できるが、それ以外のロールは有効リソース（{@code is_active = true}）のみ。
+ * ページネーション有り / 無し
  * の両形式を提供するのは、 {@code GET /api/resources?from&to} の空きフィルタが Java 側（{@link
- * com.example.bookflow.application.ResourceService}）で行われるため、 フィルタ前に全件を取得する必要があるためである。
+ * com.example.bookflow.application.ResourceService}）で行われるため、
+ * フィルタ前に全件を取得する必要があるためである。
  */
 public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
@@ -25,7 +28,9 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   /**
    * 指定 ID のリソースを悲観書き込みロック付きで取得する。
    *
-   * <p>重複予約チェック（read-then-write）のレースコンディションを防ぐため、 {@code create} / {@code update} / {@code approve}
+   * <p>
+   * 重複予約チェック（read-then-write）のレースコンディションを防ぐため、 {@code create} / {@code update} /
+   * {@code approve}
    * の各操作で {@code checkConflict} を呼ぶ前に取得する。 同一リソースへの並行操作がトランザクション終了まで直列化される。
    *
    * @param id リソース ID
@@ -39,6 +44,11 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   /** 有効リソース一覧をページネーションで返す。 */
   Page<Resource> findByIsActiveTrue(Pageable pageable);
+
+  Page<Resource> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description,
+      Pageable pageable);
+
+  List<Resource> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);
 
   /** 有効リソース全件を返す（from/to フィルタ用）。 */
   List<Resource> findByIsActiveTrue();

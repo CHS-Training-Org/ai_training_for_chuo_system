@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,14 +29,16 @@ import org.springframework.web.bind.annotation.RestController;
  * 予約管理コントローラ（api-spec.md §予約 準拠）。
  *
  * <ul>
- *   <li>{@code GET /api/reservations} — 予約一覧（本人分 or ADMIN は全件、status フィルタ対応）
- *   <li>{@code POST /api/reservations} — 予約申請（全ロール・認証必須）
- *   <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN）
- *   <li>{@code PUT /api/reservations/{id}} — 予約更新（申請者本人・PENDING のみ）
- *   <li>{@code POST /api/reservations/{id}/cancel} — キャンセル（本人 or ADMIN）
+ * <li>{@code GET /api/reservations} — 予約一覧（本人分 or ADMIN は全件、status フィルタ対応）
+ * <li>{@code POST /api/reservations} — 予約申請（全ロール・認証必須）
+ * <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN）
+ * <li>{@code PUT /api/reservations/{id}} — 予約更新（申請者本人・PENDING のみ）
+ * <li>{@code POST /api/reservations/{id}/cancel} — キャンセル（本人 or ADMIN）
  * </ul>
  *
- * <p>行レベルの所有権チェック（本人 or ADMIN）は {@link ReservationService} が担当する（{@code @PreAuthorize} 不使用）。
+ * <p>
+ * 行レベルの所有権チェック（本人 or ADMIN）は {@link ReservationService}
+ * が担当する（{@code @PreAuthorize} 不使用）。
  */
 @RestController
 @RequestMapping("/api/reservations")
@@ -50,20 +53,23 @@ public class ReservationController {
   /**
    * 予約一覧を返す。
    *
-   * <p>ADMIN は全件、それ以外は本人分のみ。{@code status} パラメータ（複数指定可）でフィルタ可能。
+   * <p>
+   * ADMIN は全件、それ以外は本人分のみ。{@code status} パラメータ（複数指定可）でフィルタ可能。
    */
   @GetMapping
   public Page<ReservationResponse> list(
       @RequestParam(required = false) List<ReservationStatus> status,
-      @PageableDefault(size = 20) Pageable pageable,
+      @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable,
       @CurrentUser User currentUser) {
     return reservationService.list(currentUser, status, pageable);
   }
 
   /**
-   * 予約を申請する（201 Created）。
+   * 予約を申請する（201 Created）。S
    *
-   * <p>{@code requires_approval=false} → 即 {@code APPROVED}、{@code true} → {@code PENDING}。
+   * <p>
+   * {@code requires_approval=false} → 即 {@code APPROVED}、{@code true} →
+   * {@code PENDING}。
    */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
