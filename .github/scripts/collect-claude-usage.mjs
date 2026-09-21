@@ -155,7 +155,14 @@ async function main() {
     const jobs = await fetchJobs(run.id);
     for (const job of jobs) {
       if (job.conclusion === 'skipped') continue;
-      if (records.has(job.id)) {
+      // 実行中のジョブはログがまだ完結していない。ここで記録すると結果ブロック無しで
+      // 確定してしまい、以後スキップされて消費量が永久に失われるため次回へ回す。
+      if (job.status !== 'completed') continue;
+
+      const existing = records.get(job.id);
+      // 取得済みでも、一時的な失敗（API エラー）で終わったものは次回に取り直す。
+      // ログが消える前に回収し直せる唯一の機会になる（保持期間切れの expired は対象外）。
+      if (existing && existing.log_status !== 'error') {
         skipped += 1;
         continue;
       }
