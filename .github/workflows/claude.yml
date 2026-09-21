@@ -37,6 +37,13 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # トークン消費量の計測に必要（claude-usage-report.yml が集計する）。
+          # このフラグが無いと、結果 JSON はコスト（total_cost_usd）だけになりトークン数が
+          # 秘匿される。トークン数はログ本文にしか残らないため、後から遡って計測できない。
+          # モデルの挙動は変わらず、増えるのは Actions のログ量のみ。ログには差分・Issue 本文・
+          # コメントが展開されるが、いずれもリポジトリ閲覧権限があれば見られる内容であり、
+          # secrets は出力に含まれない（claude-review ジョブと同じ判断）。
+          show_full_output: true
 
   claude-review:
     # 「@claude pr-review」というPRコメントでのみ起動するAIレビュー専用ジョブ（ADR-024・ADR-025）。3観点すべてOKでタスク完了とする判定機構だが、required status check ではなくコード変更・コミットも行わない
