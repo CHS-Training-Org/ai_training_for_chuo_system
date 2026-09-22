@@ -102,6 +102,6 @@ jobs:
             観点ごとに1件、最後にサマリを1件、`gh pr comment` を計4回呼んで投稿します。
             1件のコメントにまとめないでください。
           claude_args: |
-            --model claude-opus-5
+            --model claude-opus-5-5
             --effort high
             --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*),Bash(gh pr comment:*)"
