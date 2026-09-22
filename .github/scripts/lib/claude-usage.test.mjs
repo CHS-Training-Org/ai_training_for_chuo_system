@@ -25,7 +25,7 @@ const LOG_SAVED = 'Log saved to /home/runner/work/_temp/claude-execution-output.
 // show_full_output: true のジョブ（claude-review）。トークンはモデル別の modelUsage 配下に入る。
 const FULL_OUTPUT_LOG = withTimestamps(`##[group]Run Claude Code Review
 SDK options: {
-  "model": "claude-opus-4-8"
+  "model": "claude-opus-5"
 }
 ##[endgroup]
 {
