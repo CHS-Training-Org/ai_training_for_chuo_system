@@ -25,7 +25,7 @@ const LOG_SAVED = 'Log saved to /home/runner/work/_temp/claude-execution-output.
 // show_full_output: true のジョブ（claude-review）。トークンはモデル別の modelUsage 配下に入る。
 const FULL_OUTPUT_LOG = withTimestamps(`##[group]Run Claude Code Review
 SDK options: {
-  "model": "claude-opus-5"
+  "model": "claude-opus-5-5"
 }
 ##[endgroup]
 {
@@ -39,14 +39,14 @@ SDK options: {
       "costUSD": 0.001,
       "canonicalModel": "claude-haiku-4-5"
     },
-    "claude-opus-5": {
+    "claude-opus-5-5": {
       "inputTokens": 900,
       "outputTokens": 380,
       "cacheReadInputTokens": 45,
       "cacheCreationInputTokens": 10,
       "thinkingTokens": 7,
       "costUSD": 0.7699,
-      "canonicalModel": "claude-opus-5"
+      "canonicalModel": "claude-opus-5-5"
     }
   },
   "is_error": false,
@@ -77,7 +77,7 @@ const SANITIZED_WITH_MODEL_USAGE_LOG = withTimestamps(`{
   "num_turns": 2,
   "total_cost_usd": 0.05,
   "modelUsage": {
-    "claude-opus-5": {
+    "claude-opus-5-5": {
       "contextWindow": 1000000,
       "maxOutputTokens": 64000
     }
@@ -105,7 +105,7 @@ test('full output のログからモデル横断でトークンを合算する',
   assert.equal(summary.cost_usd, 0.7709);
   assert.equal(summary.num_turns, 28);
   assert.equal(Object.keys(summary.models).length, 2);
-  assert.equal(summary.models['claude-opus-5'].total, 1335);
+  assert.equal(summary.models['claude-opus-5-5'].total, 1335);
 });
 
 test('秘匿版のログはコストだけを記録しトークン未計測とする', () => {
