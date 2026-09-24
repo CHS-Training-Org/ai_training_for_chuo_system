@@ -12,13 +12,10 @@ import java.util.UUID;
 /**
  * リソース（施設・備品）エンティティ（V001 {@code resources} テーブルと完全一致）。
  *
- * <p>
- * ユーザー / 部署と異なり、API 経由で生成・更新される初のエンティティ。 {@link #create} ファクトリで
- * ID・登録日時をアプリ側採番し、{@link #update}
+ * <p>ユーザー / 部署と異なり、API 経由で生成・更新される初のエンティティ。 {@link #create} ファクトリで ID・登録日時をアプリ側採番し、{@link #update}
  * / {@link #changeActive} で状態を変更する。
  *
- * <p>
- * {@code ddl-auto: validate} のため、カラム名・型・制約は V001 と整合していなければならない。
+ * <p>{@code ddl-auto: validate} のため、カラム名・型・制約は V001 と整合していなければならない。
  */
 @Entity
 @Table(name = "resources")
@@ -35,8 +32,7 @@ public class Resource {
   @Column(nullable = false, length = 20)
   private ResourceCategory category;
 
-  @Column
-  private Integer capacity;
+  @Column private Integer capacity;
 
   @Column(length = 200)
   private String location;
@@ -60,21 +56,20 @@ public class Resource {
   private LocalDateTime createdAt;
 
   /** JPA 用デフォルトコンストラクタ。 */
-  protected Resource() {
-  }
+  protected Resource() {}
 
   /**
    * リソースを新規作成する。ID・登録日時はアプリ側で採番する。
    *
-   * @param name             リソース名（必須）
-   * @param category         カテゴリ（ROOM / EQUIPMENT / VEHICLE）
-   * @param capacity         定員（null 可）
-   * @param location         場所・棚番号（null 可）
+   * @param name リソース名（必須）
+   * @param category カテゴリ（ROOM / EQUIPMENT / VEHICLE）
+   * @param capacity 定員（null 可）
+   * @param location 場所・棚番号（null 可）
    * @param requiresApproval 承認フロー要否
-   * @param isActive         有効フラグ
-   * @param description      説明文（null 可）
-   * @param equipment        設備情報（null 可）
-   * @param notes            使用上の注意（null 可)
+   * @param isActive 有効フラグ
+   * @param description 説明文（null 可）
+   * @param equipment 設備情報（null 可）
+   * @param notes 使用上の注意（null 可)
    * @return 新規 Resource インスタンス
    */
   public static Resource create(
@@ -105,15 +100,15 @@ public class Resource {
   /**
    * リソース情報を更新する（PUT 対応）。
    *
-   * @param name             リソース名
-   * @param category         カテゴリ
-   * @param capacity         定員
-   * @param location         場所
+   * @param name リソース名
+   * @param category カテゴリ
+   * @param capacity 定員
+   * @param location 場所
    * @param requiresApproval 承認フロー要否
-   * @param isActive         有効フラグ
-   * @param description      説明文
-   * @param equipment        設備情報
-   * @param notes            使用上の注意
+   * @param isActive 有効フラグ
+   * @param description 説明文
+   * @param equipment 設備情報
+   * @param notes 使用上の注意
    */
   public void update(
       String name,
