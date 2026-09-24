@@ -7,8 +7,12 @@ import java.util.UUID;
 /**
  * リソース情報レスポンス DTO（api-spec.md §リソース 権威定義・9フィールド）。
  *
- * <p>フロントエンドの {@code ResourceResponseSchema}（{@code src/lib/types/api.ts}）と同一のフィールドセットを持つ。 {@code
- * category} は enum の文字列表現（{@code ROOM} / {@code EQUIPMENT} / {@code VEHICLE}）で返す。
+ * <p>
+ * フロントエンドの
+ * {@code ResourceResponseSchema}（{@code src/lib/types/api.ts}）と同一のフィールドセットを持つ。
+ * {@code
+ * category} は enum の文字列表現（{@code ROOM} / {@code EQUIPMENT} /
+ * {@code VEHICLE}）で返す。
  */
 public record ResourceResponse(
     UUID id,
@@ -19,6 +23,8 @@ public record ResourceResponse(
     boolean requiresApproval,
     boolean isActive,
     String description,
+    String equipment,
+    String notes,
     LocalDateTime createdAt) {
 
   /**
@@ -37,6 +43,8 @@ public record ResourceResponse(
         resource.isRequiresApproval(),
         resource.isActive(),
         resource.getDescription(),
+        resource.getEquipment(),
+        resource.getNotes(),
         resource.getCreatedAt());
   }
 }
