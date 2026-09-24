@@ -92,6 +92,8 @@ export const ResourceResponseSchema = z.object({
   requiresApproval: z.boolean(),
   isActive: z.boolean(),
   description: z.string().nullable(),
+  equipment: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
   createdAt: z.string(),
 });
 export type ResourceResponse = z.infer<typeof ResourceResponseSchema>;

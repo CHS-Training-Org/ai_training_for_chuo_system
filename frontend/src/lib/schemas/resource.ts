@@ -20,6 +20,8 @@ export const CreateResourceSchema = z.object({
   requiresApproval: z.boolean(),
   isActive: z.boolean(),
   description: z.string().optional().nullable(),
+  equipment: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
 });
 
 /**
