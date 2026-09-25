@@ -36,3 +36,85 @@ test("予約申請画面を表示できる", async ({ page }) => {
   await expect(page.getByLabel("終了日時 *")).toBeVisible();
   await expect(page.getByLabel("利用目的 *")).toBeVisible();
 });
+
+test("予約対象のリソースを選択できる", async ({ page }) => {
+  await page.goto("/auth/signin");
+
+  await page
+    .getByRole("button", {
+      name: "一般社員（MEMBER）でログイン",
+    })
+    .click();
+
+  await expect(
+    page.getByRole("heading", {
+      name: "ダッシュボード",
+    }),
+  ).toBeVisible();
+
+  await page
+    .getByRole("link", {
+      name: "予約を申請する",
+    })
+    .click();
+
+  await expect(
+    page.getByRole("heading", {
+      name: "予約申請",
+    }),
+  ).toBeVisible();
+
+  // リソース選択
+  await page.getByRole("combobox").click();
+
+  await page
+    .getByRole("option", {
+      name: /第1会議室/,
+    })
+    .click();
+
+  // 選択されたことを確認
+  await expect(page.getByRole("combobox")).toContainText("第1会議室");
+});
+
+test("予約申請フォームへ入力できる", async ({ page }) => {
+  await page.goto("/auth/signin");
+
+  await page
+    .getByRole("button", {
+      name: "一般社員（MEMBER）でログイン",
+    })
+    .click();
+
+  await expect(
+    page.getByRole("heading", {
+      name: "ダッシュボード",
+    }),
+  ).toBeVisible();
+
+  await page
+    .getByRole("link", {
+      name: "予約を申請する",
+    })
+    .click();
+
+  await expect(
+    page.getByRole("heading", {
+      name: "予約申請",
+    }),
+  ).toBeVisible();
+
+  // リソース選択
+  await page.getByRole("combobox").click();
+
+  await page
+    .getByRole("option", {
+      name: /第1会議室/,
+    })
+    .click();
+
+  // 利用目的入力
+  await page.getByLabel("利用目的 *").fill("Playwright E2Eテスト");
+
+  await expect(page.getByLabel("利用目的 *")).toHaveValue("Playwright E2Eテスト");
+});
