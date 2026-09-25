@@ -52,6 +52,51 @@ describe("listResourcesAction", () => {
     expect(result.content).toHaveLength(1);
   });
 
+  it("正常時: keyword パラメータを渡せる", async () => {
+    let capturedKeyword: string | null = null;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        capturedKeyword = new URL(request.url).searchParams.get("keyword");
+        return HttpResponse.json({
+          content: [MOCK_RESOURCE_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    const result = await listResourcesAction({ keyword: "会議室" });
+
+    expect(capturedKeyword).toBe("会議室");
+    expect(result.content).toHaveLength(1);
+  });
+
+  it("空白のみの keyword: クエリパラメータを付与しない", async () => {
+    let capturedKeyword: string | null = "not-called";
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        capturedKeyword = new URL(request.url).searchParams.get("keyword");
+        return HttpResponse.json({
+          content: [MOCK_RESOURCE_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    await listResourcesAction({ keyword: "   " });
+
+    expect(capturedKeyword).toBeNull();
+  });
+
   it("401 時: ApiClientError をスローする", async () => {
     server.use(
       http.get("/api/backend/resources", () => {

@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,8 +18,12 @@ import org.springframework.data.repository.query.Param;
  * <p>ADMIN は全リソース（inactive 含む）を参照できるが、それ以外のロールは有効リソース（{@code is_active = true}）のみ。 ページネーション有り / 無し
  * の両形式を提供するのは、 {@code GET /api/resources?from&to} の空きフィルタが Java 側（{@link
  * com.example.bookflow.application.ResourceService}）で行われるため、 フィルタ前に全件を取得する必要があるためである。
+ *
+ * <p>{@link JpaSpecificationExecutor} は {@code keyword} 検索（{@link ResourceSpecifications}）専用。
+ * {@code keyword} 未指定時は従来どおり下記の派生クエリを使う。
  */
-public interface ResourceRepository extends JpaRepository<Resource, UUID> {
+public interface ResourceRepository
+    extends JpaRepository<Resource, UUID>, JpaSpecificationExecutor<Resource> {
 
   // ---- 悲観ロック（重複予約の直列化） ----
 

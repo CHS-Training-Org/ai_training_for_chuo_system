@@ -18,18 +18,20 @@ interface ResourceFilterFormProps {
   defaultCategory?: string;
   defaultFrom?: string;
   defaultTo?: string;
+  defaultKeyword?: string;
 }
 
 /**
  * リソース一覧のフィルタフォーム（クライアントコンポーネント）。
  *
- * カテゴリフィルタ・空き確認（from/to）の入力を受け取り、
+ * カテゴリフィルタ・キーワード検索・空き確認（from/to）の入力を受け取り、
  * URL の searchParams を更新してサーバーコンポーネントに伝える。
  */
 export function ResourceFilterForm({
   defaultCategory,
   defaultFrom,
   defaultTo,
+  defaultKeyword,
 }: ResourceFilterFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,8 +46,10 @@ export function ResourceFilterForm({
       const category = data.get("category") as string;
       const from = data.get("from") as string;
       const to = data.get("to") as string;
+      const keyword = (data.get("keyword") as string).trim();
 
       if (category && category !== "ALL") params.set("category", category);
+      if (keyword) params.set("keyword", keyword);
       if (from) params.set("from", from);
       if (to) params.set("to", to);
 
@@ -61,7 +65,7 @@ export function ResourceFilterForm({
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4 space-y-4">
       <h2 className="text-sm font-semibold">フィルタ・空き確認</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         {/* カテゴリ */}
         <div className="space-y-1">
           <Label htmlFor="category">カテゴリ</Label>
@@ -76,6 +80,18 @@ export function ResourceFilterForm({
               <SelectItem value="VEHICLE">{RESOURCE_CATEGORY_LABELS.VEHICLE}</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* キーワード */}
+        <div className="space-y-1">
+          <Label htmlFor="keyword">キーワード</Label>
+          <Input
+            id="keyword"
+            name="keyword"
+            type="text"
+            placeholder="名称・説明で検索"
+            defaultValue={defaultKeyword}
+          />
         </div>
 
         {/* 開始日時 */}
