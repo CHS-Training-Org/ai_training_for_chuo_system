@@ -77,6 +77,8 @@ function ResourceForm({
       requiresApproval: false,
       isActive: true,
       description: null,
+      equipment: null,
+      notes: null,
       ...defaultValues,
     },
   });
@@ -182,6 +184,44 @@ function ResourceForm({
               <FormControl>
                 <Textarea
                   placeholder="リソースの説明を入力..."
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* 設備情報 */}
+        <FormField
+          control={form.control}
+          name="equipment"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>設備情報</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="設備情報を入力..."
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* 利用上の注意 */}
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>利用上の注意</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="利用上の注意を入力..."
                   value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value || null)}
                 />
@@ -314,6 +354,8 @@ export function ResourceManagementClient({
                 requiresApproval: editTarget.requiresApproval,
                 isActive: editTarget.isActive,
                 description: editTarget.description,
+                equipment: editTarget.equipment,
+                notes: editTarget.notes,
               }}
               onSubmit={handleUpdate}
               submitLabel="保存する"
