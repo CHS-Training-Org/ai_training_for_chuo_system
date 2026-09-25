@@ -50,3 +50,15 @@ test("リソース詳細を表示できる", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/resources\//);
 });
+
+test("未ログイン時はサインイン画面へリダイレクトされる", async ({ page }) => {
+  await page.goto("/resources");
+
+  await expect(page).toHaveURL(/\/auth\/signin/);
+
+  await expect(
+    page.getByRole("button", {
+      name: "一般社員（MEMBER）でログイン",
+    }),
+  ).toBeVisible();
+});
