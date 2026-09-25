@@ -9,8 +9,8 @@ import org.springframework.data.jpa.domain.Specification;
 /**
  * {@code keyword} 指定時の {@link Resource} 検索条件を組み立てる Specification。
  *
- * <p>{@link ResourceService} は {@code keyword} が指定された場合のみこのクラスを使う。 {@code keyword} 未指定時は既存の派生クエリ（{@link
- * ResourceRepository}）をそのまま使うため、このクラスは経由しない。
+ * <p>{@link ResourceService} は {@code keyword} が指定された場合のみこのクラスを使う。 {@code keyword}
+ * 未指定時は既存の派生クエリ（{@link ResourceRepository}）をそのまま使うため、このクラスは経由しない。
  */
 public final class ResourceSpecifications {
 

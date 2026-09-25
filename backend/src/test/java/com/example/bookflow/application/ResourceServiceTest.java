@@ -203,8 +203,7 @@ class ResourceServiceTest {
       when(resourceRepository.findByIsActiveTrue(pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
-      Page<ResourceResponse> result =
-          resourceService.list(null, null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
@@ -320,8 +319,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result =
-          resourceService.list(null, from, to, "会議室", false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, "会議室", false, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }

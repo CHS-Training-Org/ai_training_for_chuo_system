@@ -113,8 +113,7 @@ public class ResourceService {
       boolean isAdmin,
       Pageable pageable) {
     Boolean isActiveFilter = isAdmin ? null : Boolean.TRUE;
-    Specification<Resource> spec =
-        ResourceSpecifications.search(category, isActiveFilter, keyword);
+    Specification<Resource> spec = ResourceSpecifications.search(category, isActiveFilter, keyword);
 
     if (from == null || to == null) {
       return resourceRepository.findAll(spec, pageable).map(ResourceResponse::from);

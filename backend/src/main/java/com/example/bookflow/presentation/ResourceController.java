@@ -60,8 +60,8 @@ public class ResourceController {
    * リソース一覧を返す（全ロール・認証必須）。
    *
    * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を同時指定した場合は、当該時間帯に
-   * {@code PENDING} / {@code APPROVED} の予約が存在しないリソースのみを返す。 {@code keyword} を指定した場合は、{@code name} または
-   * {@code description} への部分一致（大文字小文字を区別しない）で絞り込む。
+   * {@code PENDING} / {@code APPROVED} の予約が存在しないリソースのみを返す。 {@code keyword} を指定した場合は、{@code name}
+   * または {@code description} への部分一致（大文字小文字を区別しない）で絞り込む。
    *
    * @param category カテゴリフィルタ（任意）
    * @param from 空き確認の開始日時（任意・to と同時指定）

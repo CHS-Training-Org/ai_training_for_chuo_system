@@ -208,8 +208,7 @@ class ResourceControllerTest extends BaseControllerTest {
   void list_withKeywordMatchingName_returnsMatchingResourceOnly() throws Exception {
     // "第1会議室" の name に部分一致
     mockMvc
-        .perform(
-            get("/api/resources").param("keyword", "会議室").accept(MediaType.APPLICATION_JSON))
+        .perform(get("/api/resources").param("keyword", "会議室").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
         .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
@@ -221,9 +220,7 @@ class ResourceControllerTest extends BaseControllerTest {
     // description "Whiteboard available" に対して小文字キーワードで大文字小文字を区別せず一致
     mockMvc
         .perform(
-            get("/api/resources")
-                .param("keyword", "whiteboard")
-                .accept(MediaType.APPLICATION_JSON))
+            get("/api/resources").param("keyword", "whiteboard").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
   }
@@ -247,9 +244,7 @@ class ResourceControllerTest extends BaseControllerTest {
   void list_withNoMatchingKeyword_returnsEmptyContent() throws Exception {
     mockMvc
         .perform(
-            get("/api/resources")
-                .param("keyword", "存在しない資材")
-                .accept(MediaType.APPLICATION_JSON))
+            get("/api/resources").param("keyword", "存在しない資材").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content").isEmpty());
@@ -271,8 +266,7 @@ class ResourceControllerTest extends BaseControllerTest {
   void list_adminWithKeywordMatchingInactiveResource_returnsInactiveResource() throws Exception {
     // ADMIN は keyword 検索でも is_active = false のリソースを含む
     mockMvc
-        .perform(
-            get("/api/resources").param("keyword", "備品").accept(MediaType.APPLICATION_JSON))
+        .perform(get("/api/resources").param("keyword", "備品").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").exists());
   }
