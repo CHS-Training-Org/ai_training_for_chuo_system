@@ -74,13 +74,15 @@ class ResourceControllerTest extends BaseControllerTest {
 
     // Resources（active + inactive）
     jdbcTemplate.update(
-        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
-            + " VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
         ACTIVE_RESOURCE_ID,
         "第1会議室",
         "ROOM",
         false,
         true,
+        "Whiteboard available",
         LocalDateTime.of(2025, 4, 1, 9, 0));
     jdbcTemplate.update(
         "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
@@ -195,6 +197,84 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /api/resources?keyword= — キーワード検索（RES-01〜04）
+  // ---------------------------------------------------------------------------
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsMatchingResourceOnly() throws Exception {
+    // "第1会議室" の name に部分一致
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "会議室").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordCaseInsensitive_matchesDescription() throws Exception {
+    // description "Whiteboard available" に対して小文字キーワードで大文字小文字を区別せず一致
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "whiteboard")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordAndCategoryMismatch_returnsEmptyContent() throws Exception {
+    // keyword は "第1会議室"（name）に一致するが category が異なるため AND 条件で除外される
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議室")
+                .param("category", "EQUIPMENT")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withNoMatchingKeyword_returnsEmptyContent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "存在しない資材")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withBlankKeyword_returnsAllActiveResources() throws Exception {
+    // 空白のみの keyword は未指定として扱われ、既存の全件取得と同じ結果になる
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "   ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminWithKeywordMatchingInactiveResource_returnsInactiveResource() throws Exception {
+    // ADMIN は keyword 検索でも is_active = false のリソースを含む
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").exists());
   }
 
   // ---------------------------------------------------------------------------
