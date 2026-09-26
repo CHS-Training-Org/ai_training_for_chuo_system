@@ -71,6 +71,18 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
           {resource.description && (
             <p className="text-sm text-muted-foreground border-t pt-3">{resource.description}</p>
           )}
+          {resource.equipment && (
+            <div className="border-t pt-3">
+              <p className="text-sm font-medium text-muted-foreground">設備一覧</p>
+              <p className="text-sm mt-1">{resource.equipment}</p>
+            </div>
+          )}
+          {resource.notes && (
+            <div className="border-t pt-3">
+              <p className="text-sm font-medium text-muted-foreground">利用上の注意</p>
+              <p className="text-sm mt-1">{resource.notes}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
