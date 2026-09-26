@@ -18,4 +18,6 @@ public record UpdateResourceRequest(
     @Size(max = 200, message = "場所は 200 文字以内で入力してください。") String location,
     @NotNull(message = "承認フロー要否は必須です。") Boolean requiresApproval,
     @NotNull(message = "有効フラグは必須です。") Boolean isActive,
-    String description) {}
+    String description,
+    String equipment,
+    String notes) {}

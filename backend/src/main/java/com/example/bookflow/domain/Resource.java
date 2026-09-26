@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * リソース（施設・備品）エンティティ（V001 {@code resources} テーブルと完全一致）。
+ * リソース（施設・備品）エンティティ（V001 {@code resources} テーブルに V002 の追加カラムを加えた構成と完全一致）。
  *
  * <p>ユーザー / 部署と異なり、API 経由で生成・更新される初のエンティティ。 {@link #create} ファクトリで ID・登録日時をアプリ側採番し、{@link #update}
  * / {@link #changeActive} で状態を変更する。
  *
- * <p>{@code ddl-auto: validate} のため、カラム名・型・制約は V001 と整合していなければならない。
+ * <p>{@code ddl-auto: validate} のため、カラム名・型・制約は V001・V002 と整合していなければならない。
  */
 @Entity
 @Table(name = "resources")
@@ -46,6 +46,12 @@ public class Resource {
   @Column(columnDefinition = "TEXT")
   private String description;
 
+  @Column(columnDefinition = "TEXT")
+  private String equipment;
+
+  @Column(columnDefinition = "TEXT")
+  private String notes;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
@@ -62,6 +68,8 @@ public class Resource {
    * @param requiresApproval 承認フロー要否
    * @param isActive 有効フラグ
    * @param description 説明文（null 可）
+   * @param equipment 設備一覧（null 可）
+   * @param notes 利用上の注意（null 可）
    * @return 新規 Resource インスタンス
    */
   public static Resource create(
@@ -71,7 +79,9 @@ public class Resource {
       String location,
       boolean requiresApproval,
       boolean isActive,
-      String description) {
+      String description,
+      String equipment,
+      String notes) {
     Resource r = new Resource();
     r.id = UUID.randomUUID();
     r.name = name;
@@ -81,6 +91,8 @@ public class Resource {
     r.requiresApproval = requiresApproval;
     r.isActive = isActive;
     r.description = description;
+    r.equipment = equipment;
+    r.notes = notes;
     r.createdAt = LocalDateTime.now();
     return r;
   }
@@ -95,6 +107,8 @@ public class Resource {
    * @param requiresApproval 承認フロー要否
    * @param isActive 有効フラグ
    * @param description 説明文
+   * @param equipment 設備一覧
+   * @param notes 利用上の注意
    */
   public void update(
       String name,
@@ -103,7 +117,9 @@ public class Resource {
       String location,
       boolean requiresApproval,
       boolean isActive,
-      String description) {
+      String description,
+      String equipment,
+      String notes) {
     this.name = name;
     this.category = category;
     this.capacity = capacity;
@@ -111,6 +127,8 @@ public class Resource {
     this.requiresApproval = requiresApproval;
     this.isActive = isActive;
     this.description = description;
+    this.equipment = equipment;
+    this.notes = notes;
   }
 
   /**
@@ -152,6 +170,14 @@ public class Resource {
 
   public String getDescription() {
     return description;
+  }
+
+  public String getEquipment() {
+    return equipment;
+  }
+
+  public String getNotes() {
+    return notes;
   }
 
   public LocalDateTime getCreatedAt() {

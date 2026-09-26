@@ -74,13 +74,16 @@ class ResourceControllerTest extends BaseControllerTest {
 
     // Resources（active + inactive）
     jdbcTemplate.update(
-        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
-            + " VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, equipment, notes, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         ACTIVE_RESOURCE_ID,
         "第1会議室",
         "ROOM",
         false,
         true,
+        "プロジェクター1台、ホワイトボード1台",
+        "利用後は椅子を元の位置に戻してください",
         LocalDateTime.of(2025, 4, 1, 9, 0));
     jdbcTemplate.update(
         "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
@@ -213,7 +216,9 @@ class ResourceControllerTest extends BaseControllerTest {
           "location": "4F",
           "requiresApproval": false,
           "isActive": true,
-          "description": "新しい会議室"
+          "description": "新しい会議室",
+          "equipment": "プロジェクター1台",
+          "notes": "貸出時は電源ケーブルも一緒にお渡しください"
         }
         """;
 
@@ -224,7 +229,29 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(jsonPath("$.category").value("ROOM"))
         .andExpect(jsonPath("$.capacity").value(10))
         .andExpect(jsonPath("$.isActive").value(true))
+        .andExpect(jsonPath("$.equipment").value("プロジェクター1台"))
+        .andExpect(jsonPath("$.notes").value("貸出時は電源ケーブルも一緒にお渡しください"))
         .andExpect(jsonPath("$.id").exists());
+  }
+
+  @Test
+  @WithMockAdmin
+  void create_adminWithoutEquipmentAndNotes_returns201WithNullFields() throws Exception {
+    String body =
+        """
+        {
+          "name": "新会議室（設備未登録）",
+          "category": "ROOM",
+          "requiresApproval": false,
+          "isActive": true
+        }
+        """;
+
+    mockMvc
+        .perform(post("/api/resources").contentType(MediaType.APPLICATION_JSON).content(body))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.equipment").isEmpty())
+        .andExpect(jsonPath("$.notes").isEmpty());
   }
 
   @Test
@@ -270,7 +297,9 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(jsonPath("$.id").value(ACTIVE_RESOURCE_ID.toString()))
         .andExpect(jsonPath("$.name").value("第1会議室"))
         .andExpect(jsonPath("$.category").value("ROOM"))
-        .andExpect(jsonPath("$.isActive").value(true));
+        .andExpect(jsonPath("$.isActive").value(true))
+        .andExpect(jsonPath("$.equipment").value("プロジェクター1台、ホワイトボード1台"))
+        .andExpect(jsonPath("$.notes").value("利用後は椅子を元の位置に戻してください"));
   }
 
   @Test
@@ -298,7 +327,9 @@ class ResourceControllerTest extends BaseControllerTest {
           "location": "3F",
           "requiresApproval": false,
           "isActive": true,
-          "description": "改装済み"
+          "description": "改装済み",
+          "equipment": "プロジェクター1台、ホワイトボード2台",
+          "notes": "利用後は椅子を元の位置に戻してください"
         }
         """;
 
@@ -309,7 +340,9 @@ class ResourceControllerTest extends BaseControllerTest {
                 .content(body))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("第1会議室（改装後）"))
-        .andExpect(jsonPath("$.capacity").value(12));
+        .andExpect(jsonPath("$.capacity").value(12))
+        .andExpect(jsonPath("$.equipment").value("プロジェクター1台、ホワイトボード2台"))
+        .andExpect(jsonPath("$.notes").value("利用後は椅子を元の位置に戻してください"));
   }
 
   @Test
