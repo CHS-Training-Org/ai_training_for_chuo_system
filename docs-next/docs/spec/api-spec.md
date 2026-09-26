@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-09-21T00:00:00+09:00'
 ---
 
 # REST API 仕様書
@@ -290,6 +290,8 @@ Authorization: Bearer <JWT>
       "requiresApproval": false,
       "isActive": true,
       "description": "プロジェクター完備",
+      "equipment": "プロジェクター1台、ホワイトボード1台",
+      "notes": "利用後は椅子を元の位置に戻してください",
       "createdAt": "2025-04-01T09:00:00"
     }
   ],
@@ -314,6 +316,8 @@ Authorization: Bearer <JWT>
 | `requiresApproval` | boolean | 承認フロー要否 |
 | `isActive` | boolean | 有効/無効 |
 | `description` | string / null | 説明文 |
+| `equipment` | string / null | 設備一覧 |
+| `notes` | string / null | 利用上の注意 |
 | `createdAt` | TIMESTAMP | 登録日時 |
 
 ---
@@ -334,7 +338,9 @@ Content-Type: application/json
   "location": "3F 備品棚",
   "requiresApproval": true,
   "isActive": true,
-  "description": "4K 対応プロジェクター"
+  "description": "4K 対応プロジェクター",
+  "equipment": "プロジェクター1台",
+  "notes": "貸出時は電源ケーブルも一緒にお渡しください"
 }
 ```
 
@@ -349,6 +355,8 @@ Content-Type: application/json
 | `requiresApproval` | boolean | ✅ | |
 | `isActive` | boolean | ✅ | |
 | `description` | string / null | ❌ | |
+| `equipment` | string / null | ❌ | |
+| `notes` | string / null | ❌ | |
 
 バリデーション違反は `400 Bad Request`（`code: VALIDATION_ERROR`）。
 
@@ -389,7 +397,9 @@ Content-Type: application/json
   "location": "3F",
   "requiresApproval": false,
   "isActive": true,
-  "description": "2026年改装。4K プロジェクター追加"
+  "description": "2026年改装。4K プロジェクター追加",
+  "equipment": "プロジェクター1台、ホワイトボード2台",
+  "notes": "利用後は椅子を元の位置に戻してください"
 }
 ```
 
