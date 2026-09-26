@@ -77,6 +77,8 @@ function ResourceForm({
       requiresApproval: false,
       isActive: true,
       description: null,
+      equipment: null,
+      notes: null,
       ...defaultValues,
     },
   });
@@ -229,6 +231,44 @@ function ResourceForm({
           )}
         />
 
+        {/* 設備一覧 */}
+        <FormField
+          control={form.control}
+          name="equipment"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>設備一覧</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="例: プロジェクター1台、ホワイトボード1台"
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* 利用上の注意 */}
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>利用上の注意</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="例: 利用後は椅子を元の位置に戻してください"
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button type="submit" disabled={isPending}>
           {isPending ? "処理中..." : submitLabel}
         </Button>
@@ -290,7 +330,7 @@ export function ResourceManagementClient({
         <DialogTrigger asChild>
           <Button>新規登録</Button>
         </DialogTrigger>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>リソース新規登録</DialogTitle>
           </DialogHeader>
@@ -300,7 +340,7 @@ export function ResourceManagementClient({
 
       {/* 編集ダイアログ */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>リソース編集</DialogTitle>
           </DialogHeader>
@@ -314,6 +354,8 @@ export function ResourceManagementClient({
                 requiresApproval: editTarget.requiresApproval,
                 isActive: editTarget.isActive,
                 description: editTarget.description,
+                equipment: editTarget.equipment,
+                notes: editTarget.notes,
               }}
               onSubmit={handleUpdate}
               submitLabel="保存する"
