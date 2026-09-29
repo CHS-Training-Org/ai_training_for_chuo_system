@@ -18,6 +18,7 @@ interface ResourceFilterFormProps {
   defaultCategory?: string;
   defaultFrom?: string;
   defaultTo?: string;
+  defaultKeyword?: string;
 }
 
 /**
@@ -30,6 +31,7 @@ export function ResourceFilterForm({
   defaultCategory,
   defaultFrom,
   defaultTo,
+  defaultKeyword,
 }: ResourceFilterFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,10 +46,12 @@ export function ResourceFilterForm({
       const category = data.get("category") as string;
       const from = data.get("from") as string;
       const to = data.get("to") as string;
+      const keyword = data.get("keyword") as string;
 
       if (category && category !== "ALL") params.set("category", category);
       if (from) params.set("from", from);
       if (to) params.set("to", to);
+      if (keyword) params.set("keyword", keyword);
 
       router.push(`/resources?${params.toString()}`);
     },
@@ -99,6 +103,18 @@ export function ResourceFilterForm({
             defaultValue={defaultTo?.replace("T", "T").slice(0, 16)}
           />
         </div>
+      </div>
+
+      {/* キーワード検索 */}
+      <div className="space-y-1">
+        <Label htmlFor="keyword">キーワード検索</Label>
+        <Input
+          id="keyword"
+          name="keyword"
+          type="text"
+          placeholder="リソース名・説明で検索"
+          defaultValue={defaultKeyword}
+        />
       </div>
 
       <div className="flex gap-2">
