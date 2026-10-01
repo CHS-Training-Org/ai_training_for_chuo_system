@@ -14,7 +14,7 @@ references:
   - ../../develop/dev-workflow.md
   - ../../learn/ai-tools-guide.md
   - .claude/settings.json
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-09-27T00:00:00+09:00'
 ---
 
 # Claude Code 設定台帳
@@ -54,6 +54,8 @@ last_updated: '2026-08-01T11:56:18+09:00'
 | `commit-push` | `/commit-push`、または「差分をコミットして」「いい感じに分割してコミットして」等 | 差分を意味のある単位に分割し、ブランチ・分割内容・push有無をまとめて確認したうえで `git commit`（複数回）・`git push` を実行する |
 | `create-pr` | `/create-pr` | PR タイトル・本文を `.github/PULL_REQUEST_TEMPLATE.md` の様式で組み立てる。head/base ブランチと、下書きのみか `gh pr create` で実際に作成するかを実行前にまとめて確認する。コミットの分割・push は `commit-push` の役割 |
 | `drawio-skill` | `/drawio-skill` または「図を描いて」「ER図を作って」「アーキ図を書いて」などのトリガーで自動発動 | `.drawio` 図（アーキ図・ER図・フローチャート・UML など）を生成・編集する。draw.io CLI は使用せず、VSCode の `hediet.vscode-drawio` 拡張でレンダリング・エクスポートする。上流: [Agents365-ai/drawio-skill v1.14.0](https://github.com/Agents365-ai/drawio-skill/tree/v1.14.0)（MIT）の BookFlow 翻案 |
+| `generate-test-perspectives` | `/generate-test-perspectives`、または「試験観点を作って」「E2E テストの観点を洗い出して」等 | 任意の画面について、仕様書（`docs-next/docs/spec/`）だけを根拠に結合テスト（E2E）の試験観点一覧を新規作成する。対象画面はプロンプトから特定し、特定できなければ確認する。根拠にした仕様・確認しない観点・仕様確認事項（仕様の食い違いと、仕様に書かれていない点）を併記して `Docs/test/<スラッグ>/perspectives.md` に保存し、ワークフローの状態ファイルを作って試験観点の段階を「レビュー待ち」にする（`scripts/e2e-workflow/state.mjs` 経由）。優先度は付けない（載せた観点はすべてテストする）。仕様に書かれていない点は観点にしない。実装コードは読まない。`/generate-test-perspectives` とスラッシュで直接呼んだときは Opus に切り替わる（frontmatter の `model: opus`。次の入力でセッションのモデルに戻る）。スラッシュなしの依頼や、別のスキルの中から呼ばれた場合は切り替わらない。既存の観点の更新、試験ケース・Playwright コードの作成は対象外 |
+| `e2e-workflow` | `/e2e-workflow`、または「結合テストを進めたい」「今どの段階？」等 | 結合テストの4つの段階（試験観点、試験ケース、テストコード、実行）と学習者の関門を進める案内役。画面ごとの状態ファイル（`Docs/test/<スラッグ>/state.json`）を `scripts/e2e-workflow/state.mjs` 経由で読み、今の段階と次にやることを示す。試験観点の段階では `generate-test-perspectives` を呼び出す（状態の更新は呼び出し先が行う）。差し戻された観点一覧は、指摘と、学習者がダッシュボードで選んだ仕様の食い違いへの回答をもとに自分で直し（既存の ID は振り直さない）、状態を「レビュー待ち」に戻す。関門の確定と差し戻し、回答は行わず、ダッシュボード（`scripts/e2e-workflow/server.mjs`）で学習者が行う。試験ケース以降は手順ページの案内だけ。frontmatter の `model: opus` により、`/e2e-workflow` とスラッシュで呼んだときはターンの終わりまで Opus で動く（中から呼ぶ `generate-test-perspectives` も含む） |
 
 > **Spec-first 運用**: コードを書く前に `/update-spec` を起動し、仕様書を更新してからコード実装に進む（[仕様を更新する](../../develop/dev-workflow.md#flow) 参照）。
 
