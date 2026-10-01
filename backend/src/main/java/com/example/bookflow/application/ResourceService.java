@@ -14,6 +14,7 @@ import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -63,6 +64,7 @@ public class ResourceService {
    * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param keyword キーワード検索（null・空白のみの場合はフィルタしない。name/description への部分一致・大文字小文字区別なし）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
@@ -72,19 +74,41 @@ public class ResourceService {
   @Transactional(readOnly = true)
   public Page<ResourceResponse> list(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
+    String keywordPattern = normalizeKeyword(keyword);
     if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+      return listWithAvailabilityFilter(category, keywordPattern, from, to, isAdmin, pageable);
     }
-    return listPaginated(category, isAdmin, pageable);
+    return listPaginated(category, keywordPattern, isAdmin, pageable);
   }
 
-  /** from/to 指定なし：通常ページネーション。 */
+  /**
+   * keyword を LIKE 句用のパターン文字列（小文字化・前後に {@code %}）に正規化する。
+   *
+   * <p>null・空白のみの場合は null を返し、呼び出し側でキーワード条件をスキップさせる（既存動作の維持）。
+   *
+   * @param rawKeyword クエリパラメータの生値
+   * @return 正規化後のパターン文字列（条件なしの場合は null）
+   */
+  private static String normalizeKeyword(String rawKeyword) {
+    if (rawKeyword == null || rawKeyword.isBlank()) {
+      return null;
+    }
+    return "%" + rawKeyword.trim().toLowerCase(Locale.ROOT) + "%";
+  }
+
+  /** from/to 指定なし：通常ページネーション。keyword 指定時は {@code searchByKeyword} に分岐する。 */
   private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
+      ResourceCategory category, String keywordPattern, boolean isAdmin, Pageable pageable) {
+    if (keywordPattern != null) {
+      return resourceRepository
+          .searchByKeyword(category, keywordPattern, !isAdmin, pageable)
+          .map(ResourceResponse::from);
+    }
     Page<Resource> page;
     if (isAdmin) {
       page =
@@ -107,12 +131,13 @@ public class ResourceService {
    */
   private Page<ResourceResponse> listWithAvailabilityFilter(
       ResourceCategory category,
+      String keywordPattern,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
-    // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    // 1. 候補リソースを全取得（ページネーション前。keyword/category 条件は占有判定前に適用する）
+    List<Resource> candidates = fetchAllCandidates(category, keywordPattern, isAdmin);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -138,7 +163,11 @@ public class ResourceService {
     return new PageImpl<>(content, pageable, total);
   }
 
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
+  private List<Resource> fetchAllCandidates(
+      ResourceCategory category, String keywordPattern, boolean isAdmin) {
+    if (keywordPattern != null) {
+      return resourceRepository.searchByKeyword(category, keywordPattern, !isAdmin);
+    }
     if (isAdmin) {
       return category != null
           ? resourceRepository.findByCategory(category)

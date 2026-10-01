@@ -56,4 +56,46 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
   List<Resource> findByCategory(ResourceCategory category);
+
+  // ---- keyword 検索用（name/description への部分一致・大文字小文字区別なし）----
+  //
+  // category・activeOnly は任意条件として JPQL 内で null / false 判定しスキップする。
+  // keyword は呼び出し側（ResourceService）で小文字化・前後に "%" を付与した
+  // パターン文字列に正規化済みであること（null 不可。null の場合はこのメソッド自体を呼ばない）。
+
+  /**
+   * category・keyword・activeOnly で絞り込んだリソースをページネーションで返す。
+   *
+   * @param category カテゴリ（null の場合は全カテゴリ）
+   * @param keyword LOWER(name) / LOWER(description) に対する LIKE パターン（例: "%会議%"）
+   * @param activeOnly true の場合 is_active = true のみ
+   * @param pageable ページネーション
+   */
+  @Query(
+      value =
+          "SELECT r FROM Resource r WHERE "
+              + "(:category IS NULL OR r.category = :category) AND "
+              + "(:activeOnly = false OR r.isActive = true) AND "
+              + "(LOWER(r.name) LIKE :keyword OR LOWER(r.description) LIKE :keyword)",
+      countQuery =
+          "SELECT count(r) FROM Resource r WHERE "
+              + "(:category IS NULL OR r.category = :category) AND "
+              + "(:activeOnly = false OR r.isActive = true) AND "
+              + "(LOWER(r.name) LIKE :keyword OR LOWER(r.description) LIKE :keyword)")
+  Page<Resource> searchByKeyword(
+      @Param("category") ResourceCategory category,
+      @Param("keyword") String keyword,
+      @Param("activeOnly") boolean activeOnly,
+      Pageable pageable);
+
+  /** 上記と同一条件の全件版（from/to の空きフィルタ用、占有判定前に全候補が必要）。 */
+  @Query(
+      "SELECT r FROM Resource r WHERE "
+          + "(:category IS NULL OR r.category = :category) AND "
+          + "(:activeOnly = false OR r.isActive = true) AND "
+          + "(LOWER(r.name) LIKE :keyword OR LOWER(r.description) LIKE :keyword)")
+  List<Resource> searchByKeyword(
+      @Param("category") ResourceCategory category,
+      @Param("keyword") String keyword,
+      @Param("activeOnly") boolean activeOnly);
 }
