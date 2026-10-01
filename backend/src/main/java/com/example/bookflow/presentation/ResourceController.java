@@ -62,7 +62,11 @@ public class ResourceController {
    * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を同時指定した場合は、当該時間帯に
    * {@code PENDING} / {@code APPROVED} の予約が存在しないリソースのみを返す。
    *
+   * <p>{@code keyword} を指定した場合は、{@code name} または {@code description} に指定文字列を含む
+   * リソースのみを返す（大文字・小文字は区別しない）。 {@code category} / {@code from} / {@code to} とは AND 条件で組み合わされる。
+   *
    * @param category カテゴリフィルタ（任意）
+   * @param keyword キーワード（任意・name / description への部分一致）
    * @param from 空き確認の開始日時（任意・to と同時指定）
    * @param to 空き確認の終了日時（任意・from と同時指定）
    * @param pageable ページネーション（デフォルト: size=20）
@@ -72,6 +76,7 @@ public class ResourceController {
   @GetMapping
   public Page<ResourceResponse> list(
       @RequestParam(required = false) ResourceCategory category,
+      @RequestParam(required = false) String keyword,
       @RequestParam(required = false) LocalDateTime from,
       @RequestParam(required = false) LocalDateTime to,
       @PageableDefault(size = 20) Pageable pageable,
@@ -81,7 +86,7 @@ public class ResourceController {
       throw new ValidationException("from と to は同時に指定してください。");
     }
     boolean isAdmin = currentUser.getRole() == Role.ADMIN;
-    return resourceService.list(category, from, to, isAdmin, pageable);
+    return resourceService.list(category, keyword, from, to, isAdmin, pageable);
   }
 
   /**

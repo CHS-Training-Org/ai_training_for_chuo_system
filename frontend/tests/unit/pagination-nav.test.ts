@@ -69,5 +69,10 @@ describe("buildHref", () => {
         "/resources?category=ROOM&from=2026-06-10T09%3A00&to=2026-06-10T12%3A00&page=1",
       );
     });
+
+    it("keyword を引き継ぐ", () => {
+      const href = buildHref("/resources", { category: "ROOM", keyword: "会議室" }, 1);
+      expect(href).toBe(`/resources?category=ROOM&keyword=${encodeURIComponent("会議室")}&page=1`);
+    });
   });
 });
