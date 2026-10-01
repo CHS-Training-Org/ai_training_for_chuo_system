@@ -37,6 +37,8 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000010");
   private static final UUID INACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000011");
+  private static final UUID DESC_MATCH_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000012");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -91,6 +93,18 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
+    // 名称には一致しないが説明文にキーワードを含むリソース（keyword 検索が description も見ることの検証用）
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        DESC_MATCH_RESOURCE_ID,
+        "多目的スペースB",
+        "ROOM",
+        false,
+        true,
+        "プロジェクター完備（Projector Available）",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
 
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(
@@ -113,6 +127,7 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", DESC_MATCH_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -195,6 +210,106 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /api/resources — keyword 検索（RES-01〜04）
+  // ---------------------------------------------------------------------------
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsMatchingResourceOnly() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議室").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + DESC_MATCH_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingDescription_returnsMatchingResourceOnly() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "プロジェクター").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + DESC_MATCH_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordDifferentCase_isCaseInsensitive() throws Exception {
+    // 説明文に含む英単語「Projector」に対し、小文字・大文字どちらの keyword でもヒットすることを確認する（RES-02）。
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "projector").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + DESC_MATCH_RESOURCE_ID + "')]").exists());
+
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "PROJECTOR").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + DESC_MATCH_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordAndCategory_combinesWithAndCondition() throws Exception {
+    // category=EQUIPMENT + keyword=会議室 は該当なし（会議室は ROOM カテゴリ）
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "EQUIPMENT")
+                .param("keyword", "会議室")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordNoMatch_returnsEmptyContent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "存在しないキーワード").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminWithKeywordMatchingInactiveResourceName_includesInactiveResource()
+      throws Exception {
+    // 「旧備品A」は is_active=false。ADMIN は keyword 一致すれば inactive も含む。
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberWithKeywordMatchingInactiveResourceName_excludesInactiveResource()
+      throws Exception {
+    // MEMBER は inactive を含まないため、名前が一致しても除外される。
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withBlankKeyword_behavesSameAsNoKeyword() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "  ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + DESC_MATCH_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
   }
 
   // ---------------------------------------------------------------------------

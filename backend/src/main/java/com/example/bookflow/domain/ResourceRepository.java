@@ -56,4 +56,60 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
   List<Resource> findByCategory(ResourceCategory category);
+
+  // ---- キーワード検索用（RES-01〜04）----
+
+  /**
+   * カテゴリ・可視性・キーワードで絞り込んでページネーションで返す。
+   *
+   * <p>{@code keyword} は {@code resources.name} または {@code resources.description}
+   * への部分一致（大文字小文字を区別しない）。 {@code category} は null 許容（未指定時は全カテゴリ）。{@code isAdmin} が false の場合は
+   * {@code is_active = true} のみ。 ILIKE（PostgreSQL 専用）ではなく {@code LOWER()} + {@code LIKE} を使うことで
+   * H2（テスト）/PostgreSQL 両対応にしている。
+   *
+   * <p>呼び出し側（{@link com.example.bookflow.application.ResourceService}）で {@code keyword} の非
+   * null・非空白を保証すること （本メソッドは keyword の null チェックを行わない）。
+   *
+   * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param isAdmin ADMIN ロールであれば inactive を含む
+   * @param keyword 検索キーワード（非 null・非空白）
+   * @param pageable ページネーション
+   * @return 絞り込み後の {@link Resource} ページ
+   */
+  @Query(
+      """
+      SELECT r FROM Resource r
+      WHERE (:category IS NULL OR r.category = :category)
+        AND (:isAdmin = true OR r.isActive = true)
+        AND (LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+             OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      """)
+  Page<Resource> searchByFilters(
+      @Param("category") ResourceCategory category,
+      @Param("isAdmin") boolean isAdmin,
+      @Param("keyword") String keyword,
+      Pageable pageable);
+
+  /**
+   * カテゴリ・可視性・キーワードで絞り込んで全件返す（from/to フィルタ用）。
+   *
+   * <p>{@link #searchByFilters(ResourceCategory, boolean, String, Pageable)} の全件取得版。
+   *
+   * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param isAdmin ADMIN ロールであれば inactive を含む
+   * @param keyword 検索キーワード（非 null・非空白）
+   * @return 絞り込み後の {@link Resource} 一覧
+   */
+  @Query(
+      """
+      SELECT r FROM Resource r
+      WHERE (:category IS NULL OR r.category = :category)
+        AND (:isAdmin = true OR r.isActive = true)
+        AND (LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+             OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      """)
+  List<Resource> searchByFilters(
+      @Param("category") ResourceCategory category,
+      @Param("isAdmin") boolean isAdmin,
+      @Param("keyword") String keyword);
 }
