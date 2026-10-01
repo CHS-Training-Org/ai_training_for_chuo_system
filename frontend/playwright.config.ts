@@ -13,8 +13,26 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "chromium",
+      name: "setup",
+      testMatch: /auth\.setup\.ts/,
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      // 前回の実行が残した予約を片付けてから本体を走らせる
+      name: "pre-clean",
+      testMatch: /cleanup\.setup\.ts/,
+      dependencies: ["setup"],
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "authenticated",
+      testMatch: /\.spec\.ts$/,
+      testIgnore: [/a1-.*\.spec\.ts/],
+      dependencies: ["pre-clean"],
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/member.json",
+      },
     },
   ],
   webServer: {
