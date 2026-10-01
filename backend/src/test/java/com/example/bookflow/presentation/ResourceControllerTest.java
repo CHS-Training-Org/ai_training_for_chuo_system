@@ -238,12 +238,10 @@ class ResourceControllerTest extends BaseControllerTest {
   @Test
   @WithMockMember
   void list_withKeywordDifferentCase_isCaseInsensitive() throws Exception {
-    // 大文字小文字を区別しない（アルファベット部分の検証用に別途大文字小文字混在のキーワードで照会）
+    // 保存値は末尾が大文字「B」（"プロジェクターB"）。小文字「b」で照会しても一致することを確認する
     mockMvc
         .perform(
-            get("/api/resources")
-                .param("keyword", "プロジェクターB".toUpperCase())
-                .accept(MediaType.APPLICATION_JSON))
+            get("/api/resources").param("keyword", "プロジェクターb").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + PROJECTOR_RESOURCE_ID + "')]").exists());
   }

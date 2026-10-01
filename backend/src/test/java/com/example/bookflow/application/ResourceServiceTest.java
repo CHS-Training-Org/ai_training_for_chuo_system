@@ -272,6 +272,24 @@ class ResourceServiceTest {
 
       assertThat(result.getContent()).hasSize(1);
     }
+
+    @Test
+    void list_withTimeFilterAndKeyword_passesLikePatternToListVersionOfSearch() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.search(ResourceCategory.ROOM, true, "%projector%"))
+          .thenReturn(java.util.List.of(activeResource));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Page<ResourceResponse> result =
+          resourceService.list(ResourceCategory.ROOM, from, to, "Projector", false, pageable);
+
+      // from/to 指定時の候補取得（List版 search）にも小文字化済みパターンが渡っている
+      verify(resourceRepository).search(ResourceCategory.ROOM, true, "%projector%");
+      assertThat(result.getContent()).hasSize(1);
+    }
   }
 
   // ---------------------------------------------------------------------------
