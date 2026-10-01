@@ -35,25 +35,45 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   @Query("SELECT r FROM Resource r WHERE r.id = :id")
   Optional<Resource> findByIdForUpdate(@Param("id") UUID id);
 
-  // ---- 非 ADMIN 用（is_active = true のみ）----
+  // ---- 一覧検索（カテゴリ・有効フラグ・キーワードの AND 条件） ----
 
-  /** 有効リソース一覧をページネーションで返す。 */
-  Page<Resource> findByIsActiveTrue(Pageable pageable);
+  /**
+   * カテゴリ・有効フラグ・キーワードで絞り込んだリソース一覧をページネーションで返す。
+   *
+   * <p>{@code category} は null の場合フィルタしない。{@code isActiveOnly} が {@code true} の場合は {@code is_active
+   * = true} のリソースのみ返す（ADMIN は {@code false} を渡して inactive も含める）。{@code pattern} は {@link
+   * com.example.bookflow.application.ResourceService} が組み立てる小文字化済み LIKE パターン（キーワード未指定時は {@code
+   * "%%"}）。H2 が PostgreSQL 固有の {@code ILIKE} に対応しないため {@code LOWER(...) LIKE} で大文字小文字を区別しない。
+   *
+   * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param isActiveOnly true の場合 is_active=true のみ
+   * @param pattern LIKE パターン（小文字化済み、例: {@code "%keyword%"}）
+   * @param pageable ページネーション
+   * @return 条件に合致するリソースのページ
+   */
+  @Query(
+      "SELECT r FROM Resource r "
+          + "WHERE (:category IS NULL OR r.category = :category) "
+          + "AND (:isActiveOnly = false OR r.isActive = true) "
+          + "AND (LOWER(r.name) LIKE :pattern OR LOWER(COALESCE(r.description, '')) LIKE :pattern)")
+  Page<Resource> search(
+      @Param("category") ResourceCategory category,
+      @Param("isActiveOnly") boolean isActiveOnly,
+      @Param("pattern") String pattern,
+      Pageable pageable);
 
-  /** 有効リソース全件を返す（from/to フィルタ用）。 */
-  List<Resource> findByIsActiveTrue();
-
-  /** 有効リソースをカテゴリで絞り込んでページネーションで返す。 */
-  Page<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category, Pageable pageable);
-
-  /** 有効リソースをカテゴリで絞り込んで全件返す（from/to フィルタ用）。 */
-  List<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category);
-
-  // ---- ADMIN 用（inactive 含む）----
-
-  /** リソースをカテゴリで絞り込んでページネーションで返す（inactive 含む）。 */
-  Page<Resource> findByCategory(ResourceCategory category, Pageable pageable);
-
-  /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
-  List<Resource> findByCategory(ResourceCategory category);
+  /**
+   * {@link #search(ResourceCategory, boolean, String, Pageable)} の全件版。
+   *
+   * <p>{@code from}/{@code to} 指定時の空きフィルタ（Java 側での予約重複判定・手動ページネーション）の候補取得に使う。
+   */
+  @Query(
+      "SELECT r FROM Resource r "
+          + "WHERE (:category IS NULL OR r.category = :category) "
+          + "AND (:isActiveOnly = false OR r.isActive = true) "
+          + "AND (LOWER(r.name) LIKE :pattern OR LOWER(COALESCE(r.description, '')) LIKE :pattern)")
+  List<Resource> search(
+      @Param("category") ResourceCategory category,
+      @Param("isActiveOnly") boolean isActiveOnly,
+      @Param("pattern") String pattern);
 }

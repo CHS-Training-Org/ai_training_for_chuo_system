@@ -12,13 +12,14 @@ interface SearchParams {
   category?: string;
   from?: string;
   to?: string;
+  keyword?: string;
   page?: string;
 }
 
 /**
  * リソース一覧画面（screen-spec.md §リソース /resources 準拠）。
  *
- * カテゴリフィルタ・空き確認フォーム（from/to）・リソースカードリストを表示する。
+ * カテゴリフィルタ・空き確認フォーム（from/to）・キーワード検索・リソースカードリストを表示する。
  * ADMIN は is_active=false のリソースもグレーアウト表示する（BE 側でロール判定）。
  */
 export default async function ResourcesPage({
@@ -34,6 +35,7 @@ export default async function ResourcesPage({
     category: params.category,
     from: params.from,
     to: params.to,
+    keyword: params.keyword,
     page: params.page ? Number(params.page) : 0,
   });
 
@@ -58,6 +60,7 @@ export default async function ResourcesPage({
         defaultCategory={params.category}
         defaultFrom={params.from}
         defaultTo={params.to}
+        defaultKeyword={params.keyword}
       />
 
       {hasTimeFilter && (

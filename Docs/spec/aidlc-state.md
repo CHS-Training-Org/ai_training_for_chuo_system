@@ -17,10 +17,20 @@ timestamp: 2026-08-29
 
 ## Project Information
 
-- **Project Type**: [Greenfield/Brownfield]
-- **Start Date**: [ISO 8601 timestamp]
-- **Current Stage**: [INCEPTION - Workspace Detection]
+- **Project Type**: Brownfield
+- **Start Date**: 2026-09-29T18:54:30+09:00
+- **Current Stage**: OPERATIONS（PR作成・CI品質ゲート、BookFlow標準フローに引き継ぎ）
 - **Workspace Root**: /workspace
+- **対象エンハンス課題**: `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`（STEP-04、STEP-03 の再実装）
+- **ブランチ**: `feature/CHS-MOTOSAWA-TSUKUSHI/23-resource-list-filter-aidlc`（Issue #23）
+
+## Workspace State
+
+- **Existing Code**: Yes
+- **Programming Languages**: TypeScript（frontend）/ Java 25（backend）
+- **Build System**: pnpm（frontend）/ Gradle Kotlin DSL（backend）
+- **Project Structure**: Monorepo（Next.js BFF + Spring Boot API）
+- **Reverse Engineering Needed**: Yes（既存 RE 成果物なし）
 
 ## Code Location Rules
 
@@ -32,38 +42,38 @@ timestamp: 2026-08-29
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | — | — |
-| Resiliency Baseline | — | — |
-| Property-Based Testing | — | — |
+| Security Baseline | No | Requirements Analysis |
+| Resiliency Baseline | No | Requirements Analysis |
+| Property-Based Testing | No | Requirements Analysis |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [ ] Workspace Detection
-- [ ] Reverse Engineering（Brownfield の場合）
-- [ ] Requirements Analysis
-- [ ] User Stories（条件付き）
-- [ ] Workflow Planning
-- [ ] Application Design（条件付き）
-- [ ] Units Generation（条件付き）
+- [x] Workspace Detection
+- [x] Reverse Engineering（Brownfield の場合） — 承認済み
+- [x] Requirements Analysis — 承認済み
+- [x] User Stories（条件付き） — SKIP（既存UC-02の軽微な拡張、新規ペルソナ・新規ワークフローなしのため）
+- [x] Workflow Planning — 承認済み
+- [x] Application Design（条件付き） — SKIP（既存コンポーネント境界内の変更、新規コンポーネント不要）
+- [x] Units Generation（条件付き） — SKIP（単一ユニットオブワーク、分解不要）
 
 ### CONSTRUCTION PHASE
 
-- [ ] Functional Design（条件付き、ユニット別）
-- [ ] NFR Requirements（条件付き、ユニット別）
-- [ ] NFR Design（条件付き、ユニット別）
-- [ ] Infrastructure Design（条件付き、ユニット別）
-- [ ] Code Generation（必須、ユニット別）
-- [ ] Build and Test（必須）
+- [x] Functional Design（条件付き、ユニット別） — 承認済み（resource-list-filter）
+- [ ] NFR Requirements（条件付き、ユニット別） — SKIP予定
+- [ ] NFR Design（条件付き、ユニット別） — SKIP予定
+- [ ] Infrastructure Design（条件付き、ユニット別） — SKIP予定
+- [x] Code Generation（必須、ユニット別） — 承認済み（resource-list-filter）
+- [x] Build and Test（必須） — 承認済み
 
 ### OPERATIONS PHASE
 
-- [ ] Operations（プレースホルダー）
+- [x] Operations（プレースホルダー） — BookFlow運用ではPR作成・CI品質ゲートが相当。`/commit-push`→`/create-pr`に引き継ぐ
 
 ## Current Status
 
-- **Lifecycle Phase**: [INCEPTION/CONSTRUCTION/OPERATIONS]
-- **Current Stage**: [Stage Name]
-- **Next Stage**: [Next stage to execute]
-- **Status**: [In Progress/Complete/Waiting for Approval]
+- **Lifecycle Phase**: INCEPTION
+- **Current Stage**: OPERATIONS（`/commit-push` → `/create-pr` → `@claude pr-review`）
+- **Next Stage**: なし（AI-DLCエンジンのワークフローは完了。以降はBookFlow標準フロー）
+- **Status**: Complete
