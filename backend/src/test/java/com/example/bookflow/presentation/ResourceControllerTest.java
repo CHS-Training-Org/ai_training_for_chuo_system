@@ -37,6 +37,11 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000010");
   private static final UUID INACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000011");
+  private static final UUID DESCRIPTION_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000012");
+  private static final UUID OTHER_ROOM_ID = UUID.fromString("10000000-0000-0000-0000-000000000013");
+  private static final UUID UNDERSCORE_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000014");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -92,6 +97,11 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
 
+    // keyword 検索用リソース（description あり / 別の ROOM / 名前に「_」を含む）
+    insertResource(DESCRIPTION_RESOURCE_ID, "Zeta", "EQUIPMENT", "プロジェクター完備");
+    insertResource(OTHER_ROOM_ID, "第2会議室", "ROOM", null);
+    insertResource(UNDERSCORE_RESOURCE_ID, "a_b", "EQUIPMENT", null);
+
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(
         "INSERT INTO reservations"
@@ -108,11 +118,27 @@ class ResourceControllerTest extends BaseControllerTest {
         LocalDateTime.of(2025, 4, 1, 9, 0));
   }
 
+  private void insertResource(UUID id, String name, String category, String description) {
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        id,
+        name,
+        category,
+        false,
+        true,
+        description,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+  }
+
   @AfterEach
   void deleteSeedData() {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", DESCRIPTION_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", OTHER_ROOM_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", UNDERSCORE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -195,6 +221,102 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesName_returnsOnlyMatchingResources() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + OTHER_ROOM_ID + "')]").exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + DESCRIPTION_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesDescription_returnsResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "プロジェクター").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + DESCRIPTION_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithDifferentCase_matchesCaseInsensitively() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "ZETA").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + DESCRIPTION_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberKeywordMatchingInactiveResource_excludesInactive() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminKeywordMatchingInactiveResource_includesInactive() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_blankKeyword_returnsSameAsNoKeyword() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "  ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + DESCRIPTION_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithWildcardCharacters_matchesLiterally() throws Exception {
+    // 「_」は文字そのものとして検索される（全件一致にならない）
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "_").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + UNDERSCORE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+
+    // 「\」のみでも例外にならない
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "\\").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordCategoryAndTimeRange_appliesAllConditionsWithAnd() throws Exception {
+    // seed の APPROVED 予約（10:00〜12:00）と重複する範囲。
+    // keyword「会議」+ category ROOM に一致する 2 件のうち、占有中の第1会議室だけが除外される
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議")
+                .param("category", "ROOM")
+                .param("from", "2025-06-02T09:00:00")
+                .param("to", "2025-06-02T11:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + OTHER_ROOM_ID + "')]").exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + DESCRIPTION_RESOURCE_ID + "')]").doesNotExist());
   }
 
   // ---------------------------------------------------------------------------
