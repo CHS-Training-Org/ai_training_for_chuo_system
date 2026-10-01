@@ -186,3 +186,11 @@ timestamp: 2026-08-29
 **Context**: Build and Test 完了・承認 → CONSTRUCTION/INCEPTIONのAI-DLCワークフロー自体は完了。以降はBookFlow標準フロー（commit-push/create-pr）に引き継ぐ
 
 ---
+
+## PR #126 AIレビュー ラウンド1対応
+**Timestamp**: 2026-10-01T19:25:06+09:00
+**User Input**: "AIレビューでNGが出ました" → （レビュー内容確認後）"修正前にドキュメントに修正が不要か確認した？"
+**AI Response**: "観点2（実装と非機能部分の整合性）でNG。指摘は(1)resources.tsのkeyword転送がMSWモックで未検証、(2)from/to指定時のkeyword併用経路（fetchAllCandidates→List版search）が全テストでkeyword=nullのみで未検証、の2点。設計（Functional Design）自体の誤りではなくテストの検証範囲不足と判断し、ResourceServiceTestに新規テスト追加・resources.test.tsをリクエストURL検証に修正。修正前にドキュメントへの影響確認を行っていなかった点をユーザーに指摘され、Docs/spec/aidlc-docs/construction/plans/resource-list-filter-code-generation-plan.md と build-and-test-summary.md のテスト件数・結果セクションを実態（backend 135件、List_ 6件）に合わせて修正した。"
+**Context**: Build and Test完了後・OPERATIONS（PR運用）段階での手戻り対応。AI-DLCエンジンのステージ自体は再実行していない（テスト修正のみ、設計変更なし）
+
+---

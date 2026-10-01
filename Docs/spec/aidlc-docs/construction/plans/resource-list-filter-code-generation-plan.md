@@ -66,7 +66,7 @@ timestamp: 2026-10-01
 
 ## 実行結果
 
-- バックエンド：`./gradlew test --tests "*ResourceServiceTest" --tests "*ResourceControllerTest"` 全pass（ResourceServiceTest: Overlaps 7・Availability 4・List_ 5・ToLikePattern 4・Get 2、ResourceControllerTest: 27件）。`spotlessCheck`・`checkstyleMain`・`checkstyleTest` もクリーン
+- バックエンド：`./gradlew test --tests "*ResourceServiceTest" --tests "*ResourceControllerTest"` 全pass（ResourceServiceTest: Overlaps 7・Availability 4・List_ 6・ToLikePattern 4・Get 2、ResourceControllerTest: 27件）。`spotlessCheck`・`checkstyleMain`・`checkstyleTest` もクリーン
 - フロントエンド：`pnpm test resources resource-filter-form` 全pass（resources.test.ts 12件・resource-filter-form.test.ts 7件）。`pnpm lint`・`pnpm format:check` もクリーン
 
 ## 完了条件

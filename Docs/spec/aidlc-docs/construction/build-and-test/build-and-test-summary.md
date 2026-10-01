@@ -21,13 +21,13 @@ timestamp: 2026-10-01
 
 | 項目 | backend | frontend |
 |---|---|---|
-| Total Tests | 134 | 88 |
-| Passed | 134 | 88 |
+| Total Tests | 135 | 88 |
+| Passed | 135 | 88 |
 | Failed | 0 | 0 |
 | Status | ✅ Pass | ✅ Pass |
 
 本ユニットで追加・変更したテスト（内訳）：
-- `ResourceServiceTest`：`List_`（5件、既存アサーションを維持しつつモック対象を`search()`に更新）、`ToLikePattern`（4件、新規）
+- `ResourceServiceTest`：`List_`（6件、既存アサーションを維持しつつモック対象を`search()`に更新）、`ToLikePattern`（4件、新規）
 - `ResourceControllerTest`：既存21件 + キーワード検索シナリオ6件（名称一致・説明一致・大文字小文字非区別・カテゴリとのAND・該当なし・未指定時の後方互換）= 27件
 - `resource-filter-form.test.ts`：7件（新規、`buildResourceFilterParams`純関数）
 - `resources.test.ts`：既存11件 + keywordパラメータケース1件 = 12件
