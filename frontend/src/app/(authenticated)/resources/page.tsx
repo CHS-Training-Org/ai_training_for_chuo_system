@@ -12,6 +12,7 @@ interface SearchParams {
   category?: string;
   from?: string;
   to?: string;
+  keyword?: string;
   page?: string;
 }
 
@@ -34,10 +35,12 @@ export default async function ResourcesPage({
     category: params.category,
     from: params.from,
     to: params.to,
+    keyword: params.keyword,
     page: params.page ? Number(params.page) : 0,
   });
 
   const hasTimeFilter = Boolean(params.from && params.to);
+  const hasKeyword = Boolean(params.keyword?.trim());
 
   return (
     <div className="space-y-6">
@@ -58,6 +61,7 @@ export default async function ResourcesPage({
         defaultCategory={params.category}
         defaultFrom={params.from}
         defaultTo={params.to}
+        defaultKeyword={params.keyword}
       />
 
       {hasTimeFilter && (
@@ -71,9 +75,11 @@ export default async function ResourcesPage({
       <Suspense fallback={<p className="text-muted-foreground">読み込み中...</p>}>
         {resources.content.length === 0 ? (
           <p className="text-muted-foreground">
-            {hasTimeFilter
-              ? "指定した時間帯に空きのあるリソースがありません。"
-              : "リソースがありません。"}
+            {hasKeyword
+              ? "絞り込み条件に一致するリソースがありません。"
+              : hasTimeFilter
+                ? "指定した時間帯に空きのあるリソースがありません。"
+                : "リソースがありません。"}
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
