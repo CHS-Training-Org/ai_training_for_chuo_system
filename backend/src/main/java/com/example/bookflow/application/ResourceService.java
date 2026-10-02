@@ -63,6 +63,7 @@ public class ResourceService {
    * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param keyword キーワード検索（null の場合はフィルタしない。名称・説明文への部分一致・大文字小文字区別なし）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
@@ -72,19 +73,25 @@ public class ResourceService {
   @Transactional(readOnly = true)
   public Page<ResourceResponse> list(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
     if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+      return listWithAvailabilityFilter(category, keyword, from, to, isAdmin, pageable);
     }
-    return listPaginated(category, isAdmin, pageable);
+    return listPaginated(category, keyword, isAdmin, pageable);
   }
 
-  /** from/to 指定なし：通常ページネーション。 */
+  /** from/to 指定なし：通常ページネーション。keyword 指定時は {@code searchByKeyword} 経路を使う。 */
   private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
+      ResourceCategory category, String keyword, boolean isAdmin, Pageable pageable) {
+    if (keyword != null) {
+      return resourceRepository
+          .searchByKeyword(category, keyword, !isAdmin, pageable)
+          .map(ResourceResponse::from);
+    }
     Page<Resource> page;
     if (isAdmin) {
       page =
@@ -107,12 +114,13 @@ public class ResourceService {
    */
   private Page<ResourceResponse> listWithAvailabilityFilter(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
     // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    List<Resource> candidates = fetchAllCandidates(category, keyword, isAdmin);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -138,7 +146,11 @@ public class ResourceService {
     return new PageImpl<>(content, pageable, total);
   }
 
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
+  private List<Resource> fetchAllCandidates(
+      ResourceCategory category, String keyword, boolean isAdmin) {
+    if (keyword != null) {
+      return resourceRepository.searchByKeyword(category, keyword, !isAdmin);
+    }
     if (isAdmin) {
       return category != null
           ? resourceRepository.findByCategory(category)

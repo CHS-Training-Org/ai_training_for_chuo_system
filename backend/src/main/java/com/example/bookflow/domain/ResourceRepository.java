@@ -56,4 +56,46 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
   List<Resource> findByCategory(ResourceCategory category);
+
+  // ---- キーワード検索（issue #23: resource-list-filter） ----
+
+  /**
+   * キーワード（名称・説明文、大文字小文字区別なし）とカテゴリで絞り込んだリソース一覧をページネーションで返す。
+   *
+   * <p>既存の {@code findByCategory} 系メソッドとは別経路とし、keyword 指定時のみ呼び出す（{@link
+   * com.example.bookflow.application.ResourceService} 側で分岐）。
+   *
+   * @param category カテゴリフィルタ（null の場合は絞り込まない）
+   * @param keyword 検索キーワード（部分一致。呼び出し元で非 blank を保証する）
+   * @param activeOnly true の場合は {@code is_active = true} のみを対象とする（ADMIN 以外）
+   * @param pageable ページネーション
+   * @return 条件に合致するリソースのページ
+   */
+  @Query(
+      """
+      SELECT r FROM Resource r
+      WHERE (:category IS NULL OR r.category = :category)
+        AND (:activeOnly = false OR r.isActive = true)
+        AND (LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      """)
+  Page<Resource> searchByKeyword(
+      @Param("category") ResourceCategory category,
+      @Param("keyword") String keyword,
+      @Param("activeOnly") boolean activeOnly,
+      Pageable pageable);
+
+  /** {@link #searchByKeyword(ResourceCategory, String, boolean, Pageable)} の全件版（from/to フィルタ用）。 */
+  @Query(
+      """
+      SELECT r FROM Resource r
+      WHERE (:category IS NULL OR r.category = :category)
+        AND (:activeOnly = false OR r.isActive = true)
+        AND (LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      """)
+  List<Resource> searchByKeyword(
+      @Param("category") ResourceCategory category,
+      @Param("keyword") String keyword,
+      @Param("activeOnly") boolean activeOnly);
 }

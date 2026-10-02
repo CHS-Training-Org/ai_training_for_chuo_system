@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.bookflow.application.exception.ResourceNotFoundException;
@@ -201,7 +202,7 @@ class ResourceServiceTest {
       when(resourceRepository.findByIsActiveTrue(pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
@@ -212,7 +213,7 @@ class ResourceServiceTest {
       when(resourceRepository.findAll(pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, true, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, true, pageable);
 
       assertThat(result.getContent()).hasSize(2);
     }
@@ -235,7 +236,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, from, to, false, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }
@@ -254,9 +255,68 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, from, to, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithKeyword_delegatesToSearchByKeywordWithActiveOnlyTrue() {
+      when(resourceRepository.searchByKeyword(null, "会議室", true, pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, "会議室", null, null, false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+      assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
+    }
+
+    @Test
+    void list_adminWithKeyword_delegatesToSearchByKeywordWithActiveOnlyFalse() {
+      when(resourceRepository.searchByKeyword(null, "備品", false, pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(inactiveResource)));
+
+      Page<ResourceResponse> result = resourceService.list(null, "備品", null, null, true, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+      assertThat(result.getContent().get(0).id()).isEqualTo(INACTIVE_ID);
+    }
+
+    @Test
+    void list_keywordWithCategory_passesCategoryThroughToSearchByKeyword() {
+      when(resourceRepository.searchByKeyword(ResourceCategory.ROOM, "会議室", true, pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(ResourceCategory.ROOM, "会議室", null, null, false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(resourceRepository).searchByKeyword(ResourceCategory.ROOM, "会議室", true, pageable);
+    }
+
+    @Test
+    void list_keywordWithTimeFilter_usesSearchByKeywordListForCandidatesThenAvailabilityFilter() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.searchByKeyword(null, "会議室", true))
+          .thenReturn(java.util.List.of(activeResource));
+
+      // 完全重複する予約が存在する → キーワード候補からも除外される
+      Reservation occupying =
+          makeReservation(
+              UUID.randomUUID(),
+              activeResource,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.PENDING);
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of(occupying));
+
+      Page<ResourceResponse> result = resourceService.list(null, "会議室", from, to, false, pageable);
+
+      assertThat(result.getContent()).isEmpty();
     }
   }
 
