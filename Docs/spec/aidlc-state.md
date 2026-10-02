@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-08-29
+timestamp: 2026-10-02
 ---
 
 # AI-DLC State Tracking
@@ -17,10 +17,20 @@ timestamp: 2026-08-29
 
 ## Project Information
 
-- **Project Type**: [Greenfield/Brownfield]
-- **Start Date**: [ISO 8601 timestamp]
-- **Current Stage**: [INCEPTION - Workspace Detection]
+- **Project Type**: Brownfield
+- **Start Date**: 2026-10-02
+- **Current Stage**: CONSTRUCTION - Code Generation（Part 2: Generation）
 - **Workspace Root**: /workspace
+- **Target Task**: リソース一覧の検索・フィルタ追加（`docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`）
+- **Branch**: `feature/CHS-TORIMOTO-TAKU/76-resource-list-filter-aidlc`
+
+## Workspace State
+
+- **Existing Code**: Yes
+- **Programming Languages**: Java 25（backend）/ TypeScript（frontend）
+- **Build System**: Gradle Kotlin DSL（backend）/ pnpm（frontend）
+- **Project Structure**: Monorepo（Spring Boot + Next.js）
+- **Reverse Engineering Needed**: Yes（`Docs/spec/aidlc-docs/inception/reverse-engineering/` に成果物なし）
 
 ## Code Location Rules
 
@@ -32,38 +42,44 @@ timestamp: 2026-08-29
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | — | — |
-| Resiliency Baseline | — | — |
-| Property-Based Testing | — | — |
+| Security Baseline | No | Requirements Analysis |
+| Resiliency Baseline | No | Requirements Analysis |
+| Property-Based Testing | No | Requirements Analysis |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [ ] Workspace Detection
-- [ ] Reverse Engineering（Brownfield の場合）
-- [ ] Requirements Analysis
-- [ ] User Stories（条件付き）
-- [ ] Workflow Planning
-- [ ] Application Design（条件付き）
-- [ ] Units Generation（条件付き）
+- [x] Workspace Detection
+- [x] Reverse Engineering（Brownfield の場合）- 2026-10-02 承認済み 2026-10-02
+  - Artifacts Location: `Docs/spec/aidlc-docs/inception/reverse-engineering/`
+- [x] Requirements Analysis - 承認済み 2026-10-02
+  - Artifact: `Docs/spec/aidlc-docs/inception/requirements/requirements.md`
+- [x] User Stories（条件付き）- SKIP（利用者像が単一で受入条件が既存）
+- [x] Workflow Planning - 承認済み 2026-10-02
+  - Artifact: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md`
+- [ ] Application Design（条件付き）- SKIP
+- [ ] Units Generation（条件付き）- SKIP（単一ユニット resource-list-filter）
 
 ### CONSTRUCTION PHASE
 
-- [ ] Functional Design（条件付き、ユニット別）
-- [ ] NFR Requirements（条件付き、ユニット別）
-- [ ] NFR Design（条件付き、ユニット別）
-- [ ] Infrastructure Design（条件付き、ユニット別）
-- [ ] Code Generation（必須、ユニット別）
-- [ ] Build and Test（必須）
+- [ ] Functional Design（条件付き、ユニット別）- SKIP
+- [ ] NFR Requirements（条件付き、ユニット別）- SKIP
+- [ ] NFR Design（条件付き、ユニット別）- SKIP
+- [ ] Infrastructure Design（条件付き、ユニット別）- SKIP
+- [x] Code Generation（必須、ユニット別）- 承認済み 2026-10-02
+  - Summary: `Docs/spec/aidlc-docs/construction/resource-list-filter/code/summary.md`
+- [x] Build and Test（必須）- 承認済み 2026-10-02
+  - Summary: `Docs/spec/aidlc-docs/construction/build-and-test/build-and-test-summary.md`
 
 ### OPERATIONS PHASE
 
-- [ ] Operations（プレースホルダー）
+- [x] Operations（プレースホルダー）- CI 品質ゲートで代替（PR 作成後に CI で確認）
 
 ## Current Status
 
-- **Lifecycle Phase**: [INCEPTION/CONSTRUCTION/OPERATIONS]
-- **Current Stage**: [Stage Name]
-- **Next Stage**: [Next stage to execute]
-- **Status**: [In Progress/Complete/Waiting for Approval]
+- **Lifecycle Phase**: OPERATIONS
+- **Current Stage**: Operations（CI 品質ゲートで代替）
+- **Next Stage**: なし（/commit-push、/create-pr へ）
+- **Status**: Complete（AI-DLC ワークフロー完了）
+- **Plan**: `Docs/spec/aidlc-docs/construction/plans/resource-list-filter-code-generation-plan.md`
