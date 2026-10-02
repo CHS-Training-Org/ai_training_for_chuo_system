@@ -17,10 +17,20 @@ timestamp: 2026-08-29
 
 ## Project Information
 
-- **Project Type**: [Greenfield/Brownfield]
-- **Start Date**: [ISO 8601 timestamp]
-- **Current Stage**: [INCEPTION - Workspace Detection]
+- **Project Type**: Brownfield
+- **Start Date**: 2026-09-25T16:29:24+00:00
+- **Current Stage**: CONSTRUCTION - Code Generation（ユニット: resource-search）
 - **Workspace Root**: /workspace
+- **Target Issue**: GitHub Issue #23「リソース一覧の検索・フィルタ追加」
+- **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`
+
+## Workspace State
+
+- **Existing Code**: Yes
+- **Programming Languages**: TypeScript（frontend）/ Java（backend）
+- **Build System**: pnpm（frontend）/ Gradle Kotlin DSL（backend）
+- **Project Structure**: Monorepo（Next.js フロントエンド + Spring Boot バックエンド）
+- **Reverse Engineering Needed**: Yes（既存 RE 成果物なし）
 
 ## Code Location Rules
 
@@ -32,38 +42,38 @@ timestamp: 2026-08-29
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | — | — |
-| Resiliency Baseline | — | — |
-| Property-Based Testing | — | — |
+| Security Baseline | No | Requirements Analysis |
+| Resiliency Baseline | No | Requirements Analysis |
+| Property-Based Testing | No | Requirements Analysis |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [ ] Workspace Detection
-- [ ] Reverse Engineering（Brownfield の場合）
-- [ ] Requirements Analysis
-- [ ] User Stories（条件付き）
-- [ ] Workflow Planning
-- [ ] Application Design（条件付き）
-- [ ] Units Generation（条件付き）
+- [x] Workspace Detection
+- [x] Reverse Engineering（Brownfield の場合）
+- [x] Requirements Analysis
+- [x] User Stories（条件付き）
+- [x] Workflow Planning
+- [ ] Application Design — SKIP（新規コンポーネント不要）
+- [ ] Units Generation — SKIP（Issue = 単一 units of work）
 
-### CONSTRUCTION PHASE
+### CONSTRUCTION PHASE（ユニット: リソース検索・フィルタ追加）
 
-- [ ] Functional Design（条件付き、ユニット別）
-- [ ] NFR Requirements（条件付き、ユニット別）
-- [ ] NFR Design（条件付き、ユニット別）
-- [ ] Infrastructure Design（条件付き、ユニット別）
-- [ ] Code Generation（必須、ユニット別）
-- [ ] Build and Test（必須）
+- [x] Functional Design — EXECUTE（クエリ機構刷新の設計判断が必要）
+- [ ] NFR Requirements — SKIP（新規 NFR 要求なし）
+- [ ] NFR Design — SKIP（NFR Requirements 連動）
+- [ ] Infrastructure Design — SKIP（インフラ変更なし）
+- [x] Code Generation（必須、ユニット別） — 全 10 ステップ完了、承認済み
+- [x] Build and Test（必須） — backend 137 件・frontend 82 件 全成功、承認済み
 
 ### OPERATIONS PHASE
 
-- [ ] Operations（プレースホルダー）
+- [ ] Operations — BookFlow では CI 品質ゲート（`CI Frontend` / `CI Backend`）として運用。PR 作成・push 時に自動実行されるため `/aidlc` 側での追加生成なし
 
 ## Current Status
 
-- **Lifecycle Phase**: [INCEPTION/CONSTRUCTION/OPERATIONS]
-- **Current Stage**: [Stage Name]
-- **Next Stage**: [Next stage to execute]
-- **Status**: [In Progress/Complete/Waiting for Approval]
+- **Lifecycle Phase**: CONSTRUCTION
+- **Current Stage**: CONSTRUCTION フェーズ完了（Build and Test 承認済み）
+- **Next Stage**: Operations（CI 品質ゲート。`/commit-push` → `/create-pr` で PR 作成後に自動実行）
+- **Status**: Complete（`/aidlc` ワークフロー本体）
