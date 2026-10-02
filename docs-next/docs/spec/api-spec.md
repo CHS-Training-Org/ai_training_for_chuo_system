@@ -260,7 +260,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
+GET /api/resources?keyword=会議&category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -268,6 +268,7 @@ Authorization: Bearer <JWT>
 
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
+| `keyword` | string | ❌ | `name` または `description` への部分一致でフィルタ（100 文字以内） |
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
@@ -275,6 +276,8 @@ Authorization: Bearer <JWT>
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
 > `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
+
+> **キーワード検索の仕様**：`keyword` は `resources.name` または `resources.description` のいずれかに含まれていれば一致とみなす（部分一致・OR 条件）。照合は大文字小文字を区別しない。前後の空白は除去してから照合し、除去後が空文字の場合は未指定と同じ扱い（絞り込みなし）とする。入力中の `%`・`_`・`\` はワイルドカードではなくリテラルとして扱う。空白を含む入力は語に分解せず、入力全体を 1 つの文字列として照合する。`keyword` は `category` および `from` / `to` と AND 条件で組み合わせられる。除去後の文字列が 100 文字を超えた場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。
 
 #### レスポンス（200 OK）
 

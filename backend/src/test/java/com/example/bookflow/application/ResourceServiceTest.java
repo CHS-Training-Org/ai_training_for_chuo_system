@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.bookflow.application.exception.ResourceNotFoundException;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * {@link ResourceService} 単体テスト（ADR-018 準拠・Mockito）。
@@ -180,6 +183,18 @@ class ResourceServiceTest {
   // list — ロール別一覧・空きフィルタ
   // ---------------------------------------------------------------------------
 
+  /**
+   * 一覧のテスト。
+   *
+   * <p><b>注意</b>：絞り込み条件（有効フラグ・カテゴリ・キーワード）は {@link
+   * com.example.bookflow.domain.ResourceSpecifications} が組み立てる {@code Specification} に集約されており、
+   * リポジトリへは合成済みの述語として渡る。そのため Mockito のモック境界では ADMIN と非 ADMIN の違いも
+   * キーワードの有無も観測できず、ここでのテストは「どの取得経路に委譲するか」の検証にとどまる。
+   *
+   * <p>ロール別の可視範囲とキーワード照合そのものは、実 DB（H2）に対して実行される {@code
+   * com.example.bookflow.presentation.ResourceControllerTest} が検証する。キーワードの正規化規則は {@code
+   * com.example.bookflow.domain.ResourceSpecificationsTest} が純粋関数として検証する。
+   */
   @Nested
   class List_ {
 
@@ -198,10 +213,11 @@ class ResourceServiceTest {
 
     @Test
     void list_memberWithoutFilter_returnsActiveOnly() {
-      when(resourceRepository.findByIsActiveTrue(pageable))
+      when(resourceRepository.findAll(
+              ArgumentMatchers.<Specification<Resource>>any(), eq(pageable)))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
@@ -209,12 +225,26 @@ class ResourceServiceTest {
 
     @Test
     void list_adminWithoutFilter_returnsAllIncludingInactive() {
-      when(resourceRepository.findAll(pageable))
+      when(resourceRepository.findAll(
+              ArgumentMatchers.<Specification<Resource>>any(), eq(pageable)))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, true, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, true, pageable);
 
       assertThat(result.getContent()).hasSize(2);
+    }
+
+    @Test
+    void list_withKeyword_delegatesSpecificationToPaginatedQuery() {
+      when(resourceRepository.findAll(
+              ArgumentMatchers.<Specification<Resource>>any(), eq(pageable)))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result = resourceService.list(null, "会議", null, null, false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(resourceRepository)
+          .findAll(ArgumentMatchers.<Specification<Resource>>any(), eq(pageable));
     }
 
     @Test
@@ -222,7 +252,8 @@ class ResourceServiceTest {
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
-      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+      when(resourceRepository.findAll(ArgumentMatchers.<Specification<Resource>>any()))
+          .thenReturn(java.util.List.of(activeResource));
 
       // 完全重複する予約が存在する
       Reservation occupying =
@@ -235,7 +266,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, from, to, false, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }
@@ -245,7 +276,8 @@ class ResourceServiceTest {
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
-      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+      when(resourceRepository.findAll(ArgumentMatchers.<Specification<Resource>>any()))
+          .thenReturn(java.util.List.of(activeResource));
 
       // 隣接（to == 既存開始）→ 非重複なので除外しない
       Reservation adjacent =
@@ -254,9 +286,26 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, from, to, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
+    }
+
+    /** キーワードと期間を同時指定した場合も、全件取得経路に述語が渡ることを確認する（AC-04-4）。 */
+    @Test
+    void list_withKeywordAndTimeFilter_delegatesSpecificationToListQuery() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.findAll(ArgumentMatchers.<Specification<Resource>>any()))
+          .thenReturn(java.util.List.of(activeResource));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Page<ResourceResponse> result = resourceService.list(null, "会議", from, to, false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(resourceRepository).findAll(ArgumentMatchers.<Specification<Resource>>any());
     }
   }
 

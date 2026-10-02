@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.bookflow.support.BaseControllerTest;
 import com.example.bookflow.support.WithMockAdmin;
+import com.example.bookflow.support.WithMockApprover;
 import com.example.bookflow.support.WithMockMember;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -33,10 +34,29 @@ class ResourceControllerTest extends BaseControllerTest {
   private static final UUID DEPT_ID = UUID.fromString("10000000-0000-0000-0000-000000000001");
   private static final UUID USER_ID = UUID.fromString("10000000-0000-0000-0000-000000000002");
   private static final UUID ADMIN_USER_ID = UUID.fromString("10000000-0000-0000-0000-000000000003");
+
+  /** {@code @WithMockApprover} の既定 sub（{@code test-approver-sub}）に対応するユーザー。 */
+  private static final UUID APPROVER_USER_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000004");
+
   private static final UUID ACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000010");
   private static final UUID INACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000011");
+
+  // ---- キーワード検索用のシード ----
+  /** 名称「大会議室」・説明「Projector 完備」・ROOM・active。説明文一致と大文字小文字非依存の検証に使う。 */
+  private static final UUID KEYWORD_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000012");
+
+  /** 名称「50%OFF備品_旧型」・説明 NULL・EQUIPMENT・active。ワイルドカードのリテラル扱いの検証に使う。 */
+  private static final UUID WILDCARD_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000013");
+
+  /** 名称「会議車両」・説明 NULL・VEHICLE・active。説明が NULL でも名称一致で返ることと、カテゴリ条件の識別に使う。 */
+  private static final UUID NO_DESC_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000014");
+
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -71,6 +91,16 @@ class ResourceControllerTest extends BaseControllerTest {
         DEPT_ID,
         "ADMIN",
         LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO users (id, cognito_sub, name, email, department_id, role, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        APPROVER_USER_ID,
+        "test-approver-sub",
+        "承認者",
+        "approver@example.com",
+        DEPT_ID,
+        "APPROVER",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
 
     // Resources（active + inactive）
     jdbcTemplate.update(
@@ -90,6 +120,36 @@ class ResourceControllerTest extends BaseControllerTest {
         "EQUIPMENT",
         false,
         false,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+
+    // Resources（キーワード検索用）
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, description,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        KEYWORD_RESOURCE_ID,
+        "大会議室",
+        "ROOM",
+        false,
+        true,
+        "Projector 完備",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?)",
+        WILDCARD_RESOURCE_ID,
+        "50%OFF備品_旧型",
+        "EQUIPMENT",
+        false,
+        true,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?)",
+        NO_DESC_RESOURCE_ID,
+        "会議車両",
+        "VEHICLE",
+        false,
+        true,
         LocalDateTime.of(2025, 4, 1, 9, 0));
 
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
@@ -113,8 +173,12 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", WILDCARD_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", NO_DESC_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
+    jdbcTemplate.update("DELETE FROM users WHERE id = ?", APPROVER_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
   }
 
@@ -195,6 +259,236 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /api/resources — キーワード検索
+  //
+  // 述語が生成する SQL の挙動は実 DB でしか検証できないため、部分一致・大文字小文字非依存・
+  // ワイルドカードのエスケープ・条件の組み合わせはすべてここで確認する。
+  // ---------------------------------------------------------------------------
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingName_returnsMatchingResourcesOnly() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + WILDCARD_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  /** 名称には含まれず説明文にのみ含まれる語でも一致する（AC-01-2）。 */
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingDescriptionOnly_returnsResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "Projector").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  /** description が NULL のリソースも、名称が一致すれば結果に残る（AC-01-3）。 */
+  @Test
+  @WithMockMember
+  void list_withKeywordAndNullDescription_returnsResourceMatchedByName() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議車両").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + NO_DESC_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordMatchingNothing_returnsEmptyContent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "該当しない語句ZZZ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withLowercaseKeyword_matchesUppercaseDescription() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "projector").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withUppercaseKeyword_matchesSameResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "PROJECTOR").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists());
+  }
+
+  /**
+   * {@code %} がワイルドカードとして解釈されないことを確認する（AC-03-1）。
+   *
+   * <p>エスケープが効いていれば「会議%室」という文字列を含むリソースは存在しないため 0 件になる。 エスケープが壊れている場合はパターンが {@code %会議%室%}
+   * となり、「大会議室」と「第1会議室」の 両方に一致してしまう。両方の不在を検証することで、壊れたときに必ず落ちる。
+   */
+  @Test
+  @WithMockMember
+  void list_withPercentInKeyword_doesNotMatchAsWildcard() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議%室").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  /** {@code %} をリテラルとして含む名称は、その文字ごと検索できる（AC-03-1・正方向）。 */
+  @Test
+  @WithMockMember
+  void list_withPercentInKeyword_matchesLiteralPercent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "50%OFF").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + WILDCARD_RESOURCE_ID + "')]").exists());
+  }
+
+  /**
+   * {@code _} が任意 1 文字として解釈されないことを確認する（AC-03-2）。
+   *
+   * <p>エスケープが壊れている場合はパターンが {@code %第_会議室%} となり「第1会議室」に一致してしまう。
+   */
+  @Test
+  @WithMockMember
+  void list_withUnderscoreInKeyword_doesNotMatchAsWildcard() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "第_会議室").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  /** キーワードとカテゴリの AND（AC-04-1）。「会議車両」はキーワードに一致するがカテゴリで除外される。 */
+  @Test
+  @WithMockMember
+  void list_withKeywordAndCategory_appliesBothFilters() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議")
+                .param("category", "ROOM")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + NO_DESC_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  /** キーワードと期間の AND（AC-04-2）。「第1会議室」はキーワードに一致するが占有されているため除外される。 */
+  @Test
+  @WithMockMember
+  void list_withKeywordAndTimeRange_appliesBothFilters() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議")
+                .param("from", "2025-06-02T09:00:00")
+                .param("to", "2025-06-02T11:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  /**
+   * キーワード・カテゴリ・期間の 3 条件同時指定（AC-04-3）。
+   *
+   * <p>「大会議室」のみが残る。「第1会議室」は占有により、「会議車両」はカテゴリにより除外される。
+   */
+  @Test
+  @WithMockMember
+  void list_withKeywordCategoryAndTimeRange_appliesAllFilters() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議")
+                .param("category", "ROOM")
+                .param("from", "2025-06-02T09:00:00")
+                .param("to", "2025-06-02T11:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + NO_DESC_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  /** 空白のみのキーワードは未指定と同じ扱い（AC-05-3）。 */
+  @Test
+  @WithMockMember
+  void list_withBlankKeyword_behavesAsUnspecified() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "   ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + WILDCARD_RESOURCE_ID + "')]").exists());
+  }
+
+  /** キーワードの最大長は 100 文字（BR-10）。 */
+  @Test
+  @WithMockMember
+  void list_withKeywordExceeding100Chars_returns400ValidationError() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "あ".repeat(101))
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  /** 前後の空白を除いて 100 文字ちょうどなら受理される（BR-10 の境界）。 */
+  @Test
+  @WithMockMember
+  void list_withKeywordOf100CharsSurroundedBySpaces_returnsOk() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "  " + "あ".repeat(100) + "  ")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+  }
+
+  /** ADMIN のキーワード検索には無効リソースも含まれる（AC-09-1）。 */
+  @Test
+  @WithMockAdmin
+  void list_adminWithKeywordMatchingInactive_includesInactiveResource() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  /** MEMBER のキーワード検索には無効リソースが含まれない（AC-10-1）。 */
+  @Test
+  @WithMockMember
+  void list_memberWithKeywordMatchingInactive_excludesInactiveResource() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  /** APPROVER も MEMBER と同じ可視範囲になる（AC-10-2）。 */
+  @Test
+  @WithMockApprover
+  void list_approverWithKeywordMatchingInactive_excludesInactiveResource() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
   }
 
   // ---------------------------------------------------------------------------
