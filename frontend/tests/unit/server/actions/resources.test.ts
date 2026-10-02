@@ -5,7 +5,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "../../msw/server";
-import { MOCK_RESOURCE_RESPONSE, MOCK_AVAILABILITY_SLOTS } from "../../msw/handlers";
+import {
+  MOCK_RESOURCE_RESPONSE,
+  MOCK_RESOURCE_LIST_RESPONSE,
+  MOCK_AVAILABILITY_SLOTS,
+} from "../../msw/handlers";
 
 // Next.js サーバー専用モジュールをモック
 vi.mock("next/navigation", () => ({
@@ -50,6 +54,61 @@ describe("listResourcesAction", () => {
     // MSW がクエリパラメータを受け取っても同じレスポンスを返す（パラメータ検証はBE側）
     const result = await listResourcesAction({ category: "ROOM" });
     expect(result.content).toHaveLength(1);
+  });
+
+  it("正常時: keyword を指定すると keyword クエリパラメータとして BE に渡す", async () => {
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    const result = await listResourcesAction({ keyword: "会議室" });
+
+    expect(receivedUrl?.searchParams.get("keyword")).toBe("会議室");
+    expect(result.content).toHaveLength(1);
+  });
+
+  it("正常時: keyword を category・from・to と併用できる", async () => {
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction({
+      category: "ROOM",
+      keyword: "A",
+      from: "2025-06-01T09:00",
+      to: "2025-06-01T18:00",
+    });
+
+    expect(receivedUrl?.searchParams.get("category")).toBe("ROOM");
+    expect(receivedUrl?.searchParams.get("keyword")).toBe("A");
+    expect(receivedUrl?.searchParams.get("from")).toBe("2025-06-01T09:00");
+    expect(receivedUrl?.searchParams.get("to")).toBe("2025-06-01T18:00");
+  });
+
+  it("正常時: keyword 未指定または空文字のとき keyword クエリパラメータを付けない", async () => {
+    const receivedUrls: URL[] = [];
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedUrls.push(new URL(request.url));
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction();
+    await listResourcesAction({ keyword: "" });
+
+    expect(receivedUrls).toHaveLength(2);
+    for (const url of receivedUrls) {
+      expect(url.searchParams.has("keyword")).toBe(false);
+    }
   });
 
   it("401 時: ApiClientError をスローする", async () => {
