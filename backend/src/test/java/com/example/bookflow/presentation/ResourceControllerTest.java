@@ -37,6 +37,8 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000010");
   private static final UUID INACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000011");
+  private static final UUID KEYWORD_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000012");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -91,6 +93,18 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
+    // キーワード検索テスト用（issue #23）：名称に「第2」、説明文に大文字小文字混在の "PROJECTOR" を含む
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        KEYWORD_RESOURCE_ID,
+        "第2会議室",
+        "VEHICLE",
+        false,
+        true,
+        "静音PROJECTOR搭載",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
 
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(
@@ -113,6 +127,7 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -169,6 +184,106 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesName_returnsOnlyMatchingResource() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "第2").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesDescriptionOnly_returnsMatchingResource() throws Exception {
+    // "静音" は KEYWORD_RESOURCE_ID の description にのみ含まれ、name には含まれない
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "静音").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordCaseInsensitive_matchesRegardlessOfCase() throws Exception {
+    // description の "PROJECTOR"（大文字）に対して小文字で検索してもマッチする
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "projector").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithMismatchedCategory_appliesAndConditionAndReturnsEmpty() throws Exception {
+    // KEYWORD_RESOURCE_ID は VEHICLE カテゴリのため、ROOM と組み合わせると該当なし（AND 条件）
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "ROOM")
+                .param("keyword", "第2")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithMatchingCategory_appliesAndConditionAndReturnsResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "VEHICLE")
+                .param("keyword", "第2")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_blankKeyword_treatedAsNoFilterAndReturnsAllActiveResources() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "  ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberKeywordMatchesInactiveResource_excludesInactiveResource() throws Exception {
+    // "旧備品A" は INACTIVE_RESOURCE_ID の name に一致するが、MEMBER には inactive リソースを返さない
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminKeywordMatchesInactiveResource_includesInactiveResource() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordNoMatch_returnsEmptyContent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "存在しないキーワード12345")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
   }
 
   @Test
