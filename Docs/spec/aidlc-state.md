@@ -17,10 +17,12 @@ timestamp: 2026-08-29
 
 ## Project Information
 
-- **Project Type**: [Greenfield/Brownfield]
-- **Start Date**: [ISO 8601 timestamp]
-- **Current Stage**: [INCEPTION - Workspace Detection]
+- **Project Type**: Brownfield
+- **Start Date**: 2026-10-02T06:57:25Z
+- **Current Stage**: INCEPTION - Requirements Analysis
 - **Workspace Root**: /workspace
+- **対象タスク**: カレンダービュー（`docs-next/docs/spec/enhancements/intermediate/calendar-view.md`、Issue #27）
+- **対象ブランチ**: feature/CHS-KOBAYASHI-TOSHINORI/27-calendar-view（既存・命名規約準拠のため新規作成なし）
 
 ## Code Location Rules
 
@@ -32,29 +34,29 @@ timestamp: 2026-08-29
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | — | — |
-| Resiliency Baseline | — | — |
-| Property-Based Testing | — | — |
+| Security Baseline | No | Requirements Analysis (2026-10-02) |
+| Resiliency Baseline | No | Requirements Analysis (2026-10-02) |
+| Property-Based Testing | No | Requirements Analysis (2026-10-02) |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [ ] Workspace Detection
-- [ ] Reverse Engineering（Brownfield の場合）
-- [ ] Requirements Analysis
-- [ ] User Stories（条件付き）
-- [ ] Workflow Planning
-- [ ] Application Design（条件付き）
-- [ ] Units Generation（条件付き）
+- [x] Workspace Detection — Brownfield と判定（2026-10-02）
+- [x] Reverse Engineering（Brownfield の場合） — SKIP（既存 spec docs が代替。根拠は監査ログ参照）
+- [x] Requirements Analysis — 承認済み（2026-10-02）
+- [x] User Stories（条件付き） — EXECUTE・承認済み（2026-10-02）
+- [x] Workflow Planning — 実行計画作成済み・承認待ち（2026-10-02）
+- [ ] Application Design（条件付き） — SKIP（根拠: execution-plan.md）
+- [ ] Units Generation（条件付き） — SKIP（根拠: execution-plan.md）
 
-### CONSTRUCTION PHASE
+### CONSTRUCTION PHASE（ユニット: calendar-view）
 
-- [ ] Functional Design（条件付き、ユニット別）
-- [ ] NFR Requirements（条件付き、ユニット別）
-- [ ] NFR Design（条件付き、ユニット別）
-- [ ] Infrastructure Design（条件付き、ユニット別）
-- [ ] Code Generation（必須、ユニット別）
+- [x] Functional Design（条件付き、ユニット別） — 承認済み（2026-10-02）
+- [ ] NFR Requirements（条件付き、ユニット別） — SKIP 予定
+- [ ] NFR Design（条件付き、ユニット別） — SKIP 予定
+- [ ] Infrastructure Design（条件付き、ユニット別） — SKIP 予定
+- [x] Code Generation（必須、ユニット別） — 完了・承認待ち（2026-10-02）
 - [ ] Build and Test（必須）
 
 ### OPERATIONS PHASE
@@ -63,7 +65,7 @@ timestamp: 2026-08-29
 
 ## Current Status
 
-- **Lifecycle Phase**: [INCEPTION/CONSTRUCTION/OPERATIONS]
-- **Current Stage**: [Stage Name]
-- **Next Stage**: [Next stage to execute]
-- **Status**: [In Progress/Complete/Waiting for Approval]
+- **Lifecycle Phase**: CONSTRUCTION
+- **Current Stage**: Code Generation Part 2 - Generation（ユニット: calendar-view）
+- **Next Stage**: Build and Test
+- **Status**: In Progress

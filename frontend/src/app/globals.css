@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-big-calendar/lib/css/react-big-calendar.css";
 
 /*
  * @theme inline: ユーティリティクラスが CSS カスタムプロパティ（var()）を参照する。
@@ -121,4 +122,18 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+}
+
+/*
+ * 空き状況カレンダー（calendar-view ユニット、ResourceAvailabilityCalendar）の react-big-calendar
+ * カスタマイズ。business-rules.md BR-01（週表示のグレーアウト）・BR-04（月表示の予約有無2値表示）に対応する。
+ */
+.rbc-event.calendar-event-occupied {
+  background-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+  cursor: not-allowed;
+}
+
+.rbc-day-bg.calendar-day-has-reservation {
+  background-color: var(--color-accent);
 }
