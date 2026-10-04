@@ -24,6 +24,7 @@ import {
   STAGES, STATUS, baseDir, listStates, readState, artifactPath, currentStage, nextAction, recordDecision,
   formatTime, parseDiscrepancies, isReflected, lastReturn, coverageOf, codeCoverageOf, specPath, chapter, tableRows,
   evidenceDir, specHash, usesWorkflowTest, RESULT_KINDS, resultKind, runCheck, changedAfterConfirm, runPath, readTriage, handoffProblems,
+  JUDGE_KINDS, failedCaseIds, specChecks,
 } from './state.mjs';
 
 // 段階ごとの表示の設定。wide は読んでいる間に全幅にする章、toc は目次に件数を出す章と集計の区分
@@ -41,7 +42,7 @@ const VIEW = {
   // テストコードと実行の段階。説明（code.md）を読み、そのあとケースごとの結果（実行の証拠）を全幅で見る
   code: {
     wide: ['ch-ev'], wideLabel: 'ケースごとの結果', toc: { 2: /名前が違う/, 3: /ケースどおり/, 4: /テストコードにできなかった/ }, bar: [/^パス$/, 'パス'],
-    lead: 'テストコードは読みません。説明の2〜4章を判断し、ケースごとに、使った値を手がかりに証拠の画面を見て期待結果が本当に成り立っているかを判断してから、確定か差し戻しを選びます。フェイルしたケースには AI の見立てがありますが、判断するのは学習者です。', hint: '直してほしい点を、試験ケースの ID を添えて書く。実装の不具合だと判断したケースは、確定するときにここに書いて記録に残す',
+    lead: 'テストコードは読みません。説明の2〜4章を判断し、ケースごとに、使った値を手がかりに証拠の画面を見て期待結果が本当に成り立っているかを判断します。フェイルしたケースは、証拠の表の各ケースで原因を選び、根拠を書きます。AI の見立ては手がかりで、判断するのは学習者です。', hint: '直してほしい点を、試験ケースの ID を添えて書く。フェイルしたケースの原因と根拠は、証拠の表の各ケースで書く',
     placeholder: '例：RSV-NEW-TC-009 の証拠の画面が申請フォームで、マイ予約一覧が写っていない。申請できなかったことが確かめられない', noun: 'テストコードの説明と実行の証拠',
   },
 };
@@ -69,7 +70,7 @@ function caseGroups(slug) {
 }
 
 /** 実行の証拠を、試験ケースの期待結果と並べた表。学習者はテストコードを読まずに、これで判断する。 */
-function runSection(slug, run) {
+function runSection(slug, run, { judge = false } = {}) {
   const stale = run.specHash !== specHash(slug);
   const unwritten = new Set();
   const mp = artifactPath(slug, 'code');
@@ -81,6 +82,22 @@ function runSection(slug, run) {
   // AI の見立て。別の実行への見立てなら、古いと示す
   const tri = readTriage(slug);
   const triStale = !!tri && tri.runId !== run.runId;
+  // テストコードから機械的に抜き出した、テストごとの確かめ（expect）。説明は AI が書いた文、照合の種類は機械的に決めた言葉
+  const sp = specPath(slug);
+  const tests = sp && fs.existsSync(sp) ? specChecks(fs.readFileSync(sp, 'utf8')) : {};
+  const checkList = (id) => {
+    const t = tests[id];
+    if (!t) return '';
+    if (!t.checks.length) return '<div class="ev-none">このテストの中に、確かめ（expect）が見つからない</div>';
+    return `<div class="checks"><div class="checks-k">このテストが確かめたこと</div><ul>${t.checks.map((k) => `<li><span class="chk-msg">${k.message ? esc(k.message) : '<span class="ev-none">（説明なし）</span>'}</span><span class="chk-how">照合：${esc(k.check)}</span></li>`).join('')}</ul></div>`;
+  };
+  const errList = (c) => {
+    const errs = (c.errors || []).filter((e) => e && typeof e === 'object');
+    if (!errs.length) return c.error ? `<div class="res-err">${esc(c.error)}</div>` : '';
+    // 表示されているかの照合は、Playwright が英語の語（visible、hidden）で書くので、日本語にする
+    const word = (v) => ({ visible: '表示されている', hidden: '表示されていない', enabled: '押せる', disabled: '押せない' }[v] || v || '－');
+    return errs.map((e) => `<div class="res-err">${esc(e.message.replace(/^Error:\s*/, ''))}${e.expected || e.received ? `<span class="res-er">（期待：${esc(word(e.expected))}／実際：${esc(word(e.received))}）</span>` : ''}</div>`).join('');
+  };
   const tag = (t) => { tally[t] = (tally[t] || 0) + 1; return t; };
   // 見る場所の列は、以前の様式では「確かめ方」という名前だった
   const where = (r) => r['見る場所'] ?? r['確かめ方'] ?? '';
@@ -100,7 +117,7 @@ function runSection(slug, run) {
       if (kind.fail) tags.push(tag('fail'));
       const shot = c.evidence.some((e) => e.kind === 'evidence');
       if (kind.key === 'pass' && !shot) tags.push(tag('noshot'));
-      result = `${chip(c.status)}${kind.fail ? `<div class="res-kind" title="${esc(kind.note)}">${esc(kind.label)}</div>` : ''}${c.error ? `<div class="res-err">${esc(c.error)}</div>` : ''}`;
+      result = `${chip(c.status)}${kind.fail ? `<div class="res-kind" title="${esc(kind.note)}">${esc(kind.label)}</div>` : ''}${errList(c)}`;
       ev = `${c.evidence.length ? `<div class="ev-list">${c.evidence.map((e) => img(e, r, c.values)).join('')}</div>` : ''}${kind.key === 'pass' && !shot ? '<div class="ev-none">見る場所の画面がない（テストが画面を撮っていない）</div>' : ''}`;
       // 値を入れないケース（画面を開くだけなど）もあるので、記録がなければ何も出さない
       if (c.values && c.values.length) used = `<div class="used-box"><div class="used-k">このテストで使った値</div>${valueList(c.values)}</div>`;
@@ -109,9 +126,13 @@ function runSection(slug, run) {
         used += t
           ? `<div class="ai-note"><div class="ai-k"><span class="ai-chip">AI の見立て</span>${esc(t.kind || t.text)}${triStale ? '<span class="ai-stale">前の実行への見立て</span>' : ''}</div>${t.reason ? `<div class="ai-reason">${esc(t.reason)}</div>` : ''}</div>`
           : '<div class="ev-none">AI の見立てがない</div>';
+        // 学習者の判断。入力は関門の欄のフォームに属させる（form 属性）。AI の見立てで埋めておくことはしない
+        if (judge) {
+          used += `<div class="judge" data-id="${esc(r.ID)}"><div class="judge-k">あなたの判断</div><select name="judge:${esc(r.ID)}" form="decision" aria-label="${esc(r.ID)} の原因"><option value="">原因を選ぶ</option>${JUDGE_KINDS.map((k) => `<option value="${esc(k.key)}" data-confirm="${k.confirm ? '1' : '0'}" title="${esc(k.note)}">${esc(k.label)}</option>`).join('')}</select><input type="text" name="basis:${esc(r.ID)}" form="decision" maxlength="500" placeholder="根拠：見た証拠や仕様（例：証拠1がエラー画面。仕様は重複のメッセージ）" aria-label="${esc(r.ID)} の根拠"></div>`;
+        }
       }
     }
-    return `<tr data-tags="${tags.join(' ')}"><td class="chk-id">${esc(r.ID)}</td><td class="chk-exp"><div class="chk-expect">${esc(r['期待結果'])}</div><div class="chk-obs"><strong>見る場所：</strong>${esc(where(r))}</div>${used}</td><td class="res-cell">${result}</td><td class="ev-cell">${ev}</td></tr>`;
+    return `<tr id="case-${esc(r.ID)}" data-tags="${tags.join(' ')}"><td class="chk-id">${esc(r.ID)}</td><td class="chk-exp"><div class="chk-expect">${esc(r['期待結果'])}</div><div class="chk-obs"><strong>見る場所：</strong>${esc(where(r))}</div>${c ? checkList(r.ID) : ''}${used}</td><td class="res-cell">${result}</td><td class="ev-cell">${ev}</td></tr>`;
   }).join('')}`).join('');
   const t = run.totals || {};
   // 絞り込みのボタン。0 件の区分は出さない
@@ -129,25 +150,34 @@ function runSection(slug, run) {
   const legend = `<details class="rlegend"><summary>フェイルの区分の見分け方</summary><dl>${RESULT_KINDS.filter((k) => k.fail).map((k) => `<dt>${esc(k.label)}</dt><dd>${esc(k.note)}</dd>`).join('')}</dl><p class="muted">区分は、テストがどこで止まったかを機械的に分けたものです。実装の不具合か、テストの誤りかは、画面を見て判断します。</p></details>`;
   return `<section class="panel" id="evidence"><div class="doc-head"><div><h2 style="margin:0">実行の証拠</h2><div class="doc-path">${esc(formatTime(run.runAt))} に実行。テスト ${t.tests ?? 0} 件、パス ${t.passed ?? 0} 件、フェイル ${t.failed ?? 0} 件</div></div></div>
 ${stale ? '<div class="stale">テストコードが、この実行のあとで変わっています。この証拠は古いので、確定する前にもう一度実行してください。</div>' : ''}
-<p class="muted" style="margin-top:0">結果と証拠の画面は、実行から機械的に集めたものです。フェイルしたケースの「AI の見立て」だけは AI が書いたもので、判断するのは学習者です。証拠の画面は、テストが期待結果を確かめた場所で、実行中に撮ったものです。ケースごとに、「見る場所」が写っているか、その画面で期待結果が成り立っているかを見ます。画面のどの行を見ればよいかは、「このテストで使った値」（テストが実際に入れた利用目的、リソース、日時など）で探します。パスしたテストも見ます。確かめ方が足りないテストは、不具合があってもパスするためです。画像を押すと大きく開きます。</p>
+<p class="muted" style="margin-top:0">結果と証拠の画面は、実行から機械的に集めたものです。フェイルしたケースの「AI の見立て」だけは AI が書いたもので、判断するのは学習者です。フェイルしたケースは「あなたの判断」で原因を選び、根拠を書きます。すべてそろうまで確定できません。証拠の画面は、テストが期待結果を確かめた場所で、実行中に撮ったものです。ケースごとに、「見る場所」が写っているか、その画面で期待結果が成り立っているかを見ます。画面のどの行を見ればよいかは、「このテストで使った値」（テストが実際に入れた利用目的、リソース、日時など）で探します。「このテストが確かめたこと」は、テストコードから機械的に抜き出した確かめで、説明の文は AI が書き、「照合」は機械的に決めた言葉です。期待結果と照らして、確かめが足りているか、説明と照合が食い違っていないかを見ます。証拠の画面は今回の実行の様子しか示さないので、確かめが足りないテストは、今回たまたま正しく動いていてもパスします。パスしたテストも見ます。画像を押すと大きく開きます。</p>
 <div id="evidence-body"><h2 id="ch-ev" class="ev-h">ケースごとの結果</h2>${filterBar}${legend}
 <div class="table-wrap"><table class="chk-table"><thead><tr><th>ケース ID</th><th>期待結果（試験ケース）</th><th>結果</th><th>証拠の画面</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>
 <dialog id="ev-dialog"><div class="evd"><div class="evd-side"><div class="q-id" id="evd-id"></div><div class="evd-k">期待結果</div><div class="evd-exp" id="evd-exp"></div><div class="evd-k">見る場所</div><div class="evd-obs" id="evd-obs"></div><div class="evd-k" id="evd-values-k">このテストで使った値</div><div id="evd-values"></div><div class="evd-k">この画面</div><div id="evd-label"></div><p class="muted">この画面で、期待結果が成り立っているかを見ます。</p><button type="button" class="btn btn-ghost" id="evd-close">閉じる（Esc）</button></div><div class="evd-img"><img id="evd-img" alt=""></div></div></dialog>`;
 }
 
-/** テストコードの決まり（要素の指定、待ち方、後片付けなど）から外れた書き方を、機械的に見つける。確定は止めない。 */
+/**
+ * テストコードの決まり（要素の指定、待ち方、確かめの説明、証拠の画面など）から外れた書き方を、機械的に見つける。確定は止めない。
+ * 見つかったら、学習者はその文言を差し戻しの理由に貼る（execution.md）。
+ */
 function lintSpec(src) {
   const lines = src.split('\n');
   const at = (re) => lines.map((l, i) => (re.test(l) ? i + 1 : 0)).filter(Boolean);
   const rules = [
     ['data-testid を使っている', /data-testid|getByTestId/],
     ['固定時間の待機（waitForTimeout）がある', /waitForTimeout/],
+    ['期限を決めずに待っている（期待結果と違うと、時間切れまで止まる）', /\.waitFor\((?![^)]*timeout)/],
     ['CSS や XPath で要素を指定している', /\.locator\(\s*["'`](?![^"'`]*>>)/],
     ['日付の文字列を書いている', /["'`]20\d\d-\d\d-\d\d/],
     ['test.only がある', /\btest\.only\(|\bdescribe\.only\(/],
     ['test.skip か test.fixme で止めたテストがある', /\btest\.(skip|fixme)\(/],
   ];
   const out = rules.map(([label, re]) => ({ label, lines: at(re) })).filter((r) => r.lines.length);
+  const tests = Object.values(specChecks(src));
+  const noMsg = tests.flatMap((t) => t.checks.filter((k) => !k.message).map((k) => k.line));
+  if (noMsg.length) out.push({ label: '確かめ（expect）に、何を確かめるかの説明がない（画面の「このテストが確かめたこと」に出ない）', lines: noMsg });
+  const noShot = tests.filter((t) => !t.evidence).map((t) => t.line);
+  if (noShot.length) out.push({ label: '見る場所の画面を撮っていないテストがある', lines: noShot });
   if (!usesWorkflowTest(src)) out.push({ label: 'テストごとにデータベースを初期データに戻す test（helpers/workflow-test）を使っていない', lines: [] });
   return out;
 }
@@ -184,13 +214,14 @@ function readiness(st, slug, key, questions) {
     if (!chk.run) parts.push('まだ流していません。');
     else {
       const failed = Object.values(chk.run.cases || {}).filter((c) => RESULT_KINDS.find((k) => k.key === resultKind(c))?.fail).length;
-      covs.push({ label: '実行されたケース', total: chk.total, done: chk.total - chk.missing.length - chk.notRun.length, extra: failed ? `うちフェイル ${failed} 件` : '' });
+      covs.push({ label: '実行されたケース', total: chk.total, done: chk.total - chk.missing.length - chk.notRun.length - chk.env.length, extra: failed ? `うちフェイル ${failed} 件` : '' });
       if (chk.stale) parts.push('テストコードが、流したあとで変わっています。');
       if (chk.missing.length) parts.push(`実行の結果がないケースがあります（${chk.missing.join('、')}）。`);
       if (chk.notRun.length) parts.push(`実行されていないケースがあります（${chk.notRun.join('、')}）。`);
+      if (chk.env.length) parts.push(`環境が整っていなかったケースがあります（${chk.env.join('、')}）。`);
     }
     const ready = !parts.length;
-    return { ready, covs, why: ready ? '' : `${parts.join('')}差し戻して直させるか、AI に流し直させるまでは確定できません。`, short: ready ? '' : (chk.run ? 'ケースとの対応か実行の結果に足りないところがあるため確定できません' : 'まだ流していないため確定できません') };
+    return { ready, covs, failed: chk.run ? failedCaseIds(chk.run) : [], runId: chk.run?.runId || '', why: ready ? '' : `${parts.join('')}差し戻して直させるか、AI に流し直させるまでは確定できません。`, short: ready ? '' : (chk.run ? 'ケースとの対応か実行の結果に足りないところがあるため確定できません' : 'まだ流していないため確定できません') };
   }
   return { ready: true, why: '', short: '' };
 }
@@ -489,6 +520,23 @@ figure.ev img { display: block; width: 200px; max-height: 160px; object-fit: cov
 figure.ev figcaption { font-size: 12px; color: var(--sub); margin-top: 2px; }
 .ev-none { color: #b45309; font-weight: 700; font-size: 13px; }
 .used-box { margin-top: 8px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+.checks { margin-top: 8px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font-size: 13px; }
+.checks-k { font-weight: 700; margin-bottom: 2px; }
+.checks ul { margin: 0; padding-left: 18px; }
+.checks li { margin: 2px 0; }
+.chk-how { display: block; color: var(--sub); font-size: 12px; }
+.res-er { display: block; color: var(--sub); }
+.judge { margin-top: 8px; padding: 8px 10px; border: 1px solid var(--learner-line); background: var(--learner-bg); border-radius: 6px; display: grid; gap: 6px; }
+.judge.done { border-color: var(--ok-line); background: var(--ok-bg); }
+.judge-k { font-weight: 700; font-size: 13px; }
+.judge select, .judge input { width: 100%; font: inherit; font-size: 13px; border: 1px solid var(--line-strong); border-radius: 6px; padding: 5px 8px; background: #fff; }
+.judge select:focus, .judge input:focus { outline: 2px solid var(--ai-line); outline-offset: 1px; }
+.judge-missing { font-size: 12px; margin: 2px 0 6px; display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.judge-missing a { color: var(--learner); }
+.judged { list-style: none; margin: 4px 0 10px; padding: 0; font-size: 13px; }
+.judged li { padding: 4px 0; border-bottom: 1px solid var(--line); }
+.judged .q-id { margin-right: 6px; }
+.judged .note { color: var(--sub); }
 .ai-note { margin-top: 8px; padding: 6px 10px; border-left: 3px solid var(--ai); background: var(--ai-bg); border-radius: 0 6px 6px 0; font-size: 13px; }
 .ai-k { font-weight: 700; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .ai-chip { font-size: 11px; font-weight: 700; color: #fff; background: var(--ai); border-radius: 999px; padding: 1px 8px; }
@@ -620,6 +668,58 @@ document.addEventListener('click', function (e) {
   document.getElementById('evd-img').src = a.href;
   d.showModal();
 });
+// フェイルしたケースの判断（原因と根拠）。すべてそろい、確定できない原因が選ばれていないときだけ「確定する」を押せる。
+// 入力は、画面を読み込み直しても消えないように、このブラウザに一時的に残す（同じ実行の結果の間だけ）
+(function () {
+  var form = document.getElementById('decision');
+  if (!form || !form.dataset.judgeKey) return;
+  var key = 'e2e-judge:' + form.dataset.judgeKey;
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('.judge'));
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch (err) { saved = {}; }
+  boxes.forEach(function (b) {
+    var v = saved[b.dataset.id];
+    if (!v) return;
+    b.querySelector('select').value = v.kind || '';
+    b.querySelector('input').value = v.basis || '';
+  });
+  var update = function () {
+    var done = 0, blocking = [], missing = [], store = {};
+    boxes.forEach(function (b) {
+      var sel = b.querySelector('select'), basis = b.querySelector('input').value.trim();
+      var opt = sel.options[sel.selectedIndex];
+      var ok = !!sel.value && !!basis;
+      b.classList.toggle('done', ok);
+      if (ok) done++; else missing.push(b.dataset.id);
+      if (sel.value && opt && opt.getAttribute('data-confirm') === '0') blocking.push(b.dataset.id);
+      if (sel.value || basis) store[b.dataset.id] = { kind: sel.value, basis: basis };
+    });
+    try { localStorage.setItem(key, JSON.stringify(store)); } catch (err) { /* 残せなくても入力はできる */ }
+    var total = boxes.length;
+    document.querySelectorAll('[data-judge-count]').forEach(function (el) { el.textContent = done + '／' + total + ' 件'; });
+    var sum = document.getElementById('judge-sum');
+    if (sum) sum.classList.toggle('ok', done === total && !blocking.length);
+    var list = document.getElementById('judge-missing');
+    if (list) {
+      list.textContent = '';
+      if (missing.length) {
+        list.appendChild(document.createTextNode('まだ：'));
+        missing.forEach(function (id) { var a = document.createElement('a'); a.href = '#case-' + id; a.textContent = id; list.appendChild(a); });
+      }
+    }
+    var why = '';
+    if (done < total) why = 'フェイルしたケースのうち ' + (total - done) + ' 件に、原因と根拠がそろっていません。証拠の表の「あなたの判断」で選んで書きます。';
+    else if (blocking.length) why = '「テストの誤り」か「前の段階の誤り」と判断したケースがあります（' + blocking.join('、') + '）。確定せずに差し戻します。';
+    var w = document.getElementById('judge-why');
+    if (w) { w.textContent = why; w.hidden = !why; }
+    document.querySelectorAll('button[value="confirm"]').forEach(function (btn) { btn.disabled = !!btn.dataset.blocked || !!why; if (why && !btn.dataset.blocked) btn.title = why; });
+  };
+  document.addEventListener('input', function (e) { if (e.target.closest('.judge')) update(); });
+  document.addEventListener('change', function (e) { if (e.target.closest('.judge')) update(); });
+  // 確定か差し戻しを送ったら、残しておいた入力を消す
+  form.addEventListener('submit', function () { try { localStorage.removeItem(key); } catch (err) { /* 消せなくてもよい */ } });
+  update();
+})();
 // 関門の欄が見えている間は「判断の入力へ」のボタンを隠す
 document.addEventListener('DOMContentLoaded', function () {
   var jump = document.querySelector('.jump'), gate = document.getElementById('decision');
@@ -976,20 +1076,25 @@ ${r ? `<label class="field">差し戻した内容 <span class="hint">${esc(forma
   const nAns = questions.filter((q) => saved[q.id]).length;
   const cov = (rd.covs || (rd.cov ? [rd.cov] : [])).map((c) => `<div class="ans-sum${ready ? ' ok' : ''}"><span>${esc(c.label)}</span><strong>${c.done}／${c.total} 件${c.extra ? `（${esc(c.extra)}）` : ''}</strong></div>`).join('');
   const lint = cur.key === 'code' && fs.existsSync(specPath(slug)) ? lintSpec(fs.readFileSync(specPath(slug), 'utf8')) : [];
+  // フェイルしたケースの判断の進み具合。数と、まだのケースへのリンクは画面の中で更新する（CLIENT_JS）
+  const failed = rd.failed || [];
+  const judgeHtml = failed.length ? `<a class="ans-sum" id="judge-sum" href="#evidence"><span>フェイルしたケースの判断</span><strong data-judge-count>0／${failed.length} 件</strong></a><div class="judge-missing" id="judge-missing"></div>` : '';
   const lintHtml = lint.length ? `<div class="lint"><strong>決まりから外れた書き方（${lint.length} 種類）</strong><ul>${lint.map((l) => `<li>${esc(l.label)}${l.lines.length ? `（${l.lines.slice(0, 6).join('、')} 行目${l.lines.length > 6 ? ' ほか' : ''}）` : ''}</li>`).join('')}</ul></div>` : '';
-  return `<form class="panel" id="decision" method="post" action="/api/${esc(slug)}/${esc(cur.key)}/decision"><input type="hidden" name="_token" value="${FORM_TOKEN}">
+  return `<form class="panel" id="decision" method="post" action="/api/${esc(slug)}/${esc(cur.key)}/decision"${failed.length ? ` data-judge-key="${esc(slug)}:${esc(rd.runId)}" data-judge-total="${failed.length}"` : ''}><input type="hidden" name="_token" value="${FORM_TOKEN}">
 <div class="gate-title"><h2>${esc(cur.gate)}</h2>${badge(status)}<button type="button" class="btn btn-ghost drawer-close" data-drawer="close" style="padding:3px 10px;font-size:12px">閉じる</button></div>
 <p class="muted" style="margin-top:0">${esc(v.lead)}</p>
 ${facts}
 ${cov}
+${judgeHtml}
 ${lintHtml}
 ${questions.length ? `<a class="ans-sum${ready ? ' ok' : ''}" href="#answers"><span>仕様の食い違いへの回答</span><strong>${nAns}／${questions.length} 件回答・${nRef} 件反映</strong></a>` : ''}
 <label class="field" for="note">指摘 <span class="hint">${esc(v.hint)}</span></label>
 <textarea id="note" name="note" placeholder="${esc(v.placeholder)}"></textarea>
 <div class="gate-actions"><div class="actions">
 <button class="btn btn-return" name="action" value="return">差し戻す</button>
-<button class="btn btn-confirm" name="action" value="confirm"${ready ? '' : ' disabled'}>確定する</button>
+<button class="btn btn-confirm" name="action" value="confirm"${ready ? '' : ' data-blocked="1"'}${ready && !failed.length ? '' : ' disabled'}>確定する</button>
 </div>
+<p class="why-disabled" id="judge-why" hidden></p>
 ${ready ? '<p class="muted" style="margin:8px 0 0">確定すると次の段階へ進みます。確定と差し戻しは記録に残ります。</p>' : `<p class="why-disabled">${esc(rd.why)}</p>`}</div>
 </form>`;
 }
@@ -1002,11 +1107,11 @@ function focusBar(st, slug, cur, questions, counts) {
   const rd = readiness(st, slug, cur.key, questions);
   const ready = rd.ready;
   const n = counts.find((c) => v.bar[0].test(c.label))?.n;
-  const meta = [n !== undefined ? `${v.bar[1]} <strong>${n}</strong> 件` : '', ...(rd.covs || (rd.cov ? [rd.cov] : [])).map((c) => `${esc(c.label)} <strong>${c.done}／${c.total}</strong>`), questions.length ? `食い違いへの回答 <strong>${questions.filter((q) => saved[q.id]).length}／${questions.length}</strong>・反映 <strong>${questions.filter((q) => isReflected(q, saved)).length}</strong>` : ''].filter(Boolean).join('　');
+  const meta = [n !== undefined ? `${v.bar[1]} <strong>${n}</strong> 件` : '', ...(rd.covs || (rd.cov ? [rd.cov] : [])).map((c) => `${esc(c.label)} <strong>${c.done}／${c.total}</strong>`), questions.length ? `食い違いへの回答 <strong>${questions.filter((q) => saved[q.id]).length}／${questions.length}</strong>・反映 <strong>${questions.filter((q) => isReflected(q, saved)).length}</strong>` : '', status === 'ai_output' && (rd.failed || []).length ? `フェイルの判断 <strong data-judge-count>0／${rd.failed.length} 件</strong>` : ''].filter(Boolean).join('　');
   const buttons = status === 'ai_output'
     ? `<button type="button" class="btn btn-ghost" data-drawer="open">指摘を書く</button>
 <button class="btn btn-return" form="decision" name="action" value="return">差し戻す</button>
-<button class="btn btn-confirm" form="decision" name="action" value="confirm"${ready ? '' : ` disabled title="${esc(rd.short)}"`}>確定する</button>`
+<button class="btn btn-confirm" form="decision" name="action" value="confirm"${ready ? '' : ` data-blocked="1" title="${esc(rd.short)}"`}${ready && !(rd.failed || []).length ? '' : ' disabled'}>確定する</button>`
     : '<button type="button" class="btn btn-ghost" data-drawer="open">関門の欄を開く</button>';
   return `<div class="focus-bar" aria-label="関門の操作"><div class="focus-bar-in"><span class="fb-title">${esc(cur.gate)}</span>${badge(status)}<span class="fb-meta">${meta}</span>${status === 'ai_output' && !ready ? `<span class="fb-warn">${esc(rd.short)}</span>` : ''}<span class="fb-spacer"></span>${buttons}</div></div>`;
 }
@@ -1018,11 +1123,15 @@ function confirmedPanel(st, view) {
   const list = returns.length
     ? `<ol>${returns.map((l) => `<li><span class="t">${esc(formatTime(l.at))}</span><span class="note">${esc(l.note || '（理由なし）')}</span></li>`).join('')}</ol>`
     : '<p class="muted" style="margin:4px 0 0">差し戻しなしで確定しました。</p>';
+  const confirmLog = st.log.filter((l) => l.stage === view.key && l.action === 'confirm').pop();
+  const judged = Object.entries(confirmLog?.judgments || {});
+  const judgedHtml = judged.length ? `<div class="evd-k">フェイルしたケースの判断（${judged.length} 件）</div><ul class="judged">${judged.map(([id, j]) => `<li><span class="q-id">${esc(id)}</span>${esc(JUDGE_KINDS.find((k) => k.key === j.kind)?.label || '')}<div class="note">${esc(j.basis || '')}</div></li>`).join('')}</ul>` : '';
   return `<section class="panel done-panel"><div class="gate-title"><h2>${esc(view.gate)}</h2>${badge('confirmed')}</div>
 <p class="done-at">${esc(formatTime(stage.confirmed_at))} に確定</p>
+${judgedHtml}
 ${changedAfterConfirm(st).some((x) => x.key === view.key) ? '<div class="stale">確定のあとで、この段階の成果物が書き換えられています。</div>' : ''}
 <div class="evd-k">差し戻し（${returns.length} 回）</div>${list}
-<p class="muted" style="margin-top:12px">確定した成果物は読み取り専用です。直す必要がある場合は、今の段階の関門で、その段階まで戻すことを指摘に書きます。</p>
+<p class="muted" style="margin-top:12px">確定した成果物は読み取り専用です。誤りを見つけたときは、今の段階の関門で差し戻し、指摘に「前の段階の誤り：ID」と、何が誤りかを書いて運営者に相談します。運営者が認めると、この段階を差し戻しに戻して直します。</p>
 <p><a class="btn btn-ghost" href="/screen/${esc(st.slug)}">今の段階に戻る</a></p></section>`;
 }
 
@@ -1045,11 +1154,12 @@ ${questions.map((q) => {
 }
 
 function timeline(st) {
-  const ACT = { init: '開始', ai_output: 'AI が出力', confirm: '確定', return: '差し戻し' };
+  const ACT = { init: '開始', ai_output: 'AI が出力', confirm: '確定', return: '差し戻し', reopen: '確定から差し戻しに戻す' };
+  const WHO = { learner: '学習者', operator: '運営者' };
   return `<ul class="timeline">${st.log.slice().reverse().map((l) => {
     const stage = STAGES.find((s) => s.key === l.stage)?.label || '';
-    return `<li class="tl by-${l.by === 'learner' ? 'learner' : 'ai'} act-${esc(l.action)}"><span class="tl-dot"></span><div>
-<div class="tl-head"><span class="tl-act">${esc(ACT[l.action] || l.action)}</span><span class="muted">${esc(l.by === 'learner' ? '学習者' : 'AI')}${stage ? `・${esc(stage)}` : ''}</span><span class="tl-time">${esc(formatTime(l.at))}</span></div>
+    return `<li class="tl by-${l.by === 'ai' ? 'ai' : 'learner'} act-${esc(l.action)}"><span class="tl-dot"></span><div>
+<div class="tl-head"><span class="tl-act">${esc(ACT[l.action] || l.action)}</span><span class="muted">${esc(WHO[l.by] || 'AI')}${stage ? `・${esc(stage)}` : ''}</span><span class="tl-time">${esc(formatTime(l.at))}</span></div>
 ${l.note ? `<div class="tl-note">${esc(l.note)}</div>` : ''}</div></li>`;
   }).join('')}</ul>`;
 }
@@ -1070,7 +1180,7 @@ function screenPage(slug, viewKey) {
     // テストコードと実行の段階では、説明（code.md）のあとに、流した結果（実行の証拠）を続けて出す
     const run = view.key === 'code' ? readRun(slug) : null;
     const runHtml = view.key !== 'code' ? ''
-      : run ? runSection(slug, run)
+      : run ? runSection(slug, run, { judge: cur?.key === 'code' && st.stages.code.status === 'ai_output' })
         : `<section class="panel" id="evidence"><h2>まだ流していません</h2><p class="muted">AI がテストを流すと、ケースごとの結果と証拠の画面がここに表示されます。</p></section>`;
     if (ap && fs.existsSync(ap)) {
       const md = fs.readFileSync(ap, 'utf8');
@@ -1166,7 +1276,12 @@ const server = http.createServer(async (req, res) => {
       }
       try {
         const answers = Object.fromEntries([...form.entries()].filter(([k]) => k.startsWith('answer:')).map(([k, v]) => [k.slice(7), v]));
-        recordDecision(m[1], m[2], form.get('action') || '', form.get('note') || '', answers);
+        const judgments = {};
+        for (const [k, v] of form.entries()) {
+          const mm = k.match(/^(judge|basis):(.+)$/);
+          if (mm) (judgments[mm[2]] ||= {})[mm[1] === 'judge' ? 'kind' : 'basis'] = v;
+        }
+        recordDecision(m[1], m[2], form.get('action') || '', form.get('note') || '', answers, judgments);
       } catch (e) {
         return send(res, 400, messagePage('操作できません', `<p>${esc(e.message)}</p>`, m[1]));
       }

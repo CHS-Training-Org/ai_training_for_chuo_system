@@ -42,6 +42,23 @@ function firstLine(text) {
   return String(text || '').replace(/\x1b\[[0-9;]*m/g, '').split('\n').map((l) => l.trim()).find(Boolean) || '';
 }
 
+/**
+ * Playwright のエラー1件を、学習者に見せる形にする。
+ * expect に説明（第2引数）を添えると、1行目がその説明になり、「expect(...).toX(...) failed」は2行目以降に来る。
+ * そのため、期待結果の確かめでフェイルしたか（assert）は、メッセージ全体で見分ける。
+ * 期待した値と実際の値（Expected と Received の行）があれば、あわせて残す。
+ */
+function errorInfo(e) {
+  const text = String(e?.message || '').replace(/\x1b\[[0-9;]*m/g, '');
+  const line = (re) => (text.match(re) || [])[1]?.trim() || '';
+  return {
+    message: firstLine(text).replace(/^Error:\s*/, ''),
+    assert: /^\s*(?:Error:\s*)?expect(\.soft)?\(.*\)\.[\w.]+\(.*\) failed\s*$/m.test(text),
+    expected: line(/^Expected(?: [\w ]+)?:\s*(.+)$/m),
+    received: line(/^Received(?: [\w ]+)?:\s*(.+)$/m),
+  };
+}
+
 function main() {
   const slug = process.argv[2];
   if (!slug) throw new Error('使い方: node scripts/e2e-workflow/run.mjs <スラッグ>');
@@ -117,12 +134,12 @@ function main() {
     }
     const passed = result.status === 'passed';
     // expect.soft で確かめた期待結果は、フェイルしてもテストが先へ進むので、エラーが複数になることがある。順に残す
-    const errors = passed ? [] : (result.errors?.length ? result.errors : [result.error]).map((e) => firstLine(e?.message)).filter(Boolean);
+    const errors = passed ? [] : (result.errors?.length ? result.errors : [result.error]).map(errorInfo).filter((e) => e.message);
     cases[id] = {
       status: passed ? 'passed' : result.status === 'skipped' ? 'not_run' : 'failed',
       title: s.title,
       durationMs: result.duration,
-      error: errors.join(' ／ '),
+      error: errors.map((e) => e.message).join(' ／ '),
       errors,
       evidence,
       values: [...used].map(([label, value]) => ({ label, value })),

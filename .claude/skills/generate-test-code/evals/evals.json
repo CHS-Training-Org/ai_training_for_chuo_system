@@ -18,6 +18,8 @@
         "各 test で、見る場所を開いたあと、期待結果を確かめる expect の前に evidence() を呼んでいる",
         "処理の終わりを画面の変化で待ち、通信の完了（waitForRequest、waitForResponse、request.response()、response.finished()）で待っていない。明示的な待ち（waitFor など）には10秒以下の timeout があり、期待結果の要素を待つ場合は待ち切れなくても evidence() を撮ってから expect でフェイルさせている",
         "期待結果の expect が2つ以上ある test（見る場所が2つあるケースなど）では、最後の1つを除いて expect.soft にしており、1つ目と違っても残りの見る場所の evidence() と確認まで進む。手順の途中の確認は expect.soft にしていない",
+        "test の中のすべての expect に、第2引数として何を確かめるかの説明を文字列リテラルで渡しており、説明が照合の内容（toHaveCount(0) なら「〜がない」など）と食い違っていない。expect を補助の関数の中に書いていない",
+        "「〜できないこと」を操作のあとで別の画面で確かめるケースで、操作した直後の画面も evidence() で撮っている",
         "各 test で、入れた値、選んだ値、見る場所に写る前提データの値を usedValue() で残している。日時は Date のまま渡している",
         "前提として API で作る予約の利用目的に existingPurposeFor() を使い、purposeFor() の後ろに語を足した文字列を使っていない",
         "期待結果を試験ケースより弱めていない（実装に合わせて expect を変えていない）",
