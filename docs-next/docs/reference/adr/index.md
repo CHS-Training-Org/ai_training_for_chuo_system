@@ -9,7 +9,7 @@ audience: 運営者・学習者
 references:
   - ../../spec/overview.md
   - ../../spec/index.md
-last_updated: '2026-09-09T00:00:00+09:00'
+last_updated: '2026-10-04T00:00:00+09:00'
 ---
 
 # ADR（Architecture Decision Records）ガイド
