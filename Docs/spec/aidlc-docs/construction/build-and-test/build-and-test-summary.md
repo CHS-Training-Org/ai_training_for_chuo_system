@@ -1,8 +1,8 @@
-# Build and Test Summary — resource-search
+# Build and Test Summary — resource-sort
 
 ## 適用範囲の判定
 
-本ユニットは単一 Issue（#23）に対する brownfield の縦切り修正であり、Workflow Planning で NFR Requirements/Design・Infrastructure Design は SKIP 済み（新規 NFR・インフラ要求なし）。これに整合させ、Build and Test でも以下のとおり適用範囲を絞った。
+本ユニットは単一 Issue（#22）に対する brownfield の縦切り修正であり、Workflow Planning で NFR Requirements/Design・Infrastructure Design は SKIP 済み（新規 NFR・インフラ要求なし）。これに整合させ、Build and Test でも以下のとおり適用範囲を絞った。
 
 | テスト種別 | 判定 | 理由 |
 |---|---|---|
@@ -22,15 +22,15 @@
 
 ### Backend（`./gradlew test`）
 
-- **Total Tests**: 137
-- **Passed**: 137
+- **Total Tests**: 150（resource-search ユニットの 137 件 + resource-sort ユニットの新規 13 件）
+- **Passed**: 150
 - **Failed**: 0
 - **Status**: Pass
 
 ### Frontend（`pnpm test`）
 
-- **Total Tests**: 82
-- **Passed**: 82
+- **Total Tests**: 84（resource-search ユニットの 82 件 + resource-sort ユニットの新規 2 件）
+- **Passed**: 84
 - **Failed**: 0
 - **Status**: Pass
 
@@ -42,5 +42,5 @@
 ## Overall Status
 
 - **Build**: Success（backend・frontend 両方）
-- **All Tests**: Pass（219 テスト全成功）
+- **All Tests**: Pass（234 テスト全成功）
 - **Ready for Operations**: Yes

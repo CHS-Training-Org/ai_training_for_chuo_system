@@ -19,12 +19,15 @@ interface ResourceFilterFormProps {
   defaultFrom?: string;
   defaultTo?: string;
   defaultKeyword?: string;
+  defaultSort?: string;
 }
+
+const SORT_DEFAULT_VALUE = "DEFAULT";
 
 /**
  * リソース一覧のフィルタフォーム（クライアントコンポーネント）。
  *
- * カテゴリフィルタ・空き確認（from/to）・キーワード検索の入力を受け取り、
+ * カテゴリフィルタ・空き確認（from/to）・キーワード検索・並び順の入力を受け取り、
  * URL の searchParams を更新してサーバーコンポーネントに伝える。
  */
 export function ResourceFilterForm({
@@ -32,6 +35,7 @@ export function ResourceFilterForm({
   defaultFrom,
   defaultTo,
   defaultKeyword,
+  defaultSort,
 }: ResourceFilterFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,11 +51,13 @@ export function ResourceFilterForm({
       const from = data.get("from") as string;
       const to = data.get("to") as string;
       const keyword = (data.get("keyword") as string).trim();
+      const sort = data.get("sort") as string;
 
       if (category && category !== "ALL") params.set("category", category);
       if (from) params.set("from", from);
       if (to) params.set("to", to);
       if (keyword) params.set("keyword", keyword);
+      if (sort && sort !== SORT_DEFAULT_VALUE) params.set("sort", sort);
 
       router.push(`/resources?${params.toString()}`);
     },
@@ -65,7 +71,7 @@ export function ResourceFilterForm({
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4 space-y-4">
       <h2 className="text-sm font-semibold">フィルタ・空き確認</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
         {/* カテゴリ */}
         <div className="space-y-1">
           <Label htmlFor="category">カテゴリ</Label>
@@ -115,6 +121,23 @@ export function ResourceFilterForm({
             defaultValue={defaultKeyword}
             data-testid="resource-filter-form-keyword-input"
           />
+        </div>
+
+        {/* 並び順 */}
+        <div className="space-y-1">
+          <Label htmlFor="sort">並び順</Label>
+          <Select name="sort" defaultValue={defaultSort ?? SORT_DEFAULT_VALUE}>
+            <SelectTrigger id="sort" data-testid="resource-filter-form-sort-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={SORT_DEFAULT_VALUE}>登録日時順（デフォルト）</SelectItem>
+              <SelectItem value="name,asc">名称順（昇順）</SelectItem>
+              <SelectItem value="name,desc">名称順（降順）</SelectItem>
+              <SelectItem value="capacity,asc">定員順（昇順）</SelectItem>
+              <SelectItem value="capacity,desc">定員順（降順）</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

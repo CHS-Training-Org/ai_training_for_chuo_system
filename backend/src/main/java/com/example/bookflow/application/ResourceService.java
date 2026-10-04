@@ -13,13 +13,16 @@ import com.example.bookflow.presentation.dto.ResourceResponse;
 import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -105,9 +108,57 @@ public class ResourceService {
     return keyword.replace("!", "!!").replace("%", "!%").replace("_", "!_");
   }
 
+  /**
+   * {@code pageable} の {@link Sort} のうち {@code capacity} オーダーを {@code nullsLast()} に差し替える（BR-04）。
+   *
+   * <p>DB 側の {@code ORDER BY} に委ねる経路（{@code listPaginated}）用。Hibernate が H2/PostgreSQL 双方で移植可能な
+   * {@code NULLS LAST} 構文に変換するため、ソート方向（昇順・降順）に関わらず capacity が NULL のリソースは常に最後になる。
+   */
+  private static Pageable applyCapacityNullsLast(Pageable pageable) {
+    Sort adjustedSort =
+        Sort.by(
+            pageable.getSort().stream()
+                .map(order -> "capacity".equals(order.getProperty()) ? order.nullsLast() : order)
+                .toList());
+    return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), adjustedSort);
+  }
+
+  /**
+   * {@link Sort} から {@link Resource} 用の {@link Comparator} を組み立てる（BR-04・BR-05・BR-06）。
+   *
+   * <p>手動ページネーション経路（{@code listWithAvailabilityFilter}）用。{@code capacity} は {@code nullsLast}
+   * でラップし、昇順・降順いずれでも NULL を最後にするため、方向は nullsLast でラップする前の内側の比較器に適用する。
+   */
+  private static Comparator<Resource> buildComparator(Sort sort) {
+    Comparator<Resource> comparator = null;
+    for (Sort.Order order : sort) {
+      boolean descending = order.isDescending();
+      Comparator<Resource> fieldComparator =
+          switch (order.getProperty()) {
+            case "name" -> Comparator.comparing(Resource::getName);
+            case "capacity" ->
+                Comparator.comparing(
+                    Resource::getCapacity,
+                    Comparator.nullsLast(
+                        descending
+                            ? Comparator.<Integer>reverseOrder()
+                            : Comparator.<Integer>naturalOrder()));
+            case "createdAt" -> Comparator.comparing(Resource::getCreatedAt);
+            default ->
+                throw new IllegalArgumentException("サポートされていないソートフィールド: " + order.getProperty());
+          };
+      if (descending && !"capacity".equals(order.getProperty())) {
+        fieldComparator = fieldComparator.reversed();
+      }
+      comparator = comparator == null ? fieldComparator : comparator.thenComparing(fieldComparator);
+    }
+    return comparator != null ? comparator : Comparator.comparing(Resource::getCreatedAt);
+  }
+
   /** from/to 指定なし：通常ページネーション。 */
   private Page<ResourceResponse> listPaginated(
       ResourceCategory category, String keyword, boolean isAdmin, Pageable pageable) {
+    pageable = applyCapacityNullsLast(pageable);
     Page<Resource> page;
     if (keyword != null) {
       String escapedKeyword = escapeLikeKeyword(keyword);
@@ -165,7 +216,10 @@ public class ResourceService {
       candidates = candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
     }
 
-    // 3. フィルタ後リストを手動ページネーション
+    // 3. ソートを適用（Pageable の Sort は DB に渡らない経路のため、Comparator で明示的に適用する）
+    candidates = candidates.stream().sorted(buildComparator(pageable.getSort())).toList();
+
+    // 4. フィルタ・ソート後リストを手動ページネーション
     int total = candidates.size();
     int start = (int) pageable.getOffset();
     int end = Math.min(start + pageable.getPageSize(), total);
