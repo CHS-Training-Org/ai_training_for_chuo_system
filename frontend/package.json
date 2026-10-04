@@ -11,7 +11,8 @@
     "test:e2e": "playwright test",
     "lint": "oxlint .",
     "format": "oxfmt .",
-    "format:check": "oxfmt --check ."
+    "format:check": "oxfmt --check .",
+    "test:e2e:workflow": "E2E_WORKFLOW=1 playwright test --project=workflow"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

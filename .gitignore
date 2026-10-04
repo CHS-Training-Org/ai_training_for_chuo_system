@@ -79,6 +79,8 @@ playwright-report/
 playwright/.cache/
 # Playwright の storageState（cognito-local が発行した実物の IdToken を含む）
 frontend/playwright/.auth/
+# 結合テストのワークフローが集めた実行の証拠（画面と実行結果）
+frontend/playwright/evidence/
 
 # ===== Docker / DevContainer ローカル =====
 .devcontainer/.env
