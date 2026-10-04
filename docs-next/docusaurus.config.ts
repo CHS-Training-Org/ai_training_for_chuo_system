@@ -87,6 +87,9 @@ const config: Config = {
     ],
   ],
 
+  // Mermaid の図に拡大縮小と全画面表示を付ける。
+  clientModules: ['./src/clientModules/mermaidPanZoom.js'],
+
   themeConfig: {
     colorMode: {
       respectPrefersColorScheme: true,
