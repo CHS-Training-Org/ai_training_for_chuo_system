@@ -77,6 +77,8 @@ replay_pid*
 test-results/
 playwright-report/
 playwright/.cache/
+# Playwright の storageState（cognito-local が発行した実物の IdToken を含む）
+frontend/playwright/.auth/
 
 # ===== Docker / DevContainer ローカル =====
 .devcontainer/.env
