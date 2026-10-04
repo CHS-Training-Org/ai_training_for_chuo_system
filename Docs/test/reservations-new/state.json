@@ -1,0 +1,38 @@
+{
+  "slug": "reservations-new",
+  "screen": "/reservations/new",
+  "created_at": "2026-10-01T15:31:04.222Z",
+  "stages": {
+    "perspectives": {
+      "status": "ai_output",
+      "updated_at": "2026-10-01T15:31:04.269Z",
+      "confirmed_at": null
+    },
+    "cases": {
+      "status": "not_started",
+      "updated_at": null,
+      "confirmed_at": null
+    },
+    "code": {
+      "status": "not_started",
+      "updated_at": null,
+      "confirmed_at": null
+    }
+  },
+  "log": [
+    {
+      "at": "2026-10-01T15:31:04.222Z",
+      "by": "ai",
+      "stage": null,
+      "action": "init",
+      "note": "/reservations/new のワークフローを開始"
+    },
+    {
+      "at": "2026-10-01T15:31:04.269Z",
+      "by": "ai",
+      "stage": "perspectives",
+      "action": "ai_output",
+      "note": "観点のたたき台を出力"
+    }
+  ]
+}
