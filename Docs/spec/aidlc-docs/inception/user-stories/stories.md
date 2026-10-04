@@ -1,97 +1,99 @@
-# User Stories — リソース一覧の検索・フィルタ追加（Issue #23）
+# User Stories — リソース一覧のソート順選択
 
-INVEST 準拠（Independent / Negotiable / Valuable / Estimable / Small / Testable）。各ストーリーは `requirements.md` の受入条件と 1:1 対応する。
-
----
-
-## US-01: キーワードでリソースを絞り込む
+## US-01: 名称順でリソースを並べ替える
 
 **As a** BookFlow 認証済みユーザー
-**I want to** `/resources` 画面のキーワード欄にリソース名や説明文の一部を入力して絞り込む
-**So that** カテゴリ・期間フィルタだけでは特定しづらいリソースを素早く見つけられる
+**I want** リソース一覧を名称順（昇順・降順）で並べ替えたい
+**So that** 名前の手がかりから目的のリソースを素早く見つけられる
 
-### Acceptance Criteria
+### 受入条件（Gherkin）
 
 ```gherkin
 Given /resources 画面を開いている
-When キーワード欄に "会議室" と入力し「絞り込む」を押す
-Then name または description に "会議室" を含むリソースのみが一覧表示される
+When ソート選択ドロップダウンで「名称順（昇順）」を選ぶ
+Then リソース一覧が名称のあいうえお順（アルファベット順）に並び替えて表示される
 
 Given /resources 画面を開いている
-When キーワード欄に大文字小文字の異なる表記（例: "ROOM" / "room"）を入力する
-Then 大文字小文字を区別せず同じ結果が返る
+When ソート選択ドロップダウンで「名称順（降順）」を選ぶ
+Then リソース一覧が名称の逆順に並び替えて表示される
 ```
 
-**対応要件**: RES-01, RES-02（`requirements.md`）
+- **INVEST**: Independent（他ストーリーと機能的に独立）・Negotiable・Valuable・Estimable・Small・Testable
+- **対応要件**: RES-01, RES-06
 
----
-
-## US-02: キーワードを解除して全件に戻す
-
-**As a** BookFlow 認証済みユーザー
-**I want to** キーワード欄を空、または空白のみにして「絞り込む」を押す
-**So that** 意図せず条件を残したままにせず、簡単に全件表示へ戻せる
-
-### Acceptance Criteria
-
-```gherkin
-Given キーワードで絞り込んだ状態の /resources 画面を開いている
-When キーワード欄を空にして「絞り込む」を押す
-Then keyword 条件が解除され、他のフィルタ条件のみが適用された結果が表示される
-
-Given /resources 画面を開いている
-When キーワード欄にスペースのみを入力して「絞り込む」を押す
-Then スペースのみの入力は「未入力」として扱われ、keyword 条件は付与されない
-
-Given /resources 画面を初めて開く（keyword パラメータ自体が存在しない）
-When 一覧が表示される
-Then 現状と同一の挙動（全件取得）になる
-```
-
-**対応要件**: RES-05, NFR-02
-
----
-
-## US-03: カテゴリ・期間とキーワードを組み合わせる
+## US-02: 定員順でリソースを並べ替える
 
 **As a** BookFlow 認証済みユーザー
-**I want to** カテゴリ・空き確認期間・キーワードを同時に指定する
-**So that** 複数条件を満たすリソースだけに絞り込める
+**I want** リソース一覧を定員順（昇順・降順）で並べ替えたい
+**So that** 必要な人数を収容できるリソースを効率的に探せる
 
-### Acceptance Criteria
+### 受入条件（Gherkin）
 
 ```gherkin
 Given /resources 画面を開いている
-When カテゴリ "ROOM"・期間・キーワード "会議室" を同時に指定して「絞り込む」を押す
-Then 3条件すべて（AND 条件）を満たすリソースのみが表示される
+When ソート選択ドロップダウンで「定員順（昇順）」を選ぶ
+Then リソース一覧が定員の小さい順に並び替えて表示される
+And 定員が未設定（NULL）のリソースは一覧の最後に表示される
 
-Given ADMIN としてサインインしている
-When keyword で絞り込む
-Then 無効化済み（is_active=false）リソースも検索対象に含まれる（既存仕様の維持）
+Given /resources 画面を開いている
+When ソート選択ドロップダウンで「定員順（降順）」を選ぶ
+Then リソース一覧が定員の大きい順に並び替えて表示される
+And 定員が未設定（NULL）のリソースは一覧の最後に表示される
 ```
 
-**対応要件**: RES-04
+- **INVEST**: Independent・Negotiable・Valuable・Estimable・Small・Testable
+- **対応要件**: RES-01, RES-05, NFR-02
 
----
-
-## US-04: 検索結果が 0 件のときに分かりやすい表示を見る
+## US-03: ソート未選択時は登録日時順で表示される
 
 **As a** BookFlow 認証済みユーザー
-**I want to** キーワード検索で該当リソースが無かったときに、その旨が分かるメッセージを見る
-**So that** 「一覧が壊れている」のか「単に該当なし」なのかを迷わず判断できる
+**I want** ソートを何も選択していないとき、これまでどおり登録日時の古い順でリソース一覧を見たい
+**So that** 既存の画面を使い続けているユーザーの体験が変わらない
 
-### Acceptance Criteria
+### 受入条件（Gherkin）
 
 ```gherkin
-Given /resources 画面を開いている
-When 該当するリソースが存在しないキーワードで絞り込む
-Then 「絞り込み条件に一致するリソースがありません。」（確定文言は screen-spec.md 更新時に決定）が表示される（現状の一律「リソースがありません。」から変更）
+Given /resources 画面を初めて開く（ソートパラメータを指定しない）
+When リソース一覧が表示される
+Then 登録日時の昇順（既存の挙動）で並んでいる
+
+Given ソートを選択した状態から「リセット」ボタンを押す
+When リソース一覧が再表示される
+Then 登録日時の昇順に戻る
 ```
 
-**対応要件**: User Stories Step 3 で特定した空状態メッセージの論点（`story-generation-plan.md` 参照）。`screen-spec.md` §`/resources` の更新が必要（`/update-spec` スキルで Code Generation 前に反映）
+- **INVEST**: Independent・Negotiable・Valuable・Estimable・Small・Testable
+- **対応要件**: RES-02
 
----
+## US-04: カテゴリ・期間・キーワードフィルタと組み合わせてソートする
+
+**As a** BookFlow 認証済みユーザー
+**I want** カテゴリ・空き確認期間・キーワード検索と同時にソートを適用したい
+**So that** 絞り込んだ結果に対しても自分が見やすい順序で確認できる
+
+### 受入条件（Gherkin）
+
+```gherkin
+Given カテゴリフィルタでリソースを絞り込んでいる
+When ソート選択ドロップダウンで並び替えを指定する
+Then 絞り込み結果に対してソートが適用される
+
+Given 空き確認期間（from/to）でリソースを絞り込んでいる
+When ソート選択ドロップダウンで並び替えを指定する
+Then 絞り込み結果に対してソートが適用される（空き判定後の候補に対してソートされる）
+
+Given キーワード検索でリソースを絞り込んでいる
+When ソート選択ドロップダウンで並び替えを指定する
+Then 絞り込み結果に対してソートが適用される
+
+Given ソートを変更する
+When 現在2ページ目を表示している状態でソートを変更する
+Then 1ページ目にリセットされて表示される
+```
+
+- **INVEST**: Independent・Negotiable・Valuable・Estimable・Small・Testable
+- **対応要件**: RES-04
 
 ## ペルソナ・ストーリー マッピング
 
-[`personas.md`](./personas.md) の「ペルソナ・ストーリー マッピング」を参照。
+`personas.md` 参照。本ユニットはロールによるソート挙動の差がないため、ADMIN 補助ペルソナは「既存の is_active 可視範囲がソートと独立して維持されること」の確認観点としてのみ各ストーリーに関与する。

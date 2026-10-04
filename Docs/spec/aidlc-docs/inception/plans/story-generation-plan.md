@@ -1,24 +1,21 @@
-# Story Generation Plan — リソース一覧の検索・フィルタ追加
+# Story Generation Plan — リソース一覧のソート順選択
 
 ## 方針
 
-- **Breakdown Approach**: Feature-Based（`ResourceFilterForm` へのキーワード検索追加という単一機能に対する受入条件ベースのストーリー）を採用する。User Journey-Based や Persona-Based は、ロール間で検索挙動に差がないため過剰と判断
-- **粒度**: `requirements.md` の受入条件 6 件に 1:1 対応する 4 ストーリー（空入力・空白のみ入力の 2 条件は 1 ストーリーに統合）+ 既存ユニットテストの継続 pass は非機能要件として扱いストーリー化しない
-- **ペルソナ**: 単一ペルソナ「BookFlow 認証済みユーザー」を基本とし、ADMIN 固有の挙動（inactive リソースも検索対象に含む）のみ補助ペルソナとして扱う
+- **Breakdown Approach**: Feature-Based（`ResourceFilterForm` へのソート選択追加という単一機能に対する受入条件ベースのストーリー）を採用する。resource-search ユニットと同じ判断基準で、User Journey-Based / Persona-Based は過剰と判断
+- **粒度**: `requirements.md` の受入条件 5 件のうち、ユーザー向け挙動（名称順・定員順・デフォルト・組み合わせ）を 4 ストーリーに対応させる。「バックエンドの既存テストが引き続き pass する」は非機能要件として扱いストーリー化しない
+- **ペルソナ**: resource-search ユニットと同じ 2 ペルソナ構成（単一ペルソナ「BookFlow 認証済みユーザー」＋ ADMIN 補助ペルソナ）を踏襲するが、本ユニットはソート挙動に ADMIN 固有の差がないため、ADMIN 補助ペルソナは「既存の is_active 可視範囲がソートと独立して維持されること」の確認観点としてのみ登場する
 
 ## 実行チェックリスト
 
-- [ ] Step A: `personas.md` を生成する（認証済みユーザー・ADMIN の 2 ペルソナ）
-- [ ] Step B: `stories.md` を生成する（INVEST 準拠、受入条件を Gherkin 風の Given/When/Then で記述）
-- [ ] Step C: ペルソナとストーリーのマッピング表を `stories.md` 末尾に含める
+- [x] Step A: `personas.md` を生成する（認証済みユーザー・ADMIN の 2 ペルソナ。resource-search ユニット版を上書きし、本ユニットの文脈に合わせて書き直す）
+- [x] Step B: `stories.md` を生成する（INVEST 準拠、受入条件を Gherkin 風の Given/When/Then で記述）
+- [x] Step C: ペルソナとストーリーのマッピング表を `stories.md` 末尾に含める
 
-## Clarifying Question（Step 3 対応）
+## Clarifying Questions（Step 3 対応・AskUserQuestion で確認済み）
 
-要件書（`requirements.md`）には「keyword 検索で 0 件になった場合の画面表示」が明記されていない。既存の `page.tsx`（72〜77行目）の空状態メッセージは `hasTimeFilter`（from/to 指定の有無）のみで分岐しており、`hasTimeFilter` が false の場合は一律「リソースがありません。」と表示される。これは keyword 検索で 0 件だった場合にも表示されるが、文言としては「絞り込み条件に一致するリソースがありません」の方が正確であり、`screen-spec.md` の該当箇所の更新が必要になる可能性がある。
-
-BookFlow の運用規約（`.claude/rules/aidlc-questions.md`）に従い、この質問は `AskUserQuestion` ツールで確認する（ファイル方式は採用しない）。
-
-**回答**: 新しい専用文言を追加する。keyword 指定時に 0 件なら「絞り込み条件に一致するリソースがありません。」（仮）を表示するよう `page.tsx` の空状態分岐を拡張し、`screen-spec.md` §`/resources` にも追記する（`/update-spec` スキルで Code Generation 前に反映）。
+1. **ソート選択 UI の構造**: フィールド（名称/定員/登録日時）と方向（昇順/降順）を 1 つの Select に統合する（例: 「名称順（昇順）」〜「登録日時順（デフォルト）」の 5 選択肢）。既存の `category` Select と同じ UI パターンで実装規模が小さいため
+2. **ソート変更時のページネーション**: category/from/to/keyword 変更時と同様、1 ページ目にリセットする（`ResourceFilterForm#handleSubmit` が既に新しい `URLSearchParams` を丸ごと組み立てて `router.push` する実装のため、追加改修なしで自然に実現される）
 
 ## 承認
 

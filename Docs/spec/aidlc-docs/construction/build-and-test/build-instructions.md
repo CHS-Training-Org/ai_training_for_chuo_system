@@ -1,4 +1,4 @@
-# Build Instructions — resource-search
+# Build Instructions — resource-sort
 
 ## 前提
 
