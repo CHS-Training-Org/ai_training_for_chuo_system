@@ -62,6 +62,22 @@ describe("listResourcesAction", () => {
     expect(result.content).toHaveLength(1);
   });
 
+  it("keyword 指定時: クエリパラメータに keyword をそのまま渡す", async () => {
+    // BFF 層（listResourcesAction）が keyword をバックエンドへ転送することを、
+    // 実際に送信された URL のクエリパラメータを捕捉して検証する
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction({ keyword: "会議室" });
+
+    expect(receivedUrl?.searchParams.get("keyword")).toBe("会議室");
+  });
+
   it("keyword 未指定時: クエリパラメータに keyword を含めない", async () => {
     let receivedUrl: URL | undefined;
     server.use(
