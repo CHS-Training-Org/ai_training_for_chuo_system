@@ -5,7 +5,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "../../msw/server";
-import { MOCK_RESOURCE_RESPONSE, MOCK_AVAILABILITY_SLOTS } from "../../msw/handlers";
+import {
+  MOCK_RESOURCE_RESPONSE,
+  MOCK_RESOURCE_LIST_RESPONSE,
+  MOCK_AVAILABILITY_SLOTS,
+} from "../../msw/handlers";
 
 // Next.js サーバー専用モジュールをモック
 vi.mock("next/navigation", () => ({
@@ -52,10 +56,33 @@ describe("listResourcesAction", () => {
     expect(result.content).toHaveLength(1);
   });
 
-  it("正常時: キーワードフィルタパラメータを渡せる", async () => {
-    // MSW がクエリパラメータを受け取っても同じレスポンスを返す（パラメータ検証はBE側）
+  it("正常時: keyword クエリパラメータをバックエンドへ転送する", async () => {
+    let receivedKeyword: string | null = null;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedKeyword = new URL(request.url).searchParams.get("keyword");
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
     const result = await listResourcesAction({ keyword: "会議室" });
+
+    expect(receivedKeyword).toBe("会議室");
     expect(result.content).toHaveLength(1);
+  });
+
+  it("keyword 未指定時: keyword クエリパラメータを送らない", async () => {
+    let hasKeyword = true;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        hasKeyword = new URL(request.url).searchParams.has("keyword");
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction({ category: "ROOM" });
+
+    expect(hasKeyword).toBe(false);
   });
 
   it("401 時: ApiClientError をスローする", async () => {
