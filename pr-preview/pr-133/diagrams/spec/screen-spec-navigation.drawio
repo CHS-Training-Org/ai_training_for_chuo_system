@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="画面遷移図">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- /auth/signin -->
+        <mxCell id="2" value="/auth/signin&#xa;サインイン" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#16A34A;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="220" height="65" as="geometry" />
+        </mxCell>
+        <!-- / ダッシュボード -->
+        <mxCell id="3" value="/&#xa;ダッシュボード" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="150" width="220" height="65" as="geometry" />
+        </mxCell>
+        <!-- /resources リソース一覧 -->
+        <mxCell id="4" value="/resources&#xa;リソース一覧" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="50" y="290" width="210" height="65" as="geometry" />
+        </mxCell>
+        <!-- /reservations マイ予約一覧 -->
+        <mxCell id="5" value="/reservations&#xa;マイ予約一覧" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="290" width="220" height="65" as="geometry" />
+        </mxCell>
+        <!-- /approvals 承認待ち一覧（APPROVER/ADMIN） -->
+        <mxCell id="6" value="/approvals&#xa;承認待ち一覧&#xa;🔒 APPROVER/ADMIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="570" y="290" width="220" height="80" as="geometry" />
+        </mxCell>
+        <!-- /resources/{id} リソース詳細 -->
+        <mxCell id="7" value="/resources/{id}&#xa;リソース詳細" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="50" y="430" width="210" height="65" as="geometry" />
+        </mxCell>
+        <!-- /reservations/{id} 予約詳細 -->
+        <mxCell id="8" value="/reservations/{id}&#xa;予約詳細" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="430" width="220" height="65" as="geometry" />
+        </mxCell>
+        <!-- /admin/resources リソース管理（ADMIN） -->
+        <mxCell id="9" value="/admin/resources&#xa;リソース管理&#xa;🔒 ADMIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="570" y="430" width="220" height="80" as="geometry" />
+        </mxCell>
+        <!-- /reservations/new 予約申請フォーム -->
+        <mxCell id="10" value="/reservations/new&#xa;予約申請フォーム" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="50" y="580" width="210" height="65" as="geometry" />
+        </mxCell>
+        <!-- /admin/users ユーザー管理（ADMIN） -->
+        <mxCell id="11" value="/admin/users&#xa;ユーザー管理&#xa;🔒 ADMIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="570" y="580" width="220" height="80" as="geometry" />
+        </mxCell>
+        <!-- Edges -->
+        <!-- signin → dashboard（認証成功） -->
+        <mxCell id="12" value="認証成功" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;" edge="1" parent="1" source="2" target="3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- dashboard → resourceList -->
+        <mxCell id="13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- dashboard → reservationList -->
+        <mxCell id="14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- dashboard → approvals（APPROVER/ADMIN） -->
+        <mxCell id="15" value="APPROVER/ADMIN" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- dashboard → adminResources（ADMIN） -->
+        <mxCell id="16" value="ADMIN" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="555" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- dashboard → adminUsers（ADMIN） -->
+        <mxCell id="17" value="ADMIN" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="11">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="545" y="215" />
+              <mxPoint x="545" y="620" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- resourceList → resourceDetail -->
+        <mxCell id="18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" edge="1" parent="1" source="4" target="7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- resourceDetail → reservationNew（予約申請） -->
+        <mxCell id="19" value="予約申請" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;" edge="1" parent="1" source="7" target="10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- reservationNew → reservationList（申請完了） -->
+        <mxCell id="20" value="申請完了" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="10" target="5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="612" />
+              <mxPoint x="290" y="355" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- reservationList → reservationDetail -->
+        <mxCell id="21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" edge="1" parent="1" source="5" target="8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

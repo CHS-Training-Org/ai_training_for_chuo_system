@@ -1,0 +1,101 @@
+<mxfile>
+  <diagram name="シーケンス図（リソース一覧・空き確認）">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ライフライン: ブラウザ -->
+        <mxCell id="L1" value="ブラウザ" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#F8FAFC;strokeColor=#334155;fontColor=#1E293B;arcSize=8;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="150" height="1000" as="geometry"/>
+        </mxCell>
+
+        <!-- ライフライン: Next.js Server Actions -->
+        <mxCell id="L2" value="Next.js&#xa;Server Actions" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="40" width="190" height="1000" as="geometry"/>
+        </mxCell>
+
+        <!-- ライフライン: Spring Boot (API) -->
+        <mxCell id="L3" value="Spring Boot&#xa;(API)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#F0FDF4;strokeColor=#334155;fontColor=#1E293B;arcSize=8;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="40" width="170" height="1000" as="geometry"/>
+        </mxCell>
+
+        <!-- ライフライン: PostgreSQL -->
+        <mxCell id="L4" value="PostgreSQL" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#FAF5FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="730" y="40" width="150" height="1000" as="geometry"/>
+        </mxCell>
+
+        <!-- ノートバンド①: リソース一覧取得  y=85, h=35 -->
+        <mxCell id="N1" value="①リソース一覧取得（カテゴリフィルター）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF9C3;strokeColor=#CA8A04;fontColor=#1E293B;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="85" width="840" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- M1: Browser→Next  GET /resources?category=ROOM  y=150 (0.110) -->
+        <mxCell id="M1" value="GET /resources?category=ROOM" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.110;exitDx=0;exitDy=0;entryX=0;entryY=0.110;entryDx=0;entryDy=0;" edge="1" source="L1" target="L2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M2: Next→Spring  GET /api/resources?category=ROOM + Auth  y=220 (0.180) -->
+        <mxCell id="M2" value="GET /api/resources?category=ROOM&#xa;Authorization: Bearer &amp;lt;JWT&amp;gt;" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.180;exitDx=0;exitDy=0;entryX=0;entryY=0.180;entryDx=0;entryDy=0;" edge="1" source="L2" target="L3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M3: Spring→DB  SELECT resources（SQL全文は注 [1]）  y=290 (0.250) -->
+        <mxCell id="M3" value="SELECT resources [1]" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.250;exitDx=0;exitDy=0;entryX=0;entryY=0.250;entryDx=0;entryDy=0;" edge="1" source="L3" target="L4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M4: DB→Spring  Resource[] return (dashed)  y=360 (0.320) -->
+        <mxCell id="M4" value="Resource[]" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#999999;fontColor=#1E293B;fontSize=10;exitX=0;exitY=0.320;exitDx=0;exitDy=0;entryX=1;entryY=0.320;entryDx=0;entryDy=0;" edge="1" source="L4" target="L3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M5: Spring→Next  200 OK PageResponse return (dashed)  y=420 (0.380) -->
+        <mxCell id="M5" value="200 OK PageResponse[ResourceResponse]" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#999999;fontColor=#1E293B;fontSize=10;exitX=0;exitY=0.380;exitDx=0;exitDy=0;entryX=1;entryY=0.380;entryDx=0;entryDy=0;" edge="1" source="L3" target="L2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M6: Next→Browser  リソース一覧 HTML return (dashed)  y=480 (0.440) -->
+        <mxCell id="M6" value="リソース一覧 HTML" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#999999;fontColor=#1E293B;fontSize=10;exitX=0;exitY=0.440;exitDx=0;exitDy=0;entryX=1;entryY=0.440;entryDx=0;entryDy=0;" edge="1" source="L2" target="L1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ノートバンド②: 空き確認  y=530, h=35 -->
+        <mxCell id="N2" value="②空き確認（日時範囲指定）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF9C3;strokeColor=#CA8A04;fontColor=#1E293B;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="530" width="840" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- M7: Browser→Next  GET /resources/{id}  y=600 (0.560) -->
+        <mxCell id="M7" value="GET /resources/{id}" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.560;exitDx=0;exitDy=0;entryX=0;entryY=0.560;entryDx=0;entryDy=0;" edge="1" source="L1" target="L2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M8: Next→Spring  GET /api/resources/{id}/availability?from=...&to=...  y=670 (0.630) -->
+        <mxCell id="M8" value="GET /api/resources/{id}/availability?from=...&amp;amp;to=..." style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.630;exitDx=0;exitDy=0;entryX=0;entryY=0.630;entryDx=0;entryDy=0;" edge="1" source="L2" target="L3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M9: Spring→DB  SELECT reservations（SQL全文は注 [2]）  y=740 (0.700) -->
+        <mxCell id="M9" value="SELECT reservations [2]" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.700;exitDx=0;exitDy=0;entryX=0;entryY=0.700;entryDx=0;entryDy=0;" edge="1" source="L3" target="L4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M10: DB→Spring  OccupiedSlot[] return (dashed)  y=820 (0.780) -->
+        <mxCell id="M10" value="OccupiedSlot[]" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#999999;fontColor=#1E293B;fontSize=10;exitX=0;exitY=0.780;exitDx=0;exitDy=0;entryX=1;entryY=0.780;entryDx=0;entryDy=0;" edge="1" source="L4" target="L3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M11: Spring→Next  200 OK OccupiedSlot[] return (dashed)  y=880 (0.840) -->
+        <mxCell id="M11" value="200 OK OccupiedSlot[]" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#999999;fontColor=#1E293B;fontSize=10;exitX=0;exitY=0.840;exitDx=0;exitDy=0;entryX=1;entryY=0.840;entryDx=0;entryDy=0;" edge="1" source="L3" target="L2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- M12: Next→Browser  予約カレンダー return (dashed)  y=940 (0.900) -->
+        <mxCell id="M12" value="予約カレンダー（占有時間帯を描画）" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#999999;fontColor=#1E293B;fontSize=10;exitX=0;exitY=0.900;exitDx=0;exitDy=0;entryX=1;entryY=0.900;entryDx=0;entryDy=0;" edge="1" source="L2" target="L1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
