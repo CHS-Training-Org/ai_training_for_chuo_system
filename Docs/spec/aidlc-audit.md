@@ -488,3 +488,11 @@ timestamp: 2026-08-29
 **Context**: resource-search ユニット完了後の CI レビュー指摘対応・ラウンド5（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
 
 ---
+
+## STEP-04 正規ブランチへの切り直し（ADR-030 準拠）
+**Timestamp**: 2026-10-05T17:31:30Z
+**User Input**: "/aidlc"（追加会話：ブランチ `feature/CHS-FUJITA-RIKA/22-resource-list-sort-aidlc` 上で起動。Pre-flight 調査の結果、本ブランチは PR #132 マージ前の古い main から切られたローカル専用の未push・無コミットブランチであることが判明。ADR-030（個人トランクブランチ運用）を確認し、STEP-04（AI-DLC あり再実装）のフィーチャーブランチは学習者個人のトランクブランチ `learner/CHS-FUJITA-RIKA/main` から切るべきこと、PR #132 は既にそのトランクブランチへマージ済み（2026-10-05T17:17:45Z）であることを確認。AskUserQuestion でセッション前半の resource-sort 実装の扱いを確認し「cherry-pick して流用」を選択）
+**AI Response**: "ワーキングツリーがクリーンであることを確認したうえで、本ブランチを `git reset --hard origin/learner/CHS-FUJITA-RIKA/main` でマージ後のトランクに付け替え。`feature/CHS-FUJITA-RIKA/22-resource-list-sort` ブランチの resource-sort 実装コミット（`aa8c4d8d`）を `git cherry-pick` で適用。コンフリクト 2 件（`Docs/spec/aidlc-audit.md`：時系列順に並べ替えて解消、`ResourceControllerTest.java`：seed UUID サフィックスの衝突〔0x19/0x1a〕を resource-sort 側を 0x1b〜0x1d に採番し直して解消）を手動解決し cherry-pick 完了。`aidlc-state.md` の前提課題記述を実態（PR #132 マージ済み・トランクブランチ基点に切り直し）に合わせて更新。`./gradlew spotlessApply checkstyleMain test`（158件全成功）・`pnpm lint && pnpm format:check && pnpm test`（96件全成功）を確認。"
+**Context**: Pre-flight 後の例外対応（BookFlow/ADR-030 固有の判断、上流エンジンステージ定義には影響しない）。resource-sort ユニットの CONSTRUCTION フェーズは既に完了済みのため、本セッションでの追加の AI-DLC ステージ実行は不要と判断
+
+---

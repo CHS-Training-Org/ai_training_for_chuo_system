@@ -23,7 +23,7 @@ timestamp: 2026-08-29
 - **Workspace Root**: /workspace
 - **Target Issue**: GitHub Issue #22「リソース一覧のソート順選択」
 - **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/beginner/resource-list-sort.md`
-- **前提課題**: Issue #23（`docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`）が未マージ（PR #132）のため、本ブランチは `main` ではなく `feature/CHS-FUJITA-RIKA/23-resource-search-aidlc` を基点に作成（ユーザー承認済み）。PR #132 マージ後、本ブランチの base を `main` に付け替える必要がある
+- **前提課題**: Issue #23（`docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`）は PR #132 として個人トランクブランチ `learner/CHS-FUJITA-RIKA/main`（ADR-030）へマージ済み（2026-10-05T17:17:45Z）。本ブランチ（`feature/CHS-FUJITA-RIKA/22-resource-list-sort-aidlc`、STEP-04 再実装）はマージ後のトランクブランチを基点に切り直し、resource-sort の実装一式を cherry-pick（`aa8c4d8d`）して引き継いだ
 
 ## Workspace State
 
@@ -76,9 +76,9 @@ timestamp: 2026-08-29
 
 - **Lifecycle Phase**: CONSTRUCTION
 - **Current Stage**: CONSTRUCTION フェーズ完了（Build and Test 承認済み、ユニット: resource-sort）
-- **Next Stage**: Operations（CI 品質ゲート。`/commit-push` → `/create-pr` で PR 作成後に自動実行。base は前提課題ブランチ feature/CHS-FUJITA-RIKA/23-resource-search-aidlc）
+- **Next Stage**: Operations（CI 品質ゲート。`/commit-push` → `/create-pr` で PR 作成後に自動実行。base は個人トランクブランチ `learner/CHS-FUJITA-RIKA/main`、ADR-030 準拠）
 - **Status**: Complete（`/aidlc` ワークフロー本体）
 
 ---
 
-> **過去ユニット（参考・このファイルでは追跡しない）**: Issue #23「リソース検索・フィルタ追加」は本ファイルの前回使用時に CONSTRUCTION フェーズまで完了し PR #132 として提出済み（本ブランチはその成果物を含む）。完全な記録は `Docs/spec/aidlc-audit.md` の該当区間を参照。
+> **過去ユニット（参考・このファイルでは追跡しない）**: Issue #23「リソース検索・フィルタ追加」は PR #132 として `learner/CHS-FUJITA-RIKA/main` へマージ済み。完全な記録は `Docs/spec/aidlc-audit.md` の該当区間を参照。
