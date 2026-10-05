@@ -361,6 +361,25 @@ class ResourceControllerTest extends BaseControllerTest {
 
   @Test
   @WithMockMember
+  void list_keywordWithCategory_matchesWithinCategoryAndExcludesNonMatchAndOtherCategory()
+      throws Exception {
+    // BR-05: findByCategoryAndIsActiveTrueAndKeyword（Page・MEMBER・category あり）。
+    // keyword 条件・category 条件のどちらを外しても失敗するよう、同一カテゴリ内の非一致（ACTIVE_RESOURCE_ID）と
+    // 他カテゴリの一致（KEYWORD_DESC_ID）の両方を除外対象として確認する
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "Keyword")
+                .param("category", "ROOM")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_NAME_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
   void list_keywordMatchingInactiveResource_memberCannotSeeIt() throws Exception {
     // BR-06: keyword が一致してもロール別可視範囲（is_active）は維持される
     mockMvc
@@ -373,17 +392,23 @@ class ResourceControllerTest extends BaseControllerTest {
   @Test
   @WithMockAdmin
   void list_keywordMatchingInactiveResource_adminCanSeeIt() throws Exception {
+    // findByKeyword（Page・ADMIN・category なし）。ACTIVE_RESOURCE_ID は "Keyword" を含まないため、
+    // keyword の絞り込みが外れていれば（ADMIN は is_active を問わず全件返るため）混入してしまう
     mockMvc
         .perform(
             get("/api/resources").param("keyword", "Keyword").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").exists());
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
   }
 
   @Test
   @WithMockMember
   void list_keywordWithTimeRangeOverlappingReservation_excludesOccupiedResource() throws Exception {
-    // BR-05: keyword は from/to 経路（fetchAllCandidates）にも適用される
+    // BR-05: keyword は from/to 経路（fetchAllCandidates）にも適用される。
+    // findByIsActiveTrueAndKeyword（List・MEMBER・category なし）。
+    // ACTIVE_RESOURCE_ID の除外は予約重複（時間帯）が理由であり、keyword 非一致では無い点に注意。
+    // keyword 条件自体の絞り込みは、重複する予約が無く "会議室" を含まない KEYWORD_PERCENT_ID の除外で確認する
     mockMvc
         .perform(
             get("/api/resources")
@@ -393,7 +418,90 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
-        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_NAME_ID + "')]").exists());
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_NAME_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_PERCENT_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_keywordWithCategoryAsAdmin_includesInactiveMatchAndExcludesNonMatchAndOtherCategory()
+      throws Exception {
+    // findByCategoryAndKeyword（Page・ADMIN・category あり）。
+    // KEYWORD_INACTIVE_ID（ROOM・inactive・一致）が ADMIN には見えること、
+    // ACTIVE_RESOURCE_ID（ROOM・非一致）・KEYWORD_DESC_ID（EQUIPMENT・一致）が除外されることを確認する
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "Keyword")
+                .param("category", "ROOM")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_NAME_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_keywordWithTimeRangeAsAdmin_includesInactiveMatchAndExcludesNonMatch()
+      throws Exception {
+    // findByKeyword（List・ADMIN・category なし・from/to 経路）。
+    // 予約と重複しない期間を使い、除外が keyword 非一致によるものであることを明確にする
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "Keyword")
+                .param("from", "2025-07-01T00:00:00")
+                .param("to", "2025-07-01T23:59:59")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_PERCENT_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithCategoryAndTimeRangeAsMember_appliesCategoryKeywordAndRoleConditions()
+      throws Exception {
+    // findByCategoryAndIsActiveTrueAndKeyword（List・MEMBER・category あり・from/to 経路）。
+    // category（KEYWORD_DESC_ID 除外）・keyword（ACTIVE_RESOURCE_ID 除外）・ロール可視範囲
+    // （KEYWORD_INACTIVE_ID 除外）の 3 条件すべてが効いていることを 1 テストで確認する
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "Keyword")
+                .param("category", "ROOM")
+                .param("from", "2025-07-01T00:00:00")
+                .param("to", "2025-07-01T23:59:59")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_NAME_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_keywordWithCategoryAndTimeRangeAsAdmin_includesInactiveMatchWithinCategory()
+      throws Exception {
+    // findByCategoryAndKeyword（List・ADMIN・category あり・from/to 経路）。
+    // ADMIN は category・keyword 条件を満たせば inactive（KEYWORD_INACTIVE_ID）も含む
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "Keyword")
+                .param("category", "ROOM")
+                .param("from", "2025-07-01T00:00:00")
+                .param("to", "2025-07-01T23:59:59")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_NAME_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_ID + "')]").doesNotExist());
   }
 
   @Test
