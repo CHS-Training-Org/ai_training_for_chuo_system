@@ -201,7 +201,7 @@ class ResourceServiceTest {
       when(resourceRepository.findByIsActiveTrue(pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
@@ -212,7 +212,7 @@ class ResourceServiceTest {
       when(resourceRepository.findAll(pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, true, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, true, pageable);
 
       assertThat(result.getContent()).hasSize(2);
     }
@@ -235,7 +235,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, null, false, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }
@@ -254,7 +254,94 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, null, false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    // ---------------------------------------------------------------------------
+    // keyword 検索
+    // ---------------------------------------------------------------------------
+
+    @Test
+    void list_blankKeyword_treatedAsNoKeywordFilter() {
+      // BR-02: 空白のみの keyword は未入力として扱い、既存の派生クエリ経路を使う
+      when(resourceRepository.findByIsActiveTrue(pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, "   ", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithKeyword_callsKeywordRepositoryMethod() {
+      when(resourceRepository.findByIsActiveTrueAndKeyword("meeting", pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, "meeting", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_adminWithCategoryAndKeyword_callsCategoryKeywordRepositoryMethod() {
+      // BR-05: category と keyword は AND 合成される
+      when(resourceRepository.findByCategoryAndKeyword(ResourceCategory.ROOM, "room", pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(ResourceCategory.ROOM, null, null, "room", true, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_keywordWithWildcardCharacters_escapesBeforeDelegatingToRepository() {
+      // BR-04: "!" を先にエスケープしてから "%"/"_" をエスケープする（二重エスケープ回避）
+      when(resourceRepository.findByIsActiveTrueAndKeyword("50!%off!_now!!", pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, "50%off_now!", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithTimeFilterAndWildcardKeyword_escapesBeforeDelegatingToRepository() {
+      // BR-04: from/to 経路（fetchAllCandidates）でも escapeLikeKeyword が適用されることを検証する
+      // （ResourceService.java の listWithAvailabilityFilter は Pageable を渡さない List 版
+      // repository メソッドを呼ぶため、Page 版とは別経路でエスケープを確認する必要がある）
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.findByIsActiveTrueAndKeyword("50!%off!_now!!"))
+          .thenReturn(java.util.List.of(activeResource));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, from, to, "50%off_now!", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithTimeFilterAndKeyword_appliesKeywordBeforeAvailabilityCheck() {
+      // BR-05: keyword は from/to 経路（fetchAllCandidates）にも適用される
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.findByIsActiveTrueAndKeyword("meeting"))
+          .thenReturn(java.util.List.of(activeResource));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, from, to, "meeting", false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
     }

@@ -56,4 +56,62 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
   List<Resource> findByCategory(ResourceCategory category);
+
+  // ---- keyword 検索用（大文字小文字非依存の部分一致、ESCAPE '!'） ----
+
+  /**
+   * keyword 検索条件（{@code name} または {@code description} への大文字小文字非依存部分一致）の共通 JPQL 断片。
+   *
+   * <p>{@code keyword} は呼び出し元（{@link com.example.bookflow.application.ResourceService}）で
+   * trim・{@code !}/{@code %}/{@code _} のエスケープ済みであることを前提とする。ESCAPE 文字に {@code \} ではなく {@code !}
+   * を使うのは、Java 文字列リテラルと JPQL の二重エスケープを避けるため。
+   */
+  String KEYWORD_MATCH =
+      "(LOWER(r.name) LIKE LOWER(CONCAT(CONCAT('%', :keyword), '%')) ESCAPE '!' "
+          + "OR (r.description IS NOT NULL "
+          + "AND LOWER(r.description) LIKE LOWER(CONCAT(CONCAT('%', :keyword), '%')) ESCAPE '!'))";
+
+  /** 有効リソースを keyword で絞り込んでページネーションで返す（非 ADMIN・category 未指定）。 */
+  @Query("SELECT r FROM Resource r WHERE r.isActive = true AND " + KEYWORD_MATCH)
+  Page<Resource> findByIsActiveTrueAndKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+  /** 有効リソースを keyword で絞り込んで全件返す（非 ADMIN・category 未指定・from/to フィルタ用）。 */
+  @Query("SELECT r FROM Resource r WHERE r.isActive = true AND " + KEYWORD_MATCH)
+  List<Resource> findByIsActiveTrueAndKeyword(@Param("keyword") String keyword);
+
+  /** 有効リソースをカテゴリ・keyword で絞り込んでページネーションで返す（非 ADMIN）。 */
+  @Query(
+      "SELECT r FROM Resource r WHERE r.category = :category AND r.isActive = true AND "
+          + KEYWORD_MATCH)
+  Page<Resource> findByCategoryAndIsActiveTrueAndKeyword(
+      @Param("category") ResourceCategory category,
+      @Param("keyword") String keyword,
+      Pageable pageable);
+
+  /** 有効リソースをカテゴリ・keyword で絞り込んで全件返す（非 ADMIN・from/to フィルタ用）。 */
+  @Query(
+      "SELECT r FROM Resource r WHERE r.category = :category AND r.isActive = true AND "
+          + KEYWORD_MATCH)
+  List<Resource> findByCategoryAndIsActiveTrueAndKeyword(
+      @Param("category") ResourceCategory category, @Param("keyword") String keyword);
+
+  /** リソースを keyword で絞り込んでページネーションで返す（ADMIN・inactive 含む・category 未指定）。 */
+  @Query("SELECT r FROM Resource r WHERE " + KEYWORD_MATCH)
+  Page<Resource> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+  /** リソースを keyword で絞り込んで全件返す（ADMIN・inactive 含む・category 未指定・from/to フィルタ用）。 */
+  @Query("SELECT r FROM Resource r WHERE " + KEYWORD_MATCH)
+  List<Resource> findByKeyword(@Param("keyword") String keyword);
+
+  /** リソースをカテゴリ・keyword で絞り込んでページネーションで返す（ADMIN・inactive 含む）。 */
+  @Query("SELECT r FROM Resource r WHERE r.category = :category AND " + KEYWORD_MATCH)
+  Page<Resource> findByCategoryAndKeyword(
+      @Param("category") ResourceCategory category,
+      @Param("keyword") String keyword,
+      Pageable pageable);
+
+  /** リソースをカテゴリ・keyword で絞り込んで全件返す（ADMIN・inactive 含む・from/to フィルタ用）。 */
+  @Query("SELECT r FROM Resource r WHERE r.category = :category AND " + KEYWORD_MATCH)
+  List<Resource> findByCategoryAndKeyword(
+      @Param("category") ResourceCategory category, @Param("keyword") String keyword);
 }
