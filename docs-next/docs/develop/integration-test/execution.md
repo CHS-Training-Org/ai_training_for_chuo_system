@@ -17,7 +17,7 @@ references:
   - ../playwright-guide.md
   - ../../operations/playwright-adoption.md
   - ../../reference/adr/ADR-032-integration-test-tutorial-adoption.md
-  - ../../reference/adr/ADR-033-e2e-workflow-mechanism.md
+  - ../../reference/adr/ADR-034-e2e-workflow-mechanism.md
 ---
 
 # テストを実行する
