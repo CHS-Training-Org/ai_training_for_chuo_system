@@ -9,7 +9,7 @@ tags:
 audience: 学習者
 references:
   - ../learn/getting-started.md
-last_updated: '2026-09-03T00:00:00+09:00'
+last_updated: '2026-09-11T00:00:00+09:00'
 ---
 
 # トラブルシューティング
@@ -68,6 +68,23 @@ last_updated: '2026-09-03T00:00:00+09:00'
     2. トレイアイコン → **Preferences → WSL → Integrations** で **Ubuntu** を ON にして **Apply**
     3. PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直す
     4. WSL2 ターミナルで `docker info` がエラーなく返れば OK。手順の詳細は [README「Windows ユーザー向け: WSL2 セットアップ」](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/README.md)を参照
+
+### （Windows）Rancher Desktop の Integrations に Ubuntu が出てこない {#wsl-account-mismatch}
+
+- **症状**: Rancher Desktop の **Preferences → WSL → Integrations** に `Ubuntu` が現れず、統合を有効化できない。昇格していない PowerShell で `wsl -l -v` を実行すると `rancher-desktop` と `rancher-desktop-data` だけが表示され、管理者で実行した PowerShell では `Ubuntu` が表示される。
+- **原因**: WSL のディストロは Windows のユーザーアカウントごとに登録されるため、別のアカウントで入れた `Ubuntu` は見えない。管理者権限が別アカウントとして配られている PC で「管理者として実行」した PowerShell から `wsl --install` すると、この状態になる。Rancher Desktop は普段使いのアカウントで動くので、統合先の候補に `Ubuntu` が出てこない。
+- **切り分け**: 昇格した PowerShell と通常の PowerShell でそれぞれ `whoami` を実行し、出力を見比べる。同じアカウントの昇格であれば出力は一致する。違っていれば別アカウントで動いている。
+- **解決策**: 普段使いのアカウント（昇格していない PowerShell）で `wsl --install -d Ubuntu` を実行し直す。新しく登録された `Ubuntu` は別のディストロなので中身は空で、管理者アカウント側で行った git のインストールや clone は引き継がれない。新しい `Ubuntu` に対して統合を有効化し直す必要があるため、[環境構築・起動手順](../learn/getting-started.md)の Windows 向け手順 5 以降をやり直すこと。VS Code も普段使いのアカウントに入っている必要があるため、昇格していない PowerShell で `code --version` がバージョンを返すことを併せて確認する。
+
+:::note[管理者アカウント側に残った Ubuntu]
+ディスクを消費するだけで開発の妨げにはならないため、そのままにしておいてよい。`wsl --unregister` はディストロのディスクイメージを削除する非可逆操作なので、容量を空ける必要が出るまで実行しない。
+:::
+
+### （Windows）winget でのインストールがすべて失敗する {#winget-fails}
+
+- **症状**: `winget install` が、対象パッケージを問わずエラーになる。
+- **切り分け**: 昇格していない PowerShell で `winget --version` と `winget source list` を実行する。
+- **原因と解決策**: 昇格していない PowerShell では動く場合、winget（App Installer）がユーザー単位で導入される仕組みのため、別アカウントで昇格した PowerShell からは使えない状態になっている。上の項目と同じ原因なので、インストールは昇格していない PowerShell で行う。昇格していない PowerShell でもネットワークや証明書のエラーになる場合は別の原因で、社内プロキシやグループポリシーによる制限が考えられる。エラーメッセージの全文を添えて運営者に相談すること。
 
 ### （Windows）Rancher Desktop の Container Engine 設定が原因で起動に失敗する
 
