@@ -274,3 +274,11 @@ timestamp: 2026-08-29
 **Context**: resource-search ユニット完了後の CI レビュー指摘対応・ラウンド3（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
 
 ---
+
+## PR #132 レビュー指摘対応（CI AI レビュー・観点2・ラウンド4 NG）
+**Timestamp**: 2026-10-05T15:22:31Z
+**User Input**: 「観点2 ラウンド4 NGです。残件は次の2件です。1. ResourceControllerTest :401 に KEYWORD_DESC_ID が含まれることの確認を追加し、説明文側の keyword LOWER を検証したい。2. 説明文側の ESCAPE を検証するため、名前には A_C を含まず、説明文だけに A_C を含む seed を追加し、検索テストを追加したい。レビュー指摘に対応してください。」
+**AI Response**: "1. `list_keywordMatchingInactiveResource_memberCannotSeeIt`（旧:401、findByIsActiveTrueAndKeyword・Page・MEMBER）に KEYWORD_DESC_ID の exists アサーションを追加。2. description 側の \"_\" エスケープ専用 seed（KEYWORD_DESC_UNDERSCORE_ID: description=\"仕様コードA_Cに対応\"・KEYWORD_DESC_UNDERSCORE_DECOY_ID: description=\"仕様コードABCに対応\"、いずれも name には A_C/ABC を含まない）を追加し、新規テスト（keyword=\"A_C\" で前者のみ一致）を追加。検証のため ResourceRepository.java の description 比較から ESCAPE 句を一時的に除去→新規テストのみ red になることを確認、さらに LOWER() を除去するケースでも確認（この場合は round 3 で追加した専用テストのみ red になり、今回強化した :401 テストは "Keyword" という入力自体が元の大文字小文字と一致するため red にならないことも確認。既存の role-visibility テストとしての正当性は保たれている）。いずれも確認後に元へ復元（git diff なしを確認）。`./gradlew spotlessApply checkstyleMain test`（144件全成功）を確認。"
+**Context**: resource-search ユニット完了後の CI レビュー指摘対応・ラウンド4（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
+
+---

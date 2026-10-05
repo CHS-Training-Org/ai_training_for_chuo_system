@@ -52,6 +52,10 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000017");
   private static final UUID KEYWORD_UNDERSCORE_DECOY_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000018");
+  private static final UUID KEYWORD_DESC_UNDERSCORE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000019");
+  private static final UUID KEYWORD_DESC_UNDERSCORE_DECOY_ID =
+      UUID.fromString("10000000-0000-0000-0000-00000000001a");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -164,6 +168,29 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         true,
         LocalDateTime.of(2025, 4, 1, 9, 0));
+    // description 側の "_" エスケープ検証用（name には A_C/ABC いずれも含まない）
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        KEYWORD_DESC_UNDERSCORE_ID,
+        "説明文検索専用備品X",
+        "EQUIPMENT",
+        false,
+        true,
+        "仕様コードA_Cに対応",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        KEYWORD_DESC_UNDERSCORE_DECOY_ID,
+        "説明文検索専用備品Y",
+        "EQUIPMENT",
+        false,
+        true,
+        "仕様コードABCに対応",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
     jdbcTemplate.update(
         "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
             + " VALUES (?, ?, ?, ?, ?, ?)",
@@ -201,6 +228,8 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_PERCENT_DECOY_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_UNDERSCORE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_UNDERSCORE_DECOY_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_DESC_UNDERSCORE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_DESC_UNDERSCORE_DECOY_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_INACTIVE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
@@ -359,6 +388,22 @@ class ResourceControllerTest extends BaseControllerTest {
 
   @Test
   @WithMockMember
+  void list_keywordWithUnderscoreCharacterOnDescription_matchesLiteralUnderscoreNotWildcard()
+      throws Exception {
+    // BR-04: "_" のリテラル扱いを description 側でも検証する。
+    // KEYWORD_DESC_UNDERSCORE_ID/DECOY はいずれも name に "A_C"/"ABC" を含まないため、
+    // 一致は description 側のエスケープ処理によるものだと特定できる
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "A_C").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_UNDERSCORE_ID + "')]").exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_UNDERSCORE_DECOY_ID + "')]")
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
   void list_keywordWithCategory_appliesAndCondition() throws Exception {
     // BR-05: category と keyword は AND 合成される。KEYWORD_PERCENT_ID/DECOY は EQUIPMENT のため
     // category=ROOM では一致しても結果に含まれない
@@ -399,12 +444,16 @@ class ResourceControllerTest extends BaseControllerTest {
   @Test
   @WithMockMember
   void list_keywordMatchingInactiveResource_memberCannotSeeIt() throws Exception {
-    // BR-06: keyword が一致してもロール別可視範囲（is_active）は維持される
+    // BR-06: keyword が一致してもロール別可視範囲（is_active）は維持される。
+    // あわせて KEYWORD_DESC_ID（description の "Keyword" に一致）が含まれることを確認し、
+    // このクエリ（findByIsActiveTrueAndKeyword・Page・MEMBER）でも description 側の
+    // LOWER() による大文字小文字非依存一致が効いていることを合わせて検証する
     mockMvc
         .perform(
             get("/api/resources").param("keyword", "Keyword").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").doesNotExist());
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").doesNotExist())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_ID + "')]").exists());
   }
 
   @Test
