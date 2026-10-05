@@ -258,3 +258,11 @@ timestamp: 2026-08-29
 **Context**: resource-search ユニット完了後の CI レビュー指摘対応（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
 
 ---
+
+## PR #132 レビュー指摘対応（CI AI レビュー・観点2・ラウンド2 NG）
+**Timestamp**: 2026-10-05T14:03:22Z
+**User Input**: 「PR #132 の AIレビュー（観点2 ラウンド2）で以下の指摘を受けました。- ResourceControllerTest の keyword検索パターン不足 - ResourceFilterForm.tsx の trim と keyword付与のテスト不足 - page.tsx の hasKeyword と 0件メッセージ分岐のテスト不足 レビュー指摘に対応する実装・テストコードを作成してください。」（CI コメントのスクリーンショット添付。NG根拠1：keyword 用 JPQL 8メソッドのうち絞り込みまで検証されているのは1本のみで、3本は keyword 条件を外しても pass してしまう「弱いテスト」、残り4本は未検証。NG根拠2：ResourceFilterForm.tsx（trim・keyword付与）・page.tsx（hasKeyword・0件メッセージ3分岐）に対応するテストが皆無）
+**AI Response**: "Backend: `ResourceControllerTest` の既存3テスト（findByCategoryAndIsActiveTrueAndKeyword・findByKeyword・findByIsActiveTrueAndKeyword(List)）に、keyword 条件を外すと失敗する否定アサーション（同一カテゴリ内の非一致・同一キーワード一致の他カテゴリ等）を追加して補強。未検証だった残り4メソッド（findByCategoryAndKeyword の Page/List、findByKeyword の List、findByCategoryAndIsActiveTrueAndKeyword の List）に新規テストを追加し、keyword 用 JPQL 8メソッド全てを検証対象にした。`ResourceService#normalizeKeyword` を一時的に無条件 null 化して11テスト全てが red になること（修正前は3テストのみ green のまま通ってしまっていたことを確認済み）を確認したうえで元に戻し、再度 green になることを確認。Frontend: page.tsx の 0件メッセージ分岐ロジックを `resources/empty-state.ts`（`resolveEmptyResourceMessage`）に純関数として切り出し（page.tsx を直接 import すると getProfileAction 経由で Better Auth 初期化が副作用として走り unhandled rejection になるため、別モジュールに分離）、6パターンのユニットテストを追加。`ResourceFilterForm` は \"use client\" コンポーネントで jsdom 上でレンダリング可能なため、PaginationNav の purefunction抽出パターンとは異なり React Testing Library + user-event で実際にフォーム入力・送信を行うコンポーネントテストを作成（trim・keyword付与・空白のみ/未入力時の非付与・defaultKeyword反映・リセット、計5件）。keyword 転送行を一時的にコメントアウトしてコンポーネントテストが red になることを確認したうえで元に戻した。`./gradlew spotlessApply checkstyleMain test`（142件全成功）・`pnpm lint && pnpm format:check && pnpm test && pnpm build`（94件全成功、ビルド成功）を確認。"
+**Context**: resource-search ユニット完了後の CI レビュー指摘対応・ラウンド2（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
+
+---

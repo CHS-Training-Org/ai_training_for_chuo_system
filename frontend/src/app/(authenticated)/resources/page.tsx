@@ -5,6 +5,7 @@ import { getProfileAction } from "@/server/actions/auth";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResourceFilterForm } from "./ResourceFilterForm";
+import { resolveEmptyResourceMessage } from "./empty-state";
 import { PaginationNav } from "@/components/ui/pagination-nav";
 import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
@@ -40,7 +41,6 @@ export default async function ResourcesPage({
   });
 
   const hasTimeFilter = Boolean(params.from && params.to);
-  const hasKeyword = Boolean(params.keyword?.trim());
 
   return (
     <div className="space-y-6">
@@ -74,13 +74,7 @@ export default async function ResourcesPage({
       {/* リソースカードリスト */}
       <Suspense fallback={<p className="text-muted-foreground">読み込み中...</p>}>
         {resources.content.length === 0 ? (
-          <p className="text-muted-foreground">
-            {hasKeyword
-              ? "絞り込み条件に一致するリソースがありません。"
-              : hasTimeFilter
-                ? "指定した時間帯に空きのあるリソースがありません。"
-                : "リソースがありません。"}
-          </p>
+          <p className="text-muted-foreground">{resolveEmptyResourceMessage(params)}</p>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {resources.content.map((resource) => (
