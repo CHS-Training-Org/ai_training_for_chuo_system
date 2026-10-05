@@ -56,10 +56,13 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000019");
   private static final UUID KEYWORD_DESC_UNDERSCORE_DECOY_ID =
       UUID.fromString("10000000-0000-0000-0000-00000000001a");
-  // ソート順選択専用の seed（VEHICLE カテゴリで他 seed と分離。Issue #22）
-  private static final UUID SORT_A_ID = UUID.fromString("10000000-0000-0000-0000-00000000001b");
-  private static final UUID SORT_B_ID = UUID.fromString("10000000-0000-0000-0000-00000000001c");
-  private static final UUID SORT_C_ID = UUID.fromString("10000000-0000-0000-0000-00000000001d");
+  // ソート順選択専用の seed（VEHICLE カテゴリで他 seed と分離。Issue #22）。
+  // UUID の字句順・INSERT 順を name 順（Alpha<Bravo<Charlie）・createdAt 順とあえて
+  // 食い違わせてある（「sort 未指定時のデフォルト」テストが、ORDER BY 指定なしでも
+  // たまたま同じ順序になってしまうことで偽陽性にならないようにするため）。
+  private static final UUID SORT_A_ID = UUID.fromString("10000000-0000-0000-0000-00000000001d");
+  private static final UUID SORT_B_ID = UUID.fromString("10000000-0000-0000-0000-00000000001b");
+  private static final UUID SORT_C_ID = UUID.fromString("10000000-0000-0000-0000-00000000001c");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -205,7 +208,18 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
 
-    // ソート順選択専用の seed（VEHICLE カテゴリで他 seed から分離）
+    // ソート順選択専用の seed（VEHICLE カテゴリで他 seed から分離）。
+    // INSERT 順（Charlie → Alpha → Bravo）を name 順・createdAt 順とあえて食い違わせてある。
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, capacity, requires_approval, is_active,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        SORT_C_ID,
+        "Charlie Van",
+        "VEHICLE",
+        5,
+        false,
+        true,
+        LocalDateTime.of(2025, 3, 1, 0, 0));
     jdbcTemplate.update(
         "INSERT INTO resources (id, name, category, capacity, requires_approval, is_active,"
             + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -226,16 +240,6 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         true,
         LocalDateTime.of(2025, 2, 1, 0, 0));
-    jdbcTemplate.update(
-        "INSERT INTO resources (id, name, category, capacity, requires_approval, is_active,"
-            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        SORT_C_ID,
-        "Charlie Van",
-        "VEHICLE",
-        5,
-        false,
-        true,
-        LocalDateTime.of(2025, 3, 1, 0, 0));
 
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(

@@ -496,3 +496,11 @@ timestamp: 2026-08-29
 **Context**: Pre-flight 後の例外対応（BookFlow/ADR-030 固有の判断、上流エンジンステージ定義には影響しない）。resource-sort ユニットの CONSTRUCTION フェーズは既に完了済みのため、本セッションでの追加の AI-DLC ステージ実行は不要と判断
 
 ---
+
+## PR #134 レビュー指摘対応（CI AI レビュー・観点2・ラウンド1 NG）
+**Timestamp**: 2026-10-05T22:52:41Z
+**User Input**: 「AIレビュー / 観点2 実装と非機能部分の整合性 / ラウンド1でNGになりました。対応方法を教えてください。」（CI コメントのスクリーンショット添付。NG根拠1：`frontend/src/server/actions/resources.ts:45` の sort 転送ロジックについて、既存テスト2本（`resources.test.ts:95`「正常時: sortパラメータを渡せる」・`:101`「sort未指定時」）はいずれも該当行を削除しても pass してしまう＝sort がバックエンドに届かない不具合を検出できない状態だった。NG根拠2：`ResourceFilterForm.tsx:60`（デフォルト値除外の分岐）に対応するテストが差分に無い。補足：`ResourceControllerTest.java:696` のデフォルトソートテストは seed の登録日時・UUID・INSERT順序が偶然一致しており、`sort` パラメータ自体を外しても誤って pass する可能性がある）"
+**AI Response**: "NG根拠1: `resources.test.ts` の該当テストを、実際に送信される URL の `searchParams` を捕捉して `sort` の値そのものを検証する形に書き換え（keyword 転送テストと同じパターン）。NG根拠2: `resource-filter-form.test.tsx` に、並び順未選択（デフォルト）時は `sort` を付与しないテストと、`defaultSort` 指定時は `sort` として付与するテストを追加（React Testing Library でフォーム送信を実際に行い検証）。補足指摘も次ラウンドでの手戻りを避けるため本ラウンドで先回り対応：`ResourceControllerTest` の SORT_A/B/C の seed UUID サフィックスと INSERT 順序を、name 順・createdAt 順とあえて食い違わせるよう再構成（UUID: 1b→Bravo・1c→Charlie・1d→Alpha、INSERT順: Charlie→Alpha→Bravo）。3箇所すべてについて、対象コードを一時的に無効化して追加・修正したテストのみが red になることを確認したうえで元に戻した（git diff なしを確認）。`./gradlew spotlessApply checkstyleMain test`（158件全成功）・`pnpm lint && pnpm format:check && pnpm test`（98件全成功）を確認。"
+**Context**: resource-sort ユニット完了後の CI レビュー指摘対応（`/aidlc` エンジンのステージ外、PR #134 への追加コミットとして対応）
+
+---

@@ -92,10 +92,20 @@ describe("listResourcesAction", () => {
     expect(receivedUrl?.searchParams.has("keyword")).toBe(false);
   });
 
-  it("正常時: sort パラメータを渡せる", async () => {
-    // MSW がクエリパラメータを受け取っても同じレスポンスを返す（パラメータ検証はBE側）
-    const result = await listResourcesAction({ sort: "name,asc" });
-    expect(result.content).toHaveLength(1);
+  it("sort 指定時: クエリパラメータに sort をそのまま渡す", async () => {
+    // BFF 層（listResourcesAction）が sort をバックエンドへ転送することを、
+    // 実際に送信された URL のクエリパラメータを捕捉して検証する
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction({ sort: "name,asc" });
+
+    expect(receivedUrl?.searchParams.get("sort")).toBe("name,asc");
   });
 
   it("sort 未指定時: クエリパラメータに sort を含めない", async () => {
