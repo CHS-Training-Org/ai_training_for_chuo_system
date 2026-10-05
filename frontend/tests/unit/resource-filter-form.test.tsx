@@ -73,4 +73,28 @@ describe("ResourceFilterForm", () => {
 
     expect(pushMock).toHaveBeenCalledWith("/resources");
   });
+
+  it("並び順が未選択（デフォルト）のまま送信すると、sort パラメータを付与しない", async () => {
+    // RES-03: 「登録日時順（デフォルト）」選択時は sort を URL に付けない
+    const user = userEvent.setup();
+    render(<ResourceFilterForm />);
+
+    await user.click(screen.getByRole("button", { name: "絞り込む" }));
+
+    expect(pushMock).toHaveBeenCalledTimes(1);
+    const pushedUrl = new URL(pushMock.mock.calls[0][0], "http://localhost");
+    expect(pushedUrl.searchParams.has("sort")).toBe(false);
+  });
+
+  it("defaultSort が指定されている場合、送信時に sort パラメータとして付与する", async () => {
+    // RES-03: デフォルト以外の選択値は sort として付与する
+    const user = userEvent.setup();
+    render(<ResourceFilterForm defaultSort="name,asc" />);
+
+    await user.click(screen.getByRole("button", { name: "絞り込む" }));
+
+    expect(pushMock).toHaveBeenCalledTimes(1);
+    const pushedUrl = new URL(pushMock.mock.calls[0][0], "http://localhost");
+    expect(pushedUrl.searchParams.get("sort")).toBe("name,asc");
+  });
 });

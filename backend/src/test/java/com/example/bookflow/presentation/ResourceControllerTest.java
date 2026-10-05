@@ -56,6 +56,13 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000019");
   private static final UUID KEYWORD_DESC_UNDERSCORE_DECOY_ID =
       UUID.fromString("10000000-0000-0000-0000-00000000001a");
+  // ソート順選択専用の seed（VEHICLE カテゴリで他 seed と分離。Issue #22）。
+  // UUID の字句順・INSERT 順を name 順（Alpha<Bravo<Charlie）・createdAt 順とあえて
+  // 食い違わせてある（「sort 未指定時のデフォルト」テストが、ORDER BY 指定なしでも
+  // たまたま同じ順序になってしまうことで偽陽性にならないようにするため）。
+  private static final UUID SORT_A_ID = UUID.fromString("10000000-0000-0000-0000-00000000001d");
+  private static final UUID SORT_B_ID = UUID.fromString("10000000-0000-0000-0000-00000000001b");
+  private static final UUID SORT_C_ID = UUID.fromString("10000000-0000-0000-0000-00000000001c");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -201,6 +208,39 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
 
+    // ソート順選択専用の seed（VEHICLE カテゴリで他 seed から分離）。
+    // INSERT 順（Charlie → Alpha → Bravo）を name 順・createdAt 順とあえて食い違わせてある。
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, capacity, requires_approval, is_active,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        SORT_C_ID,
+        "Charlie Van",
+        "VEHICLE",
+        5,
+        false,
+        true,
+        LocalDateTime.of(2025, 3, 1, 0, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, capacity, requires_approval, is_active,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        SORT_A_ID,
+        "Alpha Van",
+        "VEHICLE",
+        10,
+        false,
+        true,
+        LocalDateTime.of(2025, 1, 1, 0, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, capacity, requires_approval, is_active,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        SORT_B_ID,
+        "Bravo Van",
+        "VEHICLE",
+        null,
+        false,
+        true,
+        LocalDateTime.of(2025, 2, 1, 0, 0));
+
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(
         "INSERT INTO reservations"
@@ -231,6 +271,9 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_DESC_UNDERSCORE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_DESC_UNDERSCORE_DECOY_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_INACTIVE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", SORT_A_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", SORT_B_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", SORT_C_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -583,6 +626,133 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
         .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /api/resources?sort=... — ソート順選択（BR-01〜BR-07、Issue #22）
+  // ---------------------------------------------------------------------------
+
+  @Test
+  @WithMockMember
+  void list_sortByNameAscending_ordersResultsByNameAscending() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "VEHICLE")
+                .param("sort", "name,asc")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(3))
+        .andExpect(jsonPath("$.content[0].id").value(SORT_A_ID.toString()))
+        .andExpect(jsonPath("$.content[1].id").value(SORT_B_ID.toString()))
+        .andExpect(jsonPath("$.content[2].id").value(SORT_C_ID.toString()));
+  }
+
+  @Test
+  @WithMockMember
+  void list_sortByNameDescending_ordersResultsByNameDescending() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "VEHICLE")
+                .param("sort", "name,desc")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(SORT_C_ID.toString()))
+        .andExpect(jsonPath("$.content[1].id").value(SORT_B_ID.toString()))
+        .andExpect(jsonPath("$.content[2].id").value(SORT_A_ID.toString()));
+  }
+
+  @Test
+  @WithMockMember
+  void list_sortByCapacityAscending_placesNullCapacityLast() throws Exception {
+    // BR-04: capacity 昇順でも NULL（SORT_B_ID）は末尾
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "VEHICLE")
+                .param("sort", "capacity,asc")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(SORT_C_ID.toString())) // capacity=5
+        .andExpect(jsonPath("$.content[1].id").value(SORT_A_ID.toString())) // capacity=10
+        .andExpect(jsonPath("$.content[2].id").value(SORT_B_ID.toString())); // capacity=NULL
+  }
+
+  @Test
+  @WithMockMember
+  void list_sortByCapacityDescending_placesNullCapacityLast() throws Exception {
+    // BR-04: capacity 降順でも NULL（SORT_B_ID）は常に末尾（方向に関わらず末尾を保証）
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "VEHICLE")
+                .param("sort", "capacity,desc")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(SORT_A_ID.toString())) // capacity=10
+        .andExpect(jsonPath("$.content[1].id").value(SORT_C_ID.toString())) // capacity=5
+        .andExpect(jsonPath("$.content[2].id").value(SORT_B_ID.toString())); // capacity=NULL
+  }
+
+  @Test
+  @WithMockMember
+  void list_sortUnspecified_defaultsToCreatedAtAscending() throws Exception {
+    // RES-02: sort 未指定時は createdAt,asc がデフォルト
+    mockMvc
+        .perform(
+            get("/api/resources").param("category", "VEHICLE").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(SORT_A_ID.toString())) // 2025-01-01
+        .andExpect(jsonPath("$.content[1].id").value(SORT_B_ID.toString())) // 2025-02-01
+        .andExpect(jsonPath("$.content[2].id").value(SORT_C_ID.toString())); // 2025-03-01
+  }
+
+  @Test
+  @WithMockMember
+  void list_sortWithDisallowedField_returns400ValidationError() throws Exception {
+    // RES-06/BR-01: 許可されていないフィールド名は 400
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("sort", "description,asc")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_sortCombinedWithKeyword_appliesSortToFilteredResults() throws Exception {
+    // BR-03: keyword で絞り込んだ結果に対して sort が適用される
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "Van")
+                .param("sort", "name,desc")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(SORT_C_ID.toString()))
+        .andExpect(jsonPath("$.content[1].id").value(SORT_B_ID.toString()))
+        .andExpect(jsonPath("$.content[2].id").value(SORT_A_ID.toString()));
+  }
+
+  @Test
+  @WithMockMember
+  void list_sortCombinedWithTimeRange_appliesSortViaAvailabilityPath() throws Exception {
+    // BR-06: listWithAvailabilityFilter（手動ページネーション）経路でも sort が適用される
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "VEHICLE")
+                .param("from", "2025-06-02T00:00:00")
+                .param("to", "2025-06-02T23:59:59")
+                .param("sort", "name,desc")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(SORT_C_ID.toString()))
+        .andExpect(jsonPath("$.content[1].id").value(SORT_B_ID.toString()))
+        .andExpect(jsonPath("$.content[2].id").value(SORT_A_ID.toString()));
   }
 
   // ---------------------------------------------------------------------------

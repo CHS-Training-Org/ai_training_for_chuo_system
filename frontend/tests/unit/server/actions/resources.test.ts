@@ -92,6 +92,36 @@ describe("listResourcesAction", () => {
     expect(receivedUrl?.searchParams.has("keyword")).toBe(false);
   });
 
+  it("sort 指定時: クエリパラメータに sort をそのまま渡す", async () => {
+    // BFF 層（listResourcesAction）が sort をバックエンドへ転送することを、
+    // 実際に送信された URL のクエリパラメータを捕捉して検証する
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction({ sort: "name,asc" });
+
+    expect(receivedUrl?.searchParams.get("sort")).toBe("name,asc");
+  });
+
+  it("sort 未指定時: クエリパラメータに sort を含めない", async () => {
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction();
+
+    expect(receivedUrl?.searchParams.has("sort")).toBe(false);
+  });
+
   it("401 時: ApiClientError をスローする", async () => {
     server.use(
       http.get("/api/backend/resources", () => {

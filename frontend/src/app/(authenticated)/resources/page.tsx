@@ -14,6 +14,7 @@ interface SearchParams {
   from?: string;
   to?: string;
   keyword?: string;
+  sort?: string;
   page?: string;
 }
 
@@ -37,6 +38,7 @@ export default async function ResourcesPage({
     from: params.from,
     to: params.to,
     keyword: params.keyword,
+    sort: params.sort,
     page: params.page ? Number(params.page) : 0,
   });
 
@@ -62,6 +64,7 @@ export default async function ResourcesPage({
         defaultFrom={params.from}
         defaultTo={params.to}
         defaultKeyword={params.keyword}
+        defaultSort={params.sort}
       />
 
       {hasTimeFilter && (

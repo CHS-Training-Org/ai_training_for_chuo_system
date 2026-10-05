@@ -20,6 +20,7 @@ interface ListResourcesParams {
   from?: string;
   to?: string;
   keyword?: string;
+  sort?: string;
   page?: number;
   size?: number;
 }
@@ -41,6 +42,7 @@ export async function listResourcesAction(params?: ListResourcesParams) {
   if (params?.from) queryParams.from = params.from;
   if (params?.to) queryParams.to = params.to;
   if (params?.keyword) queryParams.keyword = params.keyword;
+  if (params?.sort) queryParams.sort = params.sort;
   if (params?.page !== undefined) queryParams.page = String(params.page);
   if (params?.size !== undefined) queryParams.size = String(params.size);
 

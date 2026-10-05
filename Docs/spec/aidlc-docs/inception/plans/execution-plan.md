@@ -1,44 +1,32 @@
-# Execution Plan — リソース一覧の検索・フィルタ追加（Issue #23）
+# Execution Plan — resource-list-sort（Issue #22）
 
 ## Detailed Analysis Summary
 
 ### Transformation Scope（Brownfield）
-- **Transformation Type**: Single component change（アーキテクチャ変更・デプロイモデル変更は伴わない）
-- **Primary Changes**: `GET /api/resources` への `keyword` クエリパラメータ追加、`ResourceFilterForm` への入力欄追加、検索結果 0 件時の空状態メッセージ改善
-- **Related Components**: `ResourceController` / `ResourceService` / `ResourceRepository`（backend）、`ResourceFilterForm.tsx` / `resources/page.tsx` / `server/actions/resources.ts`（frontend）
+
+- **Transformation Type**: Single component change（既存の `ResourceController`/`ResourceService`/`ResourceRepository`/`ResourceFilterForm` の拡張。新規コンポーネントなし）
+- **Primary Changes**: `GET /api/resources` に `sort` パラメータを追加し、`Pageable` の `Sort` を 2 つの一覧取得経路（`listPaginated`・`listWithAvailabilityFilter`）の両方に適用する
+- **Related Components**: `ResourceController`・`ResourceService`・`ResourceFilterForm.tsx`・`resources/page.tsx`・`server/actions/resources.ts`（いずれも Issue #23 で keyword 検索に対応済みの同一ファイル群）
 
 ### Change Impact Assessment
-- **User-facing changes**: Yes — `/resources` 画面にキーワード入力欄が追加され、検索結果 0 件時の表示文言が変わる
-- **Structural changes**: No — 新規コンポーネント・新規レイヤーは追加しない。既存の 4 層アーキテクチャ内で完結
-- **Data model changes**: No — `resources` テーブルのスキーマ変更は不要（`name`/`description` は既存カラム）
-- **API changes**: Yes（後方互換）— `GET /api/resources` に任意パラメータ `keyword` を追加。既存クライアント・既存パラメータの挙動は変更しない
-- **NFR impact**: Minimal — パフォーマンス・セキュリティ・スケーラビリティへの新規要求はない（Security/Resiliency 拡張は Requirements Analysis で不採用と決定済み）。既存の `ResourceRepository` の派生クエリ方式の保守性への影響のみ
 
-### Component Relationships（Brownfield）
+- **User-facing changes**: Yes — `/resources` にソート選択ドロップダウンが追加され、一覧の表示順が変わる
+- **Structural changes**: No — 既存の 4 層アーキテクチャ・既存コンポーネント境界内で完結
+- **Data model changes**: No — スキーマ変更不要（既存カラムでのソートのみ）
+- **API changes**: Yes — `GET /api/resources` に `sort` クエリパラメータを追加（後方互換・既定値あり）
+- **NFR impact**: No（新規の性能・セキュリティ・スケーラビリティ要件はなし。H2/PostgreSQL の NULL 並び順整合性は Functional Design 内の業務ルールとして扱う）
 
-```markdown
-## Component Relationships
-- **Primary Component**: backend の `ResourceService`/`ResourceRepository`、frontend の `ResourceFilterForm`/`resources/page.tsx`
-- **Infrastructure Components**: なし（インフラ変更不要）
-- **Shared Components**: `docs-next/docs/spec/api-spec.md`・`screen-spec.md`（`/update-spec` スキルで Code Generation 前に更新）
-- **Dependent Components**: なし（`ResourceService#list` の呼び出し元は `ResourceController` のみ）
-- **Supporting Components**: 既存テスト（`ResourceServiceTest`・`ResourceControllerTest`・`resources.test.ts`）
-```
+### Component Relationships
 
-| コンポーネント | Change Type | Change Reason | Change Priority |
-|---|---|---|---|
-| `ResourceRepository` | Major（クエリ機構刷新） | keyword 条件追加に伴い派生クエリ方式の組み合わせ限界に対応 | Critical |
-| `ResourceService` | Minor（引数追加・分岐追加） | keyword 正規化（trim・null 判定）と両経路（listPaginated/listWithAvailabilityFilter）への適用 | Critical |
-| `ResourceController` | Minor（パラメータ追加） | `keyword` クエリパラメータの受付 | Critical |
-| `ResourceFilterForm.tsx` | Minor（入力欄追加） | keyword 入力・空白 trim・URL パラメータ組み立て | Important |
-| `resources/page.tsx` | Minor（空状態分岐拡張） | keyword 検索 0 件時の専用メッセージ | Important |
-| `server/actions/resources.ts` | Minor（パラメータ追加） | `keyword` を BFF 層で中継 | Important |
-| `docs-next/docs/spec/api-spec.md`・`screen-spec.md` | Minor（追記） | Spec-first 原則に基づく仕様反映 | Important |
+- **Primary Component**: `ResourceController`・`ResourceService`・`ResourceRepository`（backend）、`ResourceFilterForm`・`resources/page.tsx`・`server/actions/resources.ts`（frontend）
+- **Dependent Components**: なし（`ResourceService#list` の呼び出し元は `ResourceController` のみ。`listResourcesAction` の呼び出し元は `resources/page.tsx` のほか `reservations/new/page.tsx`・`admin/resources/page.tsx` があるが、`sort` は任意パラメータの追加のため既存呼び出しに影響しない）
+- **Supporting Components**: なし
 
 ### Risk Assessment
-- **Risk Level**: Medium（複数コンポーネントにまたがるが、影響範囲は明確で既存パターンに沿える）
-- **Rollback Complexity**: Easy（git revert 1コミット相当。DB マイグレーション不要）
-- **Testing Complexity**: Moderate（既存 strict-stubs テストを壊さない設計が必要、H2/PostgreSQL 双方での動作確認が必要）
+
+- **Risk Level**: Medium（変更範囲自体は小さいが、Reverse Engineering で判明したとおり `listWithAvailabilityFilter`〔手動ページネーション経路〕は `Sort` を自動適用しないため、実装を誤ると「カテゴリ・期間フィルタとの組み合わせ時にソートが効かない」という受入条件未達の回帰を生みやすい）
+- **Rollback Complexity**: Easy（単一ユニットの変更、`sort` パラメータ自体は後方互換）
+- **Testing Complexity**: Moderate（2 経路それぞれでのソート確認、NULL capacity の扱い、不正値のバリデーションなど分岐が多い）
 
 ## Workflow Visualization
 
@@ -48,7 +36,7 @@ flowchart TD
 
     subgraph INCEPTION["INCEPTION PHASE"]
         WD["Workspace Detection<br/><b>COMPLETED</b>"]
-        RE["Reverse Engineering<br/><b>COMPLETED</b>"]
+        RE["Reverse Engineering<br/><b>COMPLETED（スコープ限定）</b>"]
         RA["Requirements Analysis<br/><b>COMPLETED</b>"]
         US["User Stories<br/><b>COMPLETED</b>"]
         WP["Workflow Planning<br/><b>IN PROGRESS</b>"]
@@ -66,84 +54,107 @@ flowchart TD
     end
 
     subgraph OPERATIONS["OPERATIONS PHASE"]
-        OPS["Operations<br/><b>PLACEHOLDER</b>"]
+        OPS["Operations<br/><b>CI 品質ゲート</b>"]
     end
 
     Start --> WD --> RE --> RA --> US --> WP
-    WP --> AD -.-> UG
+    WP -.-> AD
+    WP -.-> UG
     WP --> FD
-    FD -.-> NFRA -.-> NFRD -.-> ID
+    FD -.-> NFRA
+    NFRA -.-> NFRD
+    NFRD -.-> ID
     FD --> CG
-    CG --> BT --> OPS --> End(["Complete"])
+    CG --> BT
+    BT -.-> OPS
+    BT --> End(["Complete"])
 
     style WD fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style RE fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style RA fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style US fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style WP fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style CG fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style BT fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style FD fill:#FFA726,stroke:#E65100,stroke-width:3px,stroke-dasharray: 5 5,color:#000
     style AD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style UG fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style FD fill:#FFA726,stroke:#E65100,stroke-width:3px,stroke-dasharray: 5 5,color:#000
     style NFRA fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style NFRD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style ID fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style CG fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style BT fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style OPS fill:#FFF59D,stroke:#F57F17,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+    style OPS fill:#FFF59D,stroke:#F57F17,stroke-width:3px,stroke-dasharray: 5 5,color:#000
     style Start fill:#CE93D8,stroke:#6A1B9A,stroke-width:3px,color:#000
     style End fill:#CE93D8,stroke:#6A1B9A,stroke-width:3px,color:#000
-    style INCEPTION fill:#BBDEFB,stroke:#1565C0,stroke-width:3px,color:#000
-    style CONSTRUCTION fill:#C8E6C9,stroke:#2E7D32,stroke-width:3px,color:#000
-    style OPERATIONS fill:#FFF59D,stroke:#F57F17,stroke-width:3px,color:#000
 
     linkStyle default stroke:#333,stroke-width:2px
 ```
 
+### テキスト代替（図のフォールバック）
+
+```
+Phase 1: INCEPTION
+- Workspace Detection (COMPLETED)
+- Reverse Engineering (COMPLETED・スコープ限定)
+- Requirements Analysis (COMPLETED)
+- User Stories (COMPLETED)
+- Workflow Planning (IN PROGRESS)
+- Application Design (SKIP)
+- Units Generation (SKIP)
+
+Phase 2: CONSTRUCTION（ユニット: resource-sort）
+- Functional Design (EXECUTE)
+- NFR Requirements (SKIP)
+- NFR Design (SKIP)
+- Infrastructure Design (SKIP)
+- Code Generation (EXECUTE)
+- Build and Test (EXECUTE)
+
+Phase 3: OPERATIONS
+- CI 品質ゲート（PR 作成後に自動実行）
+```
+
 ## Phases to Execute
 
-### INCEPTION PHASE
+### 🔵 INCEPTION PHASE
+
 - [x] Workspace Detection (COMPLETED)
-- [x] Reverse Engineering (COMPLETED)
+- [x] Reverse Engineering (COMPLETED・スコープ限定で `code-structure-resource-sort.md` のみ追加)
 - [x] Requirements Analysis (COMPLETED)
 - [x] User Stories (COMPLETED)
-- [x] Workflow Planning (IN PROGRESS — 本ドキュメント)
+- [x] Workflow Planning (IN PROGRESS)
 - [ ] Application Design — **SKIP**
-  - **Rationale**: 新規コンポーネント・新規サービスは不要。変更は既存の `ResourceController`/`ResourceService`/`ResourceRepository`/`ResourceFilterForm` の境界内で完結する
+  - **Rationale**: 新規コンポーネント・サービス層設計は不要。既存の `ResourceController`/`ResourceService`/`ResourceRepository`/`ResourceFilterForm` の境界内で完結する
 - [ ] Units Generation — **SKIP**
-  - **Rationale**: BookFlow の縦切り実装方針（`CLAUDE.md` §AI 駆動開発の進め方）により、Issue #23 自体がすでに 1 つの units of work（縦切りイシュー単位）。フロントエンド・バックエンドにまたがるが単一機能であり、これ以上の分解は価値を生まない。Construction フェーズは単一ユニット「リソース検索・フィルタ追加」として進める
+  - **Rationale**: Issue = 単一 units of work（BookFlow の縦切り方針）。複数ユニットへの分解は不要
 
-### CONSTRUCTION PHASE（ユニット: リソース検索・フィルタ追加）
+### 🟢 CONSTRUCTION PHASE（ユニット: resource-sort）
+
 - [ ] Functional Design — **EXECUTE**
-  - **Rationale**: `ResourceRepository` のクエリ機構刷新（派生クエリ方式 → `@Query`/`Specification`）は複数の条件（category × isActive × keyword × from/to 可用性判定）が絡む設計判断であり、かつ既存の strict-stubs テスト（`ResourceServiceTest`）を壊さないための呼び出し経路設計が必要。コード生成前に明文化する価値がある
+  - **Rationale**: `sort` パラメータのホワイトリスト検証方式、`listWithAvailabilityFilter` 経路への `Comparator` ベースソート適用方式、NULL capacity の扱いなど、技術非依存の業務ロジック設計判断が複数あるため
 - [ ] NFR Requirements — **SKIP**
-  - **Rationale**: 新規のパフォーマンス・セキュリティ・スケーラビリティ要求はない。Security/Resiliency 拡張は Requirements Analysis で不採用と決定済み
+  - **Rationale**: 新規の性能・セキュリティ・スケーラビリティ要件・技術スタック選定はない。H2/PostgreSQL の NULL 並び順整合性は Functional Design の業務ルールとして扱う
 - [ ] NFR Design — **SKIP**
-  - **Rationale**: NFR Requirements を SKIP したため連動して SKIP
+  - **Rationale**: NFR Requirements が SKIP のため連動
 - [ ] Infrastructure Design — **SKIP**
-  - **Rationale**: インフラ構成・デプロイモデルの変更なし
+  - **Rationale**: インフラ構成に変更なし
 - [ ] Code Generation — **EXECUTE (ALWAYS)**
-  - **Rationale**: Functional Design で確定した設計に基づき、backend（Controller/Service/Repository）・frontend（Form/Page/Server Action）・仕様書（api-spec.md/screen-spec.md）を実装する
+  - **Rationale**: 実装計画の作成とコード生成が必要
 - [ ] Build and Test — **EXECUTE (ALWAYS)**
-  - **Rationale**: lint・既存テスト・追加テストの実行と検証
+  - **Rationale**: ビルド・テスト・検証が必要
 
-### OPERATIONS PHASE
-- [ ] Operations — PLACEHOLDER
-  - **Rationale**: BookFlow では CI 品質ゲート（CI Frontend / CI Backend）が相当。追加の運用ワークフローは不要
+### 🟡 OPERATIONS PHASE
 
-## Package Change Sequence（Brownfield）
-
-1. **backend**（`ResourceRepository` → `ResourceService` → `ResourceController`）— API 契約を先に確定させる
-2. **frontend**（`server/actions/resources.ts` → `ResourceFilterForm.tsx` → `resources/page.tsx`）— backend の契約に追従
-3. **docs-next**（`api-spec.md`・`screen-spec.md`）— `/update-spec` スキルで Code Generation 内に統合
-
-バックエンドとフロントエンドは独立した層のため並列実装も可能だが、API 契約（`keyword` パラメータの型・エラー時挙動）を backend 側で先に固めてから frontend を実装する順序を推奨する。
+- [ ] Operations — **PLACEHOLDER**
+  - **Rationale**: BookFlow では CI 品質ゲート（`CI Frontend`/`CI Backend`）として運用。PR 作成・push 時に自動実行
 
 ## Estimated Timeline
-- **Total Phases**: 3（Functional Design、Code Generation、Build and Test）
-- **Estimated Duration**: 2〜3時間（エンハンス課題シート記載の見積りと一致）
+
+- **Total Phases**: INCEPTION（完了）→ CONSTRUCTION（Functional Design・Code Generation・Build and Test）
+- **Estimated Duration**: ビジネス要求シート記載の推定工数どおり 1〜2 時間相当（Beginner 課題）
 
 ## Success Criteria
-- **Primary Goal**: `requirements.md` の受入条件 6 件をすべて満たす
-- **Key Deliverables**: backend/frontend の実装、追加ユニットテスト、`api-spec.md`/`screen-spec.md` の更新
-- **Quality Gates**: `./gradlew test`・`pnpm test`・`pnpm lint`・`./gradlew checkstyleMain` が pass すること
-- **Integration Testing**: `/resources` 画面での keyword × category × from/to の組み合わせ動作確認（手動 or 既存 E2E の範囲内）
+
+- **Primary Goal**: `/resources` でカテゴリ・期間・キーワードフィルタと組み合わせて名称順・定員順・登録日時順（デフォルト）のソートができる
+- **Key Deliverables**: backend（`sort` パラメータ・ホワイトリスト検証・2 経路双方へのソート適用）、frontend（ソート選択ドロップダウン）、対応するユニットテスト・結合テスト、仕様書更新（`api-spec.md`・`screen-spec.md`）
+- **Quality Gates**: 既存テスト（`ResourceServiceTest`・`ResourceControllerTest`）が継続して pass すること、新規ソート関連テストが H2 実データで検証されること
+- **Integration Testing**: `listWithAvailabilityFilter` 経路（from/to 指定時）でもソートが適用されることを結合テストで確認する

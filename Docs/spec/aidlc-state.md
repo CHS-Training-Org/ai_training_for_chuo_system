@@ -18,11 +18,12 @@ timestamp: 2026-08-29
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-09-25T16:29:24+00:00
-- **Current Stage**: CONSTRUCTION - Code Generation（ユニット: resource-search）
+- **Start Date**: 2026-10-02T18:16:48Z
+- **Current Stage**: CONSTRUCTION フェーズ完了（ユニット: resource-sort）
 - **Workspace Root**: /workspace
-- **Target Issue**: GitHub Issue #23「リソース一覧の検索・フィルタ追加」
-- **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`
+- **Target Issue**: GitHub Issue #22「リソース一覧のソート順選択」
+- **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/beginner/resource-list-sort.md`
+- **前提課題**: Issue #23（`docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`）は PR #132 として個人トランクブランチ `learner/CHS-FUJITA-RIKA/main`（ADR-030）へマージ済み（2026-10-05T17:17:45Z）。本ブランチ（`feature/CHS-FUJITA-RIKA/22-resource-list-sort-aidlc`、STEP-04 再実装）はマージ後のトランクブランチを基点に切り直し、resource-sort の実装一式を cherry-pick（`aa8c4d8d`）して引き継いだ
 
 ## Workspace State
 
@@ -30,7 +31,7 @@ timestamp: 2026-08-29
 - **Programming Languages**: TypeScript（frontend）/ Java（backend）
 - **Build System**: pnpm（frontend）/ Gradle Kotlin DSL（backend）
 - **Project Structure**: Monorepo（Next.js フロントエンド + Spring Boot バックエンド）
-- **Reverse Engineering Needed**: Yes（既存 RE 成果物なし）
+- **Reverse Engineering Needed**: Yes（既存 RE 成果物は Issue #23 専用に絞られており本課題には転用不可。本課題に必要な範囲のみ `code-structure-resource-sort.md` として追加）
 
 ## Code Location Rules
 
@@ -51,21 +52,21 @@ timestamp: 2026-08-29
 ### INCEPTION PHASE
 
 - [x] Workspace Detection
-- [x] Reverse Engineering（Brownfield の場合）
+- [x] Reverse Engineering（Brownfield の場合） — 既存成果物は Issue #23 専用のため転用不可。`code-structure-resource-sort.md` を追加生成、承認済み
 - [x] Requirements Analysis
-- [x] User Stories（条件付き）
-- [x] Workflow Planning
+- [x] User Stories（条件付き） — EXECUTE（New User Features）、承認済み
+- [x] Workflow Planning — 計画提示、承認待ち
 - [ ] Application Design — SKIP（新規コンポーネント不要）
 - [ ] Units Generation — SKIP（Issue = 単一 units of work）
 
-### CONSTRUCTION PHASE（ユニット: リソース検索・フィルタ追加）
+### CONSTRUCTION PHASE（ユニット: resource-sort）
 
-- [x] Functional Design — EXECUTE（クエリ機構刷新の設計判断が必要）
+- [x] Functional Design — EXECUTE（sort ホワイトリスト検証・2経路への適用方式・NULL capacity 扱いの設計判断が必要）、承認済み
 - [ ] NFR Requirements — SKIP（新規 NFR 要求なし）
 - [ ] NFR Design — SKIP（NFR Requirements 連動）
 - [ ] Infrastructure Design — SKIP（インフラ変更なし）
-- [x] Code Generation（必須、ユニット別） — 全 10 ステップ完了、承認済み
-- [x] Build and Test（必須） — backend 137 件・frontend 82 件 全成功、承認済み
+- [x] Code Generation（必須、ユニット別） — 全 9 ステップ完了、承認済み
+- [x] Build and Test（必須） — backend 150 件・frontend 84 件 全成功、承認済み
 
 ### OPERATIONS PHASE
 
@@ -74,6 +75,10 @@ timestamp: 2026-08-29
 ## Current Status
 
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: CONSTRUCTION フェーズ完了（Build and Test 承認済み）
-- **Next Stage**: Operations（CI 品質ゲート。`/commit-push` → `/create-pr` で PR 作成後に自動実行）
+- **Current Stage**: CONSTRUCTION フェーズ完了（Build and Test 承認済み、ユニット: resource-sort）
+- **Next Stage**: Operations（CI 品質ゲート。`/commit-push` → `/create-pr` で PR 作成後に自動実行。base は個人トランクブランチ `learner/CHS-FUJITA-RIKA/main`、ADR-030 準拠）
 - **Status**: Complete（`/aidlc` ワークフロー本体）
+
+---
+
+> **過去ユニット（参考・このファイルでは追跡しない）**: Issue #23「リソース検索・フィルタ追加」は PR #132 として `learner/CHS-FUJITA-RIKA/main` へマージ済み。完全な記録は `Docs/spec/aidlc-audit.md` の該当区間を参照。
