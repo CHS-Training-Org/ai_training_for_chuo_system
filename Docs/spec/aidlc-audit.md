@@ -250,3 +250,11 @@ timestamp: 2026-08-29
 **Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。`/aidlc` ワークフロー本体はここで完了
 
 ---
+
+## PR #132 レビュー指摘対応（CI AI レビュー・観点2・ラウンド1 NG）
+**Timestamp**: 2026-10-05T13:39:16Z
+**User Input**: "Issue #23で教えてください。Claudeレビュー観点2でNGになりました。keyword転送のテスト不足を修正したいです。対応方法を教えてください。"（CI の自動レビューコメントのスクリーンショット添付。指摘内容：`frontend/src/server/actions/resources.ts:43` の keyword 転送ロジックについて、既存テスト `tests/unit/server/actions/resources.test.ts:59`〔正常時: keyword パラメータを渡せる〕は既定の MSW ハンドラがリクエストを検証しないため、該当行を削除しても pass してしまう＝keyword がバックエンドに届かない不具合を検出できない状態だった）"
+**AI Response**: "`resources.test.ts` の該当テストに加え、実際に送信される URL の `searchParams` を捕捉して `keyword` の値そのものを検証する新規テスト（keyword 指定時: クエリパラメータに keyword をそのまま渡す）を追加。追加前後で `resources.ts:43` の転送行を一時的にコメントアウトして新規テストが red になること（`expected null to be '会議室'`）を確認したうえで元に戻し、再度 green になることを確認した。`pnpm test resources`（14件全成功）・`pnpm lint`・`pnpm format:check` もあわせて確認。補足として挙げられていた「ResourceFilterForm/page.tsx の対応するユニットテスト不在」「category+keyword 併用時に一致する ROOM リソースが含まれることの未検証」は NG の主因ではない旨が指摘コメントに明記されているため、本対応ではスコープ外とした（ユーザーに別途確認が必要であれば対応する）。"
+**Context**: resource-search ユニット完了後の CI レビュー指摘対応（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
+
+---
