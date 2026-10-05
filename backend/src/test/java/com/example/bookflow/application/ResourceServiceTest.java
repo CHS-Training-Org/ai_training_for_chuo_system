@@ -311,6 +311,25 @@ class ResourceServiceTest {
     }
 
     @Test
+    void list_memberWithTimeFilterAndWildcardKeyword_escapesBeforeDelegatingToRepository() {
+      // BR-04: from/to 経路（fetchAllCandidates）でも escapeLikeKeyword が適用されることを検証する
+      // （ResourceService.java の listWithAvailabilityFilter は Pageable を渡さない List 版
+      // repository メソッドを呼ぶため、Page 版とは別経路でエスケープを確認する必要がある）
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.findByIsActiveTrueAndKeyword("50!%off!_now!!"))
+          .thenReturn(java.util.List.of(activeResource));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, from, to, "50%off_now!", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
     void list_memberWithTimeFilterAndKeyword_appliesKeywordBeforeAvailabilityCheck() {
       // BR-05: keyword は from/to 経路（fetchAllCandidates）にも適用される
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);

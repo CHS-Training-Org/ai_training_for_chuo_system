@@ -282,3 +282,11 @@ timestamp: 2026-08-29
 **Context**: resource-search ユニット完了後の CI レビュー指摘対応・ラウンド4（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
 
 ---
+
+## PR #132 レビュー指摘対応（CI AI レビュー・観点2・ラウンド5 NG）
+**Timestamp**: 2026-10-05T15:37:27Z
+**User Input**: 「観点2 ラウンド5 NGです。残件は1件だけです。ResourceService.java:181 の期間指定経路(fetchAllCandidates)での escapeLikeKeyword() 呼び出しに対するテストがありません。レビュー推奨の案2で対応したいです。ResourceServiceTest.java:302 の期間指定版として、keyword = \"50%off_now!\" を渡した場合に、Repositoryへ \"50!%off!_now!!\" が渡されることを検証するテストを追加してください。」
+**AI Response**: "`list_keywordWithWildcardCharacters_escapesBeforeDelegatingToRepository`（listPaginated 経路、Page 版）の期間指定版として `list_memberWithTimeFilterAndWildcardKeyword_escapesBeforeDelegatingToRepository` を追加。from/to 指定・keyword=\"50%off_now!\" で `resourceRepository.findByIsActiveTrueAndKeyword(\"50!%off!_now!!\")`（List 版、Pageable なし）が呼ばれることを Mockito のスタブ一致で検証する。検証のため `fetchAllCandidates` 内の `escapeLikeKeyword(keyword)` 呼び出しを一時的に無効化（`escapedKeyword = keyword` に差し替え）し、新規テストのみが `PotentialStubbingProblem`（strict stubs 不一致）で red になることを確認したうえで元に戻した（git diff なしを確認）。`./gradlew spotlessApply checkstyleMain test`（145件全成功）を確認。"
+**Context**: resource-search ユニット完了後の CI レビュー指摘対応・ラウンド5（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
+
+---
