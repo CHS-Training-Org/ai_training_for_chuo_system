@@ -266,3 +266,11 @@ timestamp: 2026-08-29
 **Context**: resource-search ユニット完了後の CI レビュー指摘対応・ラウンド2（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
 
 ---
+
+## PR #132 レビュー指摘対応（CI AI レビュー・観点2・ラウンド3 NG）
+**Timestamp**: 2026-10-05T15:06:22Z
+**User Input**: 「観点2 ラウンド3 NG。残件は2件です。1. MEMBER用クエリ2本でisActive=trueを外しても通ってしまう（KEYWORD_INACTIVE_IDの不在確認を追加するよう指摘）。2. 説明文検索の大文字小文字無視（LOWER(description)）を検証するテストが不足しています。レビュー指摘に対応してください。」
+**AI Response**: "該当2メソッド（findByCategoryAndIsActiveTrueAndKeyword の Page 版・findByIsActiveTrueAndKeyword の List 版）のテストに KEYWORD_INACTIVE_ID の doesNotExist アサーションを追加。description の大文字小文字非依存性を検証する新規テスト（keyword=\"keyword\" で description の \"Keyword\" にのみ一致する KEYWORD_DESC_ID の存在を確認、name 側は一致しないため description 側の LOWER() によるものと特定できる設計）を追加。検証のため ResourceRepository.java を一時的に2パターン改変：(1) 該当2メソッドから `r.isActive = true` を削除→追加した2アサーションのみが red になることを確認、(2) description 比較から LOWER() を除去→新規テストのみが red になることを確認。いずれも確認後に元へ復元（git diff なしを確認）。`./gradlew spotlessApply checkstyleMain test`（143件全成功）を確認。"
+**Context**: resource-search ユニット完了後の CI レビュー指摘対応・ラウンド3（`/aidlc` エンジンのステージ外、PR #132 への追加コミットとして対応）
+
+---

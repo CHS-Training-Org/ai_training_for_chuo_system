@@ -317,6 +317,21 @@ class ResourceControllerTest extends BaseControllerTest {
 
   @Test
   @WithMockMember
+  void list_keywordCaseInsensitiveMatchOnDescriptionOnly_matchesRegardlessOfCase()
+      throws Exception {
+    // BR-01: description 側も LOWER(description) により大文字小文字を区別しない。
+    // KEYWORD_DESC_ID の description は "Keyword"（大文字 K）を含むが、小文字 "keyword" でも一致する。
+    // name（"プロジェクタX"）は一致しないため、この一致が description 側の大文字小文字非依存変換に
+    // よるものであると特定できる
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "keyword").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
   void list_keywordWithPercentCharacter_matchesLiteralPercentNotWildcard() throws Exception {
     // BR-04: "%" はワイルドカードではなくリテラルとして扱う。
     // KEYWORD_PERCENT_DECOY_ID は "90" は含むが "90%" は含まないため除外されるべき
@@ -375,7 +390,10 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_NAME_ID + "')]").exists())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
-        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_ID + "')]").doesNotExist());
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_DESC_ID + "')]").doesNotExist())
+        // BR-06: KEYWORD_INACTIVE_ID は ROOM・inactive・keyword 一致だが、MEMBER には is_active=true
+        // 条件により除外されるべき（category 条件・keyword 条件だけでは除外できない点に注意）
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").doesNotExist());
   }
 
   @Test
@@ -419,7 +437,10 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
         .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_NAME_ID + "')]").exists())
-        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_PERCENT_ID + "')]").doesNotExist());
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_PERCENT_ID + "')]").doesNotExist())
+        // BR-06: KEYWORD_INACTIVE_ID（"無効会議室Keyword"）は "会議室" を含み予約重複も無いが、
+        // MEMBER には is_active=true 条件により除外されるべき
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_INACTIVE_ID + "')]").doesNotExist());
   }
 
   @Test
