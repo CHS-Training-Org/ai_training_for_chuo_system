@@ -37,6 +37,8 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000010");
   private static final UUID INACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000011");
+  private static final UUID KEYWORD_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000012");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -91,6 +93,18 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
+    // キーワード検索テスト用（name・description 双方にマッチ可能な語を含む）
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        KEYWORD_RESOURCE_ID,
+        "特別会議室",
+        "ROOM",
+        false,
+        true,
+        "Projector included（プロジェクター完備）",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
 
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(
@@ -113,6 +127,7 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", KEYWORD_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -193,6 +208,74 @@ class ResourceControllerTest extends BaseControllerTest {
             get("/api/resources")
                 .param("to", "2025-06-02T12:00:00")
                 .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchingName_returnsOnlyMatchingResource() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "特別").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchingDescriptionCaseInsensitive_returnsMatchingResource() throws Exception {
+    // description は "Projector included（プロジェクター完備）"。大文字キーワードでも大文字小文字非区別でマッチする
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "PROJECTOR").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_emptyKeywordParam_returnsAllActiveResources() throws Exception {
+    // 空文字列のキーワードは条件解除（未指定時と同じ全件対象）
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + KEYWORD_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithPercentWildcard_isTreatedAsLiteral_returnsEmpty() throws Exception {
+    // "%" はどのリソース名・説明にもリテラルとしては含まれないため、ワイルドカード解釈されなければ 0 件
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "%").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithCategoryFilter_combinesWithAndCondition() throws Exception {
+    // KEYWORD_RESOURCE_ID は ROOM。EQUIPMENT と組み合わせると AND 条件で 0 件になる
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "特別")
+                .param("category", "EQUIPMENT")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordExceeding100Chars_returns400ValidationError() throws Exception {
+    String tooLong = "a".repeat(101);
+    mockMvc
+        .perform(get("/api/resources").param("keyword", tooLong).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
   }
