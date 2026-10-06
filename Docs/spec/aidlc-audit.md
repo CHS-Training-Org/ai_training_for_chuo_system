@@ -945,3 +945,11 @@ timestamp: 2026-08-29
 **User Input**: "Approve & Continue"
 **AI Response**: "承認を記録。Operations フェーズ（BookFlow では CI 品質ゲート相当）へ遷移。学習者には `/commit-push`・`/create-pr`（base: ADR-030 準拠の個人トランクブランチ）の利用を案内する。"
 **Context**: Build and Test（resource-detail-info）承認 → Operations フェーズへ遷移
+
+---
+
+## CI AIレビュー対応（PR #136・観点1 要求整合性・ラウンド1、resource-detail-info）
+**Timestamp**: 2026-10-06T07:40:00Z
+**User Input**: "AI レビュー / 観点1 要求整合性 / ラウンド 1でNGになりました。対応をおしえてください。（判定: 判定不能。要件RES-01〜05は全件差分で裏付けられたが、受入条件「バックエンドの既存テストが引き続きpassする」はCIの結果でしか確認できず、PRがmergeable: CONFLICTINGの状態でCIが1件も起動していないため判定不能とした。baseブランチ learner/CHS-FUJITA-RIKA/main とのコンフリクトが原因である可能性が高く、解消してpushしCI Backendがsuccessになれば充足とみなすとの指摘）"
+**AI Response**: "指摘は正当。ブランチ作成後に reservation-list-filter ユニット（PR #135）が個人トランクへマージされ、トランクが先に進んでいたことが原因。`git merge origin/learner/CHS-FUJITA-RIKA/main` で統合し、22件のコンフリクトを解消：(1) `Docs/spec/aidlc-docs/inception/*`（requirements・personas・stories・reverse-engineering等、計15ファイル）はユニット非名前空間の「現行ユニット作業ファイル」のため自ユニット（resource-detail-info）側を採用、(2) `docs-next/docs/spec/api-spec.md`・`screen-spec.md` は両ユニットの追記が非重複のため両方を保持（`last_updated`のみ新しい方を採用）、(3) `Docs/spec/aidlc-audit.md`（追記専用）は共通ヘッダ後に両ブランチのエントリをタイムスタンプ順（reservation-list-filter分が全て先、resource-detail-info分が後）で連結、(4) `Docs/spec/aidlc-state.md` は現行ユニット（resource-detail-info）の内容を採用しつつ過去ユニット脚注にPR #135を追加、(5) `construction/build-and-test/*`（3ファイル）は両ユニット分を合算した累積サマリに手動で書き換え（backend 188件・frontend 112件、マージ後に実測して確定）。マージ後に `./gradlew test`・`pnpm test`・lint/format・`pnpm build` を再実行し全green を確認してからマージコミットをpush。`gh pr view` で `mergeable: MERGEABLE`・CI起動（IN_PROGRESS）を確認。"
+**Context**: CI レビュー指摘（観点1・ラウンド1、マージコンフリクト解消）への対応完了。CI完了を待つ
