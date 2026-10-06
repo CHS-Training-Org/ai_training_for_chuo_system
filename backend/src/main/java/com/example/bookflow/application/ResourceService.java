@@ -290,7 +290,9 @@ public class ResourceService {
             req.location(),
             req.requiresApproval(),
             req.isActive(),
-            req.description());
+            req.description(),
+            req.equipment(),
+            req.notes());
     return ResourceResponse.from(resourceRepository.save(resource));
   }
 
@@ -310,7 +312,9 @@ public class ResourceService {
         req.location(),
         req.requiresApproval(),
         req.isActive(),
-        req.description());
+        req.description(),
+        req.equipment(),
+        req.notes());
     return ResourceResponse.from(resourceRepository.save(resource));
   }
 

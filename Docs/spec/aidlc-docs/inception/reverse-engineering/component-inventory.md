@@ -2,28 +2,28 @@
 
 ## Application Packages
 
-- `frontend` - Next.js 15 App Router（UI + BFF）。App Router のページ・Server Actions・共有コンポーネント（55 ファイル、`.ts`/`.tsx`）
-- `backend` - Spring Boot 4.0 REST API。domain / application / presentation / infrastructure の 4 レイヤー（58 ファイル、`.java`）
+- `backend` - Spring Boot API（domain/application/presentation/infrastructure の4レイヤー）
+- `frontend` - Next.js App Router（Server Components + Server Actions）
+- `docs-next` - Docusaurus ドキュメントサイト（アプリケーションには含まれないが、Spec-first の真実の源）
 
 ## Infrastructure Packages
 
-- なし（本リポジトリはアプリケーションコードのみ。IaC・CDK/Terraform 定義は本リポジトリの対象外。AWS 標準構成は [`docs-next/docs/reference/architecture.md`](../../../../docs-next/docs/reference/architecture.md) に文書化のみ）
+- なし（本リポジトリはチュートリアル用モノレポで、IaC パッケージは `.devcontainer/docker-compose.yml`（ローカル開発用）のみ）
 
 ## Shared Packages
 
-- `docs-next` - Docusaurus ドキュメントサイト（`docs/spec/` が仕様の真実の源）
-- `Docs/spec` - AI-DLC エンジンの作業ファイル（本 RE 成果物もここに含まれる）
+- なし（`backend`/`frontend` は REST API 経由でのみ連携し、コード共有パッケージは持たない）
 
 ## Test Packages
 
-- `backend/src/test` - JUnit 5 + Mockito（Service 単体）+ MockMvc（Controller）+ H2（`MODE=PostgreSQL`）
-- `frontend/tests/unit` - Vitest + MSW（Server Actions・コンポーネント単体）
-- `frontend/tests/e2e` - Playwright（E2E、本課題の対象外）
+- `backend/src/test/` - JUnit 5 + H2 + Mockito（Service層ユニットテスト・Controller層結合テスト）
+- `frontend/tests/unit/` - Vitest + Testing Library + MSW
+- `frontend/tests/e2e/` - Playwright
 
 ## Total Count
 
-- **Total Packages**: 2（frontend / backend、アプリケーションコードのみ）
-- **Application**: 2
+- **Total Packages**: 3（backend / frontend / docs-next）
+- **Application**: 2（backend / frontend）
 - **Infrastructure**: 0
-- **Shared**: 2（docs-next / Docs/spec、ドキュメント用途）
-- **Test**: frontend・backend それぞれに同梱（別パッケージ化なし）
+- **Shared**: 0
+- **Test**: 2（backend同梱 / frontend同梱）

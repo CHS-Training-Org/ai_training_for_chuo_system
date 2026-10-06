@@ -18,21 +18,14 @@ timestamp: 2026-08-29
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-10-05T23:22:48Z
-- **Current Stage**: CONSTRUCTION - Code Generation（ユニット: reservation-list-filter）
+- **Start Date**: 2026-10-06T03:20:00Z
+- **Current Stage**: INCEPTION - Reverse Engineering
 - **Workspace Root**: /workspace
-- **Target Issue**: GitHub Issue #24「予約一覧のフィルタ拡張」
-- **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/beginner/reservation-list-filter.md`
-- **前提課題**: なし（ビジネス要求シート記載のとおり、既存 `GET /api/reservations`・予約一覧画面のみに依存）
-- **ブランチ**: `feature/CHS-FUJITA-RIKA/24-reservation-list-filter-aidlc`。ADR-030 準拠で個人トランクブランチ `learner/CHS-FUJITA-RIKA/main`（PR #132・#134 マージ済み）を基点に作成
-
-## Workspace State
-
-- **Existing Code**: Yes
-- **Programming Languages**: TypeScript（frontend）/ Java（backend）
-- **Build System**: pnpm（frontend）/ Gradle Kotlin DSL（backend）
-- **Project Structure**: Monorepo（Next.js フロントエンド + Spring Boot バックエンド）
-- **Reverse Engineering Needed**: Yes（既存 RE 成果物は Resource ドメイン専用のため、Reservation ドメインには転用不可。本課題スコープの追加調査が必要）
+- **Target Issue**: GitHub Issue #25「リソース詳細画面の情報拡充」
+- **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/beginner/resource-detail-info.md`
+- **前提課題**: なし（ベースシステムの既存 `resources` テーブル・リソース画面のみに依存）
+- **競合課題（注意）**: `resource-image-upload`（Flyway V002 採番衝突の可能性）・`calendar-view`（リソース詳細画面の同時変更）。現時点でいずれも未着手（マイグレーションは `V001` のみ）
+- **ブランチ**: `feature/CHS-FUJITA-RIKA/25-resource-aidlc`。ADR-030 準拠で個人トランクブランチ `learner/CHS-FUJITA-RIKA/main`（PR #132・#134・#135 マージ済み）を基点に作成
 
 ## Code Location Rules
 
@@ -44,42 +37,42 @@ timestamp: 2026-08-29
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | No | Requirements Analysis |
-| Resiliency Baseline | No | Requirements Analysis |
-| Property-Based Testing | No | Requirements Analysis |
+| Security Baseline | No | Workflow Planning（本来 Requirements Analysis で確認すべきところ失念し、事後確認） |
+| Resiliency Baseline | No | Workflow Planning（同上） |
+| Property-Based Testing | No | Workflow Planning（同上） |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
 - [x] Workspace Detection
-- [x] Reverse Engineering（Brownfield の場合） — 既存成果物は Resource ドメイン専用のため転用不可。`code-structure-reservation-list-filter.md` を追加生成、承認済み
-- [x] Requirements Analysis
-- [x] User Stories（条件付き） — EXECUTE（New User Features）、承認済み
+- [x] Reverse Engineering（Brownfield の場合） — Resource ドメインにスコープした調査を実施、承認済み
+- [x] Requirements Analysis — resourcesテーブル列追加で確定、承認済み
+- [x] User Stories（条件付き） — EXECUTE（New User Features・Multi-Persona）、Persona-Based分解、US-01〜03生成、承認済み
 - [x] Workflow Planning — 計画提示、承認済み
-- [ ] Application Design — SKIP（新規コンポーネント不要）
-- [ ] Units Generation — SKIP（Issue = 単一 units of work）
+- [ ] Application Design（条件付き） — SKIP（新規コンポーネント不要）
+- [ ] Units Generation（条件付き） — SKIP（Issue = 単一 units of work）
 
-### CONSTRUCTION PHASE（ユニット: reservation-list-filter）
+### CONSTRUCTION PHASE（ユニット: resource-detail-info）
 
-- [x] Functional Design — EXECUTE（16メソッドへの組み合わせ拡張方式・JPQL定数設計・from/to overlap意味論の確定が必要）、承認済み
-- [ ] NFR Requirements — SKIP（新規 NFR 要求なし）
-- [ ] NFR Design — SKIP（NFR Requirements 連動）
-- [ ] Infrastructure Design — SKIP（インフラ変更なし）
+- [ ] Functional Design（条件付き、ユニット別） — SKIP（新規データモデル・複雑な業務ロジックなし）
+- [ ] NFR Requirements（条件付き、ユニット別） — SKIP（新規 NFR 要求なし）
+- [ ] NFR Design（条件付き、ユニット別） — SKIP（NFR Requirements 連動）
+- [ ] Infrastructure Design（条件付き、ユニット別） — SKIP（インフラ変更なし）
 - [x] Code Generation（必須、ユニット別） — Part 1（計画）・Part 2（生成、Step 1-10）完了、承認済み
-- [x] Build and Test（必須） — backend 176件・frontend 109件、全成功。承認済み
+- [x] Build and Test（必須） — backend 124件・frontend 83件、全成功。承認済み
 
 ### OPERATIONS PHASE
 
-- [x] Operations — BookFlow では CI 品質ゲート（`CI Frontend` / `CI Backend`）として運用。学習者は `/commit-push`・`/create-pr` でコミット分割・PR作成を行う（本エンジンの担当範囲はここまで）
+- [x] Operations（プレースホルダー） — BookFlow では CI 品質ゲート（`CI Frontend`/`CI Backend`）として運用。学習者は `/commit-push`・`/create-pr` でコミット分割・PR作成を行う（本エンジンの担当範囲はここまで）
 
 ## Current Status
 
 - **Lifecycle Phase**: OPERATIONS
-- **Current Stage**: OPERATIONS（ユニット: reservation-list-filter、AI-DLC エンジンとしての全フェーズ完了）
-- **Next Stage**: `/commit-push` → `/create-pr`（学習者主導、base: `learner/CHS-FUJITA-RIKA/main`）
+- **Current Stage**: OPERATIONS（ユニット: resource-detail-info、AI-DLC エンジンとしての全フェーズ完了）
+- **Next Stage**: `/commit-push` → `/create-pr`（学習者主導）
 - **Status**: Complete（エンジン側の作業完了。コミット・PR作成は学習者の操作待ち）
 
 ---
 
-> **過去ユニット（参考・このファイルでは追跡しない）**: Issue #23「リソース検索・フィルタ追加」（PR #132）・Issue #22「リソース一覧のソート順選択」（PR #134）はいずれも `learner/CHS-FUJITA-RIKA/main` へマージ済み。完全な記録は `Docs/spec/aidlc-audit.md` の該当区間を参照。
+> **過去ユニット（参考・このファイルでは追跡しない）**: Issue #23「リソース検索・フィルタ追加」（PR #132）・Issue #22「リソース一覧のソート順選択」（PR #134）・Issue #24「予約一覧のフィルタ拡張」（PR #135）はいずれも `learner/CHS-FUJITA-RIKA/main` へマージ済み。完全な記録は `Docs/spec/aidlc-audit.md` の該当区間を参照。

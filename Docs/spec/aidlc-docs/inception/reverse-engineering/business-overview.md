@@ -4,37 +4,35 @@
 
 ```mermaid
 flowchart LR
-    Member["MEMBER<br/>一般利用者"]
-    Approver["APPROVER<br/>承認者"]
-    Admin["ADMIN<br/>管理者"]
-    BookFlow["BookFlow<br/>施設・備品予約システム"]
-    Cognito["Amazon Cognito<br/>認証基盤"]
-
-    Member -->|リソース閲覧・予約申請| BookFlow
-    Approver -->|予約承認・却下| BookFlow
-    Admin -->|リソース・ユーザー管理| BookFlow
-    BookFlow -->|JWT 検証| Cognito
+    Member["MEMBER\n一般利用者"] -->|資源を探す・予約する| BookFlow["BookFlow"]
+    Approver["APPROVER\n承認者"] -->|予約を承認・却下| BookFlow
+    Admin["ADMIN\n運用管理者"] -->|リソース・ユーザーを管理| BookFlow
+    BookFlow -->|資源一覧・詳細| Member
+    BookFlow -->|承認待ち一覧| Approver
 ```
 
 ## Business Description
 
-- **Business Description**: BookFlow は社内の施設（会議室等）・備品（プロジェクター等）・車両を予約管理するシステム。リソース閲覧、予約申請、承認フロー、リソース管理の 4 つの業務領域を持つ。
+- **Business Description**: BookFlow は社内の施設（会議室等）・備品（プロジェクター等）・車両を一元管理し、予約・承認フローをオンライン化する社内システム。
 - **Business Transactions**:
-  - リソース一覧・空き確認（対象ユースケース UC-02）
-  - 予約申請・キャンセル
-  - 予約承認・却下
-  - リソース登録・更新・有効/無効切替（ADMIN）
+  - リソース（施設・備品・車両）の登録・編集・有効/無効切替（ADMIN）
+  - リソース一覧の検索・絞り込み・空き確認（全ロール）
+  - 予約の申請・承認・却下・キャンセル（ロール別）
 - **Business Dictionary**:
-  - **リソース（Resource）**: 予約対象となる会議室・備品・車両（`category`: `ROOM` / `EQUIPMENT` / `VEHICLE`）
-  - **予約（Reservation）**: リソースに対する利用申請。`requires_approval = true` の場合は承認フローを経る
-  - **承認ステップ（Approval Step）**: 予約に対する承認者の決裁単位（ベース実装は 1 段階）
+  - **リソース（Resource）**: 予約対象となる施設・備品・車両の総称。`category`（`ROOM`/`EQUIPMENT`/`VEHICLE`）で区分する。
+  - **要承認（requiresApproval）**: リソースごとに設定するフラグ。`true` の場合、予約は `PENDING` から始まり承認者の承認を経て `APPROVED` になる。
+  - **有効/無効（isActive）**: リソースの貸出可否フラグ。`false` のリソースは MEMBER/APPROVER の一覧に表示されない（ADMIN は表示される）。
 
 ## Component Level Business Descriptions
 
-### frontend（Next.js App Router）
-- **Purpose**: UI 表示と BFF（Backend for Frontend）を兼ねる。Server Actions が Spring Boot API を呼び出す
-- **Responsibilities**: 画面レンダリング、認証トークン管理、フォームバリデーション（Zod）、バックエンド API のプロキシ
+### Resource ドメイン（本 RE のスコープ）
 
-### backend（Spring Boot）
-- **Purpose**: 業務ロジックと永続化を担う REST API サーバー
-- **Responsibilities**: 4 レイヤーアーキテクチャ（domain / application / presentation / infrastructure）に基づく業務ルール実装、JWT 検証、DB アクセス
+- **Purpose**: 施設・備品・車両のマスタ管理と、予約画面から参照される基本情報・空き状況の提供。
+- **Responsibilities**:
+  - リソースの CRUD（ADMIN）・一覧検索・空き照会（全ロール）
+  - Issue #25 のスコープ: リソース詳細画面で表示する付随情報（設備一覧・利用上の注意）の管理を追加する
+
+### Reservation ドメイン（参考・本 RE のスコープ外）
+
+- **Purpose**: 予約の申請・状態遷移・一覧フィルタ。
+- **Responsibilities**: Resource ドメインが提供する「重複判定ロジック（`overlaps`）」を再利用する。Issue #25 では変更しない。

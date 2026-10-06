@@ -1,54 +1,62 @@
-# Requirements — reservation-list-filter（Issue #24）
+# Requirements — resource-detail-info（リソース詳細画面の情報拡充）
 
 ## Intent Analysis Summary
 
-- **User Request**: `docs-next/docs/spec/enhancements/beginner/reservation-list-filter.md`（予約一覧のフィルタ拡張）
-- **Request Type**: Enhancement（既存機能への追加）
-- **Scope**: Multiple Components（frontend + backend）
-- **Complexity**: Moderate（既存の「ロール×status有無」4メソッド構成に resourceName・from/to を加えると最大16メソッドの組み合わせになる設計判断が必要。from/to の重複判定の意味論を既存の `checkConflict`/`overlaps` と一致させる必要あり）
-- **Depth**: Standard
+- **User Request**: GitHub Issue #25「リソース詳細画面の情報拡充」。ビジネス要求シート `docs-next/docs/spec/enhancements/beginner/resource-detail-info.md` に基づく。
+- **Request Type**: Enhancement（既存 Resource ドメインへのフィールド追加）
+- **Scope Estimate**: Multiple Components（DB マイグレーション・エンティティ・DTO・Service・Controller・frontend 2画面）
+- **Complexity Estimate**: Simple〜Moderate（新規ロジックは無く、既存の7フィールドパターンに2フィールドを追加する定型拡張。シート記載の推定工数は3〜4時間）
+
+## 背景
+
+BookFlow の `resources` テーブルには予約前に確認したい設備情報・利用上の注意を格納するフィールドが存在しない。これらをリソースごとに登録・表示できるようにし、利用者が予約前に必要な情報を確認できるようにする（UC-02「リソース一覧・空き確認」の拡張）。
 
 ## 機能要件
 
 | # | 要件 |
 |---|------|
-| RSV-01 | `GET /api/reservations` に `resourceName` パラメータを追加し、`Reservation.resource.name` への部分一致で絞り込める |
-| RSV-02 | `GET /api/reservations` に `from`・`to` パラメータを追加し、予約期間（`startAt`〜`endAt`）が指定期間と重複する予約を返す。重複判定は既存の `ResourceService.overlaps`（半開区間 `[start, end)`、`existingStart < to && existingEnd > from`）と同一の意味論を用いる |
-| RSV-03 | 予約一覧画面に `resourceName`・`from`・`to` の入力 UI を追加し、既存のステータスタブと AND 条件で組み合わせられる |
-| RSV-04 | `resourceName` は大文字小文字を区別しない部分一致とする（keyword 検索・Issue #23 と同じ `LOWER()` 比較） |
-| RSV-05 | `resourceName` が空・空白のみの場合は未指定として扱う（既存の keyword・sort パラメータと同じ trim・null 変換パターン） |
-| RSV-06 | `from`・`to` は同時指定必須とする（片方のみの指定は 400 VALIDATION_ERROR。既存の Resource 空き確認エンドポイントと同じバリデーションパターン） |
+| RES-01 | `resources` テーブルに `equipment TEXT`（設備一覧）・`notes TEXT`（利用上の注意）を Flyway マイグレーション（`V002__add_resource_equipment_and_notes.sql`）で追加する。両列とも `NULL` 許容（既存データへの影響なし） |
+| RES-02 | `Resource` エンティティ・`ResourceResponse` DTO に `equipment`・`notes` を追加し、`GET /api/resources/{id}` のレスポンスに含める |
+| RES-03 | `CreateResourceRequest` / `UpdateResourceRequest` に `equipment`・`notes` の入力を追加し、管理者が登録・編集できるようにする（Bean Validation は既存の `description` と同様、必須制約・文字数制限なし） |
+| RES-04 | リソース詳細画面（`/resources/{id}`）に `equipment`・`notes` の表示を追加する。値が未登録（`null`）の場合は非表示とする（既存の `location`/`capacity`/`description` と同じ条件表示パターン） |
+| RES-05 | `GET /api/resources` の一覧レスポンスは `ResourceResponse` を共用するため自然に新フィールドを含むが、一覧画面（`/resources`）の表示・挙動は変更しない（一覧カードへの新フィールド表示は本課題のスコープ外） |
+
+## データ設計の決定（確認質問の回答）
+
+`equipment`・`notes` は **`resources` テーブルへの列追加**とする（別テーブル `resource_attributes` への分離は不採用）。
+
+- **理由**: 既存の `Resource` エンティティは全フィールドをファクトリメソッド（`create`）・更新メソッド（`update`）の位置引数で列挙する設計であり、`description` と同じ NULL 許容 TEXT 列として追加するのが最も既存パターンと整合する。1:1 の新規関連テーブルを導入すると JOIN が必要になり、本課題（Beginner・3〜4時間）の規模に対して過剰な複雑化となる。
 
 ## 非機能要件
 
-| # | 要件 |
-|---|------|
-| NFR-01 | `resourceName`・`from`/`to` は、既存の「ロール×status有無」4メソッド構成に対する専用 `@Query` メソッドとして実装し、nullable パラメータの単一 JPQL は使わない（`ResourceRepository` の keyword 実装と同じ方針。H2/PostgreSQL のパラメータ型推論差異を避けるため） |
-| NFR-02 | 共通の JPQL 条件（resourceName 一致・from/to 重複判定）はインターフェース定数として集約し、メソッド間の重複・ズレを防ぐ（`ResourceRepository.KEYWORD_MATCH` と同じパターン） |
-| NFR-03 | from/to の重複判定は `Reservation` エンティティ自身の `startAt`/`endAt` への JPQL 述語で完結させ、Java 側の手動ページネーションは導入しない（既存の `Page<Reservation>` ベースの DB ページングを維持する） |
-| NFR-04 | 既存の `ReservationServiceTest`・`ReservationControllerTest` が継続して pass すること |
+- **後方互換性**: 既存データに `equipment`・`notes` は存在しないため、マイグレーションは両列を `NULL` 許容で追加する。既存の `GET /api/resources`・`GET /api/resources/{id}` を呼び出す既存クライアント・既存テストに影響を与えない。
+- **バリデーション**: `description` と同様、文字数制限・必須制約は設けない（自由記述のテキストフィールドとして扱う）。
+- **表示整合性**: フロントエンドの `equipment`・`notes` は改行を保持して表示する（複数行の入力を想定し、`description` 同様の `Textarea` 入力・改行保持表示とする）。
 
 ## 受入条件（ビジネス要求シートより）
 
-- [ ] リソース名で絞り込むと、そのリソース名を含む予約のみ表示される
-- [ ] 期間（from/to）で絞り込むと、指定期間にかかる予約のみ表示される
-- [ ] ステータスタブ・リソース名・期間を組み合わせて絞り込める
-- [ ] フィルタをリセットすると全件表示に戻る
+- [ ] 管理者がリソース登録・編集画面から設備情報・利用上の注意を入力・更新できる
+- [ ] リソース詳細画面に設備情報・利用上の注意が表示される（未登録時は非表示でよい）
+- [ ] Flyway マイグレーションが正常に実行され、既存データへの影響がない（`NULL` 許容）
+- [ ] `GET /api/resources/{id}` のレスポンスに新フィールドが含まれる
 - [ ] バックエンドの既存テストが引き続き pass する
+- [ ] 新フィールドを含む API 動作のテストを追加する
 
-## 技術コンテキスト（Reverse Engineering 由来）
+## 影響範囲
 
-- `code-structure-reservation-list-filter.md` 参照。16 メソッドの組み合わせ爆発への対応方針・from/to の意味論・resourceName の大文字小文字非依存の扱いが本ユニットの主要な設計判断点
+- **対象レイヤー**: 両方（backend・frontend）
+- **更新が必要な spec**（Spec-first、Code Generation 前に `/update-spec` で反映）:
+  - `er-diagram.md` §`resources` テーブル：新カラムを追記
+  - `api-spec.md` §`GET /api/resources/{id}` / §`POST /api/resources` / §`PUT /api/resources/{id}`：新フィールドをリクエスト・レスポンスに追記
+  - `screen-spec.md` §`/resources/{id}`：新フィールドの表示を追記；§`/admin/resources`：入力欄を追記
+- **変更対象ファイル**（RE 調査 `code-structure.md` 参照）: `V002` マイグレーション（新規）・`Resource.java`・`ResourceResponse.java`・`CreateResourceRequest.java`・`UpdateResourceRequest.java`・`ResourceService.java`・`ResourceControllerTest.java`・`ResourceServiceTest.java`（backend）、`api.ts`（`ResourceResponseSchema`）・`schemas/resource.ts`（`CreateResourceSchema`）・`ResourceManagementClient.tsx`・`resources/[id]/page.tsx`（frontend）
 
-## 拡張設定（Requirements Analysis で確認済み）
+## 依存関係・競合課題（注意）
 
-| Extension | Enabled | 備考 |
-|---|---|---|
-| Security Baseline | No | ユーザー回答（推奨どおり不採用） |
-| Resiliency Baseline | No | ユーザー回答（推奨どおり不採用） |
-| Property-Based Testing | No | ユーザー回答（推奨どおり不採用） |
+- 前提課題：なし
+- 競合課題：`resource-image-upload`（同じく `resources` テーブルへの Flyway マイグレーション・`GET /api/resources/{id}` レスポンス・`/admin/resources` 編集画面を変更するため並行着手非推奨）・`calendar-view`（リソース詳細画面を共有）。現時点ではいずれも未着手（マイグレーションは `V001` のみ）であることを確認済み。
 
-## 確認済みの設計判断（ユーザー回答）
+## スコープ外
 
-- `from`/`to` の重複判定 → `checkConflict`/`overlaps` と同じ overlap 判定（RSV-02）
-- `resourceName` の大文字小文字 → 区別しない（RSV-04）
+- E2E テスト追加（後続課題 `e2e-test-coverage` のスコープ）
+- 一覧画面（`/resources`）での新フィールド表示（RES-05 により対象外）

@@ -3,25 +3,30 @@
 ## Internal Dependencies
 
 ```mermaid
-flowchart LR
-    FE["frontend<br/>(Server Actions)"] -->|"HTTP GET /api/resources<br/>(JWT Bearer)"| BE["backend<br/>(ResourceController)"]
-    BE --> DB[("PostgreSQL")]
+flowchart TD
+    Controller["ResourceController\n(presentation)"] --> Service["ResourceService\n(application)"]
+    Service --> Repo["ResourceRepository\n(domain)"]
+    Service --> ReservationRepo["ReservationRepository\n(domain)"]
+    Repo --> Entity["Resource\n(domain)"]
 ```
 
-### frontend は backend に依存する
-- **Type**: Runtime（HTTP）
-- **Reason**: frontend は Server Actions（BFF 層）経由で backend の REST API を呼び出す。ビルド時の直接依存はなく、`NEXT_PUBLIC_API_BASE_URL`（または同等の環境変数）で疎結合
+### `ResourceService` depends on `ReservationRepository`
 
-### backend は PostgreSQL に依存する
-- **Type**: Runtime
-- **Reason**: `ResourceRepository`（Spring Data JPA）がデータアクセスに使用。テストでは H2（`MODE=PostgreSQL`）で代替
+- **Type**: Compile
+- **Reason**: 空き確認（`list` の from/to フィルタ）で、該当期間に占有予約があるリソースを除外するため（`ResourceService#overlaps` を介した重複判定）。Issue #25（設備情報・利用上の注意の追加）はこの依存に影響しない。
 
-## External Dependencies（Issue #23 関連のみ抜粋）
+## External Dependencies
 
-### spring-boot-starter-data-jpa
-- **Version**: Spring Boot BOM 4.0.6 管理下
-- **Purpose**: `ResourceRepository` の派生クエリ・`@Query` JPQL・将来的な `Specification` 利用の基盤
+### Spring Boot（4.0.6）
 
-### zod
-- **Version**: ^3.25.76
-- **Purpose**: frontend のフォーム・入力スキーマ定義（`frontend/src/lib/schemas/resource.ts`）。keyword 入力欄を `ResourceFilterForm` に追加する場合、既存の `CreateResourceSchema` とは別に、フィルタフォーム側で追加のスキーマ定義が必要になる可能性がある（現状フィルタフォームは Zod スキーマ未使用、`FormData` を直接読み取る実装）
+- **Version**: 4.0.6
+- **Purpose**: REST API フレームワーク一式（Web・Data JPA・Security・Validation）。
+- **License**: Apache-2.0
+
+### Next.js（15.3.2）
+
+- **Version**: ^15.3.2
+- **Purpose**: フロントエンドフレームワーク（App Router）。
+- **License**: MIT
+
+本課題のスコープでは新規外部依存の追加は不要。

@@ -23,6 +23,8 @@ export const MOCK_RESOURCE_RESPONSE = {
   requiresApproval: false,
   isActive: true,
   description: "プロジェクター完備",
+  equipment: "プロジェクター1台、ホワイトボード1台",
+  notes: "利用後は椅子を元の位置に戻してください",
   createdAt: "2025-04-01T09:00:00",
 };
 
@@ -155,6 +157,8 @@ export const handlers = [
         ...MOCK_RESOURCE_RESPONSE,
         id: "20000000-0000-0000-0000-000000000099",
         name: body.name ?? MOCK_RESOURCE_RESPONSE.name,
+        equipment: body.equipment ?? null,
+        notes: body.notes ?? null,
       },
       { status: 201 },
     );
@@ -167,6 +171,8 @@ export const handlers = [
       ...MOCK_RESOURCE_RESPONSE,
       id: params.id,
       name: body.name ?? MOCK_RESOURCE_RESPONSE.name,
+      equipment: body.equipment ?? null,
+      notes: body.notes ?? null,
     });
   }),
 

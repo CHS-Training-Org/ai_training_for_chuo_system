@@ -1,36 +1,39 @@
 # Technology Stack
 
-> 網羅的な技術スタック一覧は [`/workspace/CLAUDE.md`](../../../../CLAUDE.md) §技術スタック、AWS 標準構成は [`docs-next/docs/reference/architecture.md`](../../../../docs-next/docs/reference/architecture.md) を参照。本ファイルは Issue #23 の実装判断に関係する項目のみ抜粋する。
-
 ## Programming Languages
 
-- TypeScript - `frontend/` 全体
-- Java 25 - `backend/` 全体
+- Java 25（backend）
+- TypeScript 5.8.3（frontend）
 
 ## Frameworks
 
-- Next.js 15（App Router） - frontend の UI + BFF
-- React 19 - frontend の UI コンポーネント
-- Zod 3.25 - フォーム・入力バリデーション（`frontend/src/lib/schemas/`）
-- Spring Boot 4.0.6 - backend の REST API 基盤
-- Spring Data JPA - backend のデータアクセス（`ResourceRepository` 等）
-- Flyway - backend の DB マイグレーション（`V001__create_initial_schema.sql` 等）
+- Spring Boot 4.0.6（backend） - REST API・DI・トランザクション管理
+- Spring Data JPA（backend） - 永続化
+- Spring Security + OAuth2 Resource Server（backend） - JWT 検証・認可
+- Next.js 15.3.2（App Router）（frontend） - UI・BFF
+- React 19.1.0（frontend）
+- React Hook Form + Zod（frontend） - フォーム・バリデーション
 
 ## Infrastructure
 
-- PostgreSQL（本番、`docker compose` でローカル代替） - `resources` テーブルの永続化先
-- H2（テスト、`MODE=PostgreSQL` 互換モード） - `backend/src/test/resources/application-test.yml`
+- PostgreSQL（本番・開発、Flyway でスキーマ管理）
+- H2（テスト、PostgreSQL 互換モード）
+- Amazon Cognito（認証、ローカルは cognito-local）
 
 ## Build Tools
 
-- pnpm 11.5.0 - frontend パッケージ管理
-- Gradle（Kotlin DSL） + Spring Boot Gradle Plugin 4.0.6 - backend ビルド
-- Spotless 8.5.1 + Checkstyle - backend フォーマット・Lint
-- oxlint 1.6.0 + oxfmt 0.52.0 - frontend Lint・フォーマット
+- Gradle（Kotlin DSL）（backend）
+- pnpm（frontend）
 
 ## Testing Tools
 
-- Vitest 3.2.6 + MSW 2.7.5 - frontend ユニットテスト（`listResourcesAction` 等をモックサーバー経由でテスト）
-- Playwright 1.52.0 - frontend E2E テスト
-- JUnit 5 + Mockito（`spring-boot-starter-test`） - backend ユニットテスト
-- MockMvc - backend Controller テスト
+- JUnit 5 + Mockito + H2（backend）
+- Vitest + Testing Library + MSW（frontend ユニット）
+- Playwright（frontend E2E）
+
+## Lint / Format
+
+- Spotless + Checkstyle（backend）
+- oxlint + oxfmt（frontend）
+
+本課題（Issue #25）は既存スタックの範囲内で完結し、新規依存関係の追加は不要（Flyway マイグレーション追加・既存 DTO/エンティティの拡張のみ）。

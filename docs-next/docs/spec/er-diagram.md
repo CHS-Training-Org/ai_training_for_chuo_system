@@ -10,7 +10,8 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - backend/src/main/resources/db/migration/V001__create_initial_schema.sql
-last_updated: '2026-08-01T11:56:18+09:00'
+  - backend/src/main/resources/db/migration/V002__add_resource_equipment_and_notes.sql
+last_updated: '2026-10-06T10:00:00+09:00'
 ---
 
 # ER 図
@@ -59,6 +60,8 @@ last_updated: '2026-08-01T11:56:18+09:00'
 | `requires_approval` | `BOOLEAN` | NOT NULL / DEFAULT `FALSE` | 承認フロー要否 |
 | `is_active` | `BOOLEAN` | NOT NULL / DEFAULT `TRUE` | 有効/無効 |
 | `description` | `TEXT` | NULL 可 | 説明文 |
+| `equipment` | `TEXT` | NULL 可 | 設備一覧（プロジェクターの有無等） |
+| `notes` | `TEXT` | NULL 可 | 利用上の注意 |
 | `created_at` | `TIMESTAMP` | NOT NULL / DEFAULT CURRENT_TIMESTAMP | |
 
 ### reservations
