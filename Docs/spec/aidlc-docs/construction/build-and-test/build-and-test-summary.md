@@ -52,7 +52,7 @@ Code Generation Part 2（Step 6）で、過去ユニットの CI レビューで
 学習者PCのメモリ制約への対応として、以下2点を環境を問わず常に適用する設定に変更した（詳細は `build-instructions.md` のトラブルシューティング参照）。
 
 - `frontend/playwright.config.ts`：`workers` を常に `1` に固定
-- `frontend/vitest.config.ts`：`poolOptions.threads.{max,min}Threads: 1` を追加（テスト分離は維持したまま並列度のみ1に絞る）
+- `frontend/vitest.config.ts`：`poolOptions.forks.{max,min}Forks: 1` を追加（テスト分離は維持したまま並列度のみ1に絞る。Vitest 3 のデフォルト pool は `"forks"` のため）
 
 ## Overall Status
 

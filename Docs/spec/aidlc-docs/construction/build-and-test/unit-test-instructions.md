@@ -29,7 +29,7 @@ pnpm test
 
 - **期待値**: 全テスト成功
 - **実測値（本セッション）**: 15 ファイル・全 121 テスト成功（本ユニットは frontend のユニットテストを追加していないため件数は従来のまま）
-- **メモ**: `vitest.config.ts` に `poolOptions.threads.{max,min}Threads: 1` を追加済み（低メモリ環境での安定化、`build-instructions.md` のトラブルシューティング参照）
+- **メモ**: `vitest.config.ts` に `poolOptions.forks.{max,min}Forks: 1` を追加済み（低メモリ環境での安定化、`build-instructions.md` のトラブルシューティング参照）
 
 ## Frontend（E2E テスト、本ユニットの追加分）
 
