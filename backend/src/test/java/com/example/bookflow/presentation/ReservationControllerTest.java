@@ -685,6 +685,10 @@ class ReservationControllerTest extends BaseControllerTest {
         .andExpect(
             // resourceName に一致しないが同じ APPROVED 状態のデコイ（resourceName 条件自体の検証用）
             jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_RESOURCE_ID))
+                .doesNotExist())
+        .andExpect(
+            // resourceName・status はともに一致するが他メンバーの予約（requester_id 条件自体の検証用）
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID))
                 .doesNotExist());
   }
 
