@@ -120,6 +120,25 @@ describe("ResourceManagementClient", () => {
     );
   });
 
+  it("編集ダイアログで利用上の注意を入力してから消去すると、null として updateResourceAction を呼び出す", async () => {
+    const user = userEvent.setup();
+    render(<ResourceManagementClient resources={[BASE_RESOURCE]} />);
+
+    await user.click(screen.getByRole("button", { name: "編集" }));
+    const dialog = await screen.findByRole("dialog", { name: "リソース編集" });
+
+    const notesInput = within(dialog).getByLabelText("利用上の注意");
+    await user.type(notesInput, "一時入力");
+    await user.clear(notesInput);
+    await user.click(within(dialog).getByRole("button", { name: "保存する" }));
+
+    expect(updateResourceActionMock).toHaveBeenCalledTimes(1);
+    expect(updateResourceActionMock).toHaveBeenCalledWith(
+      BASE_RESOURCE.id,
+      expect.objectContaining({ notes: null }),
+    );
+  });
+
   it("編集時に設備一覧・利用上の注意を書き換えて保存すると、新しい値で updateResourceAction を呼び出す", async () => {
     const user = userEvent.setup();
     render(<ResourceManagementClient resources={[BASE_RESOURCE]} />);

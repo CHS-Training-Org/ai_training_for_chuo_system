@@ -961,3 +961,11 @@ timestamp: 2026-08-29
 **User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド 1がNGになりました。対応方法をおしえてください。（バックエンドとBFF層の変更はテストで検証されているが、フロントエンドの画面側（管理画面フォームと詳細画面）の新規ロジックに対応するテストが差分にない。該当コード変更を取り消しても、すべてのテストがpassのまま残る。テストのない新規ロジック: 1. 編集ダイアログの初期値（equipment/notesのeditTarget伝播）、2. 詳細画面の条件付き表示（未登録時は非表示という受入条件そのものを実装する分岐）、3. 入力欄の値変換（空文字→nullのonChange）。frontend/package.jsonに@testing-library/reactとjsdomが入っているためVitestでコンポーネントを描画して検証できるはず、との指摘）"
 **AI Response**: "指摘は正当。`docs-next/docs/develop/coding-conventions.md` §カバレッジの考え方（新規・変更コードには必ずテストを付ける）に照らし、Code Generation Plan で『ResourceManagementClient/詳細画面の新規コンポーネントテストはBFF層のテストで代替する』としていた決定を撤回。新規 `resource-management-client.test.tsx`（5件：編集ダイアログの初期値反映、新規登録時のequipment/notes転送、空欄時のnull変換、編集時の入力→消去でのnull変換、編集時の値書き換え）と `resource-detail-page.test.tsx`（3件：async Server Componentを直接呼び出しrender()に渡す形式で、equipment/notesの条件表示を検証）を追加。break-and-verifyで、(1)編集ダイアログのdefaultValuesからequipment/notes除去、(2)詳細画面の両条件表示をそれぞれ常時表示に変更、(3)Textareaのonchangeからnull変換を除去、の3点を再現。(3)は当初『空欄のまま新規登録』テストでは検出できないと判明（defaultValuesのnullがそのまま残るケースのため、onChange自体は発火しない）。『入力してから消去する』操作を経由する新規テストを追加して初めて検出できることを確認し、この経緯も含めてfrontend-summary.mdに記録。全break-and-verifyで意図したテストのみがredになることを確認してから復元。`pnpm test`120件・lint/format/buildすべてgreenを確認。"
 **Context**: CI レビュー指摘（観点2・ラウンド1）への対応完了。修正を追加コミットし、PR #136 へ push する
+
+---
+
+## CI AIレビュー対応（PR #136・観点2 実装と非機能部分の整合性・ラウンド2、resource-detail-info）
+**Timestamp**: 2026-10-06T09:14:00Z
+**User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド 2がNGになりました。対応方法をおしえてください。（ラウンド1で指摘したテスト不足の大部分はコミット476177eで解消されているが、利用上の注意の入力欄をnullに変換する分岐〔ResourceManagementClient.tsx:226〕だけは、取り消してもすべてのテストがpassする状態が残っている。equipment側は『入力してから消去』するテストを追加したが、notes側の同形のテストが無かったための見落とし）"
+**AI Response**: "指摘は正当。ラウンド1でequipment側のみ『入力してから消去する』テストを追加し、対になるnotes側を追加し忘れていた単純な見落とし。`resource-management-client.test.tsx`に、notesを入力してから消去するとnullでupdateResourceActionが呼ばれることを検証する6件目のテストを追加。break-and-verifyで、notesのTextareaのonChangeから`|| null`変換を除去し、追加したテストのみがredになることを確認してから復元。`pnpm test`121件・lint/format/buildすべてgreenを確認。frontend-summary.mdに、ラウンド1でequipment側のみ追加しnotes側を見落としていた経緯も含めて記録。"
+**Context**: CI レビュー指摘（観点2・ラウンド2）への対応完了。修正を追加コミットし、PR #136 へ push する
