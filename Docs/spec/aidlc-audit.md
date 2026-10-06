@@ -708,3 +708,11 @@ timestamp: 2026-08-29
 **User Input**: "Approve & Continue"
 **AI Response**: "承認を記録。Operations フェーズ（BookFlow では CI 品質ゲート相当）へ遷移。学習者には `/commit-push`・`/create-pr`（base: `learner/CHS-FUJITA-RIKA/main`、ADR-030準拠）の利用を案内する。"
 **Context**: Build and Test（reservation-list-filter）承認 → Operations フェーズへ遷移
+
+---
+
+## CI AIレビュー対応（PR #135・観点1 要求整合性・ラウンド1、reservation-list-filter）
+**Timestamp**: 2026-10-06T02:09:00Z
+**User Input**: "AI レビュー / 観点1 要求整合性 / ラウンド 1でNGになりました。対応をおしえてほしいです。（NG根拠: 受入条件『フィルタをリセットすると全件表示に戻る』と、US-04 の承認済み Gherkin『すべてのフィルタが解除され、既定の表示（ステータスタブ「すべて」相当）に戻る』に対し、`ReservationFilterForm.handleReset` が status を維持する実装になっており矛盾。`frontend-components.md` の設計判断もこれと矛盾）"
+**AI Response**: "指摘は正当と判断。Functional Design 段階で下した『リセット時は status を維持する』という判断が、同じユニットで既に承認済みだった US-04 の Gherkin 受入条件と矛盾する未承認の逸脱だったことが根本原因。`ReservationFilterForm.handleReset` を `router.push('/reservations')`（status含め全パラメータ解除）に修正し、`ResourceFilterForm.handleReset` と同じ全解除パターンに統一。`reservation-filter-form.test.tsx` の該当テストを新しい挙動の検証に書き換え、break-and-verifyで旧実装（statusを維持する分岐）に戻すと当該テストのみがredになることを確認してから復元。`frontend-components.md` に訂正注記を追加。`pnpm test`（109件）・`pnpm lint`・`pnpm format:check` すべてgreenを確認。"
+**Context**: CI レビュー指摘への対応完了。修正を追加コミットし、PR #135 へ push する

@@ -39,13 +39,12 @@ router.push(`/reservations?${params.toString()}`);
 
 ### `handleReset` の挙動
 
-`resourceName`・`from`・`to` のみを解除し、**現在選択中のステータスタブは維持する**（ステータスのリセットは既存の「すべて」タブが別途担っており、役割を分離する）。
+US-04（`user-stories/stories.md`）の受入条件「すべてのフィルタが解除され、既定の表示（ステータスタブ「すべて」相当）に戻る」のとおり、`resourceName`・`from`・`to` に加えて **`status` を含むすべてのフィルタを解除**し、`/reservations`（パラメータなし）に遷移する。
+
+> **訂正（Code Generation 時に修正）**: 本ドキュメント初版では「status は維持する」としていたが、これは US-04 の承認済み Gherkin 受入条件と矛盾する未承認の逸脱だった（CI レビューで指摘）。本節は実装（修正後）に合わせて書き換え済み。
 
 ```
-const params = new URLSearchParams();
-const currentStatus = searchParams.getAll("status");
-for (const s of currentStatus) params.append("status", s);
-router.push(`/reservations?${params.toString()}`);
+router.push("/reservations");
 ```
 
 ### `data-testid` 命名

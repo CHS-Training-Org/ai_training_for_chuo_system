@@ -16,8 +16,9 @@ interface ReservationFilterFormProps {
  * 予約一覧のフィルタフォーム（クライアントコンポーネント）。
  *
  * リソース名検索・期間フィルタの入力を受け取り、URL の searchParams を更新してサーバーコンポーネントに伝える。
- * ステータスタブ（Link ベース、別コンポーネント）とは独立しているため、送信・リセット時は
- * 現在選択中の status を searchParams から読み取って転記する（失わないようにする）。
+ * ステータスタブ（Link ベース、別コンポーネント）とは独立しているため、送信時は現在選択中の status を
+ * searchParams から読み取って転記する（失わないようにする）。一方リセット時は US-04 のとおり
+ * すべてのフィルタ（status を含む）を解除し、既定の表示（ステータスタブ「すべて」相当）に戻す。
  */
 export function ReservationFilterForm({
   defaultResourceName,
@@ -51,11 +52,8 @@ export function ReservationFilterForm({
   );
 
   const handleReset = useCallback(() => {
-    const params = new URLSearchParams();
-    const currentStatus = searchParams.getAll("status");
-    for (const s of currentStatus) params.append("status", s);
-    router.push(`/reservations?${params.toString()}`);
-  }, [router, searchParams]);
+    router.push("/reservations");
+  }, [router]);
 
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4 space-y-4">

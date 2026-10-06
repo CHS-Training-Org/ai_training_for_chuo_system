@@ -86,7 +86,7 @@ describe("ReservationFilterForm", () => {
     expect(pushedUrl.searchParams.get("resourceName")).toBe("会議室");
   });
 
-  it("リセットボタンを押すと、resourceName/from/to を含めずに現在の status を維持して /reservations に遷移する", async () => {
+  it("リセットボタンを押すと、status を含むすべてのフィルタを解除して /reservations（既定表示）に遷移する（US-04）", async () => {
     mockSearchParams = new URLSearchParams("status=APPROVED");
     const user = userEvent.setup();
     render(
@@ -99,12 +99,7 @@ describe("ReservationFilterForm", () => {
 
     await user.click(screen.getByRole("button", { name: "リセット" }));
 
-    expect(pushMock).toHaveBeenCalledTimes(1);
-    const pushedUrl = new URL(pushMock.mock.calls[0][0], "http://localhost");
-    expect(pushedUrl.searchParams.getAll("status")).toEqual(["APPROVED"]);
-    expect(pushedUrl.searchParams.has("resourceName")).toBe(false);
-    expect(pushedUrl.searchParams.has("from")).toBe(false);
-    expect(pushedUrl.searchParams.has("to")).toBe(false);
+    expect(pushMock).toHaveBeenCalledWith("/reservations");
   });
 
   it("from/to を入力して絞り込むと、from/to パラメータとして付与する", async () => {
