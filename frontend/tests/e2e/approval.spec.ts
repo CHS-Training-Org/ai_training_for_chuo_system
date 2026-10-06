@@ -1,5 +1,6 @@
 import { test, expect, type Browser } from "@playwright/test";
 import { AUTH_STATE } from "./auth-state";
+import { toDateTimeLocal } from "./helpers";
 
 /**
  * TEST-04: APPROVER ロールでの承認操作（承認・却下）。
@@ -36,14 +37,6 @@ async function createPendingReservation(browser: Browser, label: string): Promis
   return purpose;
 }
 
-function toDateTimeLocal(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
-  );
-}
-
 test.describe("承認操作", () => {
   test("APPROVER が承認待ちの申請を承認できる", async ({ browser }) => {
     const purpose = await createPendingReservation(browser, "approve");
@@ -54,9 +47,9 @@ test.describe("承認操作", () => {
 
     const row = page.getByRole("row", { name: new RegExp(purpose) });
     await expect(row).toBeVisible();
-    await row.getByRole("button", { name: "承認" }).click();
+    await row.getByRole("button", { name: "承認", exact: true }).click();
 
-    await page.getByRole("button", { name: "承認する" }).click();
+    await page.getByRole("button", { name: "承認する", exact: true }).click();
     await expect(page.getByText("承認しました。")).toBeVisible();
     await expect(row).not.toBeVisible();
 
@@ -72,10 +65,10 @@ test.describe("承認操作", () => {
 
     const row = page.getByRole("row", { name: new RegExp(purpose) });
     await expect(row).toBeVisible();
-    await row.getByRole("button", { name: "却下" }).click();
+    await row.getByRole("button", { name: "却下", exact: true }).click();
 
     await page.getByPlaceholder("却下理由を入力してください（必須）").fill("E2Eテストによる却下");
-    await page.getByRole("button", { name: "却下する" }).click();
+    await page.getByRole("button", { name: "却下する", exact: true }).click();
 
     await expect(page.getByText("却下しました。")).toBeVisible();
     await expect(row).not.toBeVisible();

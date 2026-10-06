@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { toDateTimeLocal } from "./helpers";
 
 /**
  * TEST-03: サインイン → リソース一覧閲覧 → 予約申請 を1本のテストシナリオとして実行する
@@ -52,12 +53,3 @@ test("サインインしてリソース一覧を閲覧し、予約を申請で�
 
   await expect(page.getByText(purpose)).toBeVisible();
 });
-
-/** datetime-local input 用に `yyyy-MM-ddTHH:mm` 形式へ整形する。 */
-function toDateTimeLocal(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
-  );
-}

@@ -6,10 +6,10 @@ export default defineConfig({
   // Next.js dev サーバー（Turbopack）はルートを初回アクセス時に遅延コンパイルするため、
   // デフォルトの30秒では未コンパイルルートへの初回ナビゲーションがタイムアウトし得る。
   timeout: 60_000,
-  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // メモリの少ない学習者端末でも安定して実行できるよう、常に直列実行する。
+  // メモリの少ない学習者端末でも安定して実行できるよう、常に直列実行する
+  // （fullyParallel は workers:1 と両立すると意図が分かりにくくなるため設定しない）。
   workers: 1,
   reporter: "html",
   use: {
