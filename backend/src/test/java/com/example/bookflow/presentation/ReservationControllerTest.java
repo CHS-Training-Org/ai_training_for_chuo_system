@@ -106,6 +106,13 @@ class ReservationControllerTest extends BaseControllerTest {
   private static final UUID RESERVATION_FILTER_PENDING_SAMENAME_ID =
       UUID.fromString("30000000-0000-0000-0000-000000000028");
 
+  /**
+   * MEMBER が所有する、RESOURCE_FILTER_B_ID（"FilterAlpha" を含まない）への APPROVED 予約 （2025-08-01
+   * 14:00-15:00・period/status は一致するが resourceName のみ不一致、 resourceName 条件自体が複合クエリで効いているかの確認用デコイ）
+   */
+  private static final UUID RESERVATION_FILTER_OTHER_RESOURCE_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000029");
+
   @Autowired private JdbcTemplate jdbcTemplate;
 
   @BeforeEach
@@ -333,6 +340,19 @@ class ReservationControllerTest extends BaseControllerTest {
         LocalDateTime.of(2025, 8, 2, 12, 0),
         "resourceName+statusのAND確認用予約",
         "PENDING",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        RESERVATION_FILTER_OTHER_RESOURCE_ID,
+        RESOURCE_FILTER_B_ID,
+        MEMBER_ID,
+        LocalDateTime.of(2025, 8, 1, 14, 0),
+        LocalDateTime.of(2025, 8, 1, 15, 0),
+        "resourceName条件自体の効果確認用デコイ予約",
+        "APPROVED",
         LocalDateTime.of(2025, 6, 1, 9, 0),
         LocalDateTime.of(2025, 6, 1, 9, 0));
   }
@@ -656,6 +676,182 @@ class ReservationControllerTest extends BaseControllerTest {
             jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
         .andExpect(
             jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PENDING_SAMENAME_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminWithResourceNameAndPeriod_appliesAndCondition() throws Exception {
+    // ReservationService#list の ADMIN・resourceName・period 分岐（status 未指定）を検証する
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("resourceName", "FilterAlpha")
+                .param("from", "2025-08-01T00:00:00")
+                .param("to", "2025-08-01T23:59:59"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OUTSIDE_PERIOD_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_RESOURCE_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminWithResourceNameAndStatus_appliesAndCondition() throws Exception {
+    // ReservationService#list の ADMIN・resourceName・status 分岐（period 未指定）を検証する
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("resourceName", "FilterAlpha")
+                .param("status", "APPROVED"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PENDING_SAMENAME_ID))
+                .doesNotExist())
+        .andExpect(
+            // resourceName に一致しないが同じ APPROVED 状態のデコイ（resourceName 条件自体の検証用）
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_RESOURCE_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminWithPeriodAndStatus_appliesAndCondition() throws Exception {
+    // ReservationService#list の ADMIN・period・status 分岐（resourceName 未指定）を検証する
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("from", "2025-08-01T00:00:00")
+                .param("to", "2025-08-02T23:59:59")
+                .param("status", "APPROVED"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PENDING_SAMENAME_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OUTSIDE_PERIOD_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberWithResourceNameAndPeriod_appliesAndConditionWithinOwnReservations()
+      throws Exception {
+    // ReservationService#list の 非ADMIN・resourceName・period 分岐（status 未指定）を検証する
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("resourceName", "FilterAlpha")
+                .param("from", "2025-08-01T00:00:00")
+                .param("to", "2025-08-01T23:59:59"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OUTSIDE_PERIOD_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_RESOURCE_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminWithResourceNameAndPeriodAndStatus_appliesFullyCombinedAndCondition()
+      throws Exception {
+    // 16メソッドのうち最も条件数の多い組み合わせ（ADMIN）を、モックではなく実際の JPQL 実行で検証する
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("resourceName", "FilterAlpha")
+                .param("from", "2025-08-01T00:00:00")
+                .param("to", "2025-08-02T23:59:59")
+                .param("status", "APPROVED"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PENDING_SAMENAME_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OUTSIDE_PERIOD_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_RESOURCE_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberWithPeriodAndStatus_appliesAndConditionWithinOwnReservations() throws Exception {
+    // ReservationService#list の 非ADMIN・period・status 分岐（resourceName 未指定）を、
+    // モックではなく実際の JPQL 実行で検証する
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("from", "2025-08-01T00:00:00")
+                .param("to", "2025-08-02T23:59:59")
+                .param("status", "APPROVED"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PENDING_SAMENAME_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OUTSIDE_PERIOD_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberWithResourceNameAndPeriodAndStatus_appliesFullyCombinedAndCondition()
+      throws Exception {
+    // 16メソッドのうち最も条件数の多い組み合わせ（非ADMIN）を、モックではなく実際の JPQL 実行で検証する
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("resourceName", "FilterAlpha")
+                .param("from", "2025-08-01T00:00:00")
+                .param("to", "2025-08-02T23:59:59")
+                .param("status", "APPROVED"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PENDING_SAMENAME_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OUTSIDE_PERIOD_ID))
+                .doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_RESOURCE_ID))
                 .doesNotExist());
   }
 

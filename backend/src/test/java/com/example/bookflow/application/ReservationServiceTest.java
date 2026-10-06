@@ -685,5 +685,57 @@ class ReservationServiceTest {
 
       assertThat(result.getContent()).hasSize(1);
     }
+
+    @Test
+    void list_adminWithResourceNameAndPeriod_callsResourceNameAndPeriodRepositoryMethod() {
+      User admin = makeUser(UUID.randomUUID(), Role.ADMIN);
+      when(reservationRepository.findByResourceNameAndPeriodFetch("会議室", from, to, pageable))
+          .thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(admin, null, "会議室", from, to, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_adminWithResourceNameAndStatus_callsResourceNameAndStatusInRepositoryMethod() {
+      User admin = makeUser(UUID.randomUUID(), Role.ADMIN);
+      List<ReservationStatus> statuses = List.of(ReservationStatus.APPROVED);
+      when(reservationRepository.findByResourceNameAndStatusInFetch("会議室", statuses, pageable))
+          .thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(admin, statuses, "会議室", null, null, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_adminWithPeriodAndStatus_callsPeriodAndStatusInRepositoryMethod() {
+      User admin = makeUser(UUID.randomUUID(), Role.ADMIN);
+      List<ReservationStatus> statuses = List.of(ReservationStatus.APPROVED);
+      when(reservationRepository.findByPeriodAndStatusInFetch(from, to, statuses, pageable))
+          .thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(admin, statuses, null, from, to, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void
+        list_memberWithResourceNameAndPeriod_callsRequesterIdAndResourceNameAndPeriodRepositoryMethod() {
+      User member = makeUser(UUID.randomUUID(), Role.MEMBER);
+      when(reservationRepository.findByRequesterIdAndResourceNameAndPeriodFetch(
+              member.getId(), "会議室", from, to, pageable))
+          .thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(member, null, "会議室", from, to, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
   }
 }

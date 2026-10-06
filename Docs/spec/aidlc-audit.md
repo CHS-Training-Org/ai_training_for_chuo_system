@@ -716,3 +716,11 @@ timestamp: 2026-08-29
 **User Input**: "AI レビュー / 観点1 要求整合性 / ラウンド 1でNGになりました。対応をおしえてほしいです。（NG根拠: 受入条件『フィルタをリセットすると全件表示に戻る』と、US-04 の承認済み Gherkin『すべてのフィルタが解除され、既定の表示（ステータスタブ「すべて」相当）に戻る』に対し、`ReservationFilterForm.handleReset` が status を維持する実装になっており矛盾。`frontend-components.md` の設計判断もこれと矛盾）"
 **AI Response**: "指摘は正当と判断。Functional Design 段階で下した『リセット時は status を維持する』という判断が、同じユニットで既に承認済みだった US-04 の Gherkin 受入条件と矛盾する未承認の逸脱だったことが根本原因。`ReservationFilterForm.handleReset` を `router.push('/reservations')`（status含め全パラメータ解除）に修正し、`ResourceFilterForm.handleReset` と同じ全解除パターンに統一。`reservation-filter-form.test.tsx` の該当テストを新しい挙動の検証に書き換え、break-and-verifyで旧実装（statusを維持する分岐）に戻すと当該テストのみがredになることを確認してから復元。`frontend-components.md` に訂正注記を追加。`pnpm test`（109件）・`pnpm lint`・`pnpm format:check` すべてgreenを確認。"
 **Context**: CI レビュー指摘への対応完了。修正を追加コミットし、PR #135 へ push する
+
+---
+
+## CI AIレビュー対応（PR #135・観点2 実装と非機能部分の整合性・ラウンド1、reservation-list-filter）
+**Timestamp**: 2026-10-06T02:30:00Z
+**User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド 1もNGになりました。対応方法をおしえてほしいです。（NG根拠1: ReservationService#listの16分岐のうち4経路（ADMIN+名前+期間、ADMIN+名前+status、ADMIN+期間+status、非ADMIN+名前+期間）がServiceTest・ControllerTestどちらからも呼ばれていない。なお複合条件のクエリ本体〔findByResourceNameAndPeriodAndStatusInFetch・findByRequesterIdAndPeriodAndStatusInFetch・findByRequesterIdAndResourceNameAndPeriodAndStatusInFetch〕はServiceTestのモック経由でしか呼ばれておらずJPQLの中身が実行されるテストがない。NG根拠2: screen-spec.md:216の期間フィルター行『片方のみの入力では絞り込まれない』が、実装〔ReservationController:67-69で400 VALIDATION_ERROR〕およびstories.mdのUS-02〔400エラーとなる〕と食い違っている）"
+**AI Response**: "両方の指摘を是正。(1) ReservationServiceTestのList_に4分岐（ADMIN+resourceName+period、ADMIN+resourceName+status、ADMIN+period+status、非ADMIN+resourceName+period）のモックベーステストを追加し分岐カバレッジを閉じた。(2) ReservationControllerTestに7件のH2実行テストを追加し、未検証だった2条件分岐4件と、ServiceTestのモックのみだった3条件結合メソッド3件（JPQL連結の誤りを検出できない問題）を実際のJPQL実行で検証。追加の過程で、既存seedだけでは resourceName 条件自体を検証できていない（同一期間・同一statusで別resourceNameのデコイが無い）ことに気づき、新規デコイ予約RESERVATION_FILTER_OTHER_RESOURCE_IDを追加し該当5テストにdoesNotExist検証を追加。(3) screen-spec.mdの期間フィルター説明を実装・stories.md US-02と整合する記述（400エラー）に修正し、last_updatedを更新。backend全テストgreen、`./gradlew spotlessApply checkstyleMain`差分なし、docs-next `npm run build`成功を確認。各新規テスト・デコイについて対象コード（JPQL定数の連結・分岐の呼び出し先）を一時的に無効化し、意図したテストのみがredになることを確認してから復元する break-and-verify を実施。"
+**Context**: CI レビュー指摘（観点2・ラウンド1）への対応完了。修正を追加コミットし、PR #135 へ push する
