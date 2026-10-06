@@ -504,3 +504,239 @@ timestamp: 2026-08-29
 **Context**: resource-sort ユニット完了後の CI レビュー指摘対応（`/aidlc` エンジンのステージ外、PR #134 への追加コミットとして対応）
 
 ---
+
+## Workflow Start（新規ユニット: reservation-list-filter）
+**Timestamp**: 2026-10-05T23:22:48Z
+**User Input**: "/aidlc"
+**AI Response**: "Pre-flight：ブランチ `feature/CHS-FUJITA-RIKA/24-reservation-list-filter-aidlc` 上で起動。前回2ユニット（resource-search・resource-sort）と同様、古い main から切られた未push・無コミットのローカル専用ブランチであることを確認。AskUserQuestion でトランクブランチへの付け替えを確認し承認を得たうえで `git reset --hard origin/learner/CHS-FUJITA-RIKA/main`（PR #132・#134 マージ済み）を実行。ブランチ名の `-aidlc` 接尾辞を除いた short-desc=`reservation-list-filter` で `docs-next/docs/spec/enhancements/beginner/reservation-list-filter.md` を対象シートと特定。`gh issue view 24` でタイトル「予約一覧のフィルタ拡張」が一致することを確認し、Issue #24 として一意特定（ユーザーへの追加確認は不要と判断）。対象課題の依存関係節は「前提課題：なし」のため、resource-sort のような依存解決待ちは不要。"
+**Context**: Pre-flight（対象タスク特定・ブランチ付け替え）完了 → エンジン起動（Workspace Detection）へ
+
+---
+
+## Workspace Detection（reservation-list-filter）
+**Timestamp**: 2026-10-05T23:25:42Z
+**User Input**: "(N/A — ワークスペーススキャンによる自動判定)"
+**AI Response**: "既存コードベースあり（Brownfield）と判定。既存 RE 成果物はいずれも Resource ドメイン専用（`code-structure-resource-sort.md` 等）であり、本課題（Reservation ドメイン）への転用は不可と判断。次ステージを Reverse Engineering（本課題スコープに限定した追加調査）に設定。"
+**Context**: Workspace Detection — EXECUTE（必須ステージ）、Brownfield 判定、次ステージ = Reverse Engineering（スコープ限定）
+
+---
+
+## Reverse Engineering（reservation-list-filter、スコープ限定）
+**Timestamp**: 2026-10-05T23:25:42Z
+**User Input**: "(N/A — 前ステージからの自動遷移。Explore サブエージェントによる調査結果を入力として使用)"
+**AI Response**: "Reservation ドメイン（`ReservationController`/`ReservationService`/`ReservationRepository`/`Reservation`・`Resource` エンティティ関連・既存テスト・frontend の予約一覧画面とリソース一覧フィルタの既存実装パターン）を調査し、`code-structure-reservation-list-filter.md` を追加生成。主要な発見：(1) 既存の「ロール×status有無」4メソッド構成に resourceName・from/to を素朴に掛け合わせると16メソッドになる組み合わせ爆発の懸念があり、ResourceRepository の keyword 実装と同じ『フィルタ条件ごとに専用 @Query メソッド＋共通 JPQL 定数』方針を踏襲する案が妥当、(2) Resource の空き確認とは異なり、本課題の from/to は Reservation 自身の startAt/endAt への単純な JPQL 述語で完結でき、Java側手動ページネーションは不要、(3) 重複判定の意味論は既存の ResourceService.overlaps（半開区間 [start,end)）に合わせるのが一貫性がある、(4) ReservationServiceTest には list() を対象にした既存スタブが無いため、シグネチャ変更によるスタブ破綻は発生しない。承認待ち。"
+**Context**: Reverse Engineering — EXECUTE（スコープ限定）、成果物生成完了、承認待ち
+
+---
+
+## Reverse Engineering — Approval
+**Timestamp**: 2026-10-05T23:27:49Z
+**User Input**: "はい"
+**AI Response**: "承認を記録。Requirements Analysis へ遷移。"
+**Context**: Reverse Engineering 承認 → 次ステージ Requirements Analysis
+
+---
+
+## Requirements Analysis — Intent Analysis
+**Timestamp**: 2026-10-05T23:27:49Z
+**User Input**: "(N/A — 前ステージからの自動遷移。分析対象はビジネス要求シート reservation-list-filter.md)"
+**AI Response**: "Request Clarity: Mostly Clear（RSV-02 の『指定期間内に開始または終了する予約を返せる』という文言が、文字通りの解釈〔startAt/endAt が範囲内に literal に収まる〕と、一般的な期間重複〔overlap〕のどちらを意図しているか曖昧。AI活用ポイント欄が『checkConflict の重なり定義と一致するか確認せよ』と明記しているため、Requirements Analysis で確認が必要と判断）。Request Type: Enhancement。Scope: Multiple Components（frontend + backend）。Complexity: Moderate（16メソッドの組み合わせ爆発への対応方針決定が必要）。Depth: Standard に設定。"
+**Context**: Requirements Analysis Step 2-3（Intent Analysis・Depth 決定）
+
+---
+
+## Requirements Analysis — Clarifying Questions
+**Timestamp**: 2026-10-05T23:31:08Z
+**User Input**: "RSV-02「指定期間内に開始または終了する予約を返せる」の解釈は？"="重複（overlap）判定（推奨）", "resourceName フィルタの部分一致は大文字小文字を区別しますか？"="区別しない（推奨）", "Security Extensions: 本ユニットにセキュリティ拡張ルールを適用しますか？"="No（推奨）" ／ "Resiliency Extensions: 本ユニットにレジリエンシーベースラインを適用しますか？"="No（推奨）", "Property-Based Testing: バックエンドのフィルタロジックに PBT ルールを適用しますか？"="No（推奨）"
+**AI Response**: "AskUserQuestion（2回・計5問）で回答受領。RSV-02 の期間フィルタは checkConflict/ResourceService.overlaps と同じ overlap 判定（半開区間）に決定。resourceName は大文字小文字非依存（LOWER()比較）に決定。Security/Resiliency/PBT の3拡張はいずれも不採用（Enabled=No）と Docs/spec/aidlc-state.md に記録。矛盾・曖昧な回答なし。"
+**Context**: Requirements Analysis Step 5〜6（曖昧点解消・拡張opt-in）完了
+
+---
+
+## Requirements Analysis — Document Generated
+**Timestamp**: 2026-10-05T23:31:08Z
+**User Input**: "(N/A — 前ステップからの継続)"
+**AI Response**: "`Docs/spec/aidlc-docs/inception/requirements/requirements.md` を生成。機能要件 RSV-01〜06（大文字小文字非依存・trim/null変換・from/to同時指定必須のバリデーションを含む）、非機能要件 NFR-01〜04（16メソッド組み合わせ爆発への対応方針・JPQL定数集約・DBページング維持）、受入条件・拡張設定（すべて不採用）を記載。承認待ち。"
+**Context**: Requirements Analysis Step 7、承認ゲート提示
+
+---
+
+## Requirements Analysis — Approval
+**Timestamp**: 2026-10-05T23:32:05Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。User Stories へ遷移。"
+**Context**: Requirements Analysis 承認 → 次ステージ User Stories
+
+---
+
+## User Stories — Assessment & Plan
+**Timestamp**: 2026-10-05T23:32:05Z
+**User Input**: "(N/A — 前ステージからの自動遷移)"
+**AI Response**: "`user-stories-assessment.md` を生成し EXECUTE 判定（New User Features・User Experience Changes 該当）を記録。`story-generation-plan.md` を生成：Feature-Based breakdown、2ペルソナ構成、受入条件ベースの4ストーリー構成。Requirements Analysis で主要な曖昧点は解消済みのため、追加のAskUserQuestionは不要と判断。"
+**Context**: User Stories Part 1 Step 1-6（Assessment・Plan 作成）
+
+---
+
+## User Stories — Plan Approval
+**Timestamp**: 2026-10-05T23:33:30Z
+**User Input**: "はい"
+**AI Response**: "承認を記録。Part 2（生成）へ進み、personas.md・stories.md を生成する。"
+**Context**: User Stories Part 1 → Part 2 遷移
+
+---
+
+## User Stories — Generation Complete
+**Timestamp**: 2026-10-05T23:33:30Z
+**User Input**: "(N/A — 計画に基づく自動生成)"
+**AI Response**: "`personas.md`（主ペルソナ：BookFlow認証済みユーザー、補助ペルソナ：ADMIN）と `stories.md`（US-01〜US-04、受入条件 5 件を Gherkin 形式でカバー）を生成。承認待ち。"
+**Context**: User Stories Part 2 Step 15-20、承認ゲート提示
+
+---
+
+## User Stories — Approval
+**Timestamp**: 2026-10-05T23:34:40Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Workflow Planning へ遷移。"
+**Context**: User Stories 承認 → 次ステージ Workflow Planning
+
+---
+
+## Workflow Planning
+**Timestamp**: 2026-10-05T23:35:35Z
+**AI Prompt**: "Ready to proceed with this plan?"
+**User Response**: "(N/A — 計画提示前。以下は計画内容の記録)"
+**Status**: Plan Created
+**Context**: `execution-plan.md` を生成。Application Design/Units Generation は SKIP（新規コンポーネント不要・単一units of work）。Functional Design は EXECUTE（16メソッドへの組み合わせ拡張方式・JPQL定数設計・from/to overlap意味論の確定が必要）。NFR Requirements/Design・Infrastructure Design は SKIP。Code Generation・Build and Test は ALWAYS EXECUTE。Risk Level: Medium（16メソッド化の実装量・from/to意味論不一致リスクを根拠）。承認待ち。
+
+---
+
+## Workflow Planning — Approval
+**Timestamp**: 2026-10-05T23:36:50Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Construction フェーズ、ユニット「reservation-list-filter」の Functional Design へ遷移。"
+**Context**: Workflow Planning 承認 → 次ステージ Functional Design（Construction）
+
+---
+
+## Functional Design（reservation-list-filter）
+**Timestamp**: 2026-10-05T23:39:18Z
+**User Input**: "(N/A — 前ステージからの自動遷移)"
+**AI Response**: "Application Design/Units Generation を SKIP しているため requirements.md・stories.md を直接入力として使用。`reservation-list-filter-functional-design-plan.md` を作成し、既存ステージで曖昧点は解消済みと判断（追加の AskUserQuestion は不要）。本ステージで新たに決定した設計判断：resourceName のワイルドカードエスケープ（ビジネス要求シート未記載だが keyword 検索と同一メカニズムのため一貫性のため適用）、16メソッド構成の命名規則（既存4メソッド無変更＋新規12メソッド追加）。business-logic-model.md（16メソッド一覧表を含む）・business-rules.md（BR-01〜07）・domain-entities.md（スキーマ変更なしの確認）・frontend-components.md（ReservationFilterForm新規作成、既存ステータスタブとの共存方式〔status値をuseSearchParamsから転記〕、リセット時はstatus維持）を生成。承認待ち。"
+**Context**: Functional Design Step 1-7、承認ゲート提示
+
+---
+
+## Functional Design — Approval
+**Timestamp**: 2026-10-05T23:40:14Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "承認を記録。Code Generation へ遷移。"
+**Context**: Functional Design 承認 → 次ステージ Code Generation
+
+---
+
+## Code Generation Part 1 — Planning（reservation-list-filter）
+**Timestamp**: 2026-10-05T23:41:51Z
+**User Input**: "(N/A — 前ステージからの自動遷移)"
+**AI Response**: "`reservation-list-filter-code-generation-plan.md` を作成。最重要の技術判断：Repository層に共通JPQL定数（RESOURCE_NAME_MATCH・PERIOD_MATCH）＋新規12メソッドを追加（既存4メソッドは無変更）。Service/Controllerはシグネチャに引数追加のみ（既存スタブ破綻なし）。10ステップ（仕様書更新→Repository→Service→Serviceテスト→Controller→Controllerテスト→BEサマリ→FE実装→FEテスト→FEサマリ）で構成。過去2ユニットのCIレビューで繰り返し指摘された『対象コードを無効化しても pass してしまう弱いテスト』パターンを教訓とし、Step 6・Step 9で最初から赤緑検証を組み込む方針を明記。承認待ち。"
+**Context**: Code Generation Part 1 Step 1-6、承認ゲート提示
+
+---
+
+## Code Generation Part 1 — Approval
+**Timestamp**: 2026-10-05T23:42:50Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Part 2（生成）へ進み、Step 1（仕様書更新）から順に実行する。"
+**Context**: Code Generation Part 1 承認 → Part 2 実行開始
+
+---
+
+## Code Generation Part 2 — Step 6 完了（API 層ユニットテスト, reservation-list-filter）
+**Timestamp**: 2026-10-05T23:58:00Z
+**User Input**: "(N/A — コンテキスト圧縮からの再開、継続作業)"
+**AI Response**: "`ReservationControllerTest` に resourceName・period フィルタ用の新規 seed（リソース4件・予約6件）と結合テスト11件（大文字小文字非依存一致、`%` リテラル一致、空白resourceName無視、期間重複、境界隣接の非重複、from/to片側指定の400検証×2、ロール別可視性×2、resourceName+status AND合成）を追加。`./gradlew test --tests \"*ReservationControllerTest\"` で全件green を確認後、過去ユニットのCIレビュー指摘（弱いテスト）を避けるため break-and-verify を実施：RESOURCE_NAME_MATCHのLOWER除去・%エスケープ除去、PERIOD_MATCHの境界変更（<=/>=）・片側条件除去、isAdmin/hasStatusFilterの強制固定、Controllerのfrom/to同時指定チェック削除——各ケースで意図した新規テスト（一部既存テストも含む）のみがredになることを確認し、復元後に`git diff --stat`が元の差分と一致することを確認。`./gradlew test`でバックエンド全体がgreenであることも確認。計画書のStep 6を[x]に更新。"
+**Context**: Code Generation Part 2 Step 6（API層ユニットテスト）完了、Step 7（Backend層サマリ）へ進む
+
+---
+
+## Code Generation Part 2 — Step 7 完了（Backend 層サマリ, reservation-list-filter）
+**Timestamp**: 2026-10-05T23:59:30Z
+**User Input**: "(N/A — 継続作業)"
+**AI Response**: "`Docs/spec/aidlc-docs/construction/reservation-list-filter/code/backend-summary.md` を作成。変更ファイル一覧・テスト一覧・break-and-verify結果・実行結果（spotlessApply差分なし、checkstyle警告2件は既存コード起因、`ReservationServiceTest$List_` 8件・`ReservationControllerTest` 29件すべて成功、バックエンド全体テストsuccessful）・技術判断の根拠を記録。計画書のStep 7を[x]に更新。"
+**Context**: Code Generation Part 2 Step 7（Backend層サマリ）完了、Step 8（Frontend実装）へ進む
+
+---
+
+## Code Generation Part 2 — Step 8・Step 9 完了（Frontend 実装・テスト, reservation-list-filter）
+**Timestamp**: 2026-10-06T00:03:00Z
+**User Input**: "(N/A — 継続作業)"
+**AI Response**: "`frontend/src/server/actions/reservations.ts` の `ListReservationsParams`/`listReservationsAction` に `resourceName`/`from`/`to`（`toIsoWithSeconds` 変換込み）を追加。新規 `ReservationFilterForm.tsx` を `frontend-components.md` の設計どおり作成（既存ステータスタブの `status` を `useSearchParams().getAll` で読み取り、`handleSubmit`・`handleReset` の双方で転記）。`reservations/page.tsx` に `searchParams` 読み取りとフォーム呼び出しを追加。`npx tsc --noEmit` で型エラーなしを確認。`reservations.test.ts` に resourceName/from/to の実URL検証テストを追加（既存の弱い status テストも実URL検証に置き換え）、新規 `reservation-filter-form.test.tsx`（7件、status転記・resourceName trim・from/to・デフォルト値反映を検証）を作成。break-and-verifyで、BFF層のresourceName転送除去・toIsoWithSeconds除去、フォームのstatus転記除去（submit/reset両方）、resourceNameのtrim除去のそれぞれについて意図したテストのみがredになることを確認し、復元後に全件green・`pnpm format:check`/`pnpm lint`もgreenであることを確認。計画書のStep 8・Step 9を[x]に更新。"
+**Context**: Code Generation Part 2 Step 8・Step 9（Frontend実装・テスト）完了、Step 10（Frontend層サマリ）へ進む
+
+---
+
+## Code Generation Part 2 — Step 10 完了（Frontend 層サマリ, reservation-list-filter）
+**Timestamp**: 2026-10-06T00:05:30Z
+**User Input**: "(N/A — 継続作業)"
+**AI Response**: "`Docs/spec/aidlc-docs/construction/reservation-list-filter/code/frontend-summary.md` を作成。変更ファイル一覧・テスト一覧・break-and-verify結果・実行結果（`npx tsc --noEmit`型エラーなし、`pnpm lint`エラーなし、`pnpm format:check`差分なし、`pnpm test`フロントエンド全体109件成功、`pnpm build`ビルド成功）を記録。計画書のStep 10を[x]に更新し、Code Generation Part 2（Step 1-10）がすべて完了。"
+**Context**: Code Generation Part 2（Step 1-10）完了。Code Generation 完了メッセージ（2択）提示へ進む
+
+---
+
+## Code Generation — Approval
+**Timestamp**: 2026-10-06T00:06:30Z
+**User Input**: "Continue"
+**AI Response**: "承認を記録。Build and Test ステージへ進む。"
+**Context**: Code Generation（reservation-list-filter）承認 → Build and Test ステージへ遷移
+
+---
+
+## Build and Test Stage
+**Timestamp**: 2026-10-06T00:08:00Z
+**Build Status**: Success
+**Test Status**: Pass
+**Files Generated**:
+- build-instructions.md（reservation-list-filter 向けに更新）
+- unit-test-instructions.md（reservation-list-filter 向けに更新）
+- build-and-test-summary.md（reservation-list-filter 向けに更新、累積: backend 176件・frontend 109件、全成功）
+**AI Response**: "単一 Issue の brownfield 縦切り修正であるため、Unit Test中心（Integration Testは`ReservationControllerTest`のH2結合テストに統合）、Performance/Contract/Security/E2EはSKIPという適用範囲判定を resource-search/resource-sort ユニットと同じ基準で踏襲。`./gradlew build`・`pnpm build` とも成功、`./gradlew test` 176件・`pnpm test` 109件とも全成功、lint/format も差分なしを確認。完了メッセージ提示、承認待ち。"
+**Context**: Build and Test ステージ完了、承認ゲート提示
+
+---
+
+## Build and Test — Approval
+**Timestamp**: 2026-10-06T00:09:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Operations フェーズ（BookFlow では CI 品質ゲート相当）へ遷移。学習者には `/commit-push`・`/create-pr`（base: `learner/CHS-FUJITA-RIKA/main`、ADR-030準拠）の利用を案内する。"
+**Context**: Build and Test（reservation-list-filter）承認 → Operations フェーズへ遷移
+
+---
+
+## CI AIレビュー対応（PR #135・観点1 要求整合性・ラウンド1、reservation-list-filter）
+**Timestamp**: 2026-10-06T02:09:00Z
+**User Input**: "AI レビュー / 観点1 要求整合性 / ラウンド 1でNGになりました。対応をおしえてほしいです。（NG根拠: 受入条件『フィルタをリセットすると全件表示に戻る』と、US-04 の承認済み Gherkin『すべてのフィルタが解除され、既定の表示（ステータスタブ「すべて」相当）に戻る』に対し、`ReservationFilterForm.handleReset` が status を維持する実装になっており矛盾。`frontend-components.md` の設計判断もこれと矛盾）"
+**AI Response**: "指摘は正当と判断。Functional Design 段階で下した『リセット時は status を維持する』という判断が、同じユニットで既に承認済みだった US-04 の Gherkin 受入条件と矛盾する未承認の逸脱だったことが根本原因。`ReservationFilterForm.handleReset` を `router.push('/reservations')`（status含め全パラメータ解除）に修正し、`ResourceFilterForm.handleReset` と同じ全解除パターンに統一。`reservation-filter-form.test.tsx` の該当テストを新しい挙動の検証に書き換え、break-and-verifyで旧実装（statusを維持する分岐）に戻すと当該テストのみがredになることを確認してから復元。`frontend-components.md` に訂正注記を追加。`pnpm test`（109件）・`pnpm lint`・`pnpm format:check` すべてgreenを確認。"
+**Context**: CI レビュー指摘への対応完了。修正を追加コミットし、PR #135 へ push する
+
+---
+
+## CI AIレビュー対応（PR #135・観点2 実装と非機能部分の整合性・ラウンド1、reservation-list-filter）
+**Timestamp**: 2026-10-06T02:30:00Z
+**User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド 1もNGになりました。対応方法をおしえてほしいです。（NG根拠1: ReservationService#listの16分岐のうち4経路（ADMIN+名前+期間、ADMIN+名前+status、ADMIN+期間+status、非ADMIN+名前+期間）がServiceTest・ControllerTestどちらからも呼ばれていない。なお複合条件のクエリ本体〔findByResourceNameAndPeriodAndStatusInFetch・findByRequesterIdAndPeriodAndStatusInFetch・findByRequesterIdAndResourceNameAndPeriodAndStatusInFetch〕はServiceTestのモック経由でしか呼ばれておらずJPQLの中身が実行されるテストがない。NG根拠2: screen-spec.md:216の期間フィルター行『片方のみの入力では絞り込まれない』が、実装〔ReservationController:67-69で400 VALIDATION_ERROR〕およびstories.mdのUS-02〔400エラーとなる〕と食い違っている）"
+**AI Response**: "両方の指摘を是正。(1) ReservationServiceTestのList_に4分岐（ADMIN+resourceName+period、ADMIN+resourceName+status、ADMIN+period+status、非ADMIN+resourceName+period）のモックベーステストを追加し分岐カバレッジを閉じた。(2) ReservationControllerTestに7件のH2実行テストを追加し、未検証だった2条件分岐4件と、ServiceTestのモックのみだった3条件結合メソッド3件（JPQL連結の誤りを検出できない問題）を実際のJPQL実行で検証。追加の過程で、既存seedだけでは resourceName 条件自体を検証できていない（同一期間・同一statusで別resourceNameのデコイが無い）ことに気づき、新規デコイ予約RESERVATION_FILTER_OTHER_RESOURCE_IDを追加し該当5テストにdoesNotExist検証を追加。(3) screen-spec.mdの期間フィルター説明を実装・stories.md US-02と整合する記述（400エラー）に修正し、last_updatedを更新。backend全テストgreen、`./gradlew spotlessApply checkstyleMain`差分なし、docs-next `npm run build`成功を確認。各新規テスト・デコイについて対象コード（JPQL定数の連結・分岐の呼び出し先）を一時的に無効化し、意図したテストのみがredになることを確認してから復元する break-and-verify を実施。"
+**Context**: CI レビュー指摘（観点2・ラウンド1）への対応完了。修正を追加コミットし、PR #135 へ push する
+
+---
+
+## CI AIレビュー対応（PR #135・観点2 実装と非機能部分の整合性・ラウンド2、reservation-list-filter）
+**Timestamp**: 2026-10-06T03:01:00Z
+**User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド 2がNGになりました。対応方法をおしえてください。（ラウンド1で指摘した4経路は解消。一方、ラウンド2では各経路について『通るテストがあるか』に加えて『呼び先を条件の少ないメソッドに差し替えたとき、そのテストが失敗するか』まで確認された。NG根拠1: 非ADMIN・名前・status の経路（ReservationService.java:127-131）を、名前条件を落とした`findByRequesterIdAndStatusInFetch`に差し替えても、`list_resourceNameWithStatusFilter_appliesAndCondition`は名前だけが一致しないデコイ`RESERVATION_FILTER_OTHER_RESOURCE_ID`の不在を確認していないためgreenのまま。NG根拠2: 非ADMIN・期間のみの経路（ReservationService.java:141）を、requester_id条件が抜けるADMIN用`findByPeriodFetch`に差し替えても、`list_periodOverlap_includesReservationWithinRangeAndExcludesOutsideRange`は同一期間の他メンバー予約`RESERVATION_FILTER_OTHER_ID`の不在を確認していないためgreenのまま。付記（判定に影響しない）: ADMIN・期間のみのJPQL実行テスト不在、page.tsxのsearchParams受け渡し部分のユニットテスト対象外、の2点）"
+**AI Response**: "両方の指摘は、ラウンド1で『経路を通るテストがあるか』の粒度でのみ自己検証しており、『その経路固有の絞り込み条件が外れたときにテストが落ちるか』までは確認していなかったことが原因。既存2テストにピンポイントで不在アサートを追加：(1) `list_resourceNameWithStatusFilter_appliesAndCondition`に`RESERVATION_FILTER_OTHER_RESOURCE_ID`（resourceName不一致の同status予約）のdoesNotExistを追加、(2) `list_periodOverlap_includesReservationWithinRangeAndExcludesOutsideRange`に`RESERVATION_FILTER_OTHER_ID`（同一期間の他メンバー予約）のdoesNotExistを追加。break-and-verifyとして、レビューが指摘した通りの差し替え（ReservationService.javaの該当呼び出しをより条件の少ないメソッドに変更）を実際に再現し、追加した各テストのみがredになることを確認してから復元。`./gradlew test`全体green、`spotlessApply`/`checkstyleMain`差分なしを確認。付記2点は判定に影響しないとの指摘どおり対応不要と判断。"
+**Context**: CI レビュー指摘（観点2・ラウンド2）への対応完了。修正を追加コミットし、PR #135 へ push する
+
+---
+
+## CI AIレビュー対応（PR #135・観点2 実装と非機能部分の整合性・ラウンド3、reservation-list-filter）
+**Timestamp**: 2026-10-06T03:13:00Z
+**User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド 3がNGになりました。対応方法をおしえてください。（ラウンド2の根拠2と根拠1の前半は解消済み。残っているのは根拠1の後半（RESERVATION_FILTER_OTHER_IDの不在確認）の1か所。非ADMIN・名前・statusの経路（ReservationService.java:127-131）を、requester_id条件が抜けるADMIN用findByResourceNameAndStatusInFetchに差し替えると、list_resourceNameWithStatusFilter_appliesAndConditionはresourceName・statusともに一致する他メンバーの予約RESERVATION_FILTER_OTHER_IDの不在を確認していないためgreenのまま。同じControllerTestのlist_memberWithResourceNameFilter_doesNotSeeOtherMembersMatchingReservationはOTHER_IDの不在を確認しているが、statusを指定しないため別経路を通り検証にならない）"
+**AI Response**: "ラウンド2の修正が resourceName 条件（根拠1前半）の脱落のみを対象にしており、同じ経路の requester_id 条件（ロール可視範囲）の脱落は未検証だったことが原因。list_resourceNameWithStatusFilter_appliesAndCondition に、resourceName・status はともに一致するが他メンバーの予約 RESERVATION_FILTER_OTHER_ID の不在を確認するアサートを追加。レビューが指摘した差し替え（ReservationService.java:128 を requester_id 条件のない findByResourceNameAndStatusInFetch に変更）を実際に再現し、追加したアサートのみが red になることを確認してから復元。`./gradlew test` 全体green、`spotlessApply`/`checkstyleMain` 差分なしを確認。付記2点（ADMIN期間のみのJPQL実行テスト不在、page.tsxのsearchParams部分のユニットテスト対象外）は判定に影響しないとの指摘どおり対応不要と判断。"
+**Context**: CI レビュー指摘（観点2・ラウンド3）への対応完了。修正を追加コミットし、PR #135 へ push する

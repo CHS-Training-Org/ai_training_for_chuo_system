@@ -11,6 +11,9 @@ import type { CreateReservationInput, UpdateReservationInput } from "@/lib/schem
 
 interface ListReservationsParams {
   status?: string[];
+  resourceName?: string;
+  from?: string;
+  to?: string;
   page?: number;
   size?: number;
 }
@@ -42,6 +45,9 @@ export async function listReservationsAction(params?: ListReservationsParams) {
   const client = createApiClient(getAccessToken);
   const queryParams: Record<string, string | string[]> = {};
   if (params?.status && params.status.length > 0) queryParams.status = params.status;
+  if (params?.resourceName) queryParams.resourceName = params.resourceName;
+  if (params?.from) queryParams.from = toIsoWithSeconds(params.from);
+  if (params?.to) queryParams.to = toIsoWithSeconds(params.to);
   if (params?.page !== undefined) queryParams.page = String(params.page);
   if (params?.size !== undefined) queryParams.size = String(params.size);
   return client.getPaginated("/reservations", ReservationResponseSchema, queryParams);

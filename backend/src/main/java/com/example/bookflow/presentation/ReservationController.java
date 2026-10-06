@@ -1,6 +1,7 @@
 package com.example.bookflow.presentation;
 
 import com.example.bookflow.application.ReservationService;
+import com.example.bookflow.application.exception.ValidationException;
 import com.example.bookflow.domain.ReservationStatus;
 import com.example.bookflow.domain.User;
 import com.example.bookflow.infrastructure.security.CurrentUser;
@@ -8,6 +9,7 @@ import com.example.bookflow.presentation.dto.CreateReservationRequest;
 import com.example.bookflow.presentation.dto.ReservationResponse;
 import com.example.bookflow.presentation.dto.UpdateReservationRequest;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -50,14 +52,22 @@ public class ReservationController {
   /**
    * 予約一覧を返す。
    *
-   * <p>ADMIN は全件、それ以外は本人分のみ。{@code status} パラメータ（複数指定可）でフィルタ可能。
+   * <p>ADMIN は全件、それ以外は本人分のみ。{@code status} パラメータ（複数指定可）・{@code resourceName}（部分一致）・{@code
+   * from}/{@code to}（期間重複）でフィルタ可能。
    */
   @GetMapping
   public Page<ReservationResponse> list(
       @RequestParam(required = false) List<ReservationStatus> status,
+      @RequestParam(required = false) String resourceName,
+      @RequestParam(required = false) LocalDateTime from,
+      @RequestParam(required = false) LocalDateTime to,
       @PageableDefault(size = 20) Pageable pageable,
       @CurrentUser User currentUser) {
-    return reservationService.list(currentUser, status, pageable);
+    // from / to は同時指定必須（api-spec.md §予約一覧 参照）
+    if ((from == null) != (to == null)) {
+      throw new ValidationException("from と to は同時に指定してください。");
+    }
+    return reservationService.list(currentUser, status, resourceName, from, to, pageable);
   }
 
   /**

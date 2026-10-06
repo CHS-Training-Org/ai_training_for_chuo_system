@@ -1,32 +1,32 @@
-# Execution Plan — resource-list-sort（Issue #22）
+# Execution Plan — reservation-list-filter（Issue #24）
 
 ## Detailed Analysis Summary
 
 ### Transformation Scope（Brownfield）
 
-- **Transformation Type**: Single component change（既存の `ResourceController`/`ResourceService`/`ResourceRepository`/`ResourceFilterForm` の拡張。新規コンポーネントなし）
-- **Primary Changes**: `GET /api/resources` に `sort` パラメータを追加し、`Pageable` の `Sort` を 2 つの一覧取得経路（`listPaginated`・`listWithAvailabilityFilter`）の両方に適用する
-- **Related Components**: `ResourceController`・`ResourceService`・`ResourceFilterForm.tsx`・`resources/page.tsx`・`server/actions/resources.ts`（いずれも Issue #23 で keyword 検索に対応済みの同一ファイル群）
+- **Transformation Type**: Single component change（既存の `ReservationController`/`ReservationService`/`ReservationRepository`/予約一覧画面の拡張。新規コンポーネントなし）
+- **Primary Changes**: `GET /api/reservations` に `resourceName`・`from`・`to` パラメータを追加し、既存の「ロール×status有無」4メソッド構成に組み込む
+- **Related Components**: `ReservationController`・`ReservationService`・`ReservationRepository`（backend）、`reservations/page.tsx`・新規 `ReservationFilterForm.tsx`・`server/actions/reservations.ts`（frontend）
 
 ### Change Impact Assessment
 
-- **User-facing changes**: Yes — `/resources` にソート選択ドロップダウンが追加され、一覧の表示順が変わる
-- **Structural changes**: No — 既存の 4 層アーキテクチャ・既存コンポーネント境界内で完結
-- **Data model changes**: No — スキーマ変更不要（既存カラムでのソートのみ）
-- **API changes**: Yes — `GET /api/resources` に `sort` クエリパラメータを追加（後方互換・既定値あり）
-- **NFR impact**: No（新規の性能・セキュリティ・スケーラビリティ要件はなし。H2/PostgreSQL の NULL 並び順整合性は Functional Design 内の業務ルールとして扱う）
+- **User-facing changes**: Yes — `/reservations` にリソース名・期間フィルタ入力欄が追加される
+- **Structural changes**: No — 既存の4層アーキテクチャ・既存コンポーネント境界内で完結
+- **Data model changes**: No — スキーマ変更不要（既存カラム・既存関連でのフィルタのみ）
+- **API changes**: Yes — `GET /api/reservations` に `resourceName`/`from`/`to` を追加（後方互換・既定値あり）
+- **NFR impact**: No（新規の性能・セキュリティ・スケーラビリティ要件はなし。16メソッドへの組み合わせ拡張は Functional Design の業務ロジック設計として扱う）
 
 ### Component Relationships
 
-- **Primary Component**: `ResourceController`・`ResourceService`・`ResourceRepository`（backend）、`ResourceFilterForm`・`resources/page.tsx`・`server/actions/resources.ts`（frontend）
-- **Dependent Components**: なし（`ResourceService#list` の呼び出し元は `ResourceController` のみ。`listResourcesAction` の呼び出し元は `resources/page.tsx` のほか `reservations/new/page.tsx`・`admin/resources/page.tsx` があるが、`sort` は任意パラメータの追加のため既存呼び出しに影響しない）
+- **Primary Component**: `ReservationRepository`・`ReservationService`・`ReservationController`（backend）、`ReservationFilterForm`・`reservations/page.tsx`・`server/actions/reservations.ts`（frontend）
+- **Dependent Components**: `ReservationService#list` の呼び出し元は `ReservationController` のみ
 - **Supporting Components**: なし
 
 ### Risk Assessment
 
-- **Risk Level**: Medium（変更範囲自体は小さいが、Reverse Engineering で判明したとおり `listWithAvailabilityFilter`〔手動ページネーション経路〕は `Sort` を自動適用しないため、実装を誤ると「カテゴリ・期間フィルタとの組み合わせ時にソートが効かない」という受入条件未達の回帰を生みやすい）
-- **Rollback Complexity**: Easy（単一ユニットの変更、`sort` パラメータ自体は後方互換）
-- **Testing Complexity**: Moderate（2 経路それぞれでのソート確認、NULL capacity の扱い、不正値のバリデーションなど分岐が多い）
+- **Risk Level**: Medium（既存の4メソッド構成に resourceName・from/to を掛け合わせると最大16メソッドになり、実装量・レビュー負荷が増える。from/to の重複判定の意味論を既存の `checkConflict`/`overlaps` と一致させないと受入条件未達の回帰を生みやすい）
+- **Rollback Complexity**: Easy（単一ユニットの変更、新規パラメータは後方互換）
+- **Testing Complexity**: Moderate（16通りの組み合わせのうち代表的なパターンを選んでテストする必要がある）
 
 ## Workflow Visualization
 
@@ -101,7 +101,7 @@ Phase 1: INCEPTION
 - Application Design (SKIP)
 - Units Generation (SKIP)
 
-Phase 2: CONSTRUCTION（ユニット: resource-sort）
+Phase 2: CONSTRUCTION（ユニット: reservation-list-filter）
 - Functional Design (EXECUTE)
 - NFR Requirements (SKIP)
 - NFR Design (SKIP)
@@ -118,21 +118,21 @@ Phase 3: OPERATIONS
 ### 🔵 INCEPTION PHASE
 
 - [x] Workspace Detection (COMPLETED)
-- [x] Reverse Engineering (COMPLETED・スコープ限定で `code-structure-resource-sort.md` のみ追加)
+- [x] Reverse Engineering (COMPLETED・スコープ限定で `code-structure-reservation-list-filter.md` のみ追加)
 - [x] Requirements Analysis (COMPLETED)
 - [x] User Stories (COMPLETED)
 - [x] Workflow Planning (IN PROGRESS)
 - [ ] Application Design — **SKIP**
-  - **Rationale**: 新規コンポーネント・サービス層設計は不要。既存の `ResourceController`/`ResourceService`/`ResourceRepository`/`ResourceFilterForm` の境界内で完結する
+  - **Rationale**: 新規コンポーネント・サービス層設計は不要。既存の `ReservationController`/`ReservationService`/`ReservationRepository` の境界内で完結する
 - [ ] Units Generation — **SKIP**
   - **Rationale**: Issue = 単一 units of work（BookFlow の縦切り方針）。複数ユニットへの分解は不要
 
-### 🟢 CONSTRUCTION PHASE（ユニット: resource-sort）
+### 🟢 CONSTRUCTION PHASE（ユニット: reservation-list-filter）
 
 - [ ] Functional Design — **EXECUTE**
-  - **Rationale**: `sort` パラメータのホワイトリスト検証方式、`listWithAvailabilityFilter` 経路への `Comparator` ベースソート適用方式、NULL capacity の扱いなど、技術非依存の業務ロジック設計判断が複数あるため
+  - **Rationale**: 16メソッドへの組み合わせ拡張方式、resourceName/from-to の共通JPQL条件設計、from/toのoverlap意味論の確定など、技術非依存の業務ロジック設計判断が複数ある
 - [ ] NFR Requirements — **SKIP**
-  - **Rationale**: 新規の性能・セキュリティ・スケーラビリティ要件・技術スタック選定はない。H2/PostgreSQL の NULL 並び順整合性は Functional Design の業務ルールとして扱う
+  - **Rationale**: 新規の性能・セキュリティ・スケーラビリティ要件・技術スタック選定はない
 - [ ] NFR Design — **SKIP**
   - **Rationale**: NFR Requirements が SKIP のため連動
 - [ ] Infrastructure Design — **SKIP**
@@ -150,11 +150,11 @@ Phase 3: OPERATIONS
 ## Estimated Timeline
 
 - **Total Phases**: INCEPTION（完了）→ CONSTRUCTION（Functional Design・Code Generation・Build and Test）
-- **Estimated Duration**: ビジネス要求シート記載の推定工数どおり 1〜2 時間相当（Beginner 課題）
+- **Estimated Duration**: ビジネス要求シート記載どおり 2〜3 時間相当（Beginner 課題）
 
 ## Success Criteria
 
-- **Primary Goal**: `/resources` でカテゴリ・期間・キーワードフィルタと組み合わせて名称順・定員順・登録日時順（デフォルト）のソートができる
-- **Key Deliverables**: backend（`sort` パラメータ・ホワイトリスト検証・2 経路双方へのソート適用）、frontend（ソート選択ドロップダウン）、対応するユニットテスト・結合テスト、仕様書更新（`api-spec.md`・`screen-spec.md`）
-- **Quality Gates**: 既存テスト（`ResourceServiceTest`・`ResourceControllerTest`）が継続して pass すること、新規ソート関連テストが H2 実データで検証されること
-- **Integration Testing**: `listWithAvailabilityFilter` 経路（from/to 指定時）でもソートが適用されることを結合テストで確認する
+- **Primary Goal**: `/reservations` でステータスタブと組み合わせてリソース名・期間で予約を絞り込める
+- **Key Deliverables**: backend（`resourceName`/`from`/`to` パラメータ・最大16メソッドの実装・ホワイトリスト不要な単純なバリデーション）、frontend（`ReservationFilterForm`）、対応するユニットテスト・結合テスト、仕様書更新（`api-spec.md`・`screen-spec.md`）
+- **Quality Gates**: 既存テスト（`ReservationServiceTest`・`ReservationControllerTest`）が継続して pass すること。CI AIレビューの経験（keyword・sort ユニットでの複数ラウンド指摘）を踏まえ、各テストが「対象コードを無効化すると red になる」ことを実装時に自己検証する
+- **Integration Testing**: resourceName・from/to・status の組み合わせパターンを H2 実データの結合テストで確認する

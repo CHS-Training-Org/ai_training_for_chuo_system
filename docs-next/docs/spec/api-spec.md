@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-10-03T03:41:26+09:00'
+last_updated: '2026-10-06T08:43:21+09:00'
 ---
 
 # REST API 仕様書
@@ -481,7 +481,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/reservations?status=PENDING&page=0&size=20
+GET /api/reservations?status=PENDING&resourceName=会議室&from=2025-06-01T00:00:00&to=2025-06-30T23:59:59&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -490,10 +490,17 @@ Authorization: Bearer <JWT>
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
 | `status` | string | ❌ | ステータスフィルター（`PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`） |
+| `resourceName` | string | ❌ | 予約先リソース名への部分一致検索（大文字小文字を区別しない） |
+| `from` | TIMESTAMP | ❌ | 予約期間の絞り込み開始日時（`to` と同時指定必須） |
+| `to` | TIMESTAMP | ❌ | 予約期間の絞り込み終了日時（`from` と同時指定必須） |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
 > MEMBER / APPROVER は自分の予約のみ返却。ADMIN は全ユーザーの予約を返却。
+>
+> `resourceName` を指定した場合、`reservations.resource_id` が参照するリソースの `name` に指定した文字列を含む予約のみを返す（大文字小文字を区別しない部分一致）。空文字列・空白のみの場合は未指定として扱われる。
+>
+> `from` / `to` を指定した場合、予約期間（`startAt`〜`endAt`）が指定期間と重複する予約のみを返す（半開区間 `[startAt, endAt)` 同士の重複判定。境界が一致するだけの隣接予約は含まない）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。`status`・`resourceName`・`from`/`to` は AND 条件で組み合わされる。
 
 #### レスポンス（200 OK）
 
