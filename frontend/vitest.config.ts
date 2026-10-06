@@ -9,6 +9,14 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./tests/unit/setup.ts"],
     include: ["tests/unit/**/*.{test,spec}.{ts,tsx}"],
+    // メモリの少ない学習者端末でも安定して実行できるよう、並列ワーカーを1に固定する
+    // （isolation は維持したまま thread 数のみ絞る。Playwright の workers:1 と同じ方針）。
+    poolOptions: {
+      threads: {
+        maxThreads: 1,
+        minThreads: 1,
+      },
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
