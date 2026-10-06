@@ -3,6 +3,7 @@ package com.example.bookflow.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
@@ -32,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * {@link ResourceService} 単体テスト（ADR-018 準拠・Mockito）。
@@ -66,6 +68,24 @@ class ResourceServiceTest {
       setField(r, "isActive", isActive);
       setField(r, "requiresApproval", false);
       setField(r, "createdAt", LocalDateTime.of(2025, 4, 1, 9, 0));
+      return r;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /** ソート検証用：capacity・createdAt を指定できるリソース生成ヘルパー（category/isActive は固定）。 */
+  private static Resource makeSortTestResource(
+      UUID id, String name, Integer capacity, LocalDateTime createdAt) {
+    try {
+      Resource r = new Resource() {};
+      setField(r, "id", id);
+      setField(r, "name", name);
+      setField(r, "category", ResourceCategory.ROOM);
+      setField(r, "isActive", true);
+      setField(r, "requiresApproval", false);
+      setField(r, "capacity", capacity);
+      setField(r, "createdAt", createdAt);
       return r;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -201,7 +221,7 @@ class ResourceServiceTest {
       when(resourceRepository.findByIsActiveTrue(pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
@@ -212,7 +232,7 @@ class ResourceServiceTest {
       when(resourceRepository.findAll(pageable))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, true, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, true, pageable);
 
       assertThat(result.getContent()).hasSize(2);
     }
@@ -235,7 +255,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, null, false, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }
@@ -254,9 +274,208 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, from, to, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
+    }
+
+    // ---------------------------------------------------------------------------
+    // keyword 検索
+    // ---------------------------------------------------------------------------
+
+    @Test
+    void list_blankKeyword_treatedAsNoKeywordFilter() {
+      // BR-02: 空白のみの keyword は未入力として扱い、既存の派生クエリ経路を使う
+      when(resourceRepository.findByIsActiveTrue(pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, "   ", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithKeyword_callsKeywordRepositoryMethod() {
+      when(resourceRepository.findByIsActiveTrueAndKeyword("meeting", pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, "meeting", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_adminWithCategoryAndKeyword_callsCategoryKeywordRepositoryMethod() {
+      // BR-05: category と keyword は AND 合成される
+      when(resourceRepository.findByCategoryAndKeyword(ResourceCategory.ROOM, "room", pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(ResourceCategory.ROOM, null, null, "room", true, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_keywordWithWildcardCharacters_escapesBeforeDelegatingToRepository() {
+      // BR-04: "!" を先にエスケープしてから "%"/"_" をエスケープする（二重エスケープ回避）
+      when(resourceRepository.findByIsActiveTrueAndKeyword("50!%off!_now!!", pageable))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, "50%off_now!", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithTimeFilterAndWildcardKeyword_escapesBeforeDelegatingToRepository() {
+      // BR-04: from/to 経路（fetchAllCandidates）でも escapeLikeKeyword が適用されることを検証する
+      // （ResourceService.java の listWithAvailabilityFilter は Pageable を渡さない List 版
+      // repository メソッドを呼ぶため、Page 版とは別経路でエスケープを確認する必要がある）
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.findByIsActiveTrueAndKeyword("50!%off!_now!!"))
+          .thenReturn(java.util.List.of(activeResource));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, from, to, "50%off_now!", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithTimeFilterAndKeyword_appliesKeywordBeforeAvailabilityCheck() {
+      // BR-05: keyword は from/to 経路（fetchAllCandidates）にも適用される
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+
+      when(resourceRepository.findByIsActiveTrueAndKeyword("meeting"))
+          .thenReturn(java.util.List.of(activeResource));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, from, to, "meeting", false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    // ---------------------------------------------------------------------------
+    // sort — ソート順選択（Issue #22）
+    // ---------------------------------------------------------------------------
+
+    @Test
+    void list_capacityAscendingSort_appliesNullsLastForListPaginatedPath() {
+      // BR-04: listPaginated 経路は DB の ORDER BY に委ねるため、capacity オーダーに nullsLast を明示する
+      Pageable sortedPageable = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("capacity")));
+      when(resourceRepository.findByIsActiveTrue(
+              argThat(
+                  p -> {
+                    Sort.Order order = p.getSort().getOrderFor("capacity");
+                    return order != null
+                        && order.getNullHandling() == Sort.NullHandling.NULLS_LAST
+                        && order.isAscending();
+                  })))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, null, false, sortedPageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_capacityDescendingSort_appliesNullsLastWhilePreservingDescendingDirection() {
+      // BR-04: 降順でも capacity が NULL のリソースは常に末尾（nullsLast は方向と独立して付与する）
+      Pageable sortedPageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("capacity")));
+      when(resourceRepository.findByIsActiveTrue(
+              argThat(
+                  p -> {
+                    Sort.Order order = p.getSort().getOrderFor("capacity");
+                    return order != null
+                        && order.getNullHandling() == Sort.NullHandling.NULLS_LAST
+                        && order.isDescending();
+                  })))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, null, false, sortedPageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_nameSort_doesNotModifyNonCapacityOrders() {
+      // name/createdAt は NULL が発生しないため nullsLast を付与しない（native のまま）
+      Pageable sortedPageable = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("name")));
+      when(resourceRepository.findByIsActiveTrue(
+              argThat(
+                  p -> {
+                    Sort.Order order = p.getSort().getOrderFor("name");
+                    return order != null && order.getNullHandling() == Sort.NullHandling.NATIVE;
+                  })))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, null, false, sortedPageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithTimeFilterAndNameSortAscending_ordersResultsByNameAscending() {
+      // BR-06: listWithAvailabilityFilter 経路（手動ページネーション）にも Comparator でソートを適用する
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+      Resource zebra =
+          makeSortTestResource(
+              UUID.randomUUID(), "Zebra Room", 10, LocalDateTime.of(2025, 1, 1, 0, 0));
+      Resource apple =
+          makeSortTestResource(
+              UUID.randomUUID(), "Apple Room", 5, LocalDateTime.of(2025, 2, 1, 0, 0));
+
+      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(zebra, apple));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Pageable sortedPageable = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("name")));
+      Page<ResourceResponse> result =
+          resourceService.list(null, from, to, null, false, sortedPageable);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::name)
+          .containsExactly("Apple Room", "Zebra Room");
+    }
+
+    @Test
+    void list_memberWithTimeFilterAndCapacityDescendingSort_placesNullCapacityLast() {
+      // BR-04: listWithAvailabilityFilter 経路でも、降順でも NULL capacity は常に末尾
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+      Resource withCapacity =
+          makeSortTestResource(UUID.randomUUID(), "Room A", 20, LocalDateTime.of(2025, 1, 1, 0, 0));
+      Resource nullCapacity =
+          makeSortTestResource(
+              UUID.randomUUID(), "Room B", null, LocalDateTime.of(2025, 2, 1, 0, 0));
+
+      when(resourceRepository.findByIsActiveTrue())
+          .thenReturn(java.util.List.of(nullCapacity, withCapacity));
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of());
+
+      Pageable sortedPageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("capacity")));
+      Page<ResourceResponse> result =
+          resourceService.list(null, from, to, null, false, sortedPageable);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::id)
+          .containsExactly(withCapacity.getId(), nullCapacity.getId());
     }
   }
 

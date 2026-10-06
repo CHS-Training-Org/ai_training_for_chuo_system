@@ -260,7 +260,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
+GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&keyword=会議室&sort=name,asc&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -271,10 +271,16 @@ Authorization: Bearer <JWT>
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
+| `keyword` | string | ❌ | `name` / `description` への部分一致検索（大文字小文字を区別しない） |
+| `sort` | string | ❌ | 並び順。`<フィールド>,<asc\|desc>` 形式（例: `name,asc`）。指定可能なフィールドは `name` / `capacity` / `createdAt`。未指定時は `createdAt,asc` |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
 > `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
+>
+> `keyword` を指定した場合、`resources.name` または `resources.description` のいずれかに指定した文字列を含むリソースのみを返す（大文字小文字を区別しない部分一致）。空文字列・空白のみの場合は未指定として扱われ、条件は適用されない。`category` / `from` / `to` と同時に指定した場合は AND 条件で組み合わされる。
+>
+> `sort` は `category` / `from` / `to` / `keyword` による絞り込み結果に対する並び順のみを決定する（結果件数には影響しない）。`name` は大文字小文字を区別する通常の文字列順。`capacity` は `NULL`（未設定）のリソースを並び順（昇順・降順）に関わらず常に最後に表示する。許可されていないフィールド名、または `asc`/`desc` 以外の方向を指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。
 
 #### レスポンス（200 OK）
 
@@ -485,7 +491,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/reservations?status=PENDING&page=0&size=20
+GET /api/reservations?status=PENDING&resourceName=会議室&from=2025-06-01T00:00:00&to=2025-06-30T23:59:59&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -494,10 +500,17 @@ Authorization: Bearer <JWT>
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
 | `status` | string | ❌ | ステータスフィルター（`PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`） |
+| `resourceName` | string | ❌ | 予約先リソース名への部分一致検索（大文字小文字を区別しない） |
+| `from` | TIMESTAMP | ❌ | 予約期間の絞り込み開始日時（`to` と同時指定必須） |
+| `to` | TIMESTAMP | ❌ | 予約期間の絞り込み終了日時（`from` と同時指定必須） |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
 > MEMBER / APPROVER は自分の予約のみ返却。ADMIN は全ユーザーの予約を返却。
+>
+> `resourceName` を指定した場合、`reservations.resource_id` が参照するリソースの `name` に指定した文字列を含む予約のみを返す（大文字小文字を区別しない部分一致）。空文字列・空白のみの場合は未指定として扱われる。
+>
+> `from` / `to` を指定した場合、予約期間（`startAt`〜`endAt`）が指定期間と重複する予約のみを返す（半開区間 `[startAt, endAt)` 同士の重複判定。境界が一致するだけの隣接予約は含まない）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。`status`・`resourceName`・`from`/`to` は AND 条件で組み合わされる。
 
 #### レスポンス（200 OK）
 

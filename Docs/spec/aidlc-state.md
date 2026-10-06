@@ -25,7 +25,7 @@ timestamp: 2026-08-29
 - **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/beginner/resource-detail-info.md`
 - **前提課題**: なし（ベースシステムの既存 `resources` テーブル・リソース画面のみに依存）
 - **競合課題（注意）**: `resource-image-upload`（Flyway V002 採番衝突の可能性）・`calendar-view`（リソース詳細画面の同時変更）。現時点でいずれも未着手（マイグレーションは `V001` のみ）
-- **ブランチ**: `feature/CHS-FUJITA-RIKA/25-resource-aidlc`
+- **ブランチ**: `feature/CHS-FUJITA-RIKA/25-resource-aidlc`。ADR-030 準拠で個人トランクブランチ `learner/CHS-FUJITA-RIKA/main`（PR #132・#134・#135 マージ済み）を基点に作成
 
 ## Code Location Rules
 
@@ -72,3 +72,7 @@ timestamp: 2026-08-29
 - **Current Stage**: OPERATIONS（ユニット: resource-detail-info、AI-DLC エンジンとしての全フェーズ完了）
 - **Next Stage**: `/commit-push` → `/create-pr`（学習者主導）
 - **Status**: Complete（エンジン側の作業完了。コミット・PR作成は学習者の操作待ち）
+
+---
+
+> **過去ユニット（参考・このファイルでは追跡しない）**: Issue #23「リソース検索・フィルタ追加」（PR #132）・Issue #22「リソース一覧のソート順選択」（PR #134）・Issue #24「予約一覧のフィルタ拡張」（PR #135）はいずれも `learner/CHS-FUJITA-RIKA/main` へマージ済み。完全な記録は `Docs/spec/aidlc-audit.md` の該当区間を参照。

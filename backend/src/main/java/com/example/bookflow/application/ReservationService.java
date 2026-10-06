@@ -14,6 +14,7 @@ import com.example.bookflow.domain.User;
 import com.example.bookflow.presentation.dto.CreateReservationRequest;
 import com.example.bookflow.presentation.dto.ReservationResponse;
 import com.example.bookflow.presentation.dto.UpdateReservationRequest;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -72,33 +73,104 @@ public class ReservationService {
   /**
    * 予約一覧をページネーションで返す。
    *
-   * <p>ADMIN は全件、それ以外は本人分のみ。{@code statuses} が空でなければ status フィルタを適用する。
+   * <p>ADMIN は全件、それ以外は本人分のみ。{@code statuses} が空でなければ status フィルタを適用する。 {@code resourceName}
+   * を指定した場合は予約先リソース名への大文字小文字非依存部分一致で、{@code from}/{@code to} を指定した場合は 予約期間（半開区間）の重複判定で絞り込む（BR-01〜07
+   * 参照）。
    *
    * @param currentUser ログインユーザー
    * @param statuses ステータスフィルタ（空の場合は全ステータス）
+   * @param resourceName リソース名フィルタ（null・空文字・空白のみの場合はフィルタしない）
+   * @param from 予約期間の絞り込み開始日時（null の場合はフィルタしない）
+   * @param to 予約期間の絞り込み終了日時（null の場合はフィルタしない）
    * @param pageable ページネーション
    * @return 予約ページ
    */
   @Transactional(readOnly = true)
   public Page<ReservationResponse> list(
-      User currentUser, Collection<ReservationStatus> statuses, Pageable pageable) {
+      User currentUser,
+      Collection<ReservationStatus> statuses,
+      String resourceName,
+      LocalDateTime from,
+      LocalDateTime to,
+      Pageable pageable) {
     boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+    UUID requesterId = currentUser.getId();
     boolean hasStatusFilter = statuses != null && !statuses.isEmpty();
+    boolean hasPeriodFilter = from != null && to != null;
+
+    String normalizedResourceName = normalizeResourceName(resourceName);
+    String escapedResourceName =
+        normalizedResourceName != null ? escapeLikeResourceName(normalizedResourceName) : null;
+    boolean hasResourceNameFilter = escapedResourceName != null;
 
     Page<Reservation> page;
-    if (isAdmin) {
+    if (hasResourceNameFilter && hasPeriodFilter) {
       page =
-          hasStatusFilter
-              ? reservationRepository.findByStatusInFetch(statuses, pageable)
-              : reservationRepository.findAllFetch(pageable);
+          isAdmin
+              ? (hasStatusFilter
+                  ? reservationRepository.findByResourceNameAndPeriodAndStatusInFetch(
+                      escapedResourceName, from, to, statuses, pageable)
+                  : reservationRepository.findByResourceNameAndPeriodFetch(
+                      escapedResourceName, from, to, pageable))
+              : (hasStatusFilter
+                  ? reservationRepository.findByRequesterIdAndResourceNameAndPeriodAndStatusInFetch(
+                      requesterId, escapedResourceName, from, to, statuses, pageable)
+                  : reservationRepository.findByRequesterIdAndResourceNameAndPeriodFetch(
+                      requesterId, escapedResourceName, from, to, pageable));
+    } else if (hasResourceNameFilter) {
+      page =
+          isAdmin
+              ? (hasStatusFilter
+                  ? reservationRepository.findByResourceNameAndStatusInFetch(
+                      escapedResourceName, statuses, pageable)
+                  : reservationRepository.findByResourceNameFetch(escapedResourceName, pageable))
+              : (hasStatusFilter
+                  ? reservationRepository.findByRequesterIdAndResourceNameAndStatusInFetch(
+                      requesterId, escapedResourceName, statuses, pageable)
+                  : reservationRepository.findByRequesterIdAndResourceNameFetch(
+                      requesterId, escapedResourceName, pageable));
+    } else if (hasPeriodFilter) {
+      page =
+          isAdmin
+              ? (hasStatusFilter
+                  ? reservationRepository.findByPeriodAndStatusInFetch(from, to, statuses, pageable)
+                  : reservationRepository.findByPeriodFetch(from, to, pageable))
+              : (hasStatusFilter
+                  ? reservationRepository.findByRequesterIdAndPeriodAndStatusInFetch(
+                      requesterId, from, to, statuses, pageable)
+                  : reservationRepository.findByRequesterIdAndPeriodFetch(
+                      requesterId, from, to, pageable));
     } else {
       page =
-          hasStatusFilter
-              ? reservationRepository.findByRequesterIdAndStatusInFetch(
-                  currentUser.getId(), statuses, pageable)
-              : reservationRepository.findByRequesterIdFetch(currentUser.getId(), pageable);
+          isAdmin
+              ? (hasStatusFilter
+                  ? reservationRepository.findByStatusInFetch(statuses, pageable)
+                  : reservationRepository.findAllFetch(pageable))
+              : (hasStatusFilter
+                  ? reservationRepository.findByRequesterIdAndStatusInFetch(
+                      requesterId, statuses, pageable)
+                  : reservationRepository.findByRequesterIdFetch(requesterId, pageable));
     }
     return page.map(ReservationResponse::from);
+  }
+
+  /** resourceName を trim し、空文字なら null として扱う（BR-02）。 */
+  private static String normalizeResourceName(String resourceName) {
+    if (resourceName == null) {
+      return null;
+    }
+    String trimmed = resourceName.trim();
+    return trimmed.isEmpty() ? null : trimmed;
+  }
+
+  /**
+   * resourceName 中の LIKE ワイルドカード（{@code %}・{@code _}）とエスケープ文字自身（{@code !}）をリテラル扱いにエスケープする（BR-03）。
+   *
+   * <p>ESCAPE 文字に {@code !} を使う（{@link ReservationRepository} 参照）ため、まず {@code !} 自身を {@code !!}
+   * にエスケープしてから {@code %} / {@code _} をエスケープする（{@link ResourceService} と同じ方針。クラス間の静的依存は作らない）。
+   */
+  private static String escapeLikeResourceName(String resourceName) {
+    return resourceName.replace("!", "!!").replace("%", "!%").replace("_", "!_");
   }
 
   // ---------------------------------------------------------------------------

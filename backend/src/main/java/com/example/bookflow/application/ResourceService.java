@@ -13,13 +13,16 @@ import com.example.bookflow.presentation.dto.ResourceResponse;
 import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,11 +63,13 @@ public class ResourceService {
    * リソース一覧を返す。
    *
    * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を指定した場合は、当該時間帯に {@code
-   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
+   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。{@code keyword} を指定した場合は {@code
+   * name} / {@code description} への大文字小文字非依存部分一致で絞り込む（BR-01〜BR-07 参照）。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
+   * @param keyword キーワード検索（null・空文字・空白のみの場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
    * @param pageable ページネーション
    * @return {@link ResourceResponse} のページ
@@ -74,19 +79,102 @@ public class ResourceService {
       ResourceCategory category,
       LocalDateTime from,
       LocalDateTime to,
+      String keyword,
       boolean isAdmin,
       Pageable pageable) {
+    String normalizedKeyword = normalizeKeyword(keyword);
     if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+      return listWithAvailabilityFilter(category, from, to, normalizedKeyword, isAdmin, pageable);
     }
-    return listPaginated(category, isAdmin, pageable);
+    return listPaginated(category, normalizedKeyword, isAdmin, pageable);
+  }
+
+  /** keyword を trim し、空文字なら null として扱う（BR-02）。 */
+  private static String normalizeKeyword(String keyword) {
+    if (keyword == null) {
+      return null;
+    }
+    String trimmed = keyword.trim();
+    return trimmed.isEmpty() ? null : trimmed;
+  }
+
+  /**
+   * keyword 中の LIKE ワイルドカード（{@code %}・{@code _}）とエスケープ文字自身（{@code !}）をリテラル扱いにエスケープする（BR-04）。
+   *
+   * <p>ESCAPE 文字に {@code !} を使う（{@link ResourceRepository} 参照）ため、まず {@code !} 自身を {@code !!}
+   * にエスケープしてから {@code %} / {@code _} をエスケープする。
+   */
+  private static String escapeLikeKeyword(String keyword) {
+    return keyword.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+  }
+
+  /**
+   * {@code pageable} の {@link Sort} のうち {@code capacity} オーダーを {@code nullsLast()} に差し替える（BR-04）。
+   *
+   * <p>DB 側の {@code ORDER BY} に委ねる経路（{@code listPaginated}）用。Hibernate が H2/PostgreSQL 双方で移植可能な
+   * {@code NULLS LAST} 構文に変換するため、ソート方向（昇順・降順）に関わらず capacity が NULL のリソースは常に最後になる。
+   */
+  private static Pageable applyCapacityNullsLast(Pageable pageable) {
+    Sort adjustedSort =
+        Sort.by(
+            pageable.getSort().stream()
+                .map(order -> "capacity".equals(order.getProperty()) ? order.nullsLast() : order)
+                .toList());
+    return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), adjustedSort);
+  }
+
+  /**
+   * {@link Sort} から {@link Resource} 用の {@link Comparator} を組み立てる（BR-04・BR-05・BR-06）。
+   *
+   * <p>手動ページネーション経路（{@code listWithAvailabilityFilter}）用。{@code capacity} は {@code nullsLast}
+   * でラップし、昇順・降順いずれでも NULL を最後にするため、方向は nullsLast でラップする前の内側の比較器に適用する。
+   */
+  private static Comparator<Resource> buildComparator(Sort sort) {
+    Comparator<Resource> comparator = null;
+    for (Sort.Order order : sort) {
+      boolean descending = order.isDescending();
+      Comparator<Resource> fieldComparator =
+          switch (order.getProperty()) {
+            case "name" -> Comparator.comparing(Resource::getName);
+            case "capacity" ->
+                Comparator.comparing(
+                    Resource::getCapacity,
+                    Comparator.nullsLast(
+                        descending
+                            ? Comparator.<Integer>reverseOrder()
+                            : Comparator.<Integer>naturalOrder()));
+            case "createdAt" -> Comparator.comparing(Resource::getCreatedAt);
+            default ->
+                throw new IllegalArgumentException("サポートされていないソートフィールド: " + order.getProperty());
+          };
+      if (descending && !"capacity".equals(order.getProperty())) {
+        fieldComparator = fieldComparator.reversed();
+      }
+      comparator = comparator == null ? fieldComparator : comparator.thenComparing(fieldComparator);
+    }
+    return comparator != null ? comparator : Comparator.comparing(Resource::getCreatedAt);
   }
 
   /** from/to 指定なし：通常ページネーション。 */
   private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
+      ResourceCategory category, String keyword, boolean isAdmin, Pageable pageable) {
+    pageable = applyCapacityNullsLast(pageable);
     Page<Resource> page;
-    if (isAdmin) {
+    if (keyword != null) {
+      String escapedKeyword = escapeLikeKeyword(keyword);
+      if (isAdmin) {
+        page =
+            category != null
+                ? resourceRepository.findByCategoryAndKeyword(category, escapedKeyword, pageable)
+                : resourceRepository.findByKeyword(escapedKeyword, pageable);
+      } else {
+        page =
+            category != null
+                ? resourceRepository.findByCategoryAndIsActiveTrueAndKeyword(
+                    category, escapedKeyword, pageable)
+                : resourceRepository.findByIsActiveTrueAndKeyword(escapedKeyword, pageable);
+      }
+    } else if (isAdmin) {
       page =
           category != null
               ? resourceRepository.findByCategory(category, pageable)
@@ -109,10 +197,11 @@ public class ResourceService {
       ResourceCategory category,
       LocalDateTime from,
       LocalDateTime to,
+      String keyword,
       boolean isAdmin,
       Pageable pageable) {
-    // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    // 1. 候補リソースを全取得（ページネーション前。keyword 条件も適用済み）
+    List<Resource> candidates = fetchAllCandidates(category, keyword, isAdmin);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -127,7 +216,10 @@ public class ResourceService {
       candidates = candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
     }
 
-    // 3. フィルタ後リストを手動ページネーション
+    // 3. ソートを適用（Pageable の Sort は DB に渡らない経路のため、Comparator で明示的に適用する）
+    candidates = candidates.stream().sorted(buildComparator(pageable.getSort())).toList();
+
+    // 4. フィルタ・ソート後リストを手動ページネーション
     int total = candidates.size();
     int start = (int) pageable.getOffset();
     int end = Math.min(start + pageable.getPageSize(), total);
@@ -138,7 +230,20 @@ public class ResourceService {
     return new PageImpl<>(content, pageable, total);
   }
 
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
+  private List<Resource> fetchAllCandidates(
+      ResourceCategory category, String keyword, boolean isAdmin) {
+    if (keyword != null) {
+      String escapedKeyword = escapeLikeKeyword(keyword);
+      if (isAdmin) {
+        return category != null
+            ? resourceRepository.findByCategoryAndKeyword(category, escapedKeyword)
+            : resourceRepository.findByKeyword(escapedKeyword);
+      } else {
+        return category != null
+            ? resourceRepository.findByCategoryAndIsActiveTrueAndKeyword(category, escapedKeyword)
+            : resourceRepository.findByIsActiveTrueAndKeyword(escapedKeyword);
+      }
+    }
     if (isAdmin) {
       return category != null
           ? resourceRepository.findByCategory(category)
