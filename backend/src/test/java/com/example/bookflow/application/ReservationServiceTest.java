@@ -34,6 +34,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -549,6 +553,137 @@ class ReservationServiceTest {
 
       assertThatThrownBy(() -> reservationService.cancel(reservationId, owner))
           .isInstanceOf(BusinessException.class);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // list — resourceName・period フィルタ（Issue #24）
+  // ---------------------------------------------------------------------------
+
+  @Nested
+  class List_ {
+
+    private final Pageable pageable = PageRequest.of(0, 20);
+    private final LocalDateTime from = LocalDateTime.of(2025, 8, 1, 0, 0);
+    private final LocalDateTime to = LocalDateTime.of(2025, 8, 31, 23, 59);
+
+    private Page<Reservation> onePage() {
+      Resource resource = makeResource(UUID.randomUUID(), false);
+      User requester = makeUser(UUID.randomUUID(), Role.MEMBER);
+      Reservation reservation =
+          makeReservation(
+              UUID.randomUUID(),
+              resource,
+              requester,
+              LocalDateTime.of(2025, 8, 10, 10, 0),
+              LocalDateTime.of(2025, 8, 10, 12, 0),
+              ReservationStatus.APPROVED);
+      return new PageImpl<>(List.of(reservation));
+    }
+
+    @Test
+    void list_adminWithResourceNameOnly_callsResourceNameRepositoryMethod() {
+      User admin = makeUser(UUID.randomUUID(), Role.ADMIN);
+      when(reservationRepository.findByResourceNameFetch("会議室", pageable)).thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(admin, null, "会議室", null, null, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithResourceNameOnly_callsRequesterIdAndResourceNameRepositoryMethod() {
+      User member = makeUser(UUID.randomUUID(), Role.MEMBER);
+      when(reservationRepository.findByRequesterIdAndResourceNameFetch(
+              member.getId(), "会議室", pageable))
+          .thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(member, null, "会議室", null, null, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_resourceNameWithWildcardCharacters_escapesBeforeDelegatingToRepository() {
+      // BR-03: "!" を先にエスケープしてから "%"/"_" をエスケープする（二重エスケープ回避）
+      User admin = makeUser(UUID.randomUUID(), Role.ADMIN);
+      when(reservationRepository.findByResourceNameFetch("50!%off!_now!!", pageable))
+          .thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(admin, null, "50%off_now!", null, null, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_blankResourceName_treatedAsNoResourceNameFilter() {
+      // BR-02: 空白のみの resourceName は未入力として扱う
+      User admin = makeUser(UUID.randomUUID(), Role.ADMIN);
+      when(reservationRepository.findAllFetch(pageable)).thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(admin, null, "   ", null, null, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_adminWithPeriodOnly_callsPeriodRepositoryMethod() {
+      User admin = makeUser(UUID.randomUUID(), Role.ADMIN);
+      when(reservationRepository.findByPeriodFetch(from, to, pageable)).thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(admin, null, null, from, to, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithPeriodAndStatus_callsRequesterIdAndPeriodAndStatusInRepositoryMethod() {
+      User member = makeUser(UUID.randomUUID(), Role.MEMBER);
+      List<ReservationStatus> statuses = List.of(ReservationStatus.APPROVED);
+      when(reservationRepository.findByRequesterIdAndPeriodAndStatusInFetch(
+              member.getId(), from, to, statuses, pageable))
+          .thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(member, statuses, null, from, to, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_adminWithResourceNameAndPeriodAndStatus_callsFullyCombinedRepositoryMethod() {
+      // 16メソッドのうち最も条件数の多い組み合わせ（ADMIN）を検証する
+      User admin = makeUser(UUID.randomUUID(), Role.ADMIN);
+      List<ReservationStatus> statuses = List.of(ReservationStatus.APPROVED);
+      when(reservationRepository.findByResourceNameAndPeriodAndStatusInFetch(
+              "会議室", from, to, statuses, pageable))
+          .thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(admin, statuses, "会議室", from, to, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void
+        list_memberWithResourceNameAndPeriodAndStatus_callsFullyCombinedRequesterIdRepositoryMethod() {
+      // 16メソッドのうち最も条件数の多い組み合わせ（非ADMIN）を検証する
+      User member = makeUser(UUID.randomUUID(), Role.MEMBER);
+      List<ReservationStatus> statuses = List.of(ReservationStatus.APPROVED);
+      when(reservationRepository.findByRequesterIdAndResourceNameAndPeriodAndStatusInFetch(
+              member.getId(), "会議室", from, to, statuses, pageable))
+          .thenReturn(onePage());
+
+      Page<ReservationResponse> result =
+          reservationService.list(member, statuses, "会議室", from, to, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
     }
   }
 }

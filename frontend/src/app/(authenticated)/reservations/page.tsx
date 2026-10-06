@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { PaginationNav } from "@/components/ui/pagination-nav";
 import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
+import { ReservationFilterForm } from "./ReservationFilterForm";
 
 /**
  * マイ予約一覧画面（screen-spec.md §マイ予約 /reservations 準拠）。
@@ -54,10 +55,16 @@ export default async function ReservationsPage({
   const rawStatus = sp.status;
   const selectedStatuses = rawStatus ? (Array.isArray(rawStatus) ? rawStatus : [rawStatus]) : [];
   const page = Number(sp.page ?? 0);
+  const resourceName = typeof sp.resourceName === "string" ? sp.resourceName : undefined;
+  const from = typeof sp.from === "string" ? sp.from : undefined;
+  const to = typeof sp.to === "string" ? sp.to : undefined;
 
   const [reservations, profile] = await Promise.all([
     listReservationsAction({
       ...(selectedStatuses.length > 0 ? { status: selectedStatuses } : {}),
+      resourceName,
+      from,
+      to,
       page,
     }),
     getProfileAction().catch(() => null),
@@ -103,6 +110,9 @@ export default async function ReservationsPage({
           </Link>
         ))}
       </div>
+
+      {/* リソース名・期間フィルタフォーム */}
+      <ReservationFilterForm defaultResourceName={resourceName} defaultFrom={from} defaultTo={to} />
 
       {/* 予約一覧テーブル */}
       <Table>

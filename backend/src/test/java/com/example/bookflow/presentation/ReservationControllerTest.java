@@ -64,6 +64,48 @@ class ReservationControllerTest extends BaseControllerTest {
   private static final UUID RESERVATION_PENDING_ID =
       UUID.fromString("30000000-0000-0000-0000-000000000022");
 
+  // ---- resourceName・period フィルタ専用 seed（Issue #24 の検証用） ----
+
+  /** resourceName フィルタ検証用リソース（"FilterAlpha" を含む） */
+  private static final UUID RESOURCE_FILTER_A_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000012");
+
+  /** resourceName フィルタの非一致確認用リソース（"FilterAlpha" を含まない） */
+  private static final UUID RESOURCE_FILTER_B_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000013");
+
+  /** "%" エスケープ検証用リソース（"90%" を含む） */
+  private static final UUID RESOURCE_FILTER_PERCENT_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000014");
+
+  /** "%" エスケープのデコイ用リソース（"90" は含むが "90%" は含まない） */
+  private static final UUID RESOURCE_FILTER_PERCENT_DECOY_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000015");
+
+  /** MEMBER が所有する、RESOURCE_FILTER_A_ID への APPROVED 予約（2025-08-01 10:00-12:00） */
+  private static final UUID RESERVATION_FILTER_MEMBER_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000023");
+
+  /** OTHER_MEMBER が所有する、RESOURCE_FILTER_A_ID への APPROVED 予約（同一期間・ロール可視範囲確認用） */
+  private static final UUID RESERVATION_FILTER_OTHER_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000024");
+
+  /** MEMBER が所有する、RESOURCE_FILTER_A_ID への APPROVED 予約（期間フィルタ範囲外・2025-09-15） */
+  private static final UUID RESERVATION_FILTER_OUTSIDE_PERIOD_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000025");
+
+  /** MEMBER が所有する、RESOURCE_FILTER_PERCENT_ID への APPROVED 予約（"%" エスケープ検証用） */
+  private static final UUID RESERVATION_FILTER_PERCENT_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000026");
+
+  /** MEMBER が所有する、RESOURCE_FILTER_PERCENT_DECOY_ID への APPROVED 予約（"%" エスケープのデコイ） */
+  private static final UUID RESERVATION_FILTER_PERCENT_DECOY_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000027");
+
+  /** MEMBER が所有する、RESOURCE_FILTER_A_ID への PENDING 予約（resourceName+status の AND 確認用） */
+  private static final UUID RESERVATION_FILTER_PENDING_SAMENAME_ID =
+      UUID.fromString("30000000-0000-0000-0000-000000000028");
+
   @Autowired private JdbcTemplate jdbcTemplate;
 
   @BeforeEach
@@ -131,6 +173,44 @@ class ReservationControllerTest extends BaseControllerTest {
         true,
         LocalDateTime.of(2025, 4, 1, 9, 0));
 
+    // resourceName・period フィルタ専用 seed
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?)",
+        RESOURCE_FILTER_A_ID,
+        "FilterAlpha会議室",
+        "ROOM",
+        false,
+        true,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?)",
+        RESOURCE_FILTER_B_ID,
+        "備品ベータ",
+        "EQUIPMENT",
+        false,
+        true,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?)",
+        RESOURCE_FILTER_PERCENT_ID,
+        "在庫90%引き備品",
+        "EQUIPMENT",
+        false,
+        true,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?)",
+        RESOURCE_FILTER_PERCENT_DECOY_ID,
+        "備品90番",
+        "EQUIPMENT",
+        false,
+        true,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+
     // MEMBER の APPROVED 予約（2025-06-10 10:00-12:00）
     jdbcTemplate.update(
         "INSERT INTO reservations"
@@ -175,6 +255,86 @@ class ReservationControllerTest extends BaseControllerTest {
         "PENDING",
         LocalDateTime.of(2025, 6, 1, 9, 0),
         LocalDateTime.of(2025, 6, 1, 9, 0));
+
+    // resourceName・period フィルタ専用 seed（いずれも APPROVED、既存の PENDING 件数系テストに影響しない）
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        RESERVATION_FILTER_MEMBER_ID,
+        RESOURCE_FILTER_A_ID,
+        MEMBER_ID,
+        LocalDateTime.of(2025, 8, 1, 10, 0),
+        LocalDateTime.of(2025, 8, 1, 12, 0),
+        "フィルタ検証用予約（MEMBER）",
+        "APPROVED",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        RESERVATION_FILTER_OTHER_ID,
+        RESOURCE_FILTER_A_ID,
+        OTHER_MEMBER_ID,
+        LocalDateTime.of(2025, 8, 1, 10, 0),
+        LocalDateTime.of(2025, 8, 1, 12, 0),
+        "フィルタ検証用予約（OTHER_MEMBER）",
+        "APPROVED",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        RESERVATION_FILTER_OUTSIDE_PERIOD_ID,
+        RESOURCE_FILTER_A_ID,
+        MEMBER_ID,
+        LocalDateTime.of(2025, 9, 15, 10, 0),
+        LocalDateTime.of(2025, 9, 15, 12, 0),
+        "期間フィルタ範囲外の予約",
+        "APPROVED",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        RESERVATION_FILTER_PERCENT_ID,
+        RESOURCE_FILTER_PERCENT_ID,
+        MEMBER_ID,
+        LocalDateTime.of(2025, 8, 5, 10, 0),
+        LocalDateTime.of(2025, 8, 5, 12, 0),
+        "%エスケープ検証用予約",
+        "APPROVED",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        RESERVATION_FILTER_PERCENT_DECOY_ID,
+        RESOURCE_FILTER_PERCENT_DECOY_ID,
+        MEMBER_ID,
+        LocalDateTime.of(2025, 8, 5, 10, 0),
+        LocalDateTime.of(2025, 8, 5, 12, 0),
+        "%エスケープのデコイ予約",
+        "APPROVED",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        RESERVATION_FILTER_PENDING_SAMENAME_ID,
+        RESOURCE_FILTER_A_ID,
+        MEMBER_ID,
+        LocalDateTime.of(2025, 8, 2, 10, 0),
+        LocalDateTime.of(2025, 8, 2, 12, 0),
+        "resourceName+statusのAND確認用予約",
+        "PENDING",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
   }
 
   @AfterEach
@@ -192,16 +352,21 @@ class ReservationControllerTest extends BaseControllerTest {
             + " (SELECT id FROM reservations WHERE requester_id = ?)",
         MEMBER_ID);
     jdbcTemplate.update(
-        "DELETE FROM reservations WHERE id IN (?, ?, ?)",
+        "DELETE FROM reservations WHERE id IN (?, ?, ?, ?)",
         RESERVATION_MEMBER_ID,
         RESERVATION_OTHER_ID,
-        RESERVATION_PENDING_ID);
-    // POST テストで追加された動的予約も削除
+        RESERVATION_PENDING_ID,
+        RESERVATION_FILTER_OTHER_ID);
+    // POST テストで追加された動的予約も削除（resourceName・period フィルタ専用 seed の MEMBER 分も含む）
     jdbcTemplate.update("DELETE FROM reservations WHERE requester_id = ?", MEMBER_ID);
     jdbcTemplate.update(
-        "DELETE FROM resources WHERE id IN (?, ?)",
+        "DELETE FROM resources WHERE id IN (?, ?, ?, ?, ?, ?)",
         RESOURCE_NO_APPROVAL_ID,
-        RESOURCE_WITH_APPROVAL_ID);
+        RESOURCE_WITH_APPROVAL_ID,
+        RESOURCE_FILTER_A_ID,
+        RESOURCE_FILTER_B_ID,
+        RESOURCE_FILTER_PERCENT_ID,
+        RESOURCE_FILTER_PERCENT_DECOY_ID);
     jdbcTemplate.update(
         "DELETE FROM users WHERE id IN (?, ?, ?, ?)",
         MEMBER_ID,
@@ -349,6 +514,148 @@ class ReservationControllerTest extends BaseControllerTest {
         .andExpect(jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_MEMBER_ID)).exists())
         .andExpect(
             jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_PENDING_ID))
+                .doesNotExist());
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /api/reservations?resourceName=...&from=...&to=... — resourceName・period フィルタ（Issue #24）
+  // ---------------------------------------------------------------------------
+
+  @Test
+  @WithMockMember
+  void list_resourceNameCaseInsensitive_matchesRegardlessOfCase() throws Exception {
+    // BR-01: resourceName は大文字小文字を区別しない部分一致
+    mockMvc
+        .perform(get("/api/reservations").param("resourceName", "filteralpha"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_MEMBER_ID)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_resourceNameWithPercentCharacter_matchesLiteralPercentNotWildcard() throws Exception {
+    // BR-03: "%" はワイルドカードではなくリテラルとして扱う。
+    // RESERVATION_FILTER_PERCENT_DECOY_ID は "90" は含むが "90%" は含まないため除外されるべき
+    mockMvc
+        .perform(get("/api/reservations").param("resourceName", "90%"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PERCENT_ID))
+                .exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PERCENT_DECOY_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_blankResourceName_returnsAllVisibleReservationsWithoutResourceNameFilter()
+      throws Exception {
+    // BR-02/BR-07: 空白のみの resourceName は未入力として扱う
+    mockMvc
+        .perform(get("/api/reservations").param("resourceName", "   "))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_MEMBER_ID)).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_periodOverlap_includesReservationWithinRangeAndExcludesOutsideRange() throws Exception {
+    // BR-04: 期間重複判定。8月の範囲指定で8月の予約は含まれ、9月の予約（同一resourceName）は除外される
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("from", "2025-08-01T00:00:00")
+                .param("to", "2025-08-01T23:59:59"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OUTSIDE_PERIOD_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_periodAdjacentToReservation_excludesNonOverlappingBoundary() throws Exception {
+    // BR-04: 境界が一致するだけの隣接期間は重複としない（checkConflict/overlapsと同じ半開区間の意味論）
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("from", "2025-08-01T12:00:00")
+                .param("to", "2025-08-01T13:00:00"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_fromOnlyWithoutTo_returns400ValidationError() throws Exception {
+    // BR-05: from・to は同時指定必須
+    mockMvc
+        .perform(get("/api/reservations").param("from", "2025-08-01T00:00:00"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_toOnlyWithoutFrom_returns400ValidationError() throws Exception {
+    mockMvc
+        .perform(get("/api/reservations").param("to", "2025-08-01T23:59:59"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberWithResourceNameFilter_doesNotSeeOtherMembersMatchingReservation()
+      throws Exception {
+    // BR-06: resourceName が一致してもロール別可視範囲（本人分のみ）は維持される
+    mockMvc
+        .perform(get("/api/reservations").param("resourceName", "FilterAlpha"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID))
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminWithResourceNameFilter_seesAllMatchingReservations() throws Exception {
+    // BR-06: ADMIN は resourceName フィルタと組み合わせても全予約が対象
+    mockMvc
+        .perform(get("/api/reservations").param("resourceName", "FilterAlpha"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID)).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_resourceNameWithStatusFilter_appliesAndCondition() throws Exception {
+    // resourceName・status は AND 合成される。RESERVATION_FILTER_PENDING_SAMENAME_ID は
+    // 同じ resourceName に一致するが status が PENDING のため、APPROVED 指定時は除外される
+    mockMvc
+        .perform(
+            get("/api/reservations")
+                .param("resourceName", "FilterAlpha")
+                .param("status", "APPROVED"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PENDING_SAMENAME_ID))
                 .doesNotExist());
   }
 

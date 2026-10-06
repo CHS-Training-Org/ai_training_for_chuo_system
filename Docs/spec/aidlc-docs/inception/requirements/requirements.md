@@ -1,45 +1,44 @@
-# Requirements — resource-list-sort（Issue #22）
+# Requirements — reservation-list-filter（Issue #24）
 
 ## Intent Analysis Summary
 
-- **User Request**: `docs-next/docs/spec/enhancements/beginner/resource-list-sort.md`（リソース一覧のソート順選択）
+- **User Request**: `docs-next/docs/spec/enhancements/beginner/reservation-list-filter.md`（予約一覧のフィルタ拡張）
 - **Request Type**: Enhancement（既存機能への追加）
 - **Scope**: Multiple Components（frontend + backend）
-- **Complexity**: Moderate（表面上は `Pageable`/`Sort` を使った小規模な変更に見えるが、Reverse Engineering で判明したとおり `ResourceService` の 2 つの一覧取得経路のうち `listWithAvailabilityFilter`〔from/to 指定時〕は手動ページネーションのため `Sort` が自動適用されず、Java 側で明示的にソートを適用する実装が必要。NULL capacity の並び順・不正な sort 値の扱いなど DB 横断の整合性判断も伴う）
+- **Complexity**: Moderate（既存の「ロール×status有無」4メソッド構成に resourceName・from/to を加えると最大16メソッドの組み合わせになる設計判断が必要。from/to の重複判定の意味論を既存の `checkConflict`/`overlaps` と一致させる必要あり）
 - **Depth**: Standard
 
 ## 機能要件
 
 | # | 要件 |
 |---|------|
-| RES-01 | `GET /api/resources` に `sort` クエリパラメータ（Spring `Pageable` 標準形式 `sort=<field>,<asc\|desc>`）を追加し、`name`・`capacity`・`createdAt` のいずれかのフィールドを許可する |
-| RES-02 | `sort` 未指定時のデフォルトは `createdAt,asc`（登録日時昇順）を維持する |
-| RES-03 | `ResourceFilterForm` にソート選択 UI（ドロップダウン）を追加し、選択値を URL パラメータとして付与する |
-| RES-04 | `category`・`from`/`to`・`keyword`（前提課題 Issue #23 の成果物）のいずれと組み合わせてもソートが適用される。特に `listWithAvailabilityFilter`（from/to 指定時の手動ページネーション経路）にも明示的にソートを適用する |
-| RES-05 | `name`・`createdAt` フィールドでの NULL は発生しない（エンティティ上 NOT NULL）。`capacity` は NULL 許容のため、capacity 順ソート時は昇順・降順を問わず NULL を常に一覧の最後に表示する |
-| RES-06 | `sort` に許可されていないフィールド名、または `asc`/`desc` 以外の方向が指定された場合は `400 VALIDATION_ERROR` を返す（既存の `from`/`to` 同時指定チェックと同じ実装パターン） |
+| RSV-01 | `GET /api/reservations` に `resourceName` パラメータを追加し、`Reservation.resource.name` への部分一致で絞り込める |
+| RSV-02 | `GET /api/reservations` に `from`・`to` パラメータを追加し、予約期間（`startAt`〜`endAt`）が指定期間と重複する予約を返す。重複判定は既存の `ResourceService.overlaps`（半開区間 `[start, end)`、`existingStart < to && existingEnd > from`）と同一の意味論を用いる |
+| RSV-03 | 予約一覧画面に `resourceName`・`from`・`to` の入力 UI を追加し、既存のステータスタブと AND 条件で組み合わせられる |
+| RSV-04 | `resourceName` は大文字小文字を区別しない部分一致とする（keyword 検索・Issue #23 と同じ `LOWER()` 比較） |
+| RSV-05 | `resourceName` が空・空白のみの場合は未指定として扱う（既存の keyword・sort パラメータと同じ trim・null 変換パターン） |
+| RSV-06 | `from`・`to` は同時指定必須とする（片方のみの指定は 400 VALIDATION_ERROR。既存の Resource 空き確認エンドポイントと同じバリデーションパターン） |
 
 ## 非機能要件
 
 | # | 要件 |
 |---|------|
-| NFR-01 | `listPaginated` 経路（from/to 未指定）は Spring Data JPA の `Pageable.getSort()` 自動適用に乗せる。`listWithAvailabilityFilter` 経路（from/to 指定）は `Comparator<Resource>` を自前で組み立て、手動ページネーション前に適用する |
-| NFR-02 | capacity 順ソートの NULL 処理（RES-05）は、H2（テスト環境）・PostgreSQL（本番環境）のいずれでも同一結果になるよう、DB の `ORDER BY` の NULL 既定順序に依存せず Java 側（`listWithAvailabilityFilter` 経路）／明示的な `NULLS LAST` 相当の指定（`listPaginated` 経路）で保証する |
-| NFR-03 | 既存の `ResourceServiceTest`・`ResourceControllerTest`（Issue #23 で追加した keyword 関連テストを含む）を壊さない |
-| NFR-04 | 不正な `sort` 値のバリデーション（RES-06）は、既存の `ValidationException`／`VALIDATION_ERROR` エラーコードの仕組みをそのまま再利用する |
+| NFR-01 | `resourceName`・`from`/`to` は、既存の「ロール×status有無」4メソッド構成に対する専用 `@Query` メソッドとして実装し、nullable パラメータの単一 JPQL は使わない（`ResourceRepository` の keyword 実装と同じ方針。H2/PostgreSQL のパラメータ型推論差異を避けるため） |
+| NFR-02 | 共通の JPQL 条件（resourceName 一致・from/to 重複判定）はインターフェース定数として集約し、メソッド間の重複・ズレを防ぐ（`ResourceRepository.KEYWORD_MATCH` と同じパターン） |
+| NFR-03 | from/to の重複判定は `Reservation` エンティティ自身の `startAt`/`endAt` への JPQL 述語で完結させ、Java 側の手動ページネーションは導入しない（既存の `Page<Reservation>` ベースの DB ページングを維持する） |
+| NFR-04 | 既存の `ReservationServiceTest`・`ReservationControllerTest` が継続して pass すること |
 
 ## 受入条件（ビジネス要求シートより）
 
-- [ ] 名称順（昇順・降順）でリソース一覧を並び替えられる
-- [ ] 定員順（昇順・降順）でリソース一覧を並び替えられる
-- [ ] ソート未選択時は従来どおり登録日時昇順で表示される
-- [ ] カテゴリ・期間フィルタやキーワード検索との組み合わせでもソートが適用される
+- [ ] リソース名で絞り込むと、そのリソース名を含む予約のみ表示される
+- [ ] 期間（from/to）で絞り込むと、指定期間にかかる予約のみ表示される
+- [ ] ステータスタブ・リソース名・期間を組み合わせて絞り込める
+- [ ] フィルタをリセットすると全件表示に戻る
 - [ ] バックエンドの既存テストが引き続き pass する
 
 ## 技術コンテキスト（Reverse Engineering 由来）
 
-- `code-structure-resource-sort.md` 参照。ソートが自動適用される経路と、Java 側の明示実装が必要な経路が混在している点が本ユニットの主要な設計判断点
-- 前提課題（Issue #23・keyword 検索、PR #132）はこのブランチの基点として取り込み済みであり、`ResourceFilterForm`・`listResourcesAction`・`ResourceService#list` はすでに `keyword` 引数を持つ
+- `code-structure-reservation-list-filter.md` 参照。16 メソッドの組み合わせ爆発への対応方針・from/to の意味論・resourceName の大文字小文字非依存の扱いが本ユニットの主要な設計判断点
 
 ## 拡張設定（Requirements Analysis で確認済み）
 
@@ -51,5 +50,5 @@
 
 ## 確認済みの設計判断（ユーザー回答）
 
-- 不正な `sort` 値 → `400 VALIDATION_ERROR`（RES-06）
-- capacity が NULL のリソース → ソート方向に関わらず常に末尾（RES-05・NFR-02）
+- `from`/`to` の重複判定 → `checkConflict`/`overlaps` と同じ overlap 判定（RSV-02）
+- `resourceName` の大文字小文字 → 区別しない（RSV-04）

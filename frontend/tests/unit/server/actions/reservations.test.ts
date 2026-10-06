@@ -44,9 +44,118 @@ describe("listReservationsAction", () => {
     expect(result.totalElements).toBe(1);
   });
 
-  it("正常時: status フィルタパラメータを渡せる（複数指定）", async () => {
-    const result = await listReservationsAction({ status: ["PENDING", "APPROVED"] });
-    expect(result.content).toHaveLength(1);
+  it("status 指定時: クエリパラメータに status をそのまま渡す（複数指定）", async () => {
+    // BFF 層（listReservationsAction）が status をバックエンドへ転送することを、
+    // 実際に送信された URL のクエリパラメータを捕捉して検証する
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/reservations", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json({
+          content: [MOCK_RESERVATION_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    await listReservationsAction({ status: ["PENDING", "APPROVED"] });
+
+    expect(receivedUrl?.searchParams.getAll("status")).toEqual(["PENDING", "APPROVED"]);
+  });
+
+  it("resourceName 指定時: クエリパラメータに resourceName をそのまま渡す", async () => {
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/reservations", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json({
+          content: [MOCK_RESERVATION_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    await listReservationsAction({ resourceName: "会議室" });
+
+    expect(receivedUrl?.searchParams.get("resourceName")).toBe("会議室");
+  });
+
+  it("resourceName 未指定時: クエリパラメータに resourceName を含めない", async () => {
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/reservations", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json({
+          content: [MOCK_RESERVATION_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    await listReservationsAction();
+
+    expect(receivedUrl?.searchParams.has("resourceName")).toBe(false);
+  });
+
+  it("from/to 指定時（秒なし16文字）: 秒付きISOに正規化してクエリパラメータに渡す", async () => {
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/reservations", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json({
+          content: [MOCK_RESERVATION_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    await listReservationsAction({ from: "2025-08-01T00:00", to: "2025-08-01T23:59" });
+
+    expect(receivedUrl?.searchParams.get("from")).toBe("2025-08-01T00:00:00");
+    expect(receivedUrl?.searchParams.get("to")).toBe("2025-08-01T23:59:00");
+  });
+
+  it("from/to 未指定時: クエリパラメータに from/to を含めない", async () => {
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/reservations", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json({
+          content: [MOCK_RESERVATION_RESPONSE],
+          totalElements: 1,
+          totalPages: 1,
+          number: 0,
+          size: 20,
+          first: true,
+          last: true,
+        });
+      }),
+    );
+
+    await listReservationsAction();
+
+    expect(receivedUrl?.searchParams.has("from")).toBe(false);
+    expect(receivedUrl?.searchParams.has("to")).toBe(false);
   });
 
   it("401 時: ApiClientError をスローする", async () => {
