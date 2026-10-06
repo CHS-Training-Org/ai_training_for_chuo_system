@@ -596,6 +596,11 @@ class ReservationControllerTest extends BaseControllerTest {
             jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
         .andExpect(
             jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OUTSIDE_PERIOD_ID))
+                .doesNotExist())
+        .andExpect(
+            // 同一期間・同一リソースだが他メンバーの予約。期間のみフィルタでも
+            // requester_id の絞り込み（本人分のみ）が効いていることの確認用
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_ID))
                 .doesNotExist());
   }
 
@@ -676,6 +681,10 @@ class ReservationControllerTest extends BaseControllerTest {
             jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_MEMBER_ID)).exists())
         .andExpect(
             jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_PENDING_SAMENAME_ID))
+                .doesNotExist())
+        .andExpect(
+            // resourceName に一致しないが同じ APPROVED 状態のデコイ（resourceName 条件自体の検証用）
+            jsonPath("$.content[?(@.id == '%s')]".formatted(RESERVATION_FILTER_OTHER_RESOURCE_ID))
                 .doesNotExist());
   }
 
