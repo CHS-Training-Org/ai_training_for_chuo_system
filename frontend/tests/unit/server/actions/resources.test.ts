@@ -77,6 +77,8 @@ describe("getResourceAction", () => {
     expect(result.id).toBe(MOCK_RESOURCE_RESPONSE.id);
     expect(result.name).toBe(MOCK_RESOURCE_RESPONSE.name);
     expect(result.isActive).toBe(true);
+    expect(result.equipment).toBe(MOCK_RESOURCE_RESPONSE.equipment);
+    expect(result.notes).toBe(MOCK_RESOURCE_RESPONSE.notes);
   });
 
   it("存在しない ID: 404 エラーをスローする", async () => {
@@ -136,6 +138,32 @@ describe("createResourceAction", () => {
     expect(result.id).toBeDefined();
   });
 
+  it("equipment/notes 指定時: リクエストボディに含めて送信し、レスポンスに反映される", async () => {
+    const result = await createResourceAction({
+      name: "新会議室",
+      category: "ROOM",
+      requiresApproval: false,
+      isActive: true,
+      equipment: "プロジェクター1台",
+      notes: "貸出時は電源ケーブルも一緒にお渡しください",
+    });
+
+    expect(result.equipment).toBe("プロジェクター1台");
+    expect(result.notes).toBe("貸出時は電源ケーブルも一緒にお渡しください");
+  });
+
+  it("equipment/notes 未指定時: レスポンスの該当フィールドは null になる", async () => {
+    const result = await createResourceAction({
+      name: "新会議室",
+      category: "ROOM",
+      requiresApproval: false,
+      isActive: true,
+    });
+
+    expect(result.equipment).toBeNull();
+    expect(result.notes).toBeNull();
+  });
+
   it("401 時: ApiClientError をスローする", async () => {
     server.use(
       http.post("/api/backend/resources", () => {
@@ -183,5 +211,19 @@ describe("updateResourceAction", () => {
     });
 
     expect(result.name).toBe("第1会議室（改装後）");
+  });
+
+  it("equipment/notes 指定時: リクエストボディに含めて送信し、レスポンスに反映される", async () => {
+    const result = await updateResourceAction(MOCK_RESOURCE_RESPONSE.id, {
+      name: "第1会議室（改装後）",
+      category: "ROOM",
+      requiresApproval: false,
+      isActive: true,
+      equipment: "プロジェクター1台、ホワイトボード2台",
+      notes: "騒音制限あり（22時以降の利用不可）",
+    });
+
+    expect(result.equipment).toBe("プロジェクター1台、ホワイトボード2台");
+    expect(result.notes).toBe("騒音制限あり（22時以降の利用不可）");
   });
 });
