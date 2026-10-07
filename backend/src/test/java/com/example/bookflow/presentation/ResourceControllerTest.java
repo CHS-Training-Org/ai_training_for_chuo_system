@@ -37,6 +37,10 @@ class ResourceControllerTest extends BaseControllerTest {
       UUID.fromString("10000000-0000-0000-0000-000000000010");
   private static final UUID INACTIVE_RESOURCE_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000011");
+  private static final UUID DESC_MATCH_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000012");
+  private static final UUID CASE_INSENSITIVE_RESOURCE_ID =
+      UUID.fromString("10000000-0000-0000-0000-000000000013");
   private static final UUID RESERVATION_ID =
       UUID.fromString("10000000-0000-0000-0000-000000000020");
 
@@ -92,6 +96,30 @@ class ResourceControllerTest extends BaseControllerTest {
         false,
         LocalDateTime.of(2025, 4, 1, 9, 0));
 
+    // Resources（キーワード検索テスト用：description のみ一致 / 大文字小文字違い一致）
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        DESC_MATCH_RESOURCE_ID,
+        "予備室A",
+        "ROOM",
+        false,
+        true,
+        "大型会議室として利用可能",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    jdbcTemplate.update(
+        "INSERT INTO resources"
+            + " (id, name, category, requires_approval, is_active, description, created_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        CASE_INSENSITIVE_RESOURCE_ID,
+        "Conference Room B",
+        "ROOM",
+        false,
+        true,
+        "4K Projector added",
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+
     // Reservation（APPROVED・2025-06-02 10:00〜12:00）
     jdbcTemplate.update(
         "INSERT INTO reservations"
@@ -113,6 +141,8 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", DESC_MATCH_RESOURCE_ID);
+    jdbcTemplate.update("DELETE FROM resources WHERE id = ?", CASE_INSENSITIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
@@ -195,6 +225,60 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeyword_matchesNameAndDescriptionButExcludesNonMatching() throws Exception {
+    // "第1会議室" は name 一致、"予備室A"（description: 大型会議室として利用可能）は description のみ一致。
+    // "第1会議室" の description は NULL（OR のもう一方の判定に影響しないことも確認）。
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議室").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + DESC_MATCH_RESOURCE_ID + "')]").exists())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + CASE_INSENSITIVE_RESOURCE_ID + "')]")
+                .doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordDifferentCase_matchesCaseInsensitively() throws Exception {
+    // description は "4K Projector added"（大文字 P）。小文字キーワードで検索しても一致する。
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "projector").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + CASE_INSENSITIVE_RESOURCE_ID + "')]").exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withKeywordAndCategory_appliesAndCondition() throws Exception {
+    // キーワードは一致するが category が一致しないため、AND 条件で除外される
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議室")
+                .param("category", "EQUIPMENT")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").doesNotExist())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '" + DESC_MATCH_RESOURCE_ID + "')]").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_withEmptyKeywordParam_behavesAsUnfiltered() throws Exception {
+    // keyword を空文字で送ると条件解除（未指定時と同じ挙動）
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]").doesNotExist());
   }
 
   // ---------------------------------------------------------------------------
