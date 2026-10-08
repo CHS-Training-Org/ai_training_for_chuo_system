@@ -74,12 +74,17 @@ const config: Config = {
     mermaid: true,
   },
 
-  themes: ['@docusaurus/theme-mermaid'],
-
-  plugins: [
+  themes: [
+    '@docusaurus/theme-mermaid',
+    // 検索の索引は `npm run build` の postBuild でだけ作られる。
+    // 開発サーバー（npm run start）では検索できないので、確かめるときは build → serve を使う。
     [
-      'docusaurus-plugin-search-local',
+      '@easyops-cn/docusaurus-search-local',
       {
+        // 'ja' がないと日本語が分かち書きされず、ほとんどの語が索引に入らない。
+        language: ['en', 'ja'],
+        // docs の routeBasePath が '/' なので合わせる（既定の 'docs' のままだと見出し単位で索引されない）。
+        docsRouteBasePath: '/',
         indexBlog: false,
         indexPages: true,
         hashed: true,
