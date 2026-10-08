@@ -92,8 +92,17 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    // 開発サーバー専用のレビューコメント保存先（本番ビルドには影響しない）。
+    './plugins/review-comments.js',
+  ],
+
   // Mermaid の図に拡大縮小と全画面表示を付ける。
-  clientModules: ['./src/clientModules/mermaidPanZoom.js'],
+  clientModules: [
+    './src/clientModules/mermaidPanZoom.js',
+    // 開発サーバー専用: 文言を選んでコメントを残す。
+    './src/clientModules/reviewComments.js',
+  ],
 
   themeConfig: {
     colorMode: {
