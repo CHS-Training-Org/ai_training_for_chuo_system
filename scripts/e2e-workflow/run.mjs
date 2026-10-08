@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 /**
- * 結合テストのワークフローで生成したテストを実行し、実行の証拠を集める。
+ * 結合テストのワークフローで生成したテストを実行し、実行のエビデンスを集める。
  *
- * 学習者はテストコードを読まずに、ここで集めた証拠（見る場所の画面、フェイルした時点の画面、このテストで使った値）を
- * 試験ケースの期待結果と並べて見て、期待結果が本当に成り立っていたかを判断する。証拠は Playwright の
+ * 学習者はテストコードを読まずに、ここで集めたエビデンス（確認箇所の画面、フェイルした時点の画面、このテストで使った値）を
+ * 試験ケースの期待結果と並べて見て、期待結果が本当に成り立っていたかを判断する。エビデンスは Playwright の
  * 実行結果から機械的に集め、AI の説明は混ぜない。
  *
  * 使い方:
  *   node scripts/e2e-workflow/run.mjs <スラッグ>
  *
  * 出力:
- *   - Docs/test/<スラッグ>/run.json  ケースごとの結果、証拠の画面のファイル名、使った値、実行したときのテストコードの指紋
- *   - frontend/playwright/evidence/<スラッグ>/  証拠の画面（Git には入れない）
+ *   - Docs/test/<スラッグ>/run.json  ケースごとの結果、エビデンスの画面のファイル名、使った値、実行したときのテストコードの指紋
+ *   - frontend/playwright/evidence/<スラッグ>/  エビデンスの画面（Git には入れない）
  *
  * 前提：結合テスト専用のデータベース（bookflow_e2e）があり、バックエンドがそこにつながって起動していること。
  * 準備は node scripts/e2e-workflow/env.mjs up で行う。流す前に、このスクリプトがデータベースを初期データに戻す。
@@ -29,7 +29,7 @@ import { resetDatabase } from './db.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const FRONTEND = path.join(REPO_ROOT, 'frontend');
-const EVIDENCE_PREFIX = '証拠:';
+const EVIDENCE_PREFIX = 'エビデンス:';
 const USED_VALUE_PREFIX = '使った値:';
 
 function walk(suite, out = []) {
@@ -65,13 +65,13 @@ function main() {
   const state = readState(slug);
   if (!state) throw new Error(`状態ファイルがありません: ${slug}`);
   // 確定したテストコードを流し、確定した実行の結果は上書きしない
-  if (state.stages.cases.status !== 'confirmed') throw new Error('試験ケースの段階が確定していません。確定してから実行してください');
-  if (state.stages.code.status === 'confirmed') throw new Error('テストコードと実行の段階は確定済みです。確定した証拠は上書きしません');
+  if (state.stages.cases.status !== 'confirmed') throw new Error('試験仕様書の段階が確定していません。確定してから実行してください');
+  if (state.stages.code.status === 'confirmed') throw new Error('テストコードと実行の段階は確定済みです。確定したエビデンスは上書きしません');
   // 置き場所を変えたテストコードは、Playwright の設定（tests/e2e/workflow/）と import の位置に合わず流せない
   if (process.env.E2E_WORKFLOW_SPEC_DIR) throw new Error('E2E_WORKFLOW_SPEC_DIR は確認用のダッシュボードのための設定で、実行では使えません。外してから実行してください');
   const spec = specPath(slug);
   if (!fs.existsSync(spec)) throw new Error(`テストコードがありません: ${spec}`);
-  // 初期化しないテストを流すと、ほかのテストのデータが証拠の画面に写り、学習者が判断できなくなる
+  // 初期化しないテストを流すと、ほかのテストのデータがエビデンスの画面に写り、学習者が判断できなくなる
   if (!usesWorkflowTest(fs.readFileSync(spec, 'utf8'))) {
     throw new Error('テストコードが、テストごとにデータベースを初期データに戻す test（helpers/workflow-test）を使っていません。テストコードの段階に戻して直してください');
   }

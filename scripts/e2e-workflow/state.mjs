@@ -6,8 +6,8 @@
  * ダッシュボード（server.mjs）は、どちらもこのファイルを通して状態を扱う。
  *
  * CLI（案内スキルが使う）で行えるのは、状態ファイルの作成、表示、「レビュー待ち」への更新だけ。
- * 「確定」と「差し戻し」、仕様の食い違いへの回答、フェイルしたケースの判断は、ダッシュボードの画面操作（server.mjs）からだけ行う。
- * 確定した段階を差し戻しに戻す reopen は、運営者だけが使う（学習者が前の段階の誤りを見つけ、運営者が認めたとき）。
+ * 「確定」と「差し戻し」、仕様の矛盾への回答、フェイルしたケースの判断は、ダッシュボードの画面操作（server.mjs）からだけ行う。
+ * 確定した段階を差し戻しに戻す reopen は、学習者が前の段階の誤りを見つけ、戻すと決めたときに、案内スキルが学習者の依頼で使う。
  * ただしこれは構成上の分担で、AI が state.json を直接書き換えることまでは防げない。
  *
  * 使い方:
@@ -16,7 +16,7 @@
  *   node scripts/e2e-workflow/state.mjs ai-output <スラッグ> <段階> [メモ]
  *   node scripts/e2e-workflow/state.mjs last-return <スラッグ> <段階>
  *   node scripts/e2e-workflow/state.mjs validate <スラッグ>
- *   node scripts/e2e-workflow/state.mjs reopen <スラッグ> <段階> <理由>   （運営者だけが使う）
+ *   node scripts/e2e-workflow/state.mjs reopen <スラッグ> <段階> <理由>   （学習者の依頼で案内スキルが使う）
  *
  * 対象ディレクトリは既定で <リポジトリ>/Docs/test。環境変数 E2E_WORKFLOW_DIR で変えられる。
  */
@@ -29,9 +29,9 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 
 export const STAGES = [
   { key: 'perspectives', label: '1 試験観点', gate: '関門1 観点の確定', artifact: 'perspectives.md', guide: 'docs-next/docs/develop/integration-test/viewpoints.md' },
-  { key: 'cases', label: '2 試験ケース', gate: '関門2 ケースの確定', artifact: 'cases.md', guide: 'docs-next/docs/develop/integration-test/cases.md' },
-  // テストコードを作り、流して証拠を集めるまでを1つの段階にする。学習者はテストコードを読まず、説明（code.md）の判断と
-  // 実行の証拠で確定する。実行の結果（run.json）と AI の見立て（triage.md）は、この段階の成果物として扱う
+  { key: 'cases', label: '2 試験仕様書', gate: '関門2 試験仕様書の確定', artifact: 'cases.md', guide: 'docs-next/docs/develop/integration-test/cases.md' },
+  // テストコードを作り、流してエビデンスを集めるまでを1つの段階にする。学習者はテストコードを読まず、説明（code.md）の判断と
+  // 実行のエビデンスで確定する。実行の結果（run.json）と AI の見立て（triage.md）は、この段階の成果物として扱う
   { key: 'code', label: '3 テストコードと実行', gate: '関門3 テストの確定', artifact: 'code.md', guide: 'docs-next/docs/develop/integration-test/execution.md' },
 ];
 
@@ -93,7 +93,7 @@ export function formatTime(iso) {
 }
 
 /**
- * 観点一覧の 4.1「仕様の食い違い」の表を読む。
+ * 観点一覧の 4.1「仕様の矛盾」の表を読む。
  * 選択肢は「A. <案>／B. <案>」の形で書かれている前提（generate-test-perspectives の出力様式）。
  */
 export function parseDiscrepancies(md) {
@@ -148,7 +148,7 @@ export function tableRows(text) {
 const VP_RE = /[A-Z][A-Z0-9-]*-VP-\d{3}/g;
 
 /**
- * 観点一覧の2章の観点が、試験ケース一覧のどこかに載っているかを照らし合わせる。
+ * 観点一覧の2章の観点が、試験仕様書のどこかに載っているかを照らし合わせる。
  * 載っている場所は、試験ケースの「展開元」か、4章「試験ケースにできなかった観点」のどちらか。
  */
 export function casesCoverage(perspectivesMd, casesMd) {
@@ -181,7 +181,7 @@ export function specPath(slug) {
   return path.join(dir, `${slug}.spec.ts`);
 }
 
-/** 実行の証拠の画面の置き場所。Git には入れない。E2E_WORKFLOW_EVIDENCE_DIR で変えられる。 */
+/** 実行のエビデンスの画面の置き場所。Git には入れない。E2E_WORKFLOW_EVIDENCE_DIR で変えられる。 */
 export function evidenceDir(slug) {
   assertSlug(slug);
   const dir = process.env.E2E_WORKFLOW_EVIDENCE_DIR ? path.resolve(process.env.E2E_WORKFLOW_EVIDENCE_DIR) : path.join(REPO_ROOT, 'frontend', 'playwright', 'evidence');
@@ -189,13 +189,13 @@ export function evidenceDir(slug) {
 }
 
 /**
- * 実行の結果の区分。テストがどこで止まったかを、Playwright のエラーと証拠の画面の有無から機械的に決める。
+ * 実行の結果の区分。テストがどこで止まったかを、Playwright のエラーとエビデンスの画面の有無から機械的に決める。
  * 実装の不具合かテストの誤りかは、ここでは決めない（人が画面を見て判断する）。
  */
 export const RESULT_KINDS = [
   { key: 'pass', label: 'パス', fail: false, note: '最後まで期待結果どおりだった' },
-  { key: 'assert', label: '期待結果と違った', fail: true, note: '見る場所までたどり着き、期待結果を確かめたところでフェイルした。見る場所の画面で、期待結果と何が違うかを見る' },
-  { key: 'stopped', label: '途中で止まった', fail: true, note: '見る場所にたどり着く前に、手順の途中でフェイルした（画面の要素が見つからない、画面が移らない、時間切れなど）。フェイルした時点の画面で、どこで止まったかを見る' },
+  { key: 'assert', label: '期待結果と違った', fail: true, note: '確認箇所までたどり着き、期待結果を確かめたところでフェイルした。確認箇所の画面で、期待結果と何が違うかを見る' },
+  { key: 'stopped', label: '途中で止まった', fail: true, note: '確認箇所にたどり着く前に、手順の途中でフェイルした（画面の要素が見つからない、画面が移らない、時間切れなど）。フェイルした時点の画面で、どこで止まったかを見る' },
   { key: 'setup', label: '前提データを用意できなかった', fail: true, note: 'テストの前提になるデータ（既存の予約など）を API で作れなかった' },
   { key: 'env', label: '環境が整っていない', fail: true, note: 'バックエンドやデータベースにつながらなかった。AI が環境を整えて流し直す。残っている間は、学習者に渡せず、確定もできない' },
   { key: 'not_run', label: '実行されていない', fail: false, note: 'テストが実行されなかった' },
@@ -319,7 +319,7 @@ function valueWord(arg) {
 /**
  * テストコードから、テストごとの「確かめたこと」を機械的に抜き出す。
  * 戻り値は { テスト名の先頭のケース ID: { checks: [{ message, check, soft, line }], evidence, line } }。
- * evidence は、そのテストが見る場所の画面を撮っているか（evidence( を呼んでいるか）。
+ * evidence は、そのテストが確認箇所の画面を撮っているか（evidence( を呼んでいるか）。
  * message は expect の第2引数（AI が書いた、何を確かめるかの説明）。文字列リテラルでなければ null。
  * check は照合の種類（機械的に決めた言葉）。テストの外（補助の関数）にある expect は対象にしない。
  */
@@ -426,7 +426,7 @@ function skippedDescribeRanges(src) {
 }
 
 /**
- * 試験ケース一覧の2章のケースが、テストコードのどこかにあるかを照らし合わせる。
+ * 試験仕様書の2章のケースが、テストコードのどこかにあるかを照らし合わせる。
  * テスト名の先頭のケース ID で数える。test.skip / test.fixme で止めたテストと、
  * test.describe.skip / test.describe.fixme の中のテストは数えない。
  */
@@ -452,14 +452,14 @@ export function codeCoverage(casesMd, specSrc, codeMd) {
     skipped: [...skipped],
     missing: cases.filter((id) => !tested.has(id) && !unwritten.has(id)),
     unknown: [...tested, ...unwritten].filter((id) => !cases.includes(id)),
-    // 同じケース ID で始まるテストが2本以上ある。1ケース1テストの決まりに反し、証拠の画像も取り違える
+    // 同じケース ID で始まるテストが2本以上ある。1ケース1テストの決まりに反し、エビデンスの画像も取り違える
     duplicated: [...duplicated],
   };
 }
 
 /**
  * 実行の結果で確定できるかを調べる。確定のチェックとダッシュボードの表示が同じ判定を使う。
- * 試験ケース一覧の2章のケースのうち、テストコードにできなかったケース（code.md の4章）を除いたすべてに、
+ * 試験仕様書の2章のケースのうち、テストコードにできなかったケース（code.md の4章）を除いたすべてに、
  * 実行された結果（パスかフェイル）がなければ確定できない。
  */
 export function runCheck(slug) {
@@ -478,7 +478,7 @@ export function runCheck(slug) {
     total: target.length,
     missing: target.filter((id) => !cases[id]),
     notRun: target.filter((id) => cases[id] && resultKind(cases[id]) === 'not_run'),
-    // 環境が整っていなかったケースは、見る場所にたどり着いていないので、実行されていないのと同じに扱う
+    // 環境が整っていなかったケースは、確認箇所にたどり着いていないので、実行されていないのと同じに扱う
     env: target.filter((id) => cases[id] && resultKind(cases[id]) === 'env'),
   };
 }
@@ -490,13 +490,13 @@ export function failedCaseIds(run) {
 
 /**
  * 関門3で、学習者がフェイルしたケースごとに選ぶ原因。confirm が false の原因を選んだケースがあると確定できない
- * （テストの誤りは差し戻して AI に直させ、前の段階の誤りは差し戻して運営者に相談する）。
+ * （テストの誤りは差し戻して AI に直させ、前の段階の誤りは差し戻して、学習者の依頼でその段階を開き直す）。
  */
 export const JUDGE_KINDS = [
   { key: 'impl', label: '実装の不具合', confirm: true, note: 'アプリの振る舞いが仕様と違う。テストは正しい' },
-  { key: 'tentative', label: '仕様の仮回答による', confirm: true, note: '観点の段階で仕様の食い違いに仮に選んだ回答と、実装が違う' },
+  { key: 'tentative', label: '仕様の仮回答による', confirm: true, note: '観点の段階で仕様の矛盾に仮に選んだ回答と、実装が違う' },
   { key: 'test', label: 'テストの誤り', confirm: false, note: 'テストの操作や確かめ方が、試験ケースと合っていない。差し戻して AI に直させる' },
-  { key: 'upstream', label: '前の段階の誤り', confirm: false, note: '試験ケースや観点の期待結果、入力値が誤っている。差し戻して運営者に相談する' },
+  { key: 'upstream', label: '前の段階の誤り', confirm: false, note: '試験ケースや観点の期待結果、入力値が誤っている。差し戻して、その段階を開き直す' },
 ];
 
 /** AI の見立ての種類。triage.md の「見立て」の列は、このどれかで始める。 */
@@ -523,10 +523,44 @@ export function readTriage(slug) {
  * テストコードと実行の段階を、学習者に渡せるか（AI の作業が終わっているか）。足りないことを文で返す。
  * 流した結果が今のテストコードのもので、全ケースが実行され、フェイルしたケースすべてに同じ実行への見立てがあること。
  */
+/**
+ * テストコードの決まり（要素の指定、待ち方、検証の説明、エビデンスの画面など）から外れた書き方を、機械的に見つける。
+ * 見つかったら学習者には渡さない（handoffProblems）。AI が直してから渡す。確定は止めない。
+ */
+export function lintSpec(src) {
+  const lines = src.split('\n');
+  const at = (re) => lines.map((l, i) => (re.test(l) ? i + 1 : 0)).filter(Boolean);
+  const rules = [
+    ['data-testid を使っている', /data-testid|getByTestId/],
+    ['固定時間の待機（waitForTimeout）がある', /waitForTimeout/],
+    ['期限を決めずに待っている（期待結果と違うと、時間切れまで止まる）', /\.waitFor\((?![^)]*timeout)/],
+    ['CSS や XPath で要素を指定している', /\.locator\(\s*["'`](?![^"'`]*>>)/],
+    ['日付の文字列を書いている', /["'`]20\d\d-\d\d-\d\d/],
+    ['test.only がある', /\btest\.only\(|\bdescribe\.only\(/],
+    ['test.skip か test.fixme で止めたテストがある', /\btest\.(skip|fixme)\(/],
+  ];
+  const out = rules.map(([label, re]) => ({ label, lines: at(re) })).filter((r) => r.lines.length);
+  const tests = Object.values(specChecks(src));
+  const noMsg = tests.flatMap((t) => t.checks.filter((k) => !k.message).map((k) => k.line));
+  if (noMsg.length) out.push({ label: '検証（expect）に、何を確かめるかの説明がない（画面の「このテストが確かめたこと」に出ない）', lines: noMsg });
+  const noShot = tests.filter((t) => !t.evidence).map((t) => t.line);
+  if (noShot.length) out.push({ label: '確認箇所の画面を撮っていないテストがある', lines: noShot });
+  if (!usesWorkflowTest(src)) out.push({ label: 'テストごとにデータベースを初期データに戻す test（helpers/workflow-test）を使っていない', lines: [] });
+  return out;
+}
+
 export function handoffProblems(slug) {
   const out = [];
   const cov = codeCoverageOf(slug);
   if (!cov) return ['テストコードかその説明（code.md）がありません。'];
+  // ケースとの対応は、学習者の確定を待たずに、渡す前に確かめる（AI が自分で直せるため）
+  if (cov.missing.length) out.push(`どのテストにも、「テストコードにできなかったケース」にも載っていないケースがあります（${cov.missing.join('、')}）。`);
+  if (cov.unknown.length) out.push(`試験仕様書にないケース ID があります（${cov.unknown.join('、')}）。`);
+  if (cov.duplicated.length) out.push(`同じケース ID で始まるテストが2本以上あります（${cov.duplicated.join('、')}）。`);
+  const sp = specPath(slug);
+  if (fs.existsSync(sp)) {
+    for (const l of lintSpec(fs.readFileSync(sp, 'utf8'))) out.push(`決まりから外れた書き方があります：${l.label}${l.lines.length ? `（${l.lines.join('、')} 行目）` : ''}。`);
+  }
   const chk = runCheck(slug);
   if (!chk.run) return ['まだ流していません（node scripts/e2e-workflow/run.mjs）。'];
   if (chk.stale) out.push('テストコードが、流したあとで変わっています。流し直してください。');
@@ -635,31 +669,31 @@ export function nextAction(state) {
   const guide = `手順は ${stage.guide} を参照`;
   if (st === 'not_started') {
     if (stage.key === 'cases') return { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で、確定した試験観点を試験ケースに展開する' };
-    if (stage.key === 'code') return { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で、確定した試験ケースからテストコードを作って流し、実行の証拠を集める' };
+    if (stage.key === 'code') return { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で、確定した試験ケースからテストコードを作って流し、実行のエビデンスを集める' };
     return stage.key === 'perspectives'
       ? { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で試験観点のたたき台を出力する' }
       : { stage, who: '学習者', text: `AI にこの段階の作業を依頼する（案内スキルはこの段階に未対応。${guide}）` };
   }
   if (st === 'ai_output') {
     if (stage.key === 'cases') return { stage, who: '学習者', text: 'すべての試験ケースを観点と突き合わせてレビューし、ダッシュボードで確定か差し戻しを選ぶ' };
-    if (stage.key === 'code') return { stage, who: '学習者', text: 'テストコードは読まずに、説明の2〜4章と、ケースごとの実行の証拠（AI の見立てを含む）を見て判断し、ダッシュボードで確定か差し戻しを選ぶ' };
+    if (stage.key === 'code') return { stage, who: '学習者', text: 'テストコードは読まずに、説明の2〜4章と、ケースごとの実行のエビデンス（AI の見立てを含む）を見て判断し、ダッシュボードで確定か差し戻しを選ぶ' };
     return stage.key === 'perspectives'
       ? { stage, who: '学習者', text: discrepanciesOf(state.slug).every((q) => isReflected(q, state.stages.perspectives.answers))
         ? '観点一覧をレビューし、ダッシュボードで確定か差し戻しを選ぶ'
-        : '観点一覧をレビューし、ダッシュボードで仕様の食い違いに回答して、確定か差し戻しを選ぶ' }
+        : '観点一覧をレビューし、ダッシュボードで仕様の矛盾に回答して、確定か差し戻しを選ぶ' }
       : { stage, who: '学習者', text: `成果物をレビューし、ダッシュボードで確定か差し戻しを選ぶ（${guide}）` };
   }
   if (st === 'returned') {
-    if (stage.key === 'cases') return { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で、差し戻しの理由を試験ケース一覧に反映する' };
-    if (stage.key === 'code') return { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で、差し戻しの理由に沿ってテストコードを直し、流し直して証拠を集め直す' };
+    if (stage.key === 'cases') return { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で、差し戻しの理由を試験仕様書に反映する' };
+    if (stage.key === 'code') return { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で、差し戻しの理由に沿ってテストコードを直し、流し直してエビデンスを集め直す' };
     return stage.key === 'perspectives'
-      ? { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で、差し戻しの理由と仕様の食い違いへの回答を観点一覧に反映する' }
+      ? { stage, who: 'AI', text: '案内スキル（/e2e-workflow）で、差し戻しの理由と仕様の矛盾への回答を観点一覧に反映する' }
       : { stage, who: '学習者', text: `差し戻した理由を添えて AI に直させ、もう一度レビューする（案内スキルはこの段階に未対応。${guide}）` };
   }
   return { stage, who: null, text: '' };
 }
 
-/** その段階で最後に差し戻したときの記録（理由を含む）。運営者が確定から戻した記録も含む。なければ null。 */
+/** その段階で最後に差し戻したときの記録（理由を含む）。確定から差し戻しに戻した記録も含む。なければ null。 */
 export function lastReturn(state, stageKey) {
   const entries = state.log.filter((l) => l.stage === stageKey && (l.action === 'return' || l.action === 'reopen'));
   return entries.length ? entries[entries.length - 1] : null;
@@ -674,7 +708,16 @@ export function markAiOutput(slug, stageKey, note = '') {
   if (st.status === 'confirmed') throw new Error(`${stageKey} は確定済みです。確定を取り消すのは学習者だけです`);
   const before = STAGES.slice(0, STAGES.findIndex((s) => s.key === stageKey)).filter((s) => state.stages[s.key].status !== 'confirmed');
   if (before.length) throw new Error(`前の段階（${before.map((s) => s.label).join('、')}）が確定していません。前の段階から順に進めてください`);
-  // テストコードと実行の段階は、流した結果と見立てがそろってから学習者に渡す
+  // 試験仕様書は、観点の漏れがないことを確かめてから学習者に渡す（AI が自分で直せるため）
+  if (stageKey === 'cases') {
+    const cov = coverageOf(slug);
+    if (!cov) throw new Error('試験仕様書（cases.md）がありません');
+    const problems = [];
+    if (cov.missing.length) problems.push(`どの試験ケースにも、「試験ケースにできなかった観点」にも載っていない観点があります（${cov.missing.join('、')}）。展開してください。`);
+    if (cov.unknown.length) problems.push(`観点一覧にない観点 ID があります（${cov.unknown.join('、')}）。`);
+    if (problems.length) throw new Error(`まだ学習者に渡せません。${problems.join(' ')}`);
+  }
+  // テストコードと実行の段階は、ケースとの対応、流した結果、見立てがそろってから学習者に渡す
   if (stageKey === 'code') {
     const problems = handoffProblems(slug);
     if (problems.length) throw new Error(`まだ学習者に渡せません。${problems.join(' ')}`);
@@ -688,7 +731,7 @@ export function markAiOutput(slug, stageKey, note = '') {
 
 /**
  * 学習者の判断を記録する（ダッシュボードだけが使う）。
- * answers は仕様の食い違いへの回答（{ 'RSV-NEW-Q-001': 'A' }）。試験観点の段階でだけ使う。
+ * answers は仕様の矛盾への回答（{ 'RSV-NEW-Q-001': 'A' }）。試験観点の段階でだけ使う。
  * 回答は差し戻しと一緒に保存し、AI が観点一覧に反映してから確定する。
  * judgments はフェイルしたケースごとの原因の判断（{ 'RSV-NEW-TC-021': { kind: 'impl', basis: '…' } }）。
  * テストコードと実行の段階でだけ使う。確定するには、フェイルしたすべてのケースに原因と根拠が要る。
@@ -710,9 +753,9 @@ export function recordDecision(slug, stageKey, action, note = '', answers = {}, 
     if (invalid.length) throw new Error(`回答の選択肢にない値があります（${invalid.map(([id, key]) => `${id} の ${key}`).join('、')}）。画面を読み込み直してから選び直してください`);
     if (action === 'confirm') {
       const changed = Object.keys(given).filter((id) => saved[id]?.choice !== given[id]);
-      if (changed.length) throw new Error(`回答を選び直した食い違いがあります（${changed.join('、')}）。差し戻して、AI に観点一覧へ反映させてから確定してください`);
+      if (changed.length) throw new Error(`回答を選び直した矛盾があります（${changed.join('、')}）。差し戻して、AI に観点一覧へ反映させてから確定してください`);
       const unanswered = qs.filter((q) => !saved[q.id]);
-      if (unanswered.length) throw new Error(`回答していない仕様の食い違いがあります（${unanswered.map((q) => q.id).join('、')}）。回答を選んで差し戻し、AI に観点一覧へ反映させてから確定してください`);
+      if (unanswered.length) throw new Error(`回答していない仕様の矛盾があります（${unanswered.map((q) => q.id).join('、')}）。回答を選んで差し戻し、AI に観点一覧へ反映させてから確定してください`);
       const unreflected = qs.filter((q) => !isReflected(q, saved));
       if (unreflected.length) throw new Error(`回答がまだ観点一覧に反映されていません（${unreflected.map((q) => q.id).join('、')}）。もう一度差し戻して、AI に反映させてください`);
     } else {
@@ -724,14 +767,14 @@ export function recordDecision(slug, stageKey, action, note = '', answers = {}, 
         saved[id] = { choice: key, text, at: now() };
       }
       st.answers = saved;
-      if (lines.length) answerNote = `仕様の食い違いへの回答：${lines.join('、')}`;
+      if (lines.length) answerNote = `仕様の矛盾への回答：${lines.join('、')}`;
     }
   }
   if (stageKey === 'cases' && action === 'confirm') {
     const cov = coverageOf(slug);
-    if (!cov) throw new Error('試験ケース一覧（cases.md）がありません');
+    if (!cov) throw new Error('試験仕様書（cases.md）がありません');
     if (cov.missing.length) throw new Error(`どの試験ケースにも、「試験ケースにできなかった観点」にも載っていない観点があります（${cov.missing.join('、')}）。差し戻して、AI に展開させてから確定してください`);
-    if (cov.unknown.length) throw new Error(`観点一覧にない観点 ID が試験ケース一覧にあります（${cov.unknown.join('、')}）。差し戻して直させてから確定してください`);
+    if (cov.unknown.length) throw new Error(`観点一覧にない観点 ID が試験仕様書にあります（${cov.unknown.join('、')}）。差し戻して直させてから確定してください`);
   }
   let judgeNote = '';
   let judged = null;
@@ -759,17 +802,17 @@ export function recordDecision(slug, stageKey, action, note = '', answers = {}, 
     const cov = codeCoverageOf(slug);
     if (!cov) throw new Error('テストコードかその説明（code.md）がありません');
     if (cov.missing.length) throw new Error(`どのテストにも、「テストコードにできなかったケース」にも載っていないケースがあります（${cov.missing.join('、')}）。差し戻して、AI に書かせてから確定してください`);
-    if (cov.unknown.length) throw new Error(`試験ケース一覧にないケース ID があります（${cov.unknown.join('、')}）。差し戻して直させてから確定してください`);
+    if (cov.unknown.length) throw new Error(`試験仕様書にないケース ID があります（${cov.unknown.join('、')}）。差し戻して直させてから確定してください`);
     if (cov.duplicated.length) throw new Error(`同じケース ID で始まるテストが2本以上あります（${cov.duplicated.join('、')}）。差し戻して、1つのケースを1つのテストにさせてから確定してください`);
     const chk = runCheck(slug);
-    if (!chk.run) throw new Error('まだ実行していません。AI にテストを流させ、証拠を集めてから確定してください');
-    if (chk.stale) throw new Error('テストコードが実行のあとで変わっています。もう一度実行して証拠を集め直してから確定してください');
+    if (!chk.run) throw new Error('まだ実行していません。AI にテストを流させ、エビデンスを集めてから確定してください');
+    if (chk.stale) throw new Error('テストコードが実行のあとで変わっています。もう一度実行してエビデンスを集め直してから確定してください');
     if (chk.missing.length) throw new Error(`実行の結果がないケースがあります（${chk.missing.join('、')}）。もう一度実行してから確定してください`);
     if (chk.notRun.length) throw new Error(`実行されていないケースがあります（${chk.notRun.join('、')}）。止めたテストを戻すか、環境を整えてもう一度実行してから確定してください`);
     if (chk.env.length) throw new Error(`環境が整っていなかったケースがあります（${chk.env.join('、')}）。差し戻して、AI に環境を整えて流し直させてから確定してください`);
   }
   note = [note.trim(), answerNote, judgeNote].filter(Boolean).join('\n');
-  if (action === 'return' && !note) throw new Error('差し戻すときは、理由を書くか、仕様の食い違いに回答してください');
+  if (action === 'return' && !note) throw new Error('差し戻すときは、理由を書くか、仕様の矛盾に回答してください');
   st.status = action === 'confirm' ? 'confirmed' : 'returned';
   st.updated_at = now();
   if (action === 'confirm') {
@@ -783,8 +826,8 @@ export function recordDecision(slug, stageKey, action, note = '', answers = {}, 
 }
 
 /**
- * 確定した段階を「差し戻し」に戻す（運営者だけが使う）。
- * 学習者が後の関門で前の段階の誤り（試験ケースや観点の期待結果の誤りなど）を見つけ、運営者が認めたときに使う。
+ * 確定した段階を「差し戻し」に戻す（学習者の依頼で案内スキルが使う）。
+ * 学習者が後の関門で前の段階の誤り（試験ケースや観点の期待結果の誤りなど）を見つけ、戻すと決めたときに使う。
  * 戻した段階より後の段階は「未着手」に戻し、その成果物は .tmp/e2e-workflow/reopened/ に移す（作り直すため）。
  * AI は、戻した段階を理由に沿って直し、そこから順に段階を進め直す。
  */
@@ -793,7 +836,7 @@ export function reopenStage(slug, stageKey, reason) {
   if (!state) throw new Error(`状態ファイルがありません: ${slug}`);
   const idx = STAGES.findIndex((s) => s.key === stageKey);
   if (idx < 0) throw new Error(`段階が不正です: ${stageKey}`);
-  if (!String(reason || '').trim()) throw new Error('戻す理由を書いてください（学習者の指摘と、運営者が認めた内容）');
+  if (!String(reason || '').trim()) throw new Error('戻す理由を書いてください（学習者が指摘した前の段階の誤り）');
   if (state.stages[stageKey].status !== 'confirmed') throw new Error(`${STAGES[idx].label} は確定していません。戻すのは確定した段階だけです`);
   const later = STAGES.slice(idx + 1);
   // 後の段階の成果物を移す。消さずに残し、何を作り直したかを後から確かめられるようにする
@@ -816,7 +859,7 @@ export function reopenStage(slug, stageKey, reason) {
   st.updated_at = now();
   st.confirmed_at = null;
   delete st.confirmed_hash;
-  state.log.push({ at: now(), by: 'operator', stage: stageKey, action: 'reopen', note: String(reason).trim() });
+  state.log.push({ at: now(), by: 'learner', stage: stageKey, action: 'reopen', note: String(reason).trim() });
   writeState(state);
   return { state, moved, dest: moved.length ? dest : null };
 }
@@ -830,7 +873,7 @@ function printSummary(state) {
     const r = state.stages[na.stage.key].status === 'returned' ? lastReturn(state, na.stage.key) : null;
     if (r) console.log(`差し戻しの理由: ${r.note}`);
     const answers = Object.entries(state.stages[na.stage.key].answers || {});
-    if (answers.length) console.log(`仕様の食い違いへの回答: ${answers.map(([id, a]) => `${id} は ${a.choice}（${a.text}）`).join('、')}`);
+    if (answers.length) console.log(`仕様の矛盾への回答: ${answers.map(([id, a]) => `${id} は ${a.choice}（${a.text}）`).join('、')}`);
   }
   else console.log(na.text);
 }
@@ -854,7 +897,7 @@ function main(argv) {
       const state = readState(slug);
       if (!state) throw new Error(`状態ファイルがありません: ${slug}`);
       const r = lastReturn(state, stage);
-      console.log(r ? `${formatTime(r.at)} に${r.action === 'reopen' ? '運営者が確定から差し戻し' : '差し戻し'}。理由: ${r.note}` : '差し戻しの記録はありません');
+      console.log(r ? `${formatTime(r.at)} に${r.action === 'reopen' ? '確定から差し戻しに戻した' : '差し戻し'}。理由: ${r.note}` : '差し戻しの記録はありません');
     } else if (cmd === 'reopen') {
       const [slug, stage, ...reason] = args;
       const { state, moved, dest } = reopenStage(slug, stage, reason.join(' '));

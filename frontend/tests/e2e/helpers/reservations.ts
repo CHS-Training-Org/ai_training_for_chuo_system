@@ -104,7 +104,7 @@ export function purposeFor(testInfo: TestInfo): string {
  *
  * 印の直後に見分ける語（既定は「既存」）を置き、そのあとにテストの利用目的と同じ文字列を続ける。
  * テスト自身の利用目的（purposeFor）と先頭が一致しないので、部分一致で探しても取り違えない。
- * 一覧の利用目的の欄は先頭しか表示されないが、証拠の画面でも「[e2e] 既存 …」と見分けられる。
+ * 一覧の利用目的の欄は先頭しか表示されないが、エビデンスの画面でも「[e2e] 既存 …」と見分けられる。
  * 1つのテストで既存の予約を2件以上作るときは、語を変える（例：「既存1」「既存2」）。
  */
 export function existingPurposeFor(testInfo: TestInfo, word = "既存"): string {

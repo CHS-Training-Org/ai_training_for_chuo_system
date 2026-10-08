@@ -2,8 +2,8 @@
 /**
  * 結合テストのワークフローのダッシュボード。
  *
- * 画面ごとの状態（Docs/test/<スラッグ>/state.json）を一覧し、3つの段階（試験観点、試験ケース、テストコードと実行）の
- * 成果物と実行の証拠を表示して、学習者が仕様の食い違いに回答し、関門で「確定」か「差し戻し」を選ぶための画面を出す。
+ * 画面ごとの状態（Docs/test/<スラッグ>/state.json）を一覧し、3つの段階（試験観点、試験仕様書、テストコードと実行）の
+ * 成果物と実行のエビデンスを表示して、学習者が仕様の矛盾に回答し、関門で「確定」か「差し戻し」を選ぶための画面を出す。
  * 「確定」と「差し戻し」、回答を状態ファイルに書けるのは、この画面のフォームからの送信だけにしている
  * （起動のたびに変わる合言葉をフォームに埋め、送信のときに照らし合わせる）。
  *
@@ -24,31 +24,31 @@ import {
   STAGES, STATUS, baseDir, listStates, readState, artifactPath, currentStage, nextAction, recordDecision,
   formatTime, parseDiscrepancies, isReflected, lastReturn, coverageOf, codeCoverageOf, specPath, chapter, tableRows,
   evidenceDir, specHash, usesWorkflowTest, RESULT_KINDS, resultKind, runCheck, changedAfterConfirm, runPath, readTriage, handoffProblems,
-  JUDGE_KINDS, failedCaseIds, specChecks,
+  JUDGE_KINDS, failedCaseIds, specChecks, lintSpec,
 } from './state.mjs';
 
 // 段階ごとの表示の設定。wide は読んでいる間に全幅にする章、toc は目次に件数を出す章と集計の区分
 const VIEW = {
   perspectives: {
-    wide: ['ch-1', 'ch-2', 'ch-3'], wideLabel: '1〜3章', toc: { 2: /^試験観点/, 3: /確認しない/, 4: /食い違い/ }, bar: [/^試験観点/, '試験観点'],
+    wide: ['ch-1', 'ch-2', 'ch-3'], wideLabel: '1〜3章', toc: { 2: /^試験観点/, 3: /確認しない/, 4: /矛盾|矛盾/ }, bar: [/^試験観点/, '試験観点'],
     lead: '観点一覧を仕様書と突き合わせてから、確定か差し戻しを選びます。', hint: '直してほしい点を、観点の ID を添えて書く',
     placeholder: '例：RSV-NEW-EX-004 の除外に反対。この画面の入り口なので観点に戻してほしい', noun: '観点一覧',
   },
   cases: {
     wide: ['ch-2', 'ch-3'], wideLabel: '2〜3章', toc: { 2: /^試験ケース$/, 3: /仮に決めた/, 4: /ケースにできなかった/ }, bar: [/^試験ケース$/, '試験ケース'],
     lead: 'すべての試験ケースを、展開元の観点と突き合わせてから、確定か差し戻しを選びます。', hint: '直してほしい点を、試験ケースの ID を添えて書く',
-    placeholder: '例：RSV-NEW-TC-012 の終了日時が境界の値になっていない。開始日時と同じにしてほしい', noun: '試験ケース一覧',
+    placeholder: '例：RSV-NEW-TC-012 の終了日時が境界の値になっていない。開始日時と同じにしてほしい', noun: '試験仕様書',
   },
-  // テストコードと実行の段階。説明（code.md）を読み、そのあとケースごとの結果（実行の証拠）を全幅で見る
+  // テストコードと実行の段階。説明（code.md）を読み、そのあとケースごとの結果（実行のエビデンス）を全幅で見る
   code: {
     wide: ['ch-ev'], wideLabel: 'ケースごとの結果', toc: { 2: /名前が違う/, 3: /ケースどおり/, 4: /テストコードにできなかった/ }, bar: [/^パス$/, 'パス'],
-    lead: 'テストコードは読みません。説明の2〜4章を判断し、ケースごとに、使った値を手がかりに証拠の画面を見て期待結果が本当に成り立っているかを判断します。フェイルしたケースは、証拠の表の各ケースで原因を選び、根拠を書きます。AI の見立ては手がかりで、判断するのは学習者です。', hint: '直してほしい点を、試験ケースの ID を添えて書く。フェイルしたケースの原因と根拠は、証拠の表の各ケースで書く',
-    placeholder: '例：RSV-NEW-TC-009 の証拠の画面が申請フォームで、マイ予約一覧が写っていない。申請できなかったことが確かめられない', noun: 'テストコードの説明と実行の証拠',
+    lead: 'テストコードは読みません。説明の2〜4章を判断し、ケースごとに、使った値を手がかりにエビデンスの画面を見て期待結果が本当に成り立っているかを判断します。フェイルしたケースは、エビデンスの表の各ケースで原因を選び、根拠を書きます。AI の見立ては手がかりで、判断するのは学習者です。', hint: '直してほしい点を、試験ケースの ID を添えて書く。フェイルしたケースの原因と根拠は、エビデンスの表の各ケースで書く',
+    placeholder: '例：RSV-NEW-TC-009 のエビデンスの画面が申請フォームで、マイ予約一覧が写っていない。申請できなかったことが確かめられない', noun: 'テストコードの説明と実行のエビデンス',
   },
 };
 const viewOf = (key) => VIEW[key] || VIEW.perspectives;
 
-/** 実行の証拠（run.json）を読む。なければ null。 */
+/** 実行のエビデンス（run.json）を読む。なければ null。 */
 function readRun(slug) {
   const rp = runPath(slug);
   if (!rp || !fs.existsSync(rp)) return null;
@@ -58,7 +58,7 @@ function readRun(slug) {
   } catch { return null; }
 }
 
-/** 試験ケース一覧の2章を、分類ごとのケースの行にする。 */
+/** 試験仕様書の2章を、分類ごとのケースの行にする。 */
 function caseGroups(slug) {
   const cp = artifactPath(slug, 'cases');
   if (!cp || !fs.existsSync(cp)) return [];
@@ -69,7 +69,7 @@ function caseGroups(slug) {
     .filter((g) => g.rows.length);
 }
 
-/** 実行の証拠を、試験ケースの期待結果と並べた表。学習者はテストコードを読まずに、これで判断する。 */
+/** 実行のエビデンスを、試験ケースの期待結果と並べた表。学習者はテストコードを読まずに、これで判断する。 */
 function runSection(slug, run, { judge = false } = {}) {
   const stale = run.specHash !== specHash(slug);
   const unwritten = new Set();
@@ -82,13 +82,13 @@ function runSection(slug, run, { judge = false } = {}) {
   // AI の見立て。別の実行への見立てなら、古いと示す
   const tri = readTriage(slug);
   const triStale = !!tri && tri.runId !== run.runId;
-  // テストコードから機械的に抜き出した、テストごとの確かめ（expect）。説明は AI が書いた文、照合の種類は機械的に決めた言葉
+  // テストコードから機械的に抜き出した、テストごとの検証（expect）。説明は AI が書いた文、照合の種類は機械的に決めた言葉
   const sp = specPath(slug);
   const tests = sp && fs.existsSync(sp) ? specChecks(fs.readFileSync(sp, 'utf8')) : {};
   const checkList = (id) => {
     const t = tests[id];
     if (!t) return '';
-    if (!t.checks.length) return '<div class="ev-none">このテストの中に、確かめ（expect）が見つからない</div>';
+    if (!t.checks.length) return '<div class="ev-none">このテストの中に、検証（expect）が見つからない</div>';
     return `<div class="checks"><div class="checks-k">このテストが確かめたこと</div><ul>${t.checks.map((k) => `<li><span class="chk-msg">${k.message ? esc(k.message) : '<span class="ev-none">（説明なし）</span>'}</span><span class="chk-how">照合：${esc(k.check)}</span></li>`).join('')}</ul></div>`;
   };
   const errList = (c) => {
@@ -99,8 +99,8 @@ function runSection(slug, run, { judge = false } = {}) {
     return errs.map((e) => `<div class="res-err">${esc(e.message.replace(/^Error:\s*/, ''))}${e.expected || e.received ? `<span class="res-er">（期待：${esc(word(e.expected))}／実際：${esc(word(e.received))}）</span>` : ''}</div>`).join('');
   };
   const tag = (t) => { tally[t] = (tally[t] || 0) + 1; return t; };
-  // 見る場所の列は、以前の様式では「確かめ方」という名前だった
-  const where = (r) => r['見る場所'] ?? r['確かめ方'] ?? '';
+  // 確認箇所の列は、以前の様式では「見る場所」「確かめ方」という名前だった
+  const where = (r) => r['確認箇所'] ?? r['見る場所'] ?? r['確かめ方'] ?? '';
   const valueList = (vals) => (vals && vals.length ? `<dl class="used">${vals.map((v) => `<dt>${esc(v.label)}</dt><dd>${esc(v.value)}</dd>`).join('')}</dl>` : '');
   const img = (e, r, vals) => `<figure class="ev"><a class="ev-open" href="/evidence/${esc(slug)}/${encodeURIComponent(e.file)}" target="_blank" rel="noopener" data-id="${esc(r.ID)}" data-label="${esc(e.label)}" data-exp="${esc(r['期待結果'])}" data-obs="${esc(where(r))}" data-values="${esc(JSON.stringify(vals || []))}"><img src="/evidence/${esc(slug)}/${encodeURIComponent(e.file)}" alt="${esc(e.label)}" loading="lazy"></a><figcaption>${esc(e.label)}</figcaption></figure>`;
   const rows = caseGroups(slug).map((g) => `${g.title ? `<tr class="grp"><th colspan="4">${esc(g.title)}</th></tr>` : ''}${g.rows.map((r) => {
@@ -118,7 +118,7 @@ function runSection(slug, run, { judge = false } = {}) {
       const shot = c.evidence.some((e) => e.kind === 'evidence');
       if (kind.key === 'pass' && !shot) tags.push(tag('noshot'));
       result = `${chip(c.status)}${kind.fail ? `<div class="res-kind" title="${esc(kind.note)}">${esc(kind.label)}</div>` : ''}${errList(c)}`;
-      ev = `${c.evidence.length ? `<div class="ev-list">${c.evidence.map((e) => img(e, r, c.values)).join('')}</div>` : ''}${kind.key === 'pass' && !shot ? '<div class="ev-none">見る場所の画面がない（テストが画面を撮っていない）</div>' : ''}`;
+      ev = `${c.evidence.length ? `<div class="ev-list">${c.evidence.map((e) => img(e, r, c.values)).join('')}</div>` : ''}${kind.key === 'pass' && !shot ? '<div class="ev-none">確認箇所の画面がない（テストが画面を撮っていない）</div>' : ''}`;
       // 値を入れないケース（画面を開くだけなど）もあるので、記録がなければ何も出さない
       if (c.values && c.values.length) used = `<div class="used-box"><div class="used-k">このテストで使った値</div>${valueList(c.values)}</div>`;
       if (kind.fail) {
@@ -128,11 +128,11 @@ function runSection(slug, run, { judge = false } = {}) {
           : '<div class="ev-none">AI の見立てがない</div>';
         // 学習者の判断。入力は関門の欄のフォームに属させる（form 属性）。AI の見立てで埋めておくことはしない
         if (judge) {
-          used += `<div class="judge" data-id="${esc(r.ID)}"><div class="judge-k">あなたの判断</div><select name="judge:${esc(r.ID)}" form="decision" aria-label="${esc(r.ID)} の原因"><option value="">原因を選ぶ</option>${JUDGE_KINDS.map((k) => `<option value="${esc(k.key)}" data-confirm="${k.confirm ? '1' : '0'}" title="${esc(k.note)}">${esc(k.label)}</option>`).join('')}</select><input type="text" name="basis:${esc(r.ID)}" form="decision" maxlength="500" placeholder="根拠：見た証拠や仕様（例：証拠1がエラー画面。仕様は重複のメッセージ）" aria-label="${esc(r.ID)} の根拠"></div>`;
+          used += `<div class="judge" data-id="${esc(r.ID)}"><div class="judge-k">あなたの判断</div><select name="judge:${esc(r.ID)}" form="decision" aria-label="${esc(r.ID)} の原因"><option value="">原因を選ぶ</option>${JUDGE_KINDS.map((k) => `<option value="${esc(k.key)}" data-confirm="${k.confirm ? '1' : '0'}" title="${esc(k.note)}">${esc(k.label)}</option>`).join('')}</select><input type="text" name="basis:${esc(r.ID)}" form="decision" maxlength="500" placeholder="根拠：見たエビデンスや仕様（例：エビデンス1がエラー画面。仕様は重複のメッセージ）" aria-label="${esc(r.ID)} の根拠"></div>`;
         }
       }
     }
-    return `<tr id="case-${esc(r.ID)}" data-tags="${tags.join(' ')}"><td class="chk-id">${esc(r.ID)}</td><td class="chk-exp"><div class="chk-expect">${esc(r['期待結果'])}</div><div class="chk-obs"><strong>見る場所：</strong>${esc(where(r))}</div>${c ? checkList(r.ID) : ''}${used}</td><td class="res-cell">${result}</td><td class="ev-cell">${ev}</td></tr>`;
+    return `<tr id="case-${esc(r.ID)}" data-tags="${tags.join(' ')}"><td class="chk-id">${esc(r.ID)}</td><td class="chk-exp"><div class="chk-expect">${esc(r['期待結果'])}</div><div class="chk-obs"><strong>確認箇所：</strong>${esc(where(r))}</div>${c ? checkList(r.ID) : ''}${used}</td><td class="res-cell">${result}</td><td class="ev-cell">${ev}</td></tr>`;
   }).join('')}`).join('');
   const t = run.totals || {};
   // 絞り込みのボタン。0 件の区分は出さない
@@ -142,59 +142,33 @@ function runSection(slug, run, { judge = false } = {}) {
     ['fail', 'フェイル（すべて）', tally.fail],
     ...RESULT_KINDS.filter((k) => k.fail).map((k) => [k.key, `フェイル：${k.label}`, tally[k.key]]),
     ['not_run', '実行されていない', tally.not_run],
-    ['noshot', '見る場所の画面がない', tally.noshot],
+    ['noshot', '確認箇所の画面がない', tally.noshot],
     ['unwritten', 'テストにしなかったケース', tally.unwritten],
     ['missing', 'テストがない', tally.missing],
   ].filter(([key, , n]) => key === 'all' || n);
   const filterBar = `<div class="rfilter" role="group" aria-label="結果で絞り込む"><span class="rfilter-k">絞り込み</span>${filters.map(([key, label, n], i) => `<button type="button" data-filter="${key}" aria-pressed="${i === 0}">${esc(label)}<span class="rfilter-n">${n}</span></button>`).join('')}<span class="rfilter-shown" aria-live="polite"></span></div>`;
   const legend = `<details class="rlegend"><summary>フェイルの区分の見分け方</summary><dl>${RESULT_KINDS.filter((k) => k.fail).map((k) => `<dt>${esc(k.label)}</dt><dd>${esc(k.note)}</dd>`).join('')}</dl><p class="muted">区分は、テストがどこで止まったかを機械的に分けたものです。実装の不具合か、テストの誤りかは、画面を見て判断します。</p></details>`;
-  return `<section class="panel" id="evidence"><div class="doc-head"><div><h2 style="margin:0">実行の証拠</h2><div class="doc-path">${esc(formatTime(run.runAt))} に実行。テスト ${t.tests ?? 0} 件、パス ${t.passed ?? 0} 件、フェイル ${t.failed ?? 0} 件</div></div></div>
-${stale ? '<div class="stale">テストコードが、この実行のあとで変わっています。この証拠は古いので、確定する前にもう一度実行してください。</div>' : ''}
-<p class="muted" style="margin-top:0">結果と証拠の画面は、実行から機械的に集めたものです。フェイルしたケースの「AI の見立て」だけは AI が書いたもので、判断するのは学習者です。フェイルしたケースは「あなたの判断」で原因を選び、根拠を書きます。すべてそろうまで確定できません。証拠の画面は、テストが期待結果を確かめた場所で、実行中に撮ったものです。ケースごとに、「見る場所」が写っているか、その画面で期待結果が成り立っているかを見ます。画面のどの行を見ればよいかは、「このテストで使った値」（テストが実際に入れた利用目的、リソース、日時など）で探します。「このテストが確かめたこと」は、テストコードから機械的に抜き出した確かめで、説明の文は AI が書き、「照合」は機械的に決めた言葉です。期待結果と照らして、確かめが足りているか、説明と照合が食い違っていないかを見ます。証拠の画面は今回の実行の様子しか示さないので、確かめが足りないテストは、今回たまたま正しく動いていてもパスします。パスしたテストも見ます。画像を押すと大きく開きます。</p>
+  return `<section class="panel" id="evidence"><div class="doc-head"><div><h2 style="margin:0">実行のエビデンス</h2><div class="doc-path">${esc(formatTime(run.runAt))} に実行。テスト ${t.tests ?? 0} 件、パス ${t.passed ?? 0} 件、フェイル ${t.failed ?? 0} 件</div></div></div>
+${stale ? '<div class="stale">テストコードが、この実行のあとで変わっています。このエビデンスは古いので、確定する前にもう一度実行してください。</div>' : ''}
+<p class="muted" style="margin-top:0">結果とエビデンスの画面は、実行から機械的に集めたものです。フェイルしたケースの「AI の見立て」だけは AI が書いたもので、判断するのは学習者です。フェイルしたケースは「あなたの判断」で原因を選び、根拠を書きます。すべてそろうまで確定できません。エビデンスの画面は、テストが期待結果を確かめた場所で、実行中に撮ったものです。ケースごとに、「確認箇所」が写っているか、その画面で期待結果が成り立っているかを見ます。画面のどの行を見ればよいかは、「このテストで使った値」（テストが実際に入れた利用目的、リソース、日時など）で探します。「このテストが確かめたこと」は、テストコードから機械的に抜き出した確かめで、説明の文は AI が書き、「照合」は機械的に決めた言葉です。期待結果と照らして、検証が十分か、説明と照合が食い違っていないかを見ます。エビデンスの画面は今回の実行の様子しか示さないので、検証が不十分なテストは、今回たまたま正しく動いていてもパスします。パスしたテストも見ます。画像を押すと大きく開きます。</p>
 <div id="evidence-body"><h2 id="ch-ev" class="ev-h">ケースごとの結果</h2>${filterBar}${legend}
-<div class="table-wrap"><table class="chk-table"><thead><tr><th>ケース ID</th><th>期待結果（試験ケース）</th><th>結果</th><th>証拠の画面</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>
-<dialog id="ev-dialog"><div class="evd"><div class="evd-side"><div class="q-id" id="evd-id"></div><div class="evd-k">期待結果</div><div class="evd-exp" id="evd-exp"></div><div class="evd-k">見る場所</div><div class="evd-obs" id="evd-obs"></div><div class="evd-k" id="evd-values-k">このテストで使った値</div><div id="evd-values"></div><div class="evd-k">この画面</div><div id="evd-label"></div><p class="muted">この画面で、期待結果が成り立っているかを見ます。</p><button type="button" class="btn btn-ghost" id="evd-close">閉じる（Esc）</button></div><div class="evd-img"><img id="evd-img" alt=""></div></div></dialog>`;
-}
-
-/**
- * テストコードの決まり（要素の指定、待ち方、確かめの説明、証拠の画面など）から外れた書き方を、機械的に見つける。確定は止めない。
- * 見つかったら、学習者はその文言を差し戻しの理由に貼る（execution.md）。
- */
-function lintSpec(src) {
-  const lines = src.split('\n');
-  const at = (re) => lines.map((l, i) => (re.test(l) ? i + 1 : 0)).filter(Boolean);
-  const rules = [
-    ['data-testid を使っている', /data-testid|getByTestId/],
-    ['固定時間の待機（waitForTimeout）がある', /waitForTimeout/],
-    ['期限を決めずに待っている（期待結果と違うと、時間切れまで止まる）', /\.waitFor\((?![^)]*timeout)/],
-    ['CSS や XPath で要素を指定している', /\.locator\(\s*["'`](?![^"'`]*>>)/],
-    ['日付の文字列を書いている', /["'`]20\d\d-\d\d-\d\d/],
-    ['test.only がある', /\btest\.only\(|\bdescribe\.only\(/],
-    ['test.skip か test.fixme で止めたテストがある', /\btest\.(skip|fixme)\(/],
-  ];
-  const out = rules.map(([label, re]) => ({ label, lines: at(re) })).filter((r) => r.lines.length);
-  const tests = Object.values(specChecks(src));
-  const noMsg = tests.flatMap((t) => t.checks.filter((k) => !k.message).map((k) => k.line));
-  if (noMsg.length) out.push({ label: '確かめ（expect）に、何を確かめるかの説明がない（画面の「このテストが確かめたこと」に出ない）', lines: noMsg });
-  const noShot = tests.filter((t) => !t.evidence).map((t) => t.line);
-  if (noShot.length) out.push({ label: '見る場所の画面を撮っていないテストがある', lines: noShot });
-  if (!usesWorkflowTest(src)) out.push({ label: 'テストごとにデータベースを初期データに戻す test（helpers/workflow-test）を使っていない', lines: [] });
-  return out;
+<div class="table-wrap"><table class="chk-table"><thead><tr><th>ケース ID</th><th>期待結果（試験ケース）</th><th>結果</th><th>エビデンスの画面</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>
+<dialog id="ev-dialog"><div class="evd"><div class="evd-side"><div class="q-id" id="evd-id"></div><div class="evd-k">期待結果</div><div class="evd-exp" id="evd-exp"></div><div class="evd-k">確認箇所</div><div class="evd-obs" id="evd-obs"></div><div class="evd-k" id="evd-values-k">このテストで使った値</div><div id="evd-values"></div><div class="evd-k">この画面</div><div id="evd-label"></div><p class="muted">この画面で、期待結果が成り立っているかを見ます。</p><button type="button" class="btn btn-ghost" id="evd-close">閉じる（Esc）</button></div><div class="evd-img"><img id="evd-img" alt=""></div></div></dialog>`;
 }
 
 /**
  * 確定できるかと、できないときの理由。確定のチェック（state.mjs の recordDecision）と同じ条件で決める。
- * 試験観点は回答の反映、試験ケースは観点との対応、テストコードはケースとの対応、実行は全ケースの結果と証拠の新しさで決まる。
+ * 試験観点は回答の反映、試験ケースは観点との対応、テストコードはケースとの対応、実行は全ケースの結果とエビデンスの新しさで決まる。
  */
 function readiness(st, slug, key, questions) {
   if (key === 'perspectives') {
     const saved = st.stages[key].answers || {};
     const ready = questions.every((q) => isReflected(q, saved));
-    return { ready, why: '仕様の食い違いに回答して差し戻し、AI が観点一覧に反映するまでは確定できません。', short: '回答が観点一覧に反映されるまで確定できません' };
+    return { ready, why: '仕様の矛盾に回答して差し戻し、AI が観点一覧に反映するまでは確定できません。', short: '回答が観点一覧に反映されるまで確定できません' };
   }
   if (key === 'cases') {
     const cov = coverageOf(slug);
-    if (!cov) return { ready: false, why: '試験ケース一覧がありません。', short: '試験ケース一覧がありません' };
+    if (!cov) return { ready: false, why: '試験仕様書がありません。', short: '試験仕様書がありません' };
     const ready = !cov.missing.length && !cov.unknown.length;
     const parts = [];
     if (cov.missing.length) parts.push(`どの試験ケースにも、「試験ケースにできなかった観点」にも載っていない観点があります（${cov.missing.join('、')}）。`);
@@ -209,7 +183,7 @@ function readiness(st, slug, key, questions) {
     const parts = [];
     if (cov.duplicated.length) parts.push(`同じケース ID で始まるテストが2本以上あります（${cov.duplicated.join('、')}）。`);
     if (cov.missing.length) parts.push(`どのテストにも、「テストコードにできなかったケース」にも載っていないケースがあります（${cov.missing.join('、')}）。`);
-    if (cov.unknown.length) parts.push(`試験ケース一覧にないケース ID があります（${cov.unknown.join('、')}）。`);
+    if (cov.unknown.length) parts.push(`試験仕様書にないケース ID があります（${cov.unknown.join('、')}）。`);
     const chk = runCheck(slug);
     if (!chk.run) parts.push('まだ流していません。');
     else {
@@ -491,7 +465,7 @@ textarea:focus, .choice:focus-within { outline: 2px solid var(--ai-line); outlin
 }
 .copied { color: var(--ok) !important; }
 #evidence .table-wrap { overflow-x: auto; }
-/* 狭い画面では、実行の証拠の表を1ケースずつ縦に積む */
+/* 狭い画面では、実行のエビデンスの表を1ケースずつ縦に積む */
 @media (max-width: 640px) {
   #evidence .chk-table, #evidence .chk-table tbody, #evidence .chk-table tr, #evidence .chk-table td, #evidence .chk-table th { display: block; width: auto; }
   #evidence .chk-table thead { display: none; }
@@ -544,7 +518,7 @@ figure.ev figcaption { font-size: 12px; color: var(--sub); margin-top: 2px; }
 .ai-reason { margin-top: 2px; color: var(--sub); overflow-wrap: anywhere; }
 .res-kind { margin-top: 4px; font-size: 12px; font-weight: 700; color: #b91c1c; cursor: help; }
 .ev-h { font-size: 16px; margin: 12px 0 6px; }
-/* 実行の証拠の表は、ケース ID と結果の列を詰め、広げた幅は期待結果と証拠の画面に回す */
+/* 実行のエビデンスの表は、ケース ID と結果の列を詰め、広げた幅は期待結果とエビデンスの画面に回す */
 #evidence .chk-id { width: 1%; }
 #evidence .res-cell { width: 10em; }
 #evidence .chk-exp { width: 42%; }
@@ -621,9 +595,9 @@ body.focus-wide main { padding-bottom: 88px; }
 @media (prefers-reduced-motion: reduce) { .layout, .layout > .aside, .focus-bar { transition: none !important; } html { scroll-behavior: auto; } }
 `;
 
-// 実行の証拠の絞り込みと拡大表示、判断の入力へのジャンプ、クリップボードへのコピー。テンプレート文字列の中に置くので ` と ${ は使わない
+// 実行のエビデンスの絞り込みと拡大表示、判断の入力へのジャンプ、クリップボードへのコピー。テンプレート文字列の中に置くので ` と ${ は使わない
 const CLIENT_JS = `
-// 実行の証拠の表を、結果の区分で絞り込む
+// 実行のエビデンスの表を、結果の区分で絞り込む
 document.addEventListener('click', function (e) {
   var b = e.target.closest('.rfilter button');
   if (!b) return;
@@ -641,7 +615,7 @@ document.addEventListener('click', function (e) {
   var out = b.parentNode.querySelector('.rfilter-shown');
   if (out) out.textContent = f === 'all' ? '' : shown + ' 件を表示中';
 });
-// 証拠の画面を、期待結果と並べて大きく開く
+// エビデンスの画面を、期待結果と並べて大きく開く
 document.addEventListener('click', function (e) {
   var d = document.getElementById('ev-dialog');
   if (!d) return;
@@ -708,7 +682,7 @@ document.addEventListener('click', function (e) {
       }
     }
     var why = '';
-    if (done < total) why = 'フェイルしたケースのうち ' + (total - done) + ' 件に、原因と根拠がそろっていません。証拠の表の「あなたの判断」で選んで書きます。';
+    if (done < total) why = 'フェイルしたケースのうち ' + (total - done) + ' 件に、原因と根拠がそろっていません。エビデンスの表の「あなたの判断」で選んで書きます。';
     else if (blocking.length) why = '「テストの誤り」か「前の段階の誤り」と判断したケースがあります（' + blocking.join('、') + '）。確定せずに差し戻します。';
     var w = document.getElementById('judge-why');
     if (w) { w.textContent = why; w.hidden = !why; }
@@ -756,7 +730,7 @@ function escHtml(v) { return String(v).replace(/[&<>"']/g, function (c) { return
   var MAIN = ['仕様の内容', '試験観点', '観点', '質問', '手順と入力', '条件', '決めたこと', '仕様書の名前', 'ケースの記述', '書けなかった理由'];
   var SRC = ['記載元', '仕様根拠', '見た箇所'];
   var NOTE = ['備考', '補足', '使うケース', '注意'];
-  var REASONS = ['取るに足らない', '上流のテストで担保済み', '手動確認に隔離', 'この画面の対象範囲外', '共通の観点で担保'];
+  var REASONS = ['確認の必要性が低い', '取るに足らない', '上流のテストで担保済み', '手動確認に隔離', 'この画面の対象範囲外', '共通の観点で担保'];
   out.querySelectorAll('table').forEach(function (table) {
     var wrap = document.createElement('div');
     wrap.className = 'table-wrap';
@@ -773,7 +747,7 @@ function escHtml(v) { return String(v).replace(/[&<>"']/g, function (c) { return
       det.appendChild(wrap);
     }
     var role = heads.map(function (h) {
-      return ID.indexOf(h) >= 0 ? 'id' : NOWRAP.indexOf(h) >= 0 ? 'nowrap' : MAIN.indexOf(h) >= 0 ? 'main' : SRC.indexOf(h) >= 0 ? 'src' : NOTE.indexOf(h) >= 0 ? 'note' : h === '理由' ? 'reason' : h === '回答' ? 'answer' : h === '展開元' ? 'from' : h === '前提条件' ? 'pre' : h === '期待結果' || h === 'テストコードでの書き方' ? 'exp' : h === '見る場所' || h === '確かめ方' || h === '結果への影響' ? 'obs' : h === '選んだ値' || h === '用意のしかた' || h === '実装の名前' ? 'sub' : h.indexOf('回答の選択肢') === 0 || h === '影響する観点' || h === '選んだ理由' || h === '別の値にするとどうなるか' ? 'wide' : '';
+      return ID.indexOf(h) >= 0 ? 'id' : NOWRAP.indexOf(h) >= 0 ? 'nowrap' : MAIN.indexOf(h) >= 0 ? 'main' : SRC.indexOf(h) >= 0 ? 'src' : NOTE.indexOf(h) >= 0 ? 'note' : h === '理由' ? 'reason' : h === '回答' ? 'answer' : h === '展開元' ? 'from' : h === '前提条件' ? 'pre' : h === '期待結果' || h === 'テストコードでの書き方' ? 'exp' : h === '確認箇所' || h === '見る場所' || h === '確かめ方' || h === '結果への影響' ? 'obs' : h === '選んだ値' || h === '用意のしかた' || h === '実装の名前' ? 'sub' : h.indexOf('回答の選択肢') === 0 || h === '影響する観点' || h === '選んだ理由' || h === '別の値にするとどうなるか' ? 'wide' : '';
     });
     // 3章のように理由の列がある表では、補足（理由の説明）を観点の下に出し、理由の列に幅を回す
     if (role.indexOf('reason') >= 0) role = role.map(function (x) { return x === 'note' ? 'wide' : x; });
@@ -784,7 +758,7 @@ function escHtml(v) { return String(v).replace(/[&<>"']/g, function (c) { return
       for (var i = 0; i < cells.length; i++) {
         var c = cells[i];
         if (role[i]) c.classList.add('col-' + role[i]);
-        // 試験ケースの表：展開元は ID の下、見る場所は期待結果の下に常に出す
+        // 試験ケースの表：展開元は ID の下、確認箇所は期待結果の下に常に出す
         var into = role[i] === 'from' && idCol >= 0 ? idCol : role[i] === 'obs' && expCol >= 0 ? expCol : -1;
         if (into >= 0) {
           c.classList.add('col-hide');
@@ -841,12 +815,12 @@ function escHtml(v) { return String(v).replace(/[&<>"']/g, function (c) { return
     toc.appendChild(a);
     links.push([h, a]);
   });
-  // テストコードと実行の段階では、説明の章のあとに、実行の証拠（ケースごとの結果）への目次を足す
+  // テストコードと実行の段階では、説明の章のあとに、実行のエビデンス（ケースごとの結果）への目次を足す
   var ev = document.getElementById('ch-ev');
   if (toc && ev) {
     var e = document.createElement('a');
     e.href = '#ch-ev';
-    e.textContent = '実行の証拠';
+    e.textContent = '実行のエビデンス';
     toc.appendChild(e);
     links.push([ev, e]);
   }
@@ -869,7 +843,7 @@ function escHtml(v) { return String(v).replace(/[&<>"']/g, function (c) { return
 const FOCUS_JS = `
 (function () {
   var layout = document.getElementById('layout');
-  // 幅を切り替える目印（章の見出し）は、左の列全体から探す。テストコードと実行の段階では、説明と実行の証拠が並ぶため
+  // 幅を切り替える目印（章の見出し）は、左の列全体から探す。テストコードと実行の段階では、説明と実行のエビデンスが並ぶため
   var artifact = layout && layout.firstElementChild;
   if (!layout || !artifact || !artifact.querySelector('#artifact, #evidence-body')) return;
   var WIDE = {};
@@ -1037,7 +1011,7 @@ function indexPage() {
 ${stepper(st, { compact: true })}</a>`;
     }).join('');
   const body = `<h1>画面ごとの状態</h1>
-<p class="subtitle">結合テストは、試験観点、試験ケース、テストコードと実行の3つの段階で進めます。画面を選ぶと、成果物のレビューと関門の判断ができます。</p>
+<p class="subtitle">結合テストは、試験観点、試験仕様書、テストコードと実行の3つの段階で進めます。画面を選ぶと、成果物のレビューと関門の判断ができます。</p>
 ${states.length ? `${stats}<div class="screens">${cards}</div>`
     : `<div class="panel empty"><h2>まだワークフローを始めた画面がありません</h2><p class="muted">Claude Code で次のように打つと始まります。</p>${cmdBox('/e2e-workflow 予約申請画面（/reservations/new）の結合テストを進めたい')}</div>`}`;
   return page('結合テストのワークフロー', body, { narrow: true });
@@ -1087,7 +1061,7 @@ ${facts}
 ${cov}
 ${judgeHtml}
 ${lintHtml}
-${questions.length ? `<a class="ans-sum${ready ? ' ok' : ''}" href="#answers"><span>仕様の食い違いへの回答</span><strong>${nAns}／${questions.length} 件回答・${nRef} 件反映</strong></a>` : ''}
+${questions.length ? `<a class="ans-sum${ready ? ' ok' : ''}" href="#answers"><span>仕様の矛盾への回答</span><strong>${nAns}／${questions.length} 件回答・${nRef} 件反映</strong></a>` : ''}
 <label class="field" for="note">指摘 <span class="hint">${esc(v.hint)}</span></label>
 <textarea id="note" name="note" placeholder="${esc(v.placeholder)}"></textarea>
 <div class="gate-actions"><div class="actions">
@@ -1107,7 +1081,7 @@ function focusBar(st, slug, cur, questions, counts) {
   const rd = readiness(st, slug, cur.key, questions);
   const ready = rd.ready;
   const n = counts.find((c) => v.bar[0].test(c.label))?.n;
-  const meta = [n !== undefined ? `${v.bar[1]} <strong>${n}</strong> 件` : '', ...(rd.covs || (rd.cov ? [rd.cov] : [])).map((c) => `${esc(c.label)} <strong>${c.done}／${c.total}</strong>`), questions.length ? `食い違いへの回答 <strong>${questions.filter((q) => saved[q.id]).length}／${questions.length}</strong>・反映 <strong>${questions.filter((q) => isReflected(q, saved)).length}</strong>` : '', status === 'ai_output' && (rd.failed || []).length ? `フェイルの判断 <strong data-judge-count>0／${rd.failed.length} 件</strong>` : ''].filter(Boolean).join('　');
+  const meta = [n !== undefined ? `${v.bar[1]} <strong>${n}</strong> 件` : '', ...(rd.covs || (rd.cov ? [rd.cov] : [])).map((c) => `${esc(c.label)} <strong>${c.done}／${c.total}</strong>`), questions.length ? `矛盾への回答 <strong>${questions.filter((q) => saved[q.id]).length}／${questions.length}</strong>・反映 <strong>${questions.filter((q) => isReflected(q, saved)).length}</strong>` : '', status === 'ai_output' && (rd.failed || []).length ? `フェイルの判断 <strong data-judge-count>0／${rd.failed.length} 件</strong>` : ''].filter(Boolean).join('　');
   const buttons = status === 'ai_output'
     ? `<button type="button" class="btn btn-ghost" data-drawer="open">指摘を書く</button>
 <button class="btn btn-return" form="decision" name="action" value="return">差し戻す</button>
@@ -1131,16 +1105,16 @@ function confirmedPanel(st, view) {
 ${judgedHtml}
 ${changedAfterConfirm(st).some((x) => x.key === view.key) ? '<div class="stale">確定のあとで、この段階の成果物が書き換えられています。</div>' : ''}
 <div class="evd-k">差し戻し（${returns.length} 回）</div>${list}
-<p class="muted" style="margin-top:12px">確定した成果物は読み取り専用です。誤りを見つけたときは、今の段階の関門で差し戻し、指摘に「前の段階の誤り：ID」と、何が誤りかを書いて運営者に相談します。運営者が認めると、この段階を差し戻しに戻して直します。</p>
+<p class="muted" style="margin-top:12px">確定した成果物は読み取り専用です。誤りを見つけたときは、今の段階の関門で差し戻し、指摘に「前の段階の誤り：ID」と、何が誤りかを書きます。そのうえで Claude Code に戻すよう頼むと、この段階を差し戻しに戻して直します。</p>
 <p><a class="btn btn-ghost" href="/screen/${esc(st.slug)}">今の段階に戻る</a></p></section>`;
 }
 
-/** 仕様の食い違いへの回答欄。観点一覧の上に全幅で置き、入力は右の関門のフォームに属させる（form 属性）。 */
+/** 仕様の矛盾への回答欄。観点一覧の上に全幅で置き、入力は右の関門のフォームに属させる（form 属性）。 */
 function answersPanel(st, cur, questions) {
   const saved = st.stages[cur.key].answers || {};
   return `<section class="panel answers" id="answers">
-<div class="gate-title"><h2>仕様の食い違いへの回答</h2><span class="muted">${questions.filter((q) => isReflected(q, saved)).length}／${questions.length} 件が観点一覧に反映済み</span></div>
-<p class="muted" style="margin-top:0">文書どうしで食い違っている点です。仕様書を変えないチュートリアルなので、どちらを正とするかを仮に決めます。どちらを選んでも誤りではありません。選んだら「${esc(cur.gate)}」の「差し戻す」を押すと、AI が観点一覧に反映します。</p>
+<div class="gate-title"><h2>仕様の矛盾への回答</h2><span class="muted">${questions.filter((q) => isReflected(q, saved)).length}／${questions.length} 件が観点一覧に反映済み</span></div>
+<p class="muted" style="margin-top:0">文書どうしで矛盾している点です。仕様書を変えないチュートリアルなので、どちらを正とするかを仮に決めます。どちらを選んでも誤りではありません。選んだら「${esc(cur.gate)}」の「差し戻す」を押すと、AI が観点一覧に反映します。</p>
 ${questions.map((q) => {
     const reflected = isReflected(q, saved);
     const state = reflected ? '<span class="q-state ok">✓ 観点一覧に反映済み</span>'
@@ -1177,11 +1151,11 @@ function screenPage(slug, viewKey) {
   let counts = [];
   if (view) {
     const ap = artifactPath(slug, view.key);
-    // テストコードと実行の段階では、説明（code.md）のあとに、流した結果（実行の証拠）を続けて出す
+    // テストコードと実行の段階では、説明（code.md）のあとに、流した結果（実行のエビデンス）を続けて出す
     const run = view.key === 'code' ? readRun(slug) : null;
     const runHtml = view.key !== 'code' ? ''
       : run ? runSection(slug, run, { judge: cur?.key === 'code' && st.stages.code.status === 'ai_output' })
-        : `<section class="panel" id="evidence"><h2>まだ流していません</h2><p class="muted">AI がテストを流すと、ケースごとの結果と証拠の画面がここに表示されます。</p></section>`;
+        : `<section class="panel" id="evidence"><h2>まだ流していません</h2><p class="muted">AI がテストを流すと、ケースごとの結果とエビデンスの画面がここに表示されます。</p></section>`;
     if (ap && fs.existsSync(ap)) {
       const md = fs.readFileSync(ap, 'utf8');
       if (view.key === 'perspectives') questions = parseDiscrepancies(md);
