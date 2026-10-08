@@ -1,21 +1,23 @@
-<!doctype html><html lang=ja dir=ltr class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-develop/integration-test/execution" data-has-hydrated=false><head><meta charset=UTF-8><meta name=generator content="Docusaurus v3.10.2"><title data-rh=true>テストを実行する | BookFlow ドキュメント</title><meta data-rh=true name=viewport content="width=device-width, initial-scale=1.0"/><meta data-rh=true name=twitter:card content=summary_large_image /><meta data-rh=true property=og:url content=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution /><meta data-rh=true property=og:locale content=ja /><meta data-rh=true name=docusaurus_locale content=ja /><meta data-rh=true name=docsearch:language content=ja /><meta data-rh=true name=docusaurus_version content=current /><meta data-rh=true name=docusaurus_tag content=docs-default-current /><meta data-rh=true name=docsearch:version content=current /><meta data-rh=true name=docsearch:docusaurus_tag content=docs-default-current /><meta data-rh=true property=og:title content="テストを実行する | BookFlow ドキュメント"/><meta data-rh=true name=description content="AI が流したテストの実行の証拠を、試験ケースの期待結果と照らして判断し、関門3 で確定か差し戻しを選ぶまでを体験する。"/><meta data-rh=true property=og:description content="AI が流したテストの実行の証拠を、試験ケースの期待結果と照らして判断し、関門3 で確定か差し戻しを選ぶまでを体験する。"/><link data-rh=true rel=icon href=/ai_training_for_chuo_system/pr-preview/pr-133/img/favicon.ico /><link data-rh=true rel=canonical href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution /><link data-rh=true rel=alternate href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution hreflang=ja /><link data-rh=true rel=alternate href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution hreflang=x-default /><script data-rh=true type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution","name":"テストを実行する","position":1}]}</script><link rel=stylesheet href=/ai_training_for_chuo_system/pr-preview/pr-133/assets/css/styles.aaf77bfa.css /><script src=/ai_training_for_chuo_system/pr-preview/pr-133/assets/js/runtime~main.94e49c48.js defer></script><script src=/ai_training_for_chuo_system/pr-preview/pr-133/assets/js/main.0e2a157b.js defer></script></head><body><svg style="display: none;"><defs>
+<!doctype html><html lang=ja dir=ltr class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-develop/integration-test/execution" data-has-hydrated=false><head><meta charset=UTF-8><meta name=generator content="Docusaurus v3.10.2"><title data-rh=true>テストの結果を確かめる | BookFlow ドキュメント</title><meta data-rh=true name=viewport content="width=device-width, initial-scale=1.0"/><meta data-rh=true name=twitter:card content=summary_large_image /><meta data-rh=true property=og:url content=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution /><meta data-rh=true property=og:locale content=ja /><meta data-rh=true name=docusaurus_locale content=ja /><meta data-rh=true name=docsearch:language content=ja /><meta data-rh=true name=docusaurus_version content=current /><meta data-rh=true name=docusaurus_tag content=docs-default-current /><meta data-rh=true name=docsearch:version content=current /><meta data-rh=true name=docsearch:docusaurus_tag content=docs-default-current /><meta data-rh=true property=og:title content="テストの結果を確かめる | BookFlow ドキュメント"/><meta data-rh=true name=description content="AI が作って流したテストを、テストコードは読まずに、AI の説明と実行のエビデンスを試験ケースの期待結果と照らして判断し、関門3 で確定か差し戻しを選ぶ。ここを確定すると、E2E テストの設計から実行までが完了する。"/><meta data-rh=true property=og:description content="AI が作って流したテストを、テストコードは読まずに、AI の説明と実行のエビデンスを試験ケースの期待結果と照らして判断し、関門3 で確定か差し戻しを選ぶ。ここを確定すると、E2E テストの設計から実行までが完了する。"/><link data-rh=true rel=icon href=/ai_training_for_chuo_system/pr-preview/pr-133/img/favicon.ico /><link data-rh=true rel=canonical href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution /><link data-rh=true rel=alternate href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution hreflang=ja /><link data-rh=true rel=alternate href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution hreflang=x-default /><script data-rh=true type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://CHS-Training-Org.github.io/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution","name":"テストの結果を確かめる","position":1}]}</script><link rel=stylesheet href=/ai_training_for_chuo_system/pr-preview/pr-133/assets/css/styles.a76b97a3.css /><script src=/ai_training_for_chuo_system/pr-preview/pr-133/assets/js/runtime~main.6d5239b1.js defer></script><script src=/ai_training_for_chuo_system/pr-preview/pr-133/assets/js/main.87eb10f0.js defer></script></head><body><svg style="display: none;"><defs>
 <symbol id=theme-svg-external-link viewBox="0 0 24 24"><path fill=currentColor d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
 </defs></svg>
-<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme-0d8")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{for(var[t,e]of new URLSearchParams(window.location.search).entries())if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id=__docusaurus><link rel=preload as=image href=/ai_training_for_chuo_system/pr-preview/pr-133/img/logo.svg /><div role=region aria-label=メインコンテンツまでスキップ><a class=skipToContent_fXgn href=#__docusaurus_skipToContent_fallback>メインコンテンツまでスキップ</a></div><nav aria-label=ナビゲーション class="theme-layout-navbar navbar navbar--fixed-top"><div class=navbar__inner><div class="theme-layout-navbar-left navbar__items"><button aria-label=ナビゲーションバーを開く aria-expanded=false class="navbar__toggle clean-btn" type=button><svg width=30 height=30 viewBox="0 0 30 30" aria-hidden=true><path stroke=currentColor stroke-linecap=round stroke-miterlimit=10 stroke-width=2 d="M4 7h22M4 15h22M4 23h22"/></svg></button><a class=navbar__brand href=/ai_training_for_chuo_system/pr-preview/pr-133/><div class=navbar__logo><img src=/ai_training_for_chuo_system/pr-preview/pr-133/img/logo.svg alt="BookFlow Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"/><img src=/ai_training_for_chuo_system/pr-preview/pr-133/img/logo.svg alt="BookFlow Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"/></div><b class="navbar__title text--truncate">BookFlow Docs</b></a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/pr-preview/pr-133/learn/curriculum>学習</a><a aria-current=page class="navbar__item navbar__link navbar__link--active" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/dev-workflow>開発ガイド</a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/>仕様</a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/pr-preview/pr-133/reference/architecture>リファレンス</a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/pr-preview/pr-133/operations/operations-guide>運用</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class=navbarSearchContainer_Bca1><button type=button class="DocSearch DocSearch-Button" aria-label="Search (Meta+k)" aria-keyshortcuts=Meta+k><span class=DocSearch-Button-Container><svg width=20 height=20 class=DocSearch-Search-Icon viewBox="0 0 20 20"><path d="M14.386 14.386l4.0877 4.0877-4.0877-4.0877c-2.9418 2.9419-7.7115 2.9419-10.6533 0-2.9419-2.9418-2.9419-7.7115 0-10.6533 2.9418-2.9419 7.7115-2.9419 10.6533 0 2.9419 2.9418 2.9419 7.7115 0 10.6533z" stroke=currentColor fill=none fill-rule=evenodd stroke-linecap=round stroke-linejoin=round /></svg><span class=DocSearch-Button-Placeholder>Search</span></span><span class=DocSearch-Button-Keys></span></button></div><a href=https://github.com/CHS-Training-Org/ai_training_for_chuo_system target=_blank rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width=13.5 height=13.5 aria-label="(opens in new tab)" class=iconExternalLink_nPIU><use href=#theme-svg-external-link /></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type=button disabled title=システムモード aria-label=ダークモードを切り替える(現在はシステムモード)><svg viewBox="0 0 24 24" width=24 height=24 aria-hidden=true class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill=currentColor d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"/></svg><svg viewBox="0 0 24 24" width=24 height=24 aria-hidden=true class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill=currentColor d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"/></svg><svg viewBox="0 0 24 24" width=24 height=24 aria-hidden=true class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill=currentColor d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"/></svg></button></div></div></div><div role=presentation class=navbar-sidebar__backdrop></div></nav><div id=__docusaurus_skipToContent_fallback class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class=docsWrapper_hBAB><button aria-label=先頭へ戻る class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type=button></button><div class=docRoot_UBD9><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class=sidebarViewport_aRkj><div class=sidebar_njMd><nav aria-label=ドキュメントのサイドバー class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/dev-workflow><span class=linkLabel_WmDU>開発ワークフローガイド</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/no-aidlc-workflow><span class=linkLabel_WmDU>AI-DLC を使わない開発フロー</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/aidlc-guide><span class=linkLabel_WmDU>AI-DLC ガイド</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/coding-conventions><span class=linkLabel_WmDU>コーディング規約</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/review-criteria><span class=linkLabel_WmDU>評価基準・レビュー観点</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/troubleshooting><span class=linkLabel_WmDU>トラブルシューティング</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/enhancement-catalog><span class=linkLabel_WmDU>選択課題カタログ</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/playwright-guide><span class=linkLabel_WmDU>Playwright とは</span></a><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class=menu__list-item-collapsible><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role=button aria-expanded=true href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/workflow><span class=categoryLinkLabel_W154>結合テストのチュートリアル</span></a></div><ul class=menu__list><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class=menu__link tabindex=0 href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/workflow><span class=linkLabel_WmDU>結合テストのワークフロー</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class=menu__link tabindex=0 href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/viewpoints><span class=linkLabel_WmDU>試験観点を作る</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class=menu__link tabindex=0 href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/cases><span class=linkLabel_WmDU>試験ケースに展開する</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class=menu__link tabindex=0 href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/code-generation><span class=linkLabel_WmDU>Playwright コードを生成する</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current=page tabindex=0 href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution><span class=linkLabel_WmDU>テストを実行する</span></a></ul></ul></nav></div></div></aside><main class=docMainContainer_TBSr><div class="container padding-top--md padding-bottom--lg"><div class=lastUpdatedContainer_idBY aria-label=最終更新日><div class=container_aRU5><span class=label_tHKe>最終更新</span><time class=date_OwoS datetime=2026-10-05T09:35:41Z>2026年10月5日</time></div></div><div class=row><div class="col docItemCol_z5aJ"><div class=docItemContainer_c0TR><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label=パンくずリストのナビゲーション><ul class=breadcrumbs><li class=breadcrumbs__item><a aria-label=ホームページ class=breadcrumbs__link href=/ai_training_for_chuo_system/pr-preview/pr-133/><svg viewBox="0 0 24 24" class=breadcrumbHomeIcon_YNFT><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill=currentColor /></svg></a><li class=breadcrumbs__item><span class=breadcrumbs__link>結合テストのチュートリアル</span><li class="breadcrumbs__item breadcrumbs__item--active"><span class=breadcrumbs__link>テストを実行する</span></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_bxCs"><button type=button class="clean-btn tocCollapsibleButton_TO0P">このページの見出し</button></div><div class="theme-doc-markdown markdown"><header><h1>テストを実行する</h1></header>
-<p>このページは、<a class="" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/code-generation>Playwright コードを生成する</a>に続く、<a class="" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/workflow>結合テストのワークフロー</a>の3つ目の段階（テストコードと実行）の後半です。AI は、テストコードを作ったあと、続けてテストを流し、実行の証拠を集めて、フェイルしたケースに見立てを書いています。学習者は、その証拠を試験ケースの期待結果と照らし、テストが期待結果を本当に確かめたか、フェイルの原因は何かを判断して、関門3 で確定か差し戻しを選びます。</p>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme-0d8")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{for(var[t,e]of new URLSearchParams(window.location.search).entries())if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id=__docusaurus><link rel=preload as=image href=/ai_training_for_chuo_system/pr-preview/pr-133/img/logo.svg /><div role=region aria-label=メインコンテンツまでスキップ><a class=skipToContent_fXgn href=#__docusaurus_skipToContent_fallback>メインコンテンツまでスキップ</a></div><nav aria-label=ナビゲーション class="theme-layout-navbar navbar navbar--fixed-top"><div class=navbar__inner><div class="theme-layout-navbar-left navbar__items"><button aria-label=ナビゲーションバーを開く aria-expanded=false class="navbar__toggle clean-btn" type=button><svg width=30 height=30 viewBox="0 0 30 30" aria-hidden=true><path stroke=currentColor stroke-linecap=round stroke-miterlimit=10 stroke-width=2 d="M4 7h22M4 15h22M4 23h22"/></svg></button><a class=navbar__brand href=/ai_training_for_chuo_system/pr-preview/pr-133/><div class=navbar__logo><img src=/ai_training_for_chuo_system/pr-preview/pr-133/img/logo.svg alt="BookFlow Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"/><img src=/ai_training_for_chuo_system/pr-preview/pr-133/img/logo.svg alt="BookFlow Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"/></div><b class="navbar__title text--truncate">BookFlow Docs</b></a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/pr-preview/pr-133/learn/curriculum>学習</a><a aria-current=page class="navbar__item navbar__link navbar__link--active" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/dev-workflow>開発ガイド</a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/>仕様</a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/pr-preview/pr-133/reference/architecture>リファレンス</a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/pr-preview/pr-133/operations/operations-guide>運用</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class=navbarSearchContainer_Bca1><div class="navbar__search searchBarContainer_NW3z" dir=ltr><svg aria-hidden=true class=searchIcon_T3tP focusable=false viewBox="0 0 16 16"><path fill=currentColor d="M6.02945 10.20327a4.17382 4.17382 0 1 1 4.17382-4.17382 4.15609 4.15609 0 0 1-4.17382 4.17382Zm9.69195 4.2199-4.8225-4.82338A5.88021 5.88021 0 0 0 12.058 6.02856 6.00467 6.00467 0 1 0 9.59979 10.8989l4.82338 4.82338a.89729.89729 0 0 0 1.29912 0 .89749.89749 0 0 0-.00087-1.29909Z"/></svg><input placeholder=検索 aria-label=Search class="navbar__search-input searchInput_YFbd" value="" /><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div><a href=https://github.com/CHS-Training-Org/ai_training_for_chuo_system target=_blank rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width=13.5 height=13.5 aria-label="(opens in new tab)" class=iconExternalLink_nPIU><use href=#theme-svg-external-link /></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type=button disabled title=システムモード aria-label=ダークモードを切り替える(現在はシステムモード)><svg viewBox="0 0 24 24" width=24 height=24 aria-hidden=true class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill=currentColor d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"/></svg><svg viewBox="0 0 24 24" width=24 height=24 aria-hidden=true class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill=currentColor d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"/></svg><svg viewBox="0 0 24 24" width=24 height=24 aria-hidden=true class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill=currentColor d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"/></svg></button></div></div></div><div role=presentation class=navbar-sidebar__backdrop></div></nav><div id=__docusaurus_skipToContent_fallback class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class=docsWrapper_hBAB><button aria-label=先頭へ戻る class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type=button></button><div class=docRoot_UBD9><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class=sidebarViewport_aRkj><div class=sidebar_njMd><nav aria-label=ドキュメントのサイドバー class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/dev-workflow><span class=linkLabel_WmDU>開発ワークフローガイド</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/no-aidlc-workflow><span class=linkLabel_WmDU>AI-DLC を使わない開発フロー</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/aidlc-guide><span class=linkLabel_WmDU>AI-DLC ガイド</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/coding-conventions><span class=linkLabel_WmDU>コーディング規約</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/review-criteria><span class=linkLabel_WmDU>評価基準・レビュー観点</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/troubleshooting><span class=linkLabel_WmDU>トラブルシューティング</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/enhancement-catalog><span class=linkLabel_WmDU>選択課題カタログ</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/playwright-guide><span class=linkLabel_WmDU>Playwright とは</span></a><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class=menu__list-item-collapsible><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role=button aria-expanded=true href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/workflow><span class=categoryLinkLabel_W154>結合テストのチュートリアル</span></a></div><ul class=menu__list><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class=menu__link tabindex=0 href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/workflow><span class=linkLabel_WmDU>結合テストのワークフロー</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class=menu__link tabindex=0 href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/viewpoints><span class=linkLabel_WmDU>試験観点を作る</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class=menu__link tabindex=0 href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/cases><span class=linkLabel_WmDU>試験仕様書を作る</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current=page tabindex=0 href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/execution><span class=linkLabel_WmDU>テストの結果を確かめる</span></a></ul></ul></nav></div></div></aside><main class=docMainContainer_TBSr><div class="container padding-top--md padding-bottom--lg"><div class=lastUpdatedContainer_idBY aria-label=最終更新日><div class=container_aRU5><span class=label_tHKe>最終更新</span><time class=date_OwoS datetime=2026-10-08T23:01:22Z>2026年10月8日</time></div></div><div class=row><div class="col docItemCol_z5aJ"><div class=docItemContainer_c0TR><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label=パンくずリストのナビゲーション><ul class=breadcrumbs><li class=breadcrumbs__item><a aria-label=ホームページ class=breadcrumbs__link href=/ai_training_for_chuo_system/pr-preview/pr-133/><svg viewBox="0 0 24 24" class=breadcrumbHomeIcon_YNFT><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill=currentColor /></svg></a><li class=breadcrumbs__item><span class=breadcrumbs__link>結合テストのチュートリアル</span><li class="breadcrumbs__item breadcrumbs__item--active"><span class=breadcrumbs__link>テストの結果を確かめる</span></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_bxCs"><button type=button class="clean-btn tocCollapsibleButton_TO0P">このページの見出し</button></div><div class="theme-doc-markdown markdown"><header><h1>テストの結果を確かめる</h1></header>
+<p><a class="" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/cases>試験仕様書を作る</a>で確定した試験ケースは、何を入れて、どこを見ればよいかまで決まっています。この段階では、AI がそれを Playwright のテストコードに変換し、続けてテストを流して実行のエビデンスを集めます。</p>
+<p>ここでは、<a class="" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/workflow>結合テストのワークフロー</a>の3つの段階のうち、3つ目の段階（テストコードと実行）の手順を説明します。学習者はテストコードを読みません。AI が書いたテストコードの説明と、実行のエビデンスを試験ケースの期待結果と照らして判断し、関門3 で確定か差し戻しを選びます。</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=学習目標>学習目標<a href=#学習目標 class=hash-link aria-label="学習目標 への直接リンク" title="学習目標 への直接リンク" translate=no>​</a></h2>
-<p>このページを終えると、次ができるようになります。</p>
+<p>このステップでは、次のことができることを目標とします。</p>
 <ul>
-<li class="">テストが確かめたこと（テストコードから抜き出した確かめ）と実行の証拠（見る場所の画面と、テストで使った値）を期待結果と照らし、確かめが足りているか、期待結果が成り立っていたかを判断できる</li>
-<li class="">フェイルしたケースの原因（実装の不具合、仕様の仮回答による、テストの誤り、前の段階の誤り）を、AI の見立てを手がかりに、証拠と仕様で判断し、根拠を書ける</li>
-<li class="">関門3 で確定か差し戻しを選び、実装の不具合だと判断したケースを記録に残せる</li>
+<li class="">テストで確かめた内容を期待結果と照らし合わせ、テストが期待結果を十分に確かめているかを判断できる</li>
+<li class="">AI がテストを試験ケースどおりに書けなかった箇所や、テストにできなかったケースで、本来見つけるはずだった不具合が見逃されていないかを判断できる</li>
+<li class="">テストがフェイルしたとき、原因が実装の不具合なのかテストの誤りなのかを、エビデンスと仕様から見分けられる</li>
 </ul>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=ゴール>ゴール<a href=#ゴール class=hash-link aria-label="ゴール への直接リンク" title="ゴール への直接リンク" translate=no>​</a></h2>
-<p>テストコードと実行の段階を確定させます。</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=このステップの到達点>このステップの到達点<a href=#このステップの到達点 class=hash-link aria-label="このステップの到達点 への直接リンク" title="このステップの到達点 への直接リンク" translate=no>​</a></h2>
+<p>テストコードと実行の段階が確定した状態になります。ここまで来ると、試験観点と試験仕様書による E2E テストの設計から、テストの実行と結果の確認までが完了します。</p>
 <hr/>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=roles>AI と学習者の役割分担<a href=#roles class=hash-link aria-label="AI と学習者の役割分担 への直接リンク" title="AI と学習者の役割分担 への直接リンク" translate=no>​</a></h2>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=ai-がやること>AI がやること<a href=#ai-がやること class=hash-link aria-label="AI がやること への直接リンク" title="AI がやること への直接リンク" translate=no>​</a></h3>
-<p>テストを流す作業は、案内スキル（<code>e2e-workflow</code>）が行います。</p>
+<p>テストコードは <a class="" href=/ai_training_for_chuo_system/pr-preview/pr-133/reference/claude-code/agent-config><code>generate-test-code</code></a> スキルが作り、テストを流す作業は案内スキル（<code>e2e-workflow</code>）が行います。</p>
+<div class=wide-table>
 
 
 
@@ -37,8 +39,49 @@
 
 
 
-<table><thead><tr><th>AI がやること<th>中身<tbody><tr><td>環境を整える<td>結合テスト専用のデータベース（<code>bookflow_e2e</code>）を用意し、バックエンドをそこにつないで起動する。開発用のバックエンドが動いていれば、止めてよいかを学習者に確かめる<tr><td>テストを流す<td><code>node scripts/e2e-workflow/run.mjs</code> で流し、結果と証拠を集める。環境が原因で流れなかったものは、環境を直して流し直す。テストの誤りに見えるものは、ここでは直さない<tr><td>見立てを書く<td>フェイルしたケースごとに、実装の不具合の候補か、テストの誤りの候補かなどの見立てと、その根拠を <code>Docs/test/&lt;画面>/triage.md</code> に書く</table>
-<p>テストの誤りに見えても AI が直さずに渡すのは、直すかどうかを証拠で決めるのが学習者だからです。AI が自分の判断でテストを直して流し直すと、期待結果に合わせてテストを弱めたことに、学習者が気づけなくなります。</p>
+
+
+
+
+
+
+
+
+<table><thead><tr><th>AI がやること<th>中身<tbody><tr><td>テストコードを作る<td><code>frontend/tests/e2e/workflow/&lt;画面>.spec.ts</code> に、試験ケース1件につき1つのテストを書く。テスト名はケースの ID で始まる<tr><td>テストコードの説明を書く<td><code>Docs/test/&lt;画面>/code.md</code> に、コードではなく文章で、学習者の判断が要るところだけを書く（下の表）<tr><td>環境を整える<td>結合テスト専用のデータベース（<code>bookflow_e2e</code>）を用意し、バックエンドをそこにつないで起動する。開発用のバックエンドが動いていれば、止めてよいかを学習者に確かめる<tr><td>テストを流す<td><code>node scripts/e2e-workflow/run.mjs</code> で流し、結果とエビデンスを集める。環境が原因で流れなかったものは、環境を直して流し直す。テストの誤りに見えるものは、ここでは直さない<tr><td>見立てを書く<td>フェイルしたケースごとに、実装の不具合の候補か、テストの誤りの候補かなどの見立てと、その根拠を <code>Docs/test/&lt;画面>/triage.md</code> に書く</table>
+</div>
+<p>テストコードの説明（<code>code.md</code>）の章は次のとおりです。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>章<th>AI が書く内容<tbody><tr><td>1章 テストデータの用意<td>試験ケースのテストデータ（「承認が必要な有効なリソース」など）を、初期データから選ぶか、API で作るか<tr><td>2章 仕様と実装で名前が違うところ<td>試験ケースの名前と、テストコードで指定した実装の名前が違うところ<tr><td>3章 ケースどおりに書けなかったところ<td>近い書き方にしたところと、それで結果がどう変わりうるか<tr><td>4章 テストコードにできなかったケース<td>テストにできなかったケースと、その理由<tr><td>5章 集計<td>件数</table>
+<p>ボタンや入力欄を指定するには実装に付いている名前やラベルが要るので、テストコードを書くタイミングで、AI は画面の実装を読みます。ただし、期待結果は試験ケースからだけ取ります。実装が試験ケースの期待結果を満たしていないように見えても、AI はテストを弱めず、試験ケースのとおりに書きます。</p>
+<p>AI が自分の判断でテストを直して流し直すと、期待結果に合わせてテストを弱めたことに、学習者が気づけなくなります。そのため、流したあとでテストの誤りに見えても AI は直さずに渡し、直すかどうかは学習者がエビデンスで決めます。</p>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=学習者がやること>学習者がやること<a href=#学習者がやること class=hash-link aria-label="学習者がやること への直接リンク" title="学習者がやること への直接リンク" translate=no>​</a></h3>
 
 
@@ -61,66 +104,111 @@
 
 
 
-<table><thead><tr><th>学習者がやること<th>手順<tbody><tr><td>実行の証拠を見て、期待結果が成り立っているかを確かめる<td>手順1<tr><td>フェイルしたケースの原因を選び、根拠を書く<td>手順2<tr><td>前のページで書き留めた指摘と合わせて、確定か差し戻しを選ぶ<td>手順3</table>
+
+
+
+
+<table><thead><tr><th>学習者がやること<th>手順<tbody><tr><td>AI が文章で書いたテストコードの説明（<code>code.md</code>）を読み、2〜4章を判断する<td>手順2<tr><td>実行のエビデンスを見て、テストが期待結果を十分に確かめているか、画面が期待結果どおりに動いたかを判断する<td>手順3<tr><td>フェイルしたケースごとに、原因（実装の不具合、テストの誤りなど）をダッシュボードの選択肢から選び、そう判断した根拠を自分で1行書く<td>手順4<tr><td>テストコードと実行の段階を確定するか、テストコードを AI に差し戻すかを選ぶ<td>手順5</table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=why-not-code>テストコードを読まない理由<a href=#why-not-code class=hash-link aria-label="テストコードを読まない理由 への直接リンク" title="テストコードを読まない理由 への直接リンク" translate=no>​</a></h3>
+<p>このチュートリアルでは、テストコードを、テストの結果を得るための中間生成物として扱います。テストの品質は、投入した試験観点と試験ケースが仕様に照らして正しいか、そして最終的な生成物であるテストの結果が、期待結果を十分に確かめたうえで得られたものかで担保します。AI 駆動開発では、人がテストコードを1行ずつ読むのではなく、入力（何を確かめるか）と出力（本当に確かめられたか）で品質を担保する進め方が中心になっていくと考えています。</p>
+<p>そのために、テストコードを読まなくても判断できる仕組みを用意しています。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>コードを読む代わりに確かめるもの<th>確かめる仕組み<tbody><tr><td>ケースとテストの対応<td>AI が渡す前に、テスト名の先頭のケース ID を機械的に数え、漏れや重複がないことを確かめる。<code>test.skip</code> や <code>test.describe.skip</code> で止めたテストは数えない<tr><td>要素の指定方法、固定時間の待機、テストごとの初期化<td>AI が渡す前に、決まりから外れた書き方がないかを機械的に確かめる。見つかれば、AI が直してから渡す<tr><td>要素の名前や入力の値の誤り<td>誤っていれば、流したときにテストがフェイルして分かる<tr><td>テストの確かめ方が、期待結果に足りているか<td>ダッシュボードがテストコードから機械的に抜き出した「このテストが確かめたこと」を、期待結果と並べて見る（手順3）<tr><td>期待結果が今回の実行で成り立っていたか<td>確認箇所の画面と、テストで使った値（実行のエビデンス）を見る（手順3）</table>
+<p>学習者が読むのは、AI がテストコードについて文章で書いた説明（<code>code.md</code>）です。説明には、仕様と実装の名前の違い、ケースどおりに書けなかったところ、テストにできなかったケースなど、人の判断が要ることだけが書かれています。テストコードそのものは読みません。</p>
+<p>ダッシュボードには、テストコードの全文も折りたたんで表示されます。これは補足として置いているもので、判断には使いません。</p>
 <hr/>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=evidence>手順1 実行の証拠を見る<a href=#evidence class=hash-link aria-label="手順1 実行の証拠を見る への直接リンク" title="手順1 実行の証拠を見る への直接リンク" translate=no>​</a></h2>
-<p>テストの結果は、最後まで期待結果どおりだった「パス」と、それ以外の「フェイル」で表します。フェイルには、期待結果と違ったものだけでなく、手順の途中で止まったものや、環境が整っていなかったものも含みます（下の区分の表）。テストが一度も動かなかったケースは「実行されていない」と表示し、このケースがあるうちは確定できません。</p>
-<p>パスかどうかだけでは、テストが期待結果を本当に確かめたかは分かりません。確かめ方が足りないテストは、画面の振る舞いが間違っていてもパスするためです。そこで学習者は、テストコードを読む代わりに、次の2つを期待結果と照らして判断します。</p>
-<ul>
-<li class=""><strong>このテストが確かめたこと</strong>：テストの中の確かめ（<code>expect</code>）を、ダッシュボードがテストコードから機械的に抜き出したものです。確かめごとに、何を確かめるかの説明と、照合の種類（「件数が 0」「表示されている」など）が並びます。説明の文は AI が書いたもので、照合の種類は機械的に決めた言葉です。</li>
-<li class=""><strong>実行の証拠</strong>：見る場所の画面と、テストが実際に使った値です。</li>
-</ul>
-<p>2つを分けて見るのは、証拠の画面が今回の実行の様子しか示さないためです。たとえば「申請できないこと」をマイ予約一覧に行がないことで確かめるテストは、実装が正しく申請を止めた場合も、テストが申請ボタンを押せていなかった場合も、同じ画面になります。今回たまたま正しく動いていれば、確かめが足りないテストもパスします。確かめが足りているかは「このテストが確かめたこと」で、期待結果が今回成り立っていたかは証拠の画面で判断します。</p>
-<p>生成したテストは、試験ケースの「見る場所」（マイ予約一覧、予約申請フォームのメッセージ欄など）を開いたところで画面を撮ります。あわせて、テストが実際に使った値（利用目的の文字列、選んだリソースの名前、日時など）を残します。試験ケースには「テスト用の利用目的」「枠の開始」のように書かれていますが、画面には実際の文字列や日時が出るためです。</p>
-<p>「〜できないこと」を操作のあとで別の画面で確かめるケースでは、操作した直後の画面（「予約を申請する」を押した直後の予約申請フォームなど）も撮ります。ボタンを押せたか、入力が入っていたか、入力のチェックで止まっていないかを、この画面で確かめます。</p>
-<p>テストは、1件ごとに、結合テスト専用のデータベースを初期データだけの状態に戻してから動きます。そのため、証拠の画面には初期データと、そのテストが作ったデータだけが写ります。ほかのテストや過去の実行のデータは写りません。</p>
-<p>ダッシュボードでテストコードと実行の段階を開き、テストコードの説明の下にある「実行の証拠」まで進むと、ケースごとに「期待結果、見る場所、このテストが確かめたこと、このテストで使った値」「結果」「証拠の画面」が並びます。結果、画面、使った値、照合の種類は、実行とテストコードから機械的に集めたものです。AI が書いたものは、確かめの説明の文と、フェイルしたケースの「AI の見立て」です。各ケースについて、次を確かめます。</p>
-<ul>
-<li class="">「このテストが確かめたこと」が、期待結果を確かめるのに足りているか（たとえば期待結果が「重複のメッセージが出て、申請できない」なら、メッセージが出ていることと、マイ予約一覧に予約がないことの両方を確かめているか）</li>
-<li class="">確かめの説明と照合の種類が食い違っていないか（説明が「予約がない」なのに照合が「件数が 1」なら、説明か確かめのどちらかが誤っている）</li>
-<li class="">証拠の画面に、見る場所が写っているか</li>
-<li class="">使った値で行を探し、その画面で期待結果が成り立っているか（たとえば「申請できないこと」なら、マイ予約一覧に、使った値の利用目的の予約がないこと）</li>
-<li class="">使った値が、試験ケースの手順と入力どおりか（たとえば「リソースを選ばないと申請できない」なら、リソースが「（空欄）」になっていること）</li>
-</ul>
-<p>パスしたケースも見ます。パスしたテストは誰も疑わないので、確かめ方が足りないことに気づけるのはここだけです。確かめが足りないケース、説明と照合が食い違うケース、証拠の画面がないケース、見る場所と違う場所が写っているケース、値を入力するケースなのに使った値がないケースは、差し戻しの理由に書きます。値を入力しないケース（画面を開いて見るだけのケースなど）には、使った値はありません。</p>
-<p>関門の欄に「決まりから外れた書き方」が出ていたら、その文言をそのまま差し戻しの理由に貼ります。テストコードを読まなくても、AI が直せます。</p>
-<p>フェイルしたケースは、テストがどこで止まったかによって、次の区分に機械的に分けて表示します。表の上のボタンで、区分ごとに絞り込めます。</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>区分<th>意味<th>見るところ<tbody><tr><td>期待結果と違った<td>見る場所までたどり着き、期待結果を確かめたところでフェイルした<td>見る場所の画面で、期待結果と何が違うか<tr><td>途中で止まった<td>見る場所にたどり着く前に、手順の途中でフェイルした（画面の要素が見つからない、画面が移らない、時間切れなど）<td>フェイルした時点の画面で、どこで止まったか<tr><td>前提データを用意できなかった<td>テストの前提になるデータ（既存の予約など）を API で作れなかった<td>エラーの内容<tr><td>環境が整っていない<td>バックエンドやデータベースにつながらなかった<td>AI が環境を直して流し直す。残っている間は学習者に渡されず、確定もできない</table>
-<p>見る場所が2つあるケース（メッセージ欄とマイ予約一覧など）では、1つ目の期待結果と違っても、テストは2つ目の見る場所まで進んで画面を撮り、期待結果を確かめます。この場合、エラーは起きた順に並びます。区分は、最後のエラーで決めます。</p>
-<p>区分は、実装の不具合か、テストの誤りかまでは決めません。それは手順2で判断します。</p>
-<p>テストコードを流したあとで変えると、証拠は古いものとしてダッシュボードに表示され、流し直すまで確定できません。</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=step1>手順1 AI にテストを作って流させる<a href=#step1 class=hash-link aria-label="手順1 AI にテストを作って流させる への直接リンク" title="手順1 AI にテストを作って流させる への直接リンク" translate=no>​</a></h2>
+<p>試験仕様書を確定させたあと、Claude Code に次のように依頼します。</p>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-text codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token plain">/e2e-workflow 予約申請画面（/reservations/new）の結合テストを進めたい</span><br/></div></code></pre></div></div>
+<p>案内スキル（<code>e2e-workflow</code>）が <code>generate-test-code</code> スキルを呼び出し、テストコードとその説明を保存します。続けて、結合テスト専用のデータベースとバックエンドを用意してテストを流し、フェイルしたケースに見立てを書きます。すべて終わると、テストコードと実行の段階は「レビュー待ち」になります。流すのに数分かかります。</p>
+<p>開発用のバックエンドが動いているときは、止めて結合テスト用に起動し直してよいかを、案内スキルが確かめます。結合テスト用のバックエンドは、流したあとも動いたままになります。</p>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class=admonitionHeading_Gvgb><span class=admonitionIcon_Rf37><svg viewBox="0 0 14 16"><path fill-rule=evenodd d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"/></svg></span>テストコードの置き場所</div><div class=admonitionContent_BuS1><p><code>frontend/tests/e2e/workflow/</code> に置いたテストは学習者の成果物で、普段の <code>pnpm test:e2e</code> には含まれません。ワークフローでは、AI が <code>node scripts/e2e-workflow/run.mjs</code> で流し、エビデンスを集めます。<code>pnpm test:e2e:workflow</code> でも流せますが、エビデンスは集まらず、ダッシュボードにも出ません（<a class="" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/playwright-guide#run>BookFlow での実行</a>）。</div></div>
 <hr/>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=step2>手順2 フェイルしたケースの原因を判断する<a href=#step2 class=hash-link aria-label="手順2 フェイルしたケースの原因を判断する への直接リンク" title="手順2 フェイルしたケースの原因を判断する への直接リンク" translate=no>​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=explanation>手順2 テストコードの説明を判断する<a href=#explanation class=hash-link aria-label="手順2 テストコードの説明を判断する への直接リンク" title="手順2 テストコードの説明を判断する への直接リンク" translate=no>​</a></h2>
+<p>ダッシュボードでテストコードと実行の段階を選ぶと、上にテストコードの説明（<code>code.md</code>）、その下に実行のエビデンスが表示されます。説明の2〜4章を読み、判断します。AI がテストを試験ケースどおりに書けなかったり、ケースを外したりすると、本来そのケースで見つけるはずだった不具合が見逃されます。説明の3章と4章では、それが起きていないかを判断します。直してほしい点が見つかったら、ケースの ID と一緒に書き留めておき、手順5で差し戻しの理由にまとめます。</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=explanation-names>2-1. 仕様と実装で名前が違うところを判断する<a href=#explanation-names class=hash-link aria-label="2-1. 仕様と実装で名前が違うところを判断する への直接リンク" title="2-1. 仕様と実装で名前が違うところを判断する への直接リンク" translate=no>​</a></h3>
+<p>説明の2章には、試験ケース（仕様書）の名前と、実装の名前が違うところが並んでいます。たとえば、仕様書は「申請する」ボタン、実装は「予約を申請する」ボタン、のような違いです。</p>
+<p>テストコードは実装の名前で要素を指定しているので、このままでもテストは動きます。学習者は、その違いが表記の揺れか、仕様と実装が食い違っている不具合かを判断します。不具合だと考えた場合は、そのことを書き留めておき、手順5で確定するときに指摘の欄に書いて記録に残します。</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=explanation-approx>2-2. ケースどおりに書けなかったところを判断する<a href=#explanation-approx class=hash-link aria-label="2-2. ケースどおりに書けなかったところを判断する への直接リンク" title="2-2. ケースどおりに書けなかったところを判断する への直接リンク" translate=no>​</a></h3>
+<p>説明の3章には、試験ケースの記述をそのままテストコードにできず、近い書き方にしたところが並んでいます。「結果への影響」を読み、その書き方でも、試験ケースで担保したかった機能や仕様を確かめられるかを判断します。</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=explanation-unwritten>2-3. テストコードにできなかったケースを判断する<a href=#explanation-unwritten class=hash-link aria-label="2-3. テストコードにできなかったケースを判断する への直接リンク" title="2-3. テストコードにできなかったケースを判断する への直接リンク" translate=no>​</a></h3>
+<p>説明の4章の各行について、AI がテストコードにできなかった理由が妥当かを判断します。妥当であれば指摘は不要です。テストにしてほしい場合は、テストにする方法（用意するデータや確かめる場所など）を書き留めておき、手順5で差し戻します。</p>
+<hr/>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=evidence>手順3 実行結果を確認する<a href=#evidence class=hash-link aria-label="手順3 実行結果を確認する への直接リンク" title="手順3 実行結果を確認する への直接リンク" translate=no>​</a></h2>
+<p>テストの結果は「パス」と「フェイル」で表示されます。フェイルには、期待結果と違ったものだけでなく、途中で止まったものも含みます（下の区分の表）。</p>
+<p>検証が不十分なテストは、画面の振る舞いが誤っていてもパスします。そのため、パスかどうかだけでは判断せず、ケースごとに次の2つを期待結果と照らし合わせます。</p>
+<ul>
+<li class=""><strong>このテストが確かめたこと</strong>：テストの中の検証（<code>expect</code>）を、ダッシュボードがテストコードから機械的に抜き出したものです。検証ごとに、何を検証するかの説明と、照合の種類（「件数が 0」「表示されている」などの分類）が並びます。</li>
+<li class=""><strong>実行のエビデンス</strong>：試験ケースの確認箇所を開いたところで撮ったスクリーンショットと、テストが実際に使った値（利用目的の文字列、リソースの名前、日時など）です。試験ケースには「テスト用の利用目的」のようにしか書かれていないので、画面のどの行がそのテストのものかは、使った値で探します。</li>
+</ul>
+<p>スクリーンショットは、その実行で画面がどうなったかしか示しません。たとえば「申請できないこと」を、マイ予約一覧に予約がないことで確かめるテストは、申請ボタンを押せていなくても同じ画面になります。そのため、検証が十分かは「このテストが確かめたこと」から、期待結果が成り立っていたかはスクリーンショットから、分けて判断します。このように操作のあとで別の画面を確かめるケースでは、操作した直後の画面のスクリーンショットも撮るので、ボタンを押せたか、入力のチェックで止まっていないかもあわせて確かめます。</p>
+<p>各ケースで、次を確かめます。</p>
+<ul>
+<li class="">「このテストが確かめたこと」が、期待結果を検証するのに足りているか（期待結果が「重複のメッセージが出て、申請できない」なら、メッセージと、マイ予約一覧に予約がないことの両方を検証しているか）</li>
+<li class="">検証の説明と照合の種類が食い違っていないか</li>
+<li class="">スクリーンショットが確認箇所の画面になっているか</li>
+<li class="">スクリーンショットで、期待結果が成り立っているか</li>
+<li class="">使った値が、試験ケースの手順と入力どおりか</li>
+</ul>
+<p>パスしたケースも確かめます。パスしたテストで正しい検証が行われたかを確認できるのは、人間だけです。問題があったケースは、ケースの ID を添えて書き留め、手順5で差し戻しの理由にまとめます。</p>
+<p>フェイルしたケースは、テストがどこで止まったかで、次の区分に機械的に分けて表示されます。区分は、実装の不具合かテストの誤りかまでは決めません。それは手順4で判断します。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>区分<th>意味<th>確認するところ<tbody><tr><td>期待結果と違った<td>確認箇所までたどり着き、期待結果を確かめたところでフェイルした<td>確認箇所の画面で、期待結果と何が違うか<tr><td>途中で止まった<td>確認箇所にたどり着く前に、手順の途中でフェイルした（画面の要素が見つからない、画面が移らない、時間切れなど）<td>フェイルした時点の画面で、どこで止まったか<tr><td>前提データを用意できなかった<td>テストの前提になるデータ（既存の予約など）を API で作れなかった<td>エラーの内容</table>
+<p>期待結果によっては、確認箇所が2つになるケースがあります（「重複のメッセージが出て、申請できない」なら、メッセージ欄とマイ予約一覧）。この場合、1つ目で期待結果と違っても2つ目まで進み、区分は最後のエラーで決まります。テストコードを流したあとで変えると、エビデンスは古いものとして表示され、流し直すまで確定できません。</p>
+<hr/>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=triage>手順4 フェイルしたケースの原因を判断する<a href=#triage class=hash-link aria-label="手順4 フェイルしたケースの原因を判断する への直接リンク" title="手順4 フェイルしたケースの原因を判断する への直接リンク" translate=no>​</a></h2>
 <p>フェイルしたケースには、AI の見立てが付いています。見立ては次の5つのどれかです。</p>
 
 
@@ -151,8 +239,8 @@
 
 
 
-<table><thead><tr><th>見立て<th>AI がそう書くとき<tbody><tr><td>実装の不具合の候補<td>証拠の画面や応答が、試験ケースの期待結果と違う振る舞いを示している<tr><td>仕様の仮回答による候補<td>展開元の観点が、観点の段階で仕様の食い違いに仮に選んだ回答に基づいていて、その回答と実装の振る舞いが違う<tr><td>テストの誤りの候補<td>テストの操作や確かめ方が、試験ケースの手順や見る場所と合っていない<tr><td>環境の問題<td>流し直しても同じ止まり方をし、環境が原因と考えられるもの<tr><td>判断できない<td>証拠から、どれとも言えない</table>
-<p>見立ての根拠に書かれた証拠を、自分で見て確かめます。そのうえで、ダッシュボードの証拠の表で、フェイルしたケースごとに「あなたの判断」の原因を選び、根拠を1行書きます。根拠には、見た証拠の画面や仕様書の記述を書きます（例：「証拠1がエラー画面。仕様は重複のメッセージを出すと書いている」）。原因は次の4つから選びます。</p>
+<table><thead><tr><th>見立て<th>意味<tbody><tr><td>実装の不具合の候補<td>エビデンスの画面や応答が、試験ケースの期待結果と違う振る舞いを示している<tr><td>仕様の仮回答による候補<td>展開元の観点が、仕様の矛盾に対して試験観点の段階で仮に決めた回答をもとにしており、実装はその回答と違う振る舞いをしている<tr><td>テストの誤りの候補<td>テストの操作や確かめ方が、試験ケースの手順や確認箇所と合っていない<tr><td>環境の問題<td>流し直しても同じ止まり方をし、環境が原因と考えられるもの<tr><td>判断できない<td>エビデンスから、どれとも言えない</table>
+<p>見立てには根拠が添えられています。根拠が正しいかをスクリーンショットと仕様書で確かめたうえで、フェイルしたケースごとに、原因を次の4つから選びます。選ぶ場所は、ダッシュボードのエビデンスの表にある「あなたの判断」の欄です。この欄は空のまま表示され、AI の見立てでは埋まっていません。</p>
 
 
 
@@ -183,36 +271,42 @@
 
 
 
-<table><thead><tr><th>原因<th>当てはまるとき<th>そのあと<tbody><tr><td>実装の不具合<td>展開元の観点に立ち返り、期待している振る舞いが仕様に照らして正しいと確かめた。テストは正しい<td>確定できる。判断は記録に残る。このチュートリアルの範囲では、記録に残すところまでとする<tr><td>仕様の仮回答による<td>期待結果が、観点の段階で仕様の食い違いに仮に選んだ回答から来ていて、実装はもう一方の振る舞いをしている<td>確定できる。判断は記録に残る<tr><td>テストの誤り<td>テストの操作や確かめ方が、試験ケースと合っていない<td>確定できない。差し戻すと、AI が判断と根拠を読んでテストを直す<tr><td>前の段階の誤り<td>試験ケースや観点の入力値、期待結果のほうが誤っている<td>確定できない。差し戻して運営者に相談する（下の「前の段階の誤りを見つけたとき」）</table>
-<p>「仕様の仮回答による」を「実装の不具合」と区別するのは、仕様書の別の箇所が実装と同じ振る舞いを書いていることがあるためです。仮に選んだ回答は、観点の段階で「どちらを選んでも誤りではない」としたものです。その回答と実装が違うことは、どちらかの誤りではなく、仕様が決まっていないことの表れです。</p>
-<p>AI の見立ては手がかりです。ダッシュボードは、学習者の判断を AI の見立てで埋めておくことはしません。</p>
-<div class="theme-admonition theme-admonition-warning admonition_xJq3 alert alert--warning"><div class=admonitionHeading_Gvgb><span class=admonitionIcon_Rf37><svg viewBox="0 0 16 16"><path fill-rule=evenodd d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"/></svg></span>AI の見立てをうのみにしない</div><div class=admonitionContent_BuS1><p>AI が「実装の不具合の候補」とした見立てが、実際には試験ケースの入力値や期待結果の誤りであることもあります。見立ては候補です。根拠の証拠と、仕様書を自分で確かめてから決めてください。</div></div>
+<table><thead><tr><th>原因<th>選ぶ目安<th>関門での扱い<tbody><tr><td>実装の不具合<td>展開元の観点に立ち返り、期待している振る舞いが仕様に照らして正しいと確かめた。テストは正しい<td>確定できる。判断は記録に残る。このチュートリアルの範囲では、記録に残すところまでとする<tr><td>仕様の仮回答による<td>期待結果が、仕様の矛盾に対して試験観点の段階で仮に決めた回答をもとにしており、実装はもう一方の振る舞いをしている<td>確定できる。判断は記録に残る<tr><td>テストの誤り<td>テストの操作や確かめ方が、試験ケースと合っていない<td>確定できない。差し戻すと、AI が判断と根拠を読んでテストを直す<tr><td>前の段階の誤り<td>試験ケースや観点の入力値、期待結果のほうが誤っている<td>確定できない。差し戻して、Claude Code にその段階を戻すよう頼む（下の「前の段階の誤りを見つけたとき」）</table>
+<p>仮回答は、試験観点の段階で「どちらを選んでも誤りではない」として選んだものです。仕様の矛盾では、2つの仕様書が同じ振る舞いについて違うことを書いています（例は<a class="" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/viewpoints#step2-2>矛盾を確認する</a>）。そのため、仮回答と実装の振る舞いが違っても、実装は仮回答で選ばなかったほうの記述どおりに動いているだけで、誤りとは言えません。この場合は「実装の不具合」ではなく「仕様の仮回答による」を選びます。</p>
+<p>原因を選んだら、そう判断した根拠を1行書きます（例：「エビデンス1がエラー画面。仕様は重複のメッセージを出すと書いている」）。根拠は、差し戻したときは AI がテストを直す手がかりになり、確定したときは判断の記録として残ります。</p>
+<div class="theme-admonition theme-admonition-warning admonition_xJq3 alert alert--warning"><div class=admonitionHeading_Gvgb><span class=admonitionIcon_Rf37><svg viewBox="0 0 16 16"><path fill-rule=evenodd d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"/></svg></span>AI の見立てをうのみにしない</div><div class=admonitionContent_BuS1><p>AI が「実装の不具合の候補」とした見立てが、実際には試験ケースの入力値や期待結果の誤りであることもあります。見立ては候補です。根拠のエビデンスと、仕様書を自分で確かめてから決めてください。</div></div>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=upstream>前の段階の誤りを見つけたとき<a href=#upstream class=hash-link aria-label="前の段階の誤りを見つけたとき への直接リンク" title="前の段階の誤りを見つけたとき への直接リンク" translate=no>​</a></h3>
-<p>確定した試験ケースや観点の誤りに気づいたときは、その段階の成果物を直接直すことはできません。今の段階の関門で差し戻し、指摘の欄に「前の段階の誤り：ID」と、何が誤りかを書いて、運営者に相談します。AI はこの指摘を受けると、成果物を直さずに止まります。</p>
-<p>運営者が誤りを認めると、その段階を確定から差し戻しに戻します。AI がその段階を直し、学習者が確定し直したあと、後の段階は作り直しになります。運営者が「前の段階の誤りではない」と判断した場合は、その旨を AI に伝えると、残りの指摘だけを反映して進めます。</p>
-<hr/>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=step3>手順3 差し戻すか確定するかを選ぶ<a href=#step3 class=hash-link aria-label="手順3 差し戻すか確定するかを選ぶ への直接リンク" title="手順3 差し戻すか確定するかを選ぶ への直接リンク" translate=no>​</a></h2>
-<p>ダッシュボードの「関門3 テストの確定」の欄で、選びます。</p>
+<p>確定した試験ケースや観点の誤りに気づいたときは、その段階の成果物を直接直すことはできません。今の段階の関門で差し戻し、指摘の欄に「前の段階の誤り：ID」と、何が誤りかを書きます。そのあと <code>/e2e-workflow</code> を実行すると、AI は成果物を直さずに、指摘された誤りを確かめた結果と、戻すとどうなるかを示し、その段階を戻すかどうかを尋ねます。</p>
 <ul>
-<li class=""><strong>差し戻す</strong>：前のページ（テストコードの説明の判断）で書き留めた指摘があれば、指摘の欄にケースの ID を添えて書き、「差し戻す」を押します。手順2で選んだ原因と根拠も、差し戻しの理由に入ります。もう一度 <code>/e2e-workflow</code> を実行すると、AI が指摘と判断に沿ってテストコードを直し、流し直して見立てを書き直し、状態が「レビュー待ち」に戻ります。直った証拠を、もう一度手順1から確かめます。</li>
-<li class=""><strong>確定する</strong>：指摘がなく、フェイルしたすべてのケースの原因が「実装の不具合」か「仕様の仮回答による」で、根拠を書いたら「確定する」を押します。フェイルしたケースが残っていても、原因をこのどちらかと判断できていれば確定してかまいません。選んだ原因と根拠は、確定の記録に残ります。</li>
+<li class=""><strong>前の段階の誤りだった場合</strong>：戻すと答えます。AI がその段階を確定から差し戻しに戻して直します。学習者が確定し直したあと、後の段階は作り直しになります。</li>
+<li class=""><strong>AI の確認結果を見て、誤りではなかったと分かった場合</strong>（仕様書を読み違えていたなど）：戻さないと答えます。AI は残りの指摘だけを反映して進めます。</li>
+</ul>
+<hr/>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=gate>手順5 差し戻すか確定するかを選ぶ<a href=#gate class=hash-link aria-label="手順5 差し戻すか確定するかを選ぶ への直接リンク" title="手順5 差し戻すか確定するかを選ぶ への直接リンク" translate=no>​</a></h2>
+<p>ダッシュボードの「関門3 テストの確定」で、差し戻すか確定するかを選びます。</p>
+<ul>
+<li class=""><strong>差し戻す</strong>：手順2と手順3で書き留めた指摘があれば、指摘の欄にケースの ID を添えて書き、「差し戻す」を押します。手順4で選んだ原因と根拠も、差し戻しの理由に入ります。もう一度 <code>/e2e-workflow</code> を実行すると、AI が指摘と判断に沿ってテストコードを直し、流し直して見立てを書き直し、状態が「レビュー待ち」に戻ります。直ったエビデンスを、もう一度手順2から確かめます。</li>
+<li class=""><strong>確定する</strong>：指摘がなく、フェイルしたすべてのケースの原因が「実装の不具合」か「仕様の仮回答による」で、根拠を書いたら「確定する」を押します。フェイルしたケースが残っていても、原因をこのどちらかと判断できていれば確定してかまいません。</li>
 </ul>
 <p>次のどれかに当たると、「確定する」は押せません。関門の欄に理由が表示されます。</p>
 <ul>
-<li class="">試験ケースのうち、どのテストにも「テストコードにできなかったケース」にも載っていないものがある</li>
-<li class="">同じケース ID のテストが2本以上ある</li>
-<li class="">試験ケース一覧にないケース ID のテストがある</li>
-<li class="">流した結果がない、テストコードが流したあとで変わっている、実行されていないケースや環境が整っていなかったケースがある</li>
-<li class="">フェイルしたケースのうち、原因か根拠がないものがある。または「テストの誤り」か「前の段階の誤り」を選んだものがある</li>
+<li class="">流した結果がない</li>
+<li class="">テストコードが、流したあとで変わっている</li>
+<li class="">実行されていないケースがある</li>
+<li class="">環境が整っていなかったケースがある</li>
+<li class="">フェイルしたケースのうち、原因を選んでいないものがある</li>
+<li class="">フェイルしたケースのうち、根拠を書いていないものがある</li>
+<li class="">原因に「テストの誤り」を選んだケースがある</li>
+<li class="">原因に「前の段階の誤り」を選んだケースがある</li>
 </ul>
-<p>結合テスト用のバックエンドは、流したあとも動いたままです。開発に戻るときは、<code>node scripts/e2e-workflow/env.mjs down</code> で止め、<code>cd backend && ./gradlew bootRun</code> で開発用のバックエンドを起動し直します。</p>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class=admonitionHeading_Gvgb><span class=admonitionIcon_Rf37><svg viewBox="0 0 14 16"><path fill-rule=evenodd d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"/></svg></span>開発に戻るとき</div><div class=admonitionContent_BuS1><p>結合テスト用のバックエンドは、流したあとも動いたままです。開発に戻るときは、<code>node scripts/e2e-workflow/env.mjs down</code> で止め、<code>cd backend && ./gradlew bootRun</code> で開発用のバックエンドを起動し直します。</div></div>
 <hr/>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=ここまでの流れ>ここまでの流れ<a href=#ここまでの流れ class=hash-link aria-label="ここまでの流れ への直接リンク" title="ここまでの流れ への直接リンク" translate=no>​</a></h2>
-<p>このチュートリアルで、次の3つの段階を体験しました。</p>
+<p>関門3 を確定すると、このチュートリアルで扱う E2E テストの設計から実行までが完了します。次の3つの段階で結合テストを作りました。</p>
 <ol>
 <li class="">試験観点：何を確かめるかを、仕様書を根拠に決める</li>
-<li class="">試験ケース：観点を、前提、手順と入力、期待結果、見る場所に展開する</li>
-<li class="">テストコードと実行：AI がテストコードを作って流し、学習者が実行の証拠で判断する</li>
+<li class="">試験仕様書：観点を、前提、手順と入力、期待結果、確認箇所を持つ試験ケースに展開する</li>
+<li class="">テストコードと実行：AI がテストコードを作って流し、学習者が説明と実行のエビデンスで判断する</li>
 </ol>
-<p>どの段階でも、AI が成果物を出し、学習者が関門で確定させます。学習者はテストコードを読みませんが、何を確かめるか（観点と期待結果）と、本当に確かめられたか（実行の証拠）は、自分で判断します。どこかの段階でつまずいたときは、<a class="" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/viewpoints>試験観点を作る</a>から読み直してください。</p>
-<p>予約申請画面を終えたら、別の画面で同じ流れを試せます。始め方と、進めなくなりやすいところは、<a class="" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/workflow#other-screens>予約申請画面以外の画面で進める</a>にあります。</div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-tags-row"><div class=col><b>タグ:</b><ul class="tags_jXut padding--none margin-left--sm"><li class=tag_QGVx><a rel=tag class="tag_zVej tagRegular_sFm0" href=/ai_training_for_chuo_system/pr-preview/pr-133/tags/testing>testing</a><li class=tag_QGVx><a rel=tag class="tag_zVej tagRegular_sFm0" href=/ai_training_for_chuo_system/pr-preview/pr-133/tags/e-2-e>e2e</a><li class=tag_QGVx><a rel=tag class="tag_zVej tagRegular_sFm0" href=/ai_training_for_chuo_system/pr-preview/pr-133/tags/playwright>playwright</a><li class=tag_QGVx><a rel=tag class="tag_zVej tagRegular_sFm0" href=/ai_training_for_chuo_system/pr-preview/pr-133/tags/tutorial>tutorial</a></ul></div></div><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href=https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/docs-next/docs/develop/integration-test/execution.md target=_blank rel="noopener noreferrer" class=theme-edit-this-page><svg fill=currentColor height=20 width=20 viewBox="0 0 40 40" class=iconEdit_Z9Sw aria-hidden=true><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"/></g></svg>このページを編集</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label=ドキュメントページ><a class="pagination-nav__link pagination-nav__link--prev" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/code-generation><div class=pagination-nav__sublabel>前へ</div><div class=pagination-nav__label>Playwright コードを生成する</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href=#学習目標 class="table-of-contents__link toc-highlight">学習目標</a><li><a href=#ゴール class="table-of-contents__link toc-highlight">ゴール</a><li><a href=#roles class="table-of-contents__link toc-highlight">AI と学習者の役割分担</a><ul><li><a href=#ai-がやること class="table-of-contents__link toc-highlight">AI がやること</a><li><a href=#学習者がやること class="table-of-contents__link toc-highlight">学習者がやること</a></ul><li><a href=#evidence class="table-of-contents__link toc-highlight">手順1 実行の証拠を見る</a><li><a href=#step2 class="table-of-contents__link toc-highlight">手順2 フェイルしたケースの原因を判断する</a><ul><li><a href=#upstream class="table-of-contents__link toc-highlight">前の段階の誤りを見つけたとき</a></ul><li><a href=#step3 class="table-of-contents__link toc-highlight">手順3 差し戻すか確定するかを選ぶ</a><li><a href=#ここまでの流れ class="table-of-contents__link toc-highlight">ここまでの流れ</a></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class=footer__title>学習</div><ul class="footer__items clean-list"><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/learn/curriculum>カリキュラム</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/learn/getting-started>環境構築</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/learn/ai-tools-guide>AI ツール活用</a></ul></div><div class="theme-layout-footer-column col footer__col"><div class=footer__title>仕様</div><ul class="footer__items clean-list"><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/requirements>要件定義</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/api-spec>API 仕様</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/screen-spec>画面仕様</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/er-diagram>ER 図</a></ul></div><div class="theme-layout-footer-column col footer__col"><div class=footer__title>リファレンス</div><ul class="footer__items clean-list"><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/reference/architecture>アーキテクチャ</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/reference/adr>ADR 一覧</a></ul></div><div class="theme-layout-footer-column col footer__col"><div class=footer__title>コミュニティ</div><ul class="footer__items clean-list"><li class=footer__item><a href=https://github.com/CHS-Training-Org/ai_training_for_chuo_system target=_blank rel="noopener noreferrer" class=footer__link-item>GitHub Repository<svg width=13.5 height=13.5 aria-label="(opens in new tab)" class=iconExternalLink_nPIU><use href=#theme-svg-external-link /></svg></a><li class=footer__item><a href=https://github.com/CHS-Training-Org/ai_training_for_chuo_system/issues/new/choose target=_blank rel="noopener noreferrer" class=footer__link-item>Issue 起票<svg width=13.5 height=13.5 aria-label="(opens in new tab)" class=iconExternalLink_nPIU><use href=#theme-svg-external-link /></svg></a></ul></div></div><div class="footer__bottom text--center"><div class=footer__copyright>Copyright © 2026 中央システム. Built with Docusaurus.</div></div></div></footer></div></body>
+<p>どの段階でも、AI が成果物を出し、学習者が関門で確定させます。学習者はテストコードを読みませんが、何を確かめるか（観点と期待結果）と、本当に確かめられたか（実行のエビデンス）は、自分で判断します。どこかの段階でつまずいたときは、Claude Code に今の状況を伝えて相談してください。たとえば次のように頼みます。</p>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-text codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token plain">予約申請画面（/reservations/new）の結合テストで、RSV-NEW-TC-009 がフェイルした。原因が実装の不具合かテストの誤りか判断できないので、エビデンスと仕様書を見て、判断の手がかりを教えて</span><br/></div></code></pre></div></div></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-tags-row"><div class=col><b>タグ:</b><ul class="tags_jXut padding--none margin-left--sm"><li class=tag_QGVx><a rel=tag class="tag_zVej tagRegular_sFm0" href=/ai_training_for_chuo_system/pr-preview/pr-133/tags/testing>testing</a><li class=tag_QGVx><a rel=tag class="tag_zVej tagRegular_sFm0" href=/ai_training_for_chuo_system/pr-preview/pr-133/tags/e-2-e>e2e</a><li class=tag_QGVx><a rel=tag class="tag_zVej tagRegular_sFm0" href=/ai_training_for_chuo_system/pr-preview/pr-133/tags/playwright>playwright</a><li class=tag_QGVx><a rel=tag class="tag_zVej tagRegular_sFm0" href=/ai_training_for_chuo_system/pr-preview/pr-133/tags/tutorial>tutorial</a></ul></div></div><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href=https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/docs-next/docs/develop/integration-test/execution.md target=_blank rel="noopener noreferrer" class=theme-edit-this-page><svg fill=currentColor height=20 width=20 viewBox="0 0 40 40" class=iconEdit_Z9Sw aria-hidden=true><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"/></g></svg>このページを編集</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label=ドキュメントページ><a class="pagination-nav__link pagination-nav__link--prev" href=/ai_training_for_chuo_system/pr-preview/pr-133/develop/integration-test/cases><div class=pagination-nav__sublabel>前へ</div><div class=pagination-nav__label>試験仕様書を作る</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href=#学習目標 class="table-of-contents__link toc-highlight">学習目標</a><li><a href=#このステップの到達点 class="table-of-contents__link toc-highlight">このステップの到達点</a><li><a href=#roles class="table-of-contents__link toc-highlight">AI と学習者の役割分担</a><ul><li><a href=#ai-がやること class="table-of-contents__link toc-highlight">AI がやること</a><li><a href=#学習者がやること class="table-of-contents__link toc-highlight">学習者がやること</a><li><a href=#why-not-code class="table-of-contents__link toc-highlight">テストコードを読まない理由</a></ul><li><a href=#step1 class="table-of-contents__link toc-highlight">手順1 AI にテストを作って流させる</a><li><a href=#explanation class="table-of-contents__link toc-highlight">手順2 テストコードの説明を判断する</a><ul><li><a href=#explanation-names class="table-of-contents__link toc-highlight">2-1. 仕様と実装で名前が違うところを判断する</a><li><a href=#explanation-approx class="table-of-contents__link toc-highlight">2-2. ケースどおりに書けなかったところを判断する</a><li><a href=#explanation-unwritten class="table-of-contents__link toc-highlight">2-3. テストコードにできなかったケースを判断する</a></ul><li><a href=#evidence class="table-of-contents__link toc-highlight">手順3 実行結果を確認する</a><li><a href=#triage class="table-of-contents__link toc-highlight">手順4 フェイルしたケースの原因を判断する</a><ul><li><a href=#upstream class="table-of-contents__link toc-highlight">前の段階の誤りを見つけたとき</a></ul><li><a href=#gate class="table-of-contents__link toc-highlight">手順5 差し戻すか確定するかを選ぶ</a><li><a href=#ここまでの流れ class="table-of-contents__link toc-highlight">ここまでの流れ</a></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class=footer__title>学習</div><ul class="footer__items clean-list"><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/learn/curriculum>カリキュラム</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/learn/getting-started>環境構築</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/learn/ai-tools-guide>AI ツール活用</a></ul></div><div class="theme-layout-footer-column col footer__col"><div class=footer__title>仕様</div><ul class="footer__items clean-list"><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/requirements>要件定義</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/api-spec>API 仕様</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/screen-spec>画面仕様</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/spec/er-diagram>ER 図</a></ul></div><div class="theme-layout-footer-column col footer__col"><div class=footer__title>リファレンス</div><ul class="footer__items clean-list"><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/reference/architecture>アーキテクチャ</a><li class=footer__item><a class=footer__link-item href=/ai_training_for_chuo_system/pr-preview/pr-133/reference/adr>ADR 一覧</a></ul></div><div class="theme-layout-footer-column col footer__col"><div class=footer__title>コミュニティ</div><ul class="footer__items clean-list"><li class=footer__item><a href=https://github.com/CHS-Training-Org/ai_training_for_chuo_system target=_blank rel="noopener noreferrer" class=footer__link-item>GitHub Repository<svg width=13.5 height=13.5 aria-label="(opens in new tab)" class=iconExternalLink_nPIU><use href=#theme-svg-external-link /></svg></a><li class=footer__item><a href=https://github.com/CHS-Training-Org/ai_training_for_chuo_system/issues/new/choose target=_blank rel="noopener noreferrer" class=footer__link-item>Issue 起票<svg width=13.5 height=13.5 aria-label="(opens in new tab)" class=iconExternalLink_nPIU><use href=#theme-svg-external-link /></svg></a></ul></div></div><div class="footer__bottom text--center"><div class=footer__copyright>Copyright © 2026 中央システム. Built with Docusaurus.</div></div></div></footer></div></body>
