@@ -18,7 +18,7 @@ references:
   - ../learn/curriculum.md
   - ../spec/enhancements/beginner/e2e-test-coverage.md
   - ../reference/claude-code/agent-config.md
-timestamp: 2026-10-04
+timestamp: 2026-10-08
 ---
 
 # Playwright 導入の進行状況
@@ -35,7 +35,7 @@ Playwright による結合テストを、予約申請画面（`/reservations/new
 
 ## 決まったことと決まっていないこと {#status}
 
-2026-10-04 時点の現況である。ここより下の節（工程の変化、スケジュール、未決事項、導入計画）は検討の経緯として残しており、スケジュールは現在のものではない。現況と経緯が食い違う場合は、この節を正とする。
+2026-10-07 時点の現況である。ここより下の節（工程の変化、スケジュール、未決事項、導入計画）は検討の経緯として残しており、スケジュールは現在のものではない。現況と経緯が食い違う場合は、この節を正とする。
 
 学習者が従う全体の流れは[結合テストのワークフロー](../develop/integration-test/workflow.md)にまとめた。
 
@@ -52,30 +52,35 @@ Playwright による結合テストを、予約申請画面（`/reservations/new
 | 2026-09-23 | Playwright 公式のテストエージェント（planner、generator、healer）は採用しない。planner は動いている画面から期待結果を作り、healer は期待値を実装に合わせて書き換えうるため | 本節 |
 | 2026-09-23 | 試験観点は、全画面で共通に使えるスキル（`generate-test-perspectives`、新規作成のみ）で出力する。予約申請画面専用の旧スキルは削除した | [未決事項 4](#plan-verify)、[Claude Code 設定台帳](../reference/claude-code/agent-config.md) |
 | 2026-09-23 | 成果物は作業ブランチにコミットしてよいが、main には決してマージしない | [ADR-032 の追記](../reference/adr/ADR-032-integration-test-tutorial-adoption.md#addendum-2026-09-23) |
-| 2026-09-23 | 仕様確認事項の回答で保留した観点は、学習者が観点一覧へ手で移す。スキルを呼び直して反映はしない。2026-09-30 に変更した：学習者がダッシュボードで回答を選び、案内スキルが観点一覧へ移す | [試験観点を作る](../develop/integration-test/viewpoints.md#step4-1) |
-| 2026-09-23 | 仕様理解メモは作らない。仕様書そのものが根拠のため | [試験観点を作る](../develop/integration-test/viewpoints.md#step1) |
+| 2026-09-23 | 仕様確認事項の回答で保留した観点は、学習者が観点一覧へ手で移す。スキルを呼び直して反映はしない。2026-09-30 に変更した：学習者がダッシュボードで回答を選び、案内スキルが観点一覧へ移す | [試験観点を作る](../develop/integration-test/viewpoints.md#step3-1) |
+| 2026-09-23 | 仕様理解メモは作らない。仕様書そのものが根拠のため | [試験観点を作る](../develop/integration-test/viewpoints.md#step2) |
 | 2026-09-23 | 観点、試験ケース（計画）、テストコード、実行結果の4つを、それぞれ人がレビューする。2026-10-04 に変更した：テストコードと実行結果を1つの段階にまとめ、3つの段階と関門にする（下の 2026-10-04 の行） | [結合テストのワークフロー](../develop/integration-test/workflow.md) |
 | 2026-09-26 | スキルの根拠は仕様書だけとする。実装コード、図のファイル、既存の画面の課題シートは読まない | スキル本体 |
 | 2026-09-26 | スキルは Opus で実行する（学習者のセッションは Sonnet のまま）。2026-09-27 に確かめたところ、`model: opus` が効くのは利用者がスラッシュコマンドで直接呼んだスキルだけで、別のスキルの中から呼ばれた場合やスラッシュなしの依頼では切り替わらなかった。そのため入口の `/e2e-workflow` にも `model: opus` を付け、スラッシュ付きで呼ぶよう案内する | [Claude Code 設定台帳](../reference/claude-code/agent-config.md) |
 | 2026-09-26 | 観点一覧に自動化の可否の列は設けない | スキル本体 |
-| 2026-09-27 | 仕様どうしの食い違いは、AI が迷ったら挙げ、本当に食い違っているかは学習者が確認する | [試験観点を作る](../develop/integration-test/viewpoints.md#step3-2) |
+| 2026-09-27 | 仕様どうしの食い違いは、AI が迷ったら挙げ、本当に食い違っているかは学習者が確認する | [試験観点を作る](../develop/integration-test/viewpoints.md#step2-2) |
 | 2026-09-27 | 答え合わせ用の標準観点セットは使わない（削除した） | [未決事項 B](#open-quality) |
 | 2026-09-27 | ワークフローの図は、学習者、AI、成果物の3つのレーンを持つスイムレーン（シーケンス図）で表し、拡大と全画面表示ができるようにする | [結合テストのワークフロー](../develop/integration-test/workflow.md#overview) |
 | 2026-09-27 | ワークフローは、AI-DLC を簡略化した仕組み（画面ごとの状態ファイル、案内スキル `e2e-workflow`、ローカルのダッシュボード）で進める。確定と差し戻しはダッシュボードの操作だけで書く。観点一覧の保存先は `Docs/test/<画面>/perspectives.md` とする | [ADR-034](../reference/adr/ADR-034-e2e-workflow-mechanism.md) |
 | 2026-09-27 | 試験観点を差し戻したら、AI が差し戻しの理由をもとに観点一覧を直す。一から作り直さず、既存の ID は振り直さない | [ADR-034](../reference/adr/ADR-034-e2e-workflow-mechanism.md) |
-| 2026-09-30 | 学習者は、すべての観点の根拠を仕様書で確かめる。抜き取りにはしない。誤りがどの行に出るかが実行のたびに変わるため | [試験観点を作る](../develop/integration-test/viewpoints.md#step3-1) |
+| 2026-09-30 | 学習者は、すべての観点の根拠を仕様書で確かめる。抜き取りにはしない。誤りがどの行に出るかが実行のたびに変わるため | [試験観点を作る](../develop/integration-test/viewpoints.md#step2-1) |
 | 2026-09-30 | 観点一覧に優先度の列を設けない。載せた観点はすべてテストするため | スキル本体 |
 | 2026-09-30 | 網羅の点検表（付録）は使わない（削除した） | [試験観点を作る](../develop/integration-test/viewpoints.md) |
 | 2026-09-30 | 観点一覧の6章「レビュー記録」をやめる。指摘は差し戻しの理由に書き、問題のない行に印を付ける記録は作らない | [ADR-034](../reference/adr/ADR-034-e2e-workflow-mechanism.md) |
-| 2026-09-30 | 仕様確認事項のうち回答が要るのは仕様の食い違いだけにする。仕様に書かれていない点は一覧に並べるだけで、観点にもせずテストもしない。仕様書を変えないチュートリアルでは、仮の回答に正解がないため。学習者が必要と考えた点は、期待結果を添えて差し戻す | [試験観点を作る](../develop/integration-test/viewpoints.md#step3-4) |
+| 2026-09-30 | 仕様確認事項のうち回答が要るのは仕様の食い違いだけにする。仕様に書かれていない点は一覧に並べるだけで、観点にもせずテストもしない。仕様書を変えないチュートリアルでは、仮の回答に正解がないため。学習者が必要と考えた点は、期待結果を添えて差し戻す | [試験観点を作る](../develop/integration-test/viewpoints.md#step2-4) |
 | 2026-09-30 | 仕様の食い違いへの回答はダッシュボードで選ぶ。記録の日時は日本時間で表示する | [ADR-034](../reference/adr/ADR-034-e2e-workflow-mechanism.md) |
 | 2026-10-04 | 試験ケースの段階の進め方。新規作成のスキル（`generate-test-cases`）で `Docs/test/<画面>/cases.md` に展開し、学習者がすべてのケースを観点と突き合わせる。日時は割り当て枠からの相対、テストデータは条件だけで書く。展開のために選んだ値と試験ケースにできなかった観点は書き出して学習者が判断し、観点との対応に漏れがあれば確定できない。差し戻したら AI が直す | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-02)、[試験ケースに展開する](../develop/integration-test/cases.md) |
-| 2026-10-04 | テストコードの段階の進め方。新規作成のスキル（`generate-test-code`）が `frontend/tests/e2e/workflow/<画面>.spec.ts` と説明 `Docs/test/<画面>/code.md` を出力する。実装は要素の指定とデータの用意にだけ使い、期待結果は試験ケースからだけ取る。生成したテストは普段の `pnpm test:e2e` に含めない。ケースとの対応に漏れや重複があれば確定できない。前提の予約の利用目的は、テスト自身の利用目的と前方一致しないよう `existingPurposeFor` で作る。前提データを API で用意する補助関数（`helpers/setup-data.ts`）は運営者の機構として main に入れる | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-03)、[Playwright コードを生成する](../develop/integration-test/code-generation.md) |
-| 2026-10-04 | テストコードの段階と実行の段階を、1つの段階（テストコードと実行）にまとめ、段階と関門を3つにする。AI がテストコードを作ったあと、環境を整えて流し（`env.mjs`、`run.mjs`）、フェイルしたケースに見立て（`triage.md`）を書いてから学習者に渡す。テストの誤りに見えても AI は直さず、学習者が判断して差し戻したときに直して流し直す。学習者の到達目標と担い手は、ADR-032 の追記で改めた | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-03-run)、[ADR-032 の追記](../reference/adr/ADR-032-integration-test-tutorial-adoption.md#addendum-2026-10-04)、[テストを実行する](../develop/integration-test/execution.md) |
-| 2026-10-04 | 学習者はテストコードを読まない。テストの確かめが期待結果に足りているかは、テストコードから機械的に抜き出した確かめ（AI が添えた説明と、照合の種類）で、期待結果が今回成り立っていたかは、実行の証拠（見る場所で撮った画面と、テストが実際に使った値）で判断する。試験ケースの「確かめ方」の列は「見る場所」に改め、画面の名前と部分の名前だけを書く。操作の記録（トレース）と動画は、学習者が見て判断できないので残さない。証拠は `scripts/e2e-workflow/run.mjs` が Playwright の実行結果から機械的に集め、テストコードが実行のあとで変わったら確定できない。利用目的に実行ごとの ID を入れる | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-04)、[テストを実行する](../develop/integration-test/execution.md#evidence) |
+| 2026-10-04 | テストコードの段階の進め方。新規作成のスキル（`generate-test-code`）が `frontend/tests/e2e/workflow/<画面>.spec.ts` と説明 `Docs/test/<画面>/code.md` を出力する。実装は要素の指定とデータの用意にだけ使い、期待結果は試験ケースからだけ取る。生成したテストは普段の `pnpm test:e2e` に含めない。ケースとの対応に漏れや重複があれば確定できない。前提の予約の利用目的は、テスト自身の利用目的と前方一致しないよう `existingPurposeFor` で作る。前提データを API で用意する補助関数（`helpers/setup-data.ts`）は運営者の機構として main に入れる | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-03)、[テストの結果を確かめる](../develop/integration-test/execution.md#explanation) |
+| 2026-10-04 | テストコードの段階と実行の段階を、1つの段階（テストコードと実行）にまとめ、段階と関門を3つにする。AI がテストコードを作ったあと、環境を整えて流し（`env.mjs`、`run.mjs`）、フェイルしたケースに見立て（`triage.md`）を書いてから学習者に渡す。テストの誤りに見えても AI は直さず、学習者が判断して差し戻したときに直して流し直す。学習者の到達目標と担い手は、ADR-032 の追記で改めた | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-03-run)、[ADR-032 の追記](../reference/adr/ADR-032-integration-test-tutorial-adoption.md#addendum-2026-10-04)、[テストの結果を確かめる](../develop/integration-test/execution.md) |
+| 2026-10-04 | 学習者はテストコードを読まない。テストの確かめが期待結果に足りているかは、テストコードから機械的に抜き出した確かめ（AI が添えた説明と、照合の種類）で、期待結果が今回成り立っていたかは、実行の証拠（確認箇所で撮った画面と、テストが実際に使った値）で判断する。試験ケースの「確かめ方」の列は「確認箇所」に改め、画面の名前と部分の名前だけを書く。操作の記録（トレース）と動画は、学習者が見て判断できないので残さない。証拠は `scripts/e2e-workflow/run.mjs` が Playwright の実行結果から機械的に集め、テストコードが実行のあとで変わったら確定できない。利用目的に実行ごとの ID を入れる | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-04)、[テストの結果を確かめる](../develop/integration-test/execution.md#evidence) |
 | 2026-10-04 | 結合テストのワークフローで生成したテストは、開発用とは別の専用のデータベース（`bookflow_e2e`）で動かし、テストごとに初期データだけの状態に戻す。普段の `pnpm test:e2e` は、これまでどおり時間帯の割り当てと後片付けで動かす | [Playwright の解説](../develop/playwright-guide.md#run)、[工程1の決定3](#plan-verify) |
-| 2026-10-04 | 関門3 で、学習者はフェイルしたケースごとに原因（実装の不具合、仕様の仮回答による、テストの誤り、前の段階の誤り）を選び、根拠を書く。すべてそろい、「テストの誤り」と「前の段階の誤り」がないときだけ確定できる。「環境が整っていない」ケースが残っている間は、学習者に渡せず確定もできない | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-04)、[テストを実行する](../develop/integration-test/execution.md#step2) |
+| 2026-10-04 | 関門3 で、学習者はフェイルしたケースごとに原因（実装の不具合、仕様の仮回答による、テストの誤り、前の段階の誤り）を選び、根拠を書く。すべてそろい、「テストの誤り」と「前の段階の誤り」がないときだけ確定できる。「環境が整っていない」ケースが残っている間は、学習者に渡せず確定もできない | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-04)、[テストの結果を確かめる](../develop/integration-test/execution.md#triage) |
 | 2026-10-04 | 確定した段階を開き直す操作は、運営者だけが使うコマンド（`node scripts/e2e-workflow/state.mjs reopen <画面> <段階> <理由>`）にする。学習者は、後の関門で前の段階の誤りに気づいたら差し戻して運営者に相談し、運営者が認めたらこのコマンドで戻す。後の段階は未着手に戻り、成果物は `.tmp/e2e-workflow/reopened/` に移る | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-04)、[前の段階の誤りを見つけたとき](../develop/integration-test/execution.md#upstream) |
+| 2026-10-07 | 仕様確認事項の模範回答は運営者が用意しない。チュートリアルでは仕様書を変えないため仮の回答に正解がなく、学習者が仮の回答を書く（本節の表で未決事項として残っていたが、2026-09-30 の決定と同じ内容のため統合した） | [試験観点を作る](../develop/integration-test/viewpoints.md#step3-1) |
+| 2026-10-07 | 確定した段階を開き直すのは、学習者の判断にする。学習者が前の段階の誤りを指摘して差し戻すと、案内スキルが戻すかを尋ね、学習者が戻すと答えたら `state.mjs reopen` を実行する。2026-10-04 の「運営者だけが使う」を改めた | [ADR-034 の追記](../reference/adr/ADR-034-e2e-workflow-mechanism.md#addendum-2026-10-07)、[前の段階の誤りを見つけたとき](../develop/integration-test/execution.md#upstream) |
+| 2026-10-08 | 試験観点の段階の手順1「壊れたら困ることを書く」（AI の出力を見る前に3つ書く）をやめ、レビューの中の「抜けがないかを確かめる」に置き換える。手元のメモに3つ書くだけでは誰も確かめず、現場のテスト設計の進め方とも合わないため。AI の出力をうのみにしないことは、すべての観点の根拠を仕様書で確かめる手順で担う | [抜けがないかを確かめる](../develop/integration-test/viewpoints.md#step2-4) |
+| 2026-10-08 | 2つ目の段階の成果物（`cases.md`）の呼び方を「試験ケース一覧」から「試験仕様書」に改め、段階の名前も「試験仕様書」にする。1件ずつは「試験ケース」のまま。前提、手順、期待結果を持つ1件をテストケース、それを集めた文書をテスト仕様書と呼ぶ一般的な使い分けに合わせるため | [試験仕様書を作る](../develop/integration-test/cases.md) |
+| 2026-10-08 | 教材の「Playwright コードを生成する」と「テストを実行する」を1ページ（テストの結果を確かめる）にまとめる。学習者はテストコードを読まず、テストコードは結果を得るための中間生成物として扱う。品質は、投入した試験観点と試験ケース、最終生成物であるテストの結果で担保する | [テストコードを読まない理由](../develop/integration-test/execution.md#why-not-code) |
 
 ### 提案中で確認待ちのこと {#status-proposed}
 
@@ -83,9 +88,9 @@ Playwright による結合テストを、予約申請画面（`/reservations/new
 
 | 案 | 書いた場所 |
 |---|---|
-| AI と学習者の役割分担と、学習者のレビュー手順（すべての観点の根拠の確認、食い違いの確認、除外への賛否、壊れたら困ることとの照合） | [AI と学習者の役割分担](../develop/integration-test/viewpoints.md#roles) |
+| AI と学習者の役割分担と、学習者のレビュー手順（すべての観点の根拠の確認、食い違いの確認、除外への賛否、抜けの確認） | [AI と学習者の役割分担](../develop/integration-test/viewpoints.md#roles) |
 | 段階ごとに関門を置き、関門を通すのは学習者だけとする。AI は自分の出力を確定にしない（段階と関門は 2026-10-04 に3つにまとめた） | [関門の決まり](../develop/integration-test/workflow.md#gates) |
-| 試験ケースの一覧が、従来のテスト仕様書に当たるという整理 | [段階ごとの役割分担](../develop/integration-test/workflow.md#stages) |
+| 2つ目の段階の成果物を「試験仕様書」と呼び、1件ずつを「試験ケース」と呼ぶ整理 | [段階ごとの役割分担](../develop/integration-test/workflow.md#stages) |
 | 結合テストの成果物（`Docs/test/`、`tests/e2e/workflow/`）を main に入れない決まりは、すべての結合テストのスキルに書く。CI では止めない | [結合テストのワークフロー](../develop/integration-test/workflow.md) |
 
 ### 決まっていないこと {#status-open}
@@ -94,11 +99,10 @@ Playwright による結合テストを、予約申請画面（`/reservations/new
 |---|---|
 | 観点の行ごとに指摘を付ける機能を作るか。観点一覧を Markdown から構造化データ（JSON など）に変えるか | いまは指摘を差し戻しの理由に文章で書く。この形で先行実施を行い、負担を見てから決める |
 | 学習者が実装の不具合だと判断したケースを、Issue にする手順 | いまは関門3 で選んだ原因と根拠が、確定の記録に残るだけである |
-| 仕様確認事項の模範回答を運営者が用意するか | チュートリアルでは仕様書を変えないため、学習者は仮の回答を書く |
 | スキルの測り直し | 観点一覧の形式が決まってから行う。完了の基準を先に決め、各画面を2回ずつ実行する |
 | スキルの description の最適化 | スキルの中身が固まってから行う |
 | 既存の選択課題「既存機能の E2E テスト追加」の扱い | [未決事項 8](#open-quality) のまま |
-| 予約申請画面以外の画面への対応 | 2026-10-04 に、教材に始め方と進めなくなりやすいところだけを書いた（[予約申請画面以外の画面で進める](../develop/integration-test/workflow.md#other-screens)）。前提データの補助関数（ユーザーやリソースの作成）、試験ケースのスキルの画面ごとの前提、別の画面での評価は、先行実施のあとで判断する |
+| 予約申請画面以外の画面への対応 | 2026-10-04 に、教材に始め方と進めなくなりやすいところだけを書いた（[題材の画面を選ぶ](../develop/integration-test/workflow.md#other-screens)）。前提データの補助関数（ユーザーやリソースの作成）、試験ケースのスキルの画面ごとの前提、別の画面での評価は、先行実施のあとで判断する |
 | 完了条件への昇格 | 先行実施の結果を見て再検討する |
 | 先行実施の日程と所要時間の実測 | 日程は未定。レビュー手順の所要時間もここで確かめる。すべての観点の根拠を確かめるため、予約申請画面では1時間を超える可能性がある |
 | Playwright MCP の評価 | [別軸](#mcp)として後日評価する |
@@ -126,7 +130,7 @@ flowchart LR
 ```mermaid
 flowchart TB
   A["対象画面の仕様を読む"] --> B["試験観点を作る"]
-  B --> C["試験ケースに展開する"]
+  B --> C["試験仕様書を作る"]
   C --> D["テストコードを生成する"]
   D --> E["結合テストを実行する"]
   E --> F["失敗を切り分けて直す"]

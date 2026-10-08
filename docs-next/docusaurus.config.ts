@@ -72,6 +72,11 @@ const config: Config = {
     // theme-mermaid を themes に入れるだけでは ```mermaid コードブロックは図にならず、
     // コードのまま表示される。図として描画するにはこのフラグが要る。
     mermaid: true,
+    // 脚注の見出しと戻りリンクの読み上げを日本語にする（既定は英語の Footnotes）。
+    remarkRehypeOptions: {
+      footnoteLabel: '脚注',
+      footnoteBackLabel: '本文に戻る',
+    },
   },
 
   themes: [
