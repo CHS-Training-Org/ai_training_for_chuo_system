@@ -4,6 +4,7 @@ import {
   isRangeOccupied,
   getDaysWithReservation,
   hasReservationOnDay,
+  resolveSlotSelection,
 } from "@/lib/calendar/availability-to-events";
 import type { AvailabilitySlot } from "@/lib/types/api";
 
@@ -79,5 +80,48 @@ describe("getDaysWithReservation / hasReservationOnDay", () => {
   it("占有枠が存在しない場合はどの日も「予約あり」にならない", () => {
     const days = getDaysWithReservation([]);
     expect(hasReservationOnDay(new Date(2026, 9, 1), days)).toBe(false);
+  });
+});
+
+describe("resolveSlotSelection", () => {
+  const occupiedSlots = [slot("r1", "2026-10-01T09:00:00", "2026-10-01T10:00:00")];
+
+  it("月表示：画面遷移せず、クリックした日を anchorDate として週表示に切り替える（BR-05）", () => {
+    const slotInfo = { start: new Date(2026, 9, 7), end: new Date(2026, 9, 8) };
+    const result = resolveSlotSelection("month", slotInfo, occupiedSlots, "res-1");
+    expect(result).toEqual({ type: "switch-to-week", anchorDate: slotInfo.start });
+  });
+
+  it("週表示：占有範囲をクリックした場合は何もしない（BR-01・二重チェック）", () => {
+    const slotInfo = {
+      start: new Date("2026-10-01T09:00:00"),
+      end: new Date("2026-10-01T09:30:00"),
+    };
+    const result = resolveSlotSelection("week", slotInfo, occupiedSlots, "res-1");
+    expect(result).toEqual({ type: "none" });
+  });
+
+  it("週表示：空き範囲をクリックした場合は予約申請フォームへの遷移先 URL を組み立てる", () => {
+    const slotInfo = {
+      start: new Date("2026-10-01T13:00:00"),
+      end: new Date("2026-10-01T13:30:00"),
+    };
+    const result = resolveSlotSelection("week", slotInfo, occupiedSlots, "res-1");
+    expect(result).toEqual({
+      type: "navigate",
+      href: "/reservations/new?resourceId=res-1&startAt=2026-10-01T13:00",
+    });
+  });
+
+  it("週表示：占有枠が存在しない場合は常に navigate を返す", () => {
+    const slotInfo = {
+      start: new Date("2026-10-02T09:00:00"),
+      end: new Date("2026-10-02T09:30:00"),
+    };
+    const result = resolveSlotSelection("week", slotInfo, [], "res-2");
+    expect(result).toEqual({
+      type: "navigate",
+      href: "/reservations/new?resourceId=res-2&startAt=2026-10-02T09:00",
+    });
   });
 });

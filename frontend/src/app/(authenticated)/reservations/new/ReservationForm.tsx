@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CreateReservationSchema } from "@/lib/schemas/reservation";
 import { createReservationAction } from "@/server/actions/reservations";
+import { buildDefaultFormValues } from "@/lib/reservations/form-defaults";
 import type { ResourceResponse } from "@/lib/types/api";
 import { ApiClientError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -52,13 +53,7 @@ export function ReservationForm({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      resourceId: defaultResourceId ?? "",
-      startAt: defaultStartAt ?? "",
-      endAt: "",
-      purpose: "",
-      attendeesCount: null,
-    },
+    defaultValues: buildDefaultFormValues(defaultResourceId, defaultStartAt),
   });
 
   const handleSubmit = (values: FormValues) => {

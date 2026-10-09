@@ -6,12 +6,19 @@
  */
 import { addDays, format, startOfDay } from "date-fns";
 import type { AvailabilitySlot } from "@/lib/types/api";
+import type { CalendarViewMode } from "@/lib/calendar/period";
 
 export interface CalendarEvent {
   start: Date;
   end: Date;
   reservationId: string;
 }
+
+/** onSelectSlot の選択結果（BR-01・BR-05 に基づく分岐） */
+export type SlotSelectionResult =
+  | { type: "switch-to-week"; anchorDate: Date }
+  | { type: "navigate"; href: string }
+  | { type: "none" };
 
 const DAY_KEY_FORMAT = "yyyy-MM-dd";
 
@@ -56,4 +63,30 @@ export function getDaysWithReservation(slots: AvailabilitySlot[]): Set<string> {
 /** 指定日が `daysWithReservation`（getDaysWithReservation の結果）に含まれるか判定する */
 export function hasReservationOnDay(date: Date, daysWithReservation: Set<string>): boolean {
   return daysWithReservation.has(format(date, DAY_KEY_FORMAT));
+}
+
+/**
+ * onSelectSlot（枠クリック・ドラッグ選択）の結果を判定する。
+ *
+ * - 月表示：画面遷移せず、その日を含む週の週表示に切り替える（BR-05）
+ * - 週表示・占有範囲：クリック不可のため何もしない（BR-01・念のための二重チェック）
+ * - 週表示・空き範囲：予約申請フォームへの遷移先 URL を組み立てる
+ */
+export function resolveSlotSelection(
+  viewMode: CalendarViewMode,
+  slotInfo: { start: Date; end: Date },
+  slots: AvailabilitySlot[],
+  resourceId: string,
+): SlotSelectionResult {
+  if (viewMode === "month") {
+    return { type: "switch-to-week", anchorDate: slotInfo.start };
+  }
+  if (isRangeOccupied(slotInfo.start, slotInfo.end, slots)) {
+    return { type: "none" };
+  }
+  const startAt = format(slotInfo.start, "yyyy-MM-dd'T'HH:mm");
+  return {
+    type: "navigate",
+    href: `/reservations/new?resourceId=${resourceId}&startAt=${startAt}`,
+  };
 }

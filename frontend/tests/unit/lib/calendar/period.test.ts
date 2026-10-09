@@ -5,6 +5,7 @@ import {
   getDisplayRange,
   toApiDateTimeString,
   navigatePeriod,
+  resolveAnchorDate,
 } from "@/lib/calendar/period";
 
 describe("getWeekRange", () => {
@@ -83,5 +84,36 @@ describe("navigatePeriod", () => {
     const result = navigatePeriod("month", anchor, "next");
     expect(result.getMonth()).toBe(10);
     expect(result.getDate()).toBe(15);
+  });
+});
+
+describe("resolveAnchorDate", () => {
+  const anchor = new Date(2026, 9, 15);
+  const now = new Date(2026, 10, 1);
+
+  it("TODAY のとき now を返す（anchorDate は無視する）", () => {
+    expect(resolveAnchorDate("week", anchor, "TODAY", now)).toEqual(now);
+  });
+
+  it("PREV のとき navigatePeriod(viewMode, anchorDate, 'prev') と同じ結果を返す", () => {
+    expect(resolveAnchorDate("week", anchor, "PREV", now)).toEqual(
+      navigatePeriod("week", anchor, "prev"),
+    );
+    expect(resolveAnchorDate("month", anchor, "PREV", now)).toEqual(
+      navigatePeriod("month", anchor, "prev"),
+    );
+  });
+
+  it("NEXT のとき navigatePeriod(viewMode, anchorDate, 'next') と同じ結果を返す", () => {
+    expect(resolveAnchorDate("week", anchor, "NEXT", now)).toEqual(
+      navigatePeriod("week", anchor, "next"),
+    );
+    expect(resolveAnchorDate("month", anchor, "NEXT", now)).toEqual(
+      navigatePeriod("month", anchor, "next"),
+    );
+  });
+
+  it("PREV/NEXT/TODAY 以外（例：DATE）のときは anchorDate を変更しない", () => {
+    expect(resolveAnchorDate("week", anchor, "DATE", now)).toEqual(anchor);
   });
 });

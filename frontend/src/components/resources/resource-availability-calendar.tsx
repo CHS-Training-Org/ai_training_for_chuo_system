@@ -10,13 +10,13 @@ import type { AvailabilitySlot } from "@/lib/types/api";
 import {
   type CalendarViewMode,
   getDisplayRange,
-  navigatePeriod,
+  resolveAnchorDate,
   toApiDateTimeString,
 } from "@/lib/calendar/period";
 import {
   getDaysWithReservation,
   hasReservationOnDay,
-  isRangeOccupied,
+  resolveSlotSelection,
   slotsToWeekEvents,
 } from "@/lib/calendar/availability-to-events";
 
@@ -85,13 +85,7 @@ export function ResourceAvailabilityCalendar({ resourceId }: { resourceId: strin
 
   const handleNavigate = useCallback(
     (_newDate: Date, _view: View, action: string) => {
-      if (action === "TODAY") {
-        setAnchorDate(new Date());
-      } else if (action === "PREV") {
-        setAnchorDate((prev) => navigatePeriod(viewMode, prev, "prev"));
-      } else if (action === "NEXT") {
-        setAnchorDate((prev) => navigatePeriod(viewMode, prev, "next"));
-      }
+      setAnchorDate((prev) => resolveAnchorDate(viewMode, prev, action, new Date()));
     },
     [viewMode],
   );
@@ -104,18 +98,13 @@ export function ResourceAvailabilityCalendar({ resourceId }: { resourceId: strin
 
   const handleSelectSlot = useCallback(
     (slotInfo: SlotInfo) => {
-      if (viewMode === "month") {
-        // 月表示の日セルクリック：画面遷移せず、その日を含む週の週表示に切り替える（BR-05）
-        setAnchorDate(slotInfo.start);
+      const result = resolveSlotSelection(viewMode, slotInfo, slots, resourceId);
+      if (result.type === "switch-to-week") {
+        setAnchorDate(result.anchorDate);
         setViewMode("week");
-        return;
+      } else if (result.type === "navigate") {
+        router.push(result.href);
       }
-      // 週表示：予約済みの枠はクリック不可（BR-01・念のための二重チェック）
-      if (isRangeOccupied(slotInfo.start, slotInfo.end, slots)) {
-        return;
-      }
-      const startAt = format(slotInfo.start, "yyyy-MM-dd'T'HH:mm");
-      router.push(`/reservations/new?resourceId=${resourceId}&startAt=${startAt}`);
     },
     [viewMode, slots, resourceId, router],
   );

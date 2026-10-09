@@ -64,3 +64,19 @@ export function navigatePeriod(
   }
   return direction === "prev" ? subMonths(anchorDate, 1) : addMonths(anchorDate, 1);
 }
+
+/**
+ * カレンダーの onNavigate（react-big-calendar のツールバー操作）を次の anchorDate に変換する。
+ * PREV/NEXT は navigatePeriod に委譲し、TODAY は `now` を返す。その他（DATE 等）は anchorDate を維持する。
+ */
+export function resolveAnchorDate(
+  viewMode: CalendarViewMode,
+  anchorDate: Date,
+  action: string,
+  now: Date,
+): Date {
+  if (action === "TODAY") return now;
+  if (action === "PREV") return navigatePeriod(viewMode, anchorDate, "prev");
+  if (action === "NEXT") return navigatePeriod(viewMode, anchorDate, "next");
+  return anchorDate;
+}
