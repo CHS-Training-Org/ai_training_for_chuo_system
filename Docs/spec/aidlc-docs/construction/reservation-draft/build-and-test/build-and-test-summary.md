@@ -9,10 +9,10 @@
 
 | 対象 | コマンド | 結果 |
 |---|---|---|
-| backend テスト | `./gradlew test` | **181件すべて通過** |
+| backend テスト | `./gradlew test` | **192件すべて通過** |
 | backend フォーマット | `./gradlew spotlessCheck` | 通過（`spotlessApply` 適用後） |
 | backend 静的解析 | `./gradlew checkstyleMain` | 通過（warning 2件は既存・後述） |
-| frontend テスト | `pnpm test` | **108件すべて通過**（12ファイル） |
+| frontend テスト | `pnpm test` | **128件すべて通過**（15ファイル） |
 | frontend Lint | `pnpm lint` | 通過 |
 | frontend フォーマット | `pnpm format:check` | 通過 |
 | frontend ビルド | `pnpm build` | 成功 |
@@ -75,6 +75,46 @@ Playwright の Chromium でアプリケーションを実際に操作し、自�
 | ステータス遷移テストに `DRAFT` から `PENDING` のケースを追加 | 充足 | `ReservationServiceTest.Draft` 15件 |
 
 3項目めの注記は[要件定義 §7](../../../inception/requirements/reservation-draft/requirements.md)の意図的な逸脱にあたる。
+
+---
+
+## 3-2. AI レビュー（ラウンド1）への対応（2026-10-09）
+
+PR #140 の AI レビューで観点1・観点2がいずれも NG となり、学習者の判断で次の対応を行った。
+
+### 観点1 要求整合性
+
+| 指摘 | 対応 |
+|---|---|
+| 承認不要リソースの正式申請が `APPROVED` になり受入条件と異なる | **実装をシートに合わせた**。遷移先を `requires_approval` の値によらず `PENDING` に変更。研修の目的がシートどおりに実装することにあるため、シートの改訂は選ばなかった。残る制約（承認ステップのない `PENDING` は進まない）は仕様・設計書・実装コメントに明記 |
+| RSV-02 の「削除できる」が未実装 | **スコープに含めて実装した**。`DELETE /api/reservations/{id}` を新設（`DRAFT` のみ・申請者本人のみ） |
+
+### 観点2 実装と非機能部分の整合性
+
+クライアントコンポーネントの分岐が未検証という指摘に対し、`@testing-library/react` と jsdom でテストを追加した。
+
+| ファイル | 追加したテスト |
+|---|---|
+| `tests/unit/components/SubmitDraftButton.test.tsx` | 確認ダイアログを経ずに送信しない／`status="PENDING"` の受け渡し／成功時の再描画／409 時のメッセージと編集画面への導線（4件） |
+| `tests/unit/components/ReservationForm.test.tsx` | 下書き保存が `draft=true` と詳細画面への遷移／通常申請が `draft=false` と一覧への遷移／未入力時に送信しない（3件） |
+| `tests/unit/components/DeleteDraftButton.test.tsx` | 確認ダイアログを経ずに削除しない／「戻る」で削除しない／対象 ID の受け渡しと一覧への遷移（3件） |
+
+レビューの判定基準は「実装を取り消すとテストが失敗すること」なので、実際に次の2箇所を壊して検証した。
+
+- `SubmitDraftButton` の `updateReservationAction(..., "PENDING")` から第3引数を削除 → 該当テストが失敗
+- `ReservationForm` の下書き保存ボタンの `submitForm(values, true)` を `false` に変更 → 該当テストが失敗
+
+409 以外のエラーを再スローする分岐はテストしていない。
+`startTransition` の中から投げた例外は React のエラーバウンダリに渡らず未処理の rejection になり、
+テストランナー側で握りつぶす以外に観測する手段がないため。実アプリでの挙動はブラウザで確認済み。
+
+### 判定を左右しない観察への対応
+
+| 指摘 | 対応 |
+|---|---|
+| `requirements.md` の `draft` 行が空行で表から切り離され描画されない | **修正した**。描画結果をブラウザで確認済み |
+| `screen-spec.md` の「409 時はダイアログ内にメッセージ」が実装の挙動と一致しない | 仕様に**既知の制約として注記**した（409 の修正自体は別課題） |
+| 下書きで悲観ロックを取らない変更が `lenient()` スタブのため検出できない | 未対応。判定を左右しない観察であり、分岐自体は `verify(..., never())` による重複チェック不実行の検証で間接的に担保されている |
 
 ---
 

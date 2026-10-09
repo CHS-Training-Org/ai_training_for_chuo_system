@@ -68,8 +68,8 @@ stateDiagram-v2
     [*] --> APPROVED: 申請（承認不要のリソース）
 
     DRAFT --> DRAFT: 内容の編集
-    DRAFT --> PENDING: 正式申請（要承認のリソース）
-    DRAFT --> APPROVED: 正式申請（承認不要のリソース）
+    DRAFT --> PENDING: 正式申請
+    DRAFT --> [*]: 削除
 
     PENDING --> PENDING: 内容の編集
     PENDING --> APPROVED: 承認
@@ -92,8 +92,8 @@ stateDiagram-v2
 
 本ユニットで追加する遷移
   DRAFT       -> DRAFT      内容の編集（PUT・status 省略）
-  DRAFT       -> PENDING    正式申請（PUT・status=PENDING・requires_approval=true）
-  DRAFT       -> APPROVED   正式申請（PUT・status=PENDING・requires_approval=false）
+  DRAFT       -> PENDING    正式申請（PUT・status=PENDING。requires_approval の値によらない）
+  DRAFT       -> （削除）   DELETE。レコードごと削除するため遷移先のステータスはない
 
 既存の遷移（変更しない）
   PENDING     -> PENDING    内容の編集
@@ -103,8 +103,8 @@ stateDiagram-v2
   APPROVED    -> CANCELLED  キャンセル
 
 禁止する遷移
-  DRAFT       -> CANCELLED  下書きの破棄はスコープ外（要件定義 FR-S01）
-  DRAFT       -> APPROVED   正式申請を経ない直接指定は 422
+  DRAFT       -> CANCELLED  下書きの破棄は削除で行う（キャンセルは 422）
+  DRAFT       -> APPROVED   直接指定は 422。正式申請の遷移先も PENDING のみ
   DRAFT       -> REJECTED   承認フローを経ないため発生しない
   PENDING     -> DRAFT      申請の取り下げはスコープ外
   APPROVED    -> DRAFT      同上
@@ -112,8 +112,9 @@ stateDiagram-v2
   CANCELLED   -> 任意        終端状態
 ```
 
-`DRAFT` から `APPROVED` への遷移は、`status` に `"PENDING"` を指定した正式申請の結果としてのみ起きる。
-リクエストで `status` に `"APPROVED"` を直接指定することはできない（422）。
+`DRAFT` から直接 `APPROVED` へ遷移することはない。
+正式申請の遷移先は `requires_approval` の値によらず `PENDING` であり、
+リクエストで `status` に `"APPROVED"` を指定することもできない（422）。
 利用者が承認を迂回できないようにするため。
 
 ---
@@ -125,6 +126,9 @@ stateDiagram-v2
 
 1. 予約の新規作成時、`draft` が指定されず、かつリソースの `requires_approval` が `true` のとき（既存の振る舞い）
 2. 下書きの正式申請時、リソースの `requires_approval` が `true` のとき（本ユニットで追加）
+
+`requires_approval` が `false` のリソースを下書きから正式申請した場合は、`PENDING` になるが承認ステップは生成されない。
+この予約は承認待ち一覧から到達できず進まなくなる（既知の制約。要件定義 §7 を参照）。
 
 承認ステップの生成処理そのもの（`ApprovalService.createInitialStep`）は変更しない。
 呼び出す条件だけが変わる。

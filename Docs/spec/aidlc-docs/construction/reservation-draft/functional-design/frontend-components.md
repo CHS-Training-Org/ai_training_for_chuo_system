@@ -125,6 +125,16 @@ const canSubmitDraft = reservation.status === "DRAFT" && isOwner && !isAdmin;
 ボタンの並び順は、編集、正式申請、キャンセルとする。
 `DRAFT` ではキャンセルボタンが表示されない（`CANCELLABLE_STATUSES` が `DRAFT` を含まないため）。
 
+### 新規コンポーネント `DeleteDraftButton`
+
+対象: `reservations/[id]/DeleteDraftButton.tsx`（新規・クライアントコンポーネント）
+
+`CancelButton` と同じ Dialog による確認を置く。削除は取り消せないため。
+成功後は対象の予約詳細が存在しなくなるので、`router.push("/reservations")` で一覧へ戻す
+（`SubmitDraftButton` のように `router.refresh()` すると 404 になる）。
+
+表示条件は `canDeleteDraft`（`DRAFT` かつ申請者本人かつ ADMIN でない）。
+
 ### 新規コンポーネント `SubmitDraftButton`
 
 対象: `reservations/[id]/SubmitDraftButton.tsx`（新規・クライアントコンポーネント）
@@ -164,6 +174,8 @@ export function SubmitDraftButton({
 | AC-04-1 | `SubmitDraftButton` の表示条件 |
 | AC-04-8 | `router.refresh()` による再描画 |
 | AC-07-4 | `!isAdmin` 条件の維持 |
+| AC-08-1、AC-08-7 | `canDeleteDraft` による表示判定 |
+| AC-08-2、AC-08-3 | `DeleteDraftButton` の確認ダイアログと `router.push` |
 
 ---
 
@@ -227,7 +239,13 @@ frontend のユニットテスト（Vitest + MSW）で検証する範囲を定�
 - `ReservationForm`: 下書き保存ボタンの押下で `draft` が `true` として送られること、未入力時にバリデーションエラーが出ること
 - 予約一覧: 「ドラフト」タブが描画され、選択時に `status=DRAFT` のクエリが付くこと
 - 予約詳細: ステータスとロールの組み合わせでボタンの表示が切り替わること（とくに ADMIN で編集と正式申請が出ないこと）
-- `SubmitDraftButton`: 確認ダイアログの表示、成功時の再描画、409 時のエラー表示
+- `SubmitDraftButton`: 確認ダイアログの表示、`status="PENDING"` の受け渡し、成功時の再描画、409 時のエラー表示と編集画面への導線
+- `DeleteDraftButton`: 確認ダイアログの表示、対象 ID の受け渡し、成功時の一覧への遷移
+
+> 2026-10-09 追記：当初はクライアントコンポーネントのレンダリングテストを対象外としていたが、
+> AI レビュー（観点2）が「分岐を持つ振る舞いが未検証」と指摘したため、
+> `@testing-library/react` と jsdom でテストを追加した（ADR-009 がコンポーネントテストに Vitest を定めている）。
+> 実装を取り消すとテストが失敗することを実際に確認済み。
 
 403 を受けたときの画面表示はテストの対象に含めない。
 frontend にエラーバウンダリが存在せず、既存の挙動と同一になるため（要件定義 §8）。

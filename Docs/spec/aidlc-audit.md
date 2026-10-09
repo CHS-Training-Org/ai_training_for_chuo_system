@@ -663,3 +663,13 @@ Documentation: Docs/spec/aidlc-docs/construction/resource-keyword-search/code/"
 **Context**: OPERATIONS - CI 品質ゲート完了。AI-DLC ワークフロー終了。
 
 ---
+
+## Operations - AI Review Round 1 Response
+
+**Timestamp**: 2026-10-09
+**User Input**: "観点1=実装をシートに合わせよう（本来は要件変更になるはずという旨は残す） / 観点2=テストを追加してほしい / 表のバグ=今すぐ直す / 承認ステップ=生成しない（シートに最も忠実） / 削除=実装する（シートに合わせる）"
+**AI Response**: "PR #140 の AI レビュー（ラウンド1）の指摘に対応した。観点1: (a) 正式申請の遷移先を requires_approval の値によらず PENDING に変更（ReservationService.update から markApproved の分岐を削除）。承認ステップは requires_approval=true のときのみ生成する既存ルールを維持した結果、承認不要リソースの下書きは正式申請後に承認待ちのまま進まなくなる。この既知の制約を api-spec.md・requirements.md・実装コメント・設計書に明記した。(b) RSV-02 の削除を実装。DELETE /api/reservations/{id} を新設し、DRAFT かつ申請者本人のみ（ADMIN も不可）、レコードごと物理削除、DRAFT 以外は 422。frontend に DeleteDraftButton と deleteReservationAction、api-client に del を追加。観点2: クライアントコンポーネントのテストを @testing-library/react と jsdom で追加（SubmitDraftButton 4件・ReservationForm 3件・DeleteDraftButton 3件）。レビューの判定基準である『実装を取り消すとテストが失敗すること』を、SubmitDraftButton の第3引数削除と ReservationForm の draft フラグ反転で実際に検証し、いずれも該当テストが失敗することを確認した。409 以外を再スローする分岐はテストしていない（startTransition 内の例外はエラーバウンダリに渡らず未処理の rejection になるため観測できない）。判定を左右しない観察のうち、requirements.md の draft 行が空行で表から切り離されていた件を修正し、描画結果をブラウザで確認。screen-spec.md の 409 メッセージ表示は既知の制約として注記した。ステータス遷移図から DRAFT→APPROVED の矢印を削除し、ラベルを『正式申請』に変更して SVG を再生成、描画確認済み。検証結果は backend 192件・frontend 128件すべて通過、lint・format・静的解析・3ビルドすべて成功。"
+**Status**: 観点1・観点2 対応完了。観点3 は学習者の回答待ち。
+**Context**: OPERATIONS - AI レビュー ラウンド1 への対応。
+
+---
