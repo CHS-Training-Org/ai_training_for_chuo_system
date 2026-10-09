@@ -65,10 +65,17 @@ function alive(pid) {
   }
 }
 
+/**
+ * このスクリプトが起動したバックエンドのプロセス番号。動いていなければ null。
+ * PID ファイルはリポジトリの中にあり、コンテナを作り直しても残る。新しいコンテナで同じ番号が
+ * 別のプロセスに使われていても取り違えないよう、番号が生きているだけでなく、bootRun の Gradle であることも確かめる。
+ */
 function ownPid() {
   try {
     const pid = Number(fs.readFileSync(PID_FILE, 'utf8').trim());
-    return pid && alive(pid) ? pid : null;
+    if (!pid || !alive(pid)) return null;
+    const cmd = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').replace(/\0/g, ' ');
+    return /(gradlew|GradleWrapperMain).*\bbootRun\b/.test(cmd) ? pid : null;
   } catch {
     return null;
   }

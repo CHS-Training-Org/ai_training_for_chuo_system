@@ -763,7 +763,10 @@ export function recordDecision(slug, stageKey, action, note = '', answers = {}, 
       for (const [id, key] of Object.entries(given)) {
         const q = qs.find((x) => x.id === id);
         const text = q.choices.find((c) => c.key === key)?.text || '';
+        // 選び直した回答に加えて、同じ回答のまま観点一覧に反映されていないものも、もう一度 AI に伝える。
+        // 反映されないと確定できないので、学習者は同じ回答のまま差し戻すことになるため
         if (saved[id]?.choice !== key) lines.push(`${id} は ${key}（${text}）`);
+        else if (!isReflected(q, saved)) lines.push(`${id} は ${key}（${text}）。まだ観点一覧に反映されていない`);
         saved[id] = { choice: key, text, at: now() };
       }
       st.answers = saved;

@@ -46,6 +46,8 @@ function firstLine(text) {
  * Playwright のエラー1件を、学習者に見せる形にする。
  * expect に説明（第2引数）を添えると、1行目がその説明になり、「expect(...).toX(...) failed」は2行目以降に来る。
  * そのため、期待結果の確かめでフェイルしたか（assert）は、メッセージ全体で見分ける。
+ * 値どうしを比べる照合（toBe、toEqual、toBeTruthy など）は「failed」を付けず、
+ * 「expect(received).toBe(expected) // Object.is equality」のような行を出すので、これも期待結果の確かめとみなす。
  * 期待した値と実際の値（Expected と Received の行）があれば、あわせて残す。
  */
 function errorInfo(e) {
@@ -53,7 +55,7 @@ function errorInfo(e) {
   const line = (re) => (text.match(re) || [])[1]?.trim() || '';
   return {
     message: firstLine(text).replace(/^Error:\s*/, ''),
-    assert: /^\s*(?:Error:\s*)?expect(\.soft)?\(.*\)\.[\w.]+\(.*\) failed\s*$/m.test(text),
+    assert: /^\s*(?:Error:\s*)?expect(\.soft)?\(.*\)\.[\w.]+\(.*\)(?: failed| \/\/.*)?\s*$/m.test(text),
     expected: line(/^Expected(?: [\w ]+)?:\s*(.+)$/m),
     received: line(/^Received(?: [\w ]+)?:\s*(.+)$/m),
   };

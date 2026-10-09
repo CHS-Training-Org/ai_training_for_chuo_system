@@ -17,6 +17,7 @@
  * 起動の仕方: cd backend && DB_URL=jdbc:postgresql://postgres:5432/bookflow_e2e ./gradlew bootRun
  */
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -25,11 +26,28 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 export const E2E_DATABASE = 'bookflow_e2e';
 const USER = 'bookflow';
 
-/** devcontainer の postgres コンテナ。compose のプロジェクト名は環境で変わるため、サービス名のラベルで探す。 */
+/** このスクリプトが動いているコンテナの compose のプロジェクト名。分からなければ空文字。 */
+function ownComposeProject() {
+  try {
+    return execFileSync('docker', ['inspect', os.hostname(), '--format', '{{index .Config.Labels "com.docker.compose.project"}}'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * devcontainer の postgres コンテナ。compose のプロジェクト名は環境で変わるため、サービス名のラベルで探す。
+ * 別の worktree などで devcontainer を2つ動かしていると postgres も2つ見つかるので、
+ * このコンテナと同じプロジェクトのものを選ぶ。バックエンドがつなぐ postgres（ホスト名 postgres）はそちらである。
+ */
 function postgresContainer() {
-  const id = execFileSync('docker', ['ps', '--filter', 'label=com.docker.compose.service=postgres', '-q'], { encoding: 'utf8' }).trim().split('\n')[0];
-  if (!id) throw new Error('postgres のコンテナが見つかりません。devcontainer のサービスが起動しているか確かめてください');
-  return id;
+  const filters = ['--filter', 'label=com.docker.compose.service=postgres'];
+  const project = ownComposeProject();
+  if (project) filters.push('--filter', `label=com.docker.compose.project=${project}`);
+  const ids = execFileSync('docker', ['ps', ...filters, '-q'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+  if (!ids.length) throw new Error('postgres のコンテナが見つかりません。devcontainer のサービスが起動しているか確かめてください');
+  if (ids.length > 1) throw new Error('postgres のコンテナが2つ以上見つかり、どれを使うか決められません。使わない devcontainer を止めてから、もう一度実行してください');
+  return ids[0];
 }
 
 function psql(container, database, args, input) {
