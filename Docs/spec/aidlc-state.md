@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-09-16
+timestamp: 2026-10-02
 ---
 
 # AI-DLC State Tracking
@@ -18,11 +18,12 @@ timestamp: 2026-09-16
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-09-16T07:33:01+00:00
-- **Current Stage**: INCEPTION - Reverse Engineering
+- **Start Date**: 2026-10-02T11:02:40+00:00
+- **Current Stage**: CONSTRUCTION - Code Generation
 - **Workspace Root**: /workspace
-- **対象タスク**: `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`（リソース一覧の検索・フィルタ追加）
-- **作業ブランチ**: `feature/CHS-UTSUMI-KENTA/23-resource-list-filter-aidlc`
+- **対象タスク**: `docs-next/docs/spec/enhancements/intermediate/reservation-draft.md`（予約の下書き保存）
+- **作業ブランチ**: `feature/CHS-UTSUMI-KENTA/30-reservation-draft`
+- **前回ワークフロー**: `resource-keyword-search`（PR #116・完了）。記録は git 履歴と `Docs/spec/aidlc-audit.md` に残る
 
 ## Workspace State
 
@@ -30,7 +31,7 @@ timestamp: 2026-09-16
 - **Programming Languages**: Java 25、TypeScript（React 19 / Next.js 15）、SQL（Flyway）
 - **Build System**: Gradle（Kotlin DSL・backend）、pnpm（frontend）、npm（docs-next）
 - **Project Structure**: モノレポ（backend / frontend / docs-next / ops-note）
-- **Reverse Engineering Needed**: Yes（`Docs/spec/aidlc-docs/inception/reverse-engineering/` に既存成果物なし）
+- **Reverse Engineering Needed**: No（`Docs/spec/aidlc-docs/inception/reverse-engineering/` の既存成果物を current と判定して再利用）
 
 ## Code Location Rules
 
@@ -48,47 +49,58 @@ timestamp: 2026-09-16
 
 いずれも opt-out のため、対応する full rules ファイルは読み込まない。
 
+## 成果物の配置
+
+確認質問 Q4 の回答により、今回の成果物はタスク名のディレクトリに分ける（前回ワークフローの汎用パスを上書きしない）。
+
+- `Docs/spec/aidlc-docs/inception/requirements/reservation-draft/`
+- `Docs/spec/aidlc-docs/inception/user-stories/reservation-draft/`
+- `Docs/spec/aidlc-docs/inception/plans/reservation-draft/`
+- `Docs/spec/aidlc-docs/construction/reservation-draft/`
+
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [x] Workspace Detection
-- [x] Reverse Engineering（Brownfield の場合）— 完了 2026-09-16。成果物: `Docs/spec/aidlc-docs/inception/reverse-engineering/`
-- [x] Requirements Analysis — 完了 2026-09-16。成果物: `Docs/spec/aidlc-docs/inception/requirements/requirements.md`
-- [x] User Stories（条件付き）— 学習者の指示により SKIP → EXECUTE に変更。完了 2026-09-16。成果物: `Docs/spec/aidlc-docs/inception/user-stories/`
-- [x] Workflow Planning — 完了 2026-09-16。成果物: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md`
-- [ ] Application Design（条件付き）— **SKIP**（新規コンポーネント・新規サービスなし）
-- [ ] Units Generation（条件付き）— **SKIP**（単一の縦切りユニット `resource-keyword-search`）
+- [x] Workspace Detection — 完了 2026-10-02
+- [ ] Reverse Engineering（条件付き）— **SKIP**（既存成果物あり・current と判定）
+- [x] Requirements Analysis — 完了・承認済み 2026-10-02。成果物: `Docs/spec/aidlc-docs/inception/requirements/reservation-draft/`
+- [x] User Stories（条件付き）— **EXECUTE** 完了・承認済み 2026-10-02。成果物: `Docs/spec/aidlc-docs/inception/user-stories/reservation-draft/`（ペルソナ3件・ストーリー7件・受入基準34件）
+- [x] Workflow Planning — 完了・承認済み 2026-10-02。成果物: `Docs/spec/aidlc-docs/inception/plans/reservation-draft/execution-plan.md`
+- [ ] Application Design（条件付き）— **SKIP**（新規コンポーネント・サービス・メソッド群なし。変更は既存の `ReservationService` と既存 DTO の境界内）
+- [ ] Units Generation（条件付き）— **SKIP**（単一の縦切りユニット `reservation-draft`）
 
 ### CONSTRUCTION PHASE
 
-ユニット: `resource-keyword-search`（単一）
+ユニット: `reservation-draft`（単一）
 
-- [x] Functional Design（条件付き、ユニット別）— **EXECUTE** 完了 2026-09-16。成果物: `Docs/spec/aidlc-docs/construction/resource-keyword-search/functional-design/`
+- [x] Functional Design（条件付き、ユニット別）— **EXECUTE** 完了・承認済み 2026-10-02。成果物: `Docs/spec/aidlc-docs/construction/reservation-draft/functional-design/`（4ファイル・業務ルール BR-01〜BR-26）
 - [ ] NFR Requirements（条件付き、ユニット別）— **SKIP**（新規 NFR なし・拡張3件は opt-out）
-- [ ] NFR Design（条件付き、ユニット別）— **SKIP**（NFR Requirements をスキップするため）
-- [ ] Infrastructure Design（条件付き、ユニット別）— **SKIP**（インフラ・スキーマ変更なし）
-- [x] Spec Update（`/update-spec`）— **EXECUTE** 完了 2026-09-16。更新: `api-spec.md` / `screen-spec.md` / `requirements.md`（RES-09）。`npm run build` 成功
+- [ ] NFR Design（条件付き、ユニット別）— **SKIP**（前提の NFR Requirements をスキップするため）
+- [ ] Infrastructure Design（条件付き、ユニット別）— **SKIP**（`DRAFT` は V001 の CHECK 制約に定義済みでマイグレーション不要）
+- [x] Spec Update（`/update-spec`）— **EXECUTE** 完了・承認済み 2026-10-02。`api-spec.md` / `screen-spec.md` / `requirements.md` を更新。遷移図2件（`.drawio` と `.drawio.svg` の双方）も更新し、Playwright で描画確認済み。`npm run build` 成功。残作業なし。記録: `construction/reservation-draft/spec-update/diagram-update.md`
 - [ ] Code Generation（必須、ユニット別）— **EXECUTE**
-  - [x] Part 1: Planning — 完了 2026-09-16。成果物: `Docs/spec/aidlc-docs/construction/plans/resource-keyword-search-code-generation-plan.md`（14ステップ）
-  - [x] Part 2: Generation — 完了 2026-09-16。新規4ファイル・変更10ファイル。成果物一覧: `Docs/spec/aidlc-docs/construction/resource-keyword-search/code/generation-summary.md`
-- [x] Build and Test（必須）— **EXECUTE** 完了 2026-09-16。backend 155 / frontend 90 テスト全通過、lint・format・3 ビルドすべて成功。成果物: `Docs/spec/aidlc-docs/construction/build-and-test/`
+  - [x] Part 1: Planning — 完了・承認済み 2026-10-02。成果物: `Docs/spec/aidlc-docs/construction/plans/reservation-draft-code-generation-plan.md`（16ステップ）
+  - [x] Part 2: Generation — 完了・承認済み 2026-10-02。backend 6ファイル変更・frontend 9ファイル（新規3件）。成果物一覧: `Docs/spec/aidlc-docs/construction/reservation-draft/code/generation-summary.md`
+- [x] Build and Test（必須）— **EXECUTE** 完了 2026-10-02。backend 181件 / frontend 108件通過、lint・format・静的解析・3ビルドすべて成功。Playwright で画面側の受入基準10件を確認。成果物: `Docs/spec/aidlc-docs/construction/reservation-draft/build-and-test/`（5ファイル）
 
 ### OPERATIONS PHASE
 
-- [x] CI Quality Gate（BookFlow 翻案）— **EXECUTE** 完了 2026-09-16。PR #116（`feature/CHS-UTSUMI-KENTA/23-resource-list-filter-aidlc` → `learner/CHS-UTSUMI-KENTA/main`）で `CI Backend` / `CI Frontend` / `build` の3ジョブすべて pass
+- [x] CI Quality Gate（BookFlow 翻案）— **EXECUTE** 完了 2026-10-09。PR #140（`feature/CHS-UTSUMI-KENTA/30-reservation-draft` → `learner/CHS-UTSUMI-KENTA/main`）で `CI Frontend` / `build` / `CI Backend` の3ジョブすべて pass
 
 ## Execution Plan Summary
 
-- **Total Stages**: 15
-- **Stages Completed**: Workspace Detection、Reverse Engineering、Requirements Analysis、User Stories、Workflow Planning
+- **Total Stages**: 15（完了 4 / これから実行 5 / スキップ 6）
+- **Stages Completed**: Workspace Detection、Requirements Analysis、User Stories、Workflow Planning
 - **Stages to Execute**: Functional Design、Spec Update、Code Generation、Build and Test、CI Quality Gate
-- **Stages to Skip**: Application Design（新規コンポーネントなし）、Units Generation（単一ユニット）、NFR Requirements（新規 NFR なし）、NFR Design（前提の NFR Requirements をスキップ）、Infrastructure Design（インフラ変更なし）
+- **Stages to Skip**: Reverse Engineering（既存成果物を再利用）、Application Design（新規コンポーネントなし）、Units Generation（単一ユニット）、NFR Requirements（新規 NFR なし）、NFR Design（前提をスキップ）、Infrastructure Design（マイグレーション不要）
+- **Risk Level**: Medium（予約の作成・更新という中核経路に手を入れるが、追加フィールドはいずれも省略可能で後方互換）
 
 ## Current Status
 
-- **Lifecycle Phase**: OPERATIONS
+- **Lifecycle Phase**: CONSTRUCTION
 - **Current Stage**: CI Quality Gate Complete
 - **Next Stage**: なし（学習者によるセルフレビューとマージ）
 - **Status**: Complete
-- **PR**: https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/116
+- **PR**: https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/140
+- **残課題（いずれも既存の不具合・別課題として切り出し）**: (1) 409 のエラー表示が機能しない (2) 日時入力の年が4桁でないと保存できない

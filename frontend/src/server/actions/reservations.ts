@@ -62,35 +62,58 @@ export async function getReservationAction(id: string): Promise<ReservationRespo
  *
  * {@code requires_approval=false} → 即 APPROVED、{@code true} → PENDING。
  * 重複時は ApiClientError(code='RESERVATION_CONFLICT', status=409) をスロー。
+ *
+ * {@code draft} に true を指定すると下書き保存となり、ステータスは DRAFT になる。
+ * 下書きでは重複チェックが行われないため 409 は返らない。
+ * draft はフォームの入力項目ではなく押されたボタンの種別を表すため、Zod スキーマではなく引数で受け取る。
  */
 export async function createReservationAction(
   input: CreateReservationInput,
+  draft?: boolean,
 ): Promise<ReservationResponse> {
   const client = createApiClient(getAccessToken);
   const body = {
     ...input,
     startAt: toIsoWithSeconds(input.startAt),
     endAt: toIsoWithSeconds(input.endAt),
+    ...(draft ? { draft: true } : {}),
   };
   return client.post("/reservations", body, ReservationResponseSchema);
 }
 
 /**
- * 予約内容を更新する（PENDING のみ・申請者本人）。
+ * 予約内容を更新する（DRAFT / PENDING のみ・申請者本人）。
  *
  * 日時変更時に重複が発生した場合は ApiClientError(409) をスロー。
+ *
+ * {@code status} に 'PENDING' を指定すると下書きの正式申請になる。
+ * 遷移先はリソースの requires_approval により PENDING または APPROVED となる。
+ * status もフォームの入力項目ではないため、Zod スキーマではなく引数で受け取る。
  */
 export async function updateReservationAction(
   id: string,
   input: UpdateReservationInput,
+  status?: "PENDING",
 ): Promise<ReservationResponse> {
   const client = createApiClient(getAccessToken);
   const body = {
     ...input,
     startAt: toIsoWithSeconds(input.startAt),
     endAt: toIsoWithSeconds(input.endAt),
+    ...(status ? { status } : {}),
   };
   return client.put(`/reservations/${id}`, body, ReservationResponseSchema);
+}
+
+/**
+ * 下書きを削除する（DRAFT のみ・申請者本人）。
+ *
+ * レスポンスボディはない（204 No Content）。
+ * DRAFT 以外を指定すると ApiClientError(422)、本人以外は ApiClientError(403) をスロー。
+ */
+export async function deleteReservationAction(id: string): Promise<void> {
+  const client = createApiClient(getAccessToken);
+  await client.del(`/reservations/${id}`);
 }
 
 /**

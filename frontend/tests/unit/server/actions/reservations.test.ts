@@ -27,6 +27,7 @@ const {
   getReservationAction,
   createReservationAction,
   updateReservationAction,
+  deleteReservationAction,
   cancelReservationAction,
 } = await import("@/server/actions/reservations");
 
@@ -142,6 +143,52 @@ describe("createReservationAction", () => {
       }),
     ).rejects.toThrow();
   });
+
+  it("draft=true: リクエストボディに draft を含め、DRAFT の予約を返す", async () => {
+    let captured: Record<string, unknown> | null = null;
+    server.use(
+      http.post("/api/backend/reservations", async ({ request }) => {
+        captured = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(
+          { ...MOCK_RESERVATION_RESPONSE, status: "DRAFT" },
+          { status: 201 },
+        );
+      }),
+    );
+
+    const result = await createReservationAction(
+      {
+        resourceId: MOCK_RESERVATION_RESPONSE.resourceId,
+        startAt: "2025-07-01T10:00:00",
+        endAt: "2025-07-01T12:00:00",
+        purpose: "検討中の打ち合わせ",
+      },
+      true,
+    );
+
+    expect(result.status).toBe("DRAFT");
+    expect(captured).toMatchObject({ draft: true });
+  });
+
+  it("draft を省略: リクエストボディに draft を含めない（既存の振る舞いを変えない）", async () => {
+    let captured: Record<string, unknown> | null = null;
+    server.use(
+      http.post("/api/backend/reservations", async ({ request }) => {
+        captured = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(MOCK_RESERVATION_RESPONSE, { status: 201 });
+      }),
+    );
+
+    await createReservationAction({
+      resourceId: MOCK_RESERVATION_RESPONSE.resourceId,
+      startAt: "2025-07-01T10:00:00",
+      endAt: "2025-07-01T12:00:00",
+      purpose: "通常の申請",
+    });
+
+    expect(captured).not.toBeNull();
+    expect(captured!).not.toHaveProperty("draft");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -177,6 +224,48 @@ describe("updateReservationAction", () => {
       }),
     ).rejects.toThrow();
   });
+
+  it("status='PENDING' 指定: リクエストボディに status を含める（正式申請）", async () => {
+    let captured: Record<string, unknown> | null = null;
+    server.use(
+      http.put("/api/backend/reservations/:id", async ({ request }) => {
+        captured = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ ...MOCK_RESERVATION_RESPONSE, status: "PENDING" });
+      }),
+    );
+
+    const result = await updateReservationAction(
+      MOCK_RESERVATION_RESPONSE.id,
+      {
+        startAt: "2025-07-01T10:00:00",
+        endAt: "2025-07-01T12:00:00",
+        purpose: "検討中の打ち合わせ",
+      },
+      "PENDING",
+    );
+
+    expect(result.status).toBe("PENDING");
+    expect(captured).toMatchObject({ status: "PENDING" });
+  });
+
+  it("status を省略: リクエストボディに status を含めない（内容のみ更新）", async () => {
+    let captured: Record<string, unknown> | null = null;
+    server.use(
+      http.put("/api/backend/reservations/:id", async ({ request }) => {
+        captured = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(MOCK_RESERVATION_RESPONSE);
+      }),
+    );
+
+    await updateReservationAction(MOCK_RESERVATION_RESPONSE.id, {
+      startAt: "2025-07-01T10:00:00",
+      endAt: "2025-07-01T12:00:00",
+      purpose: "内容のみ更新",
+    });
+
+    expect(captured).not.toBeNull();
+    expect(captured!).not.toHaveProperty("status");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -202,5 +291,50 @@ describe("cancelReservationAction", () => {
     );
 
     await expect(cancelReservationAction(MOCK_RESERVATION_RESPONSE.id)).rejects.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// deleteReservationAction
+// ---------------------------------------------------------------------------
+
+describe("deleteReservationAction", () => {
+  it("正常時: 204 を受けて何も返さない", async () => {
+    let called = false;
+    server.use(
+      http.delete("/api/backend/reservations/:id", () => {
+        called = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await expect(deleteReservationAction(MOCK_RESERVATION_RESPONSE.id)).resolves.toBeUndefined();
+    expect(called).toBe(true);
+  });
+
+  it("403 時（他人の下書き）: ApiClientError をスローする", async () => {
+    server.use(
+      http.delete("/api/backend/reservations/:id", () => {
+        return HttpResponse.json(
+          { code: "FORBIDDEN", message: "権限がありません" },
+          { status: 403 },
+        );
+      }),
+    );
+
+    await expect(deleteReservationAction(MOCK_RESERVATION_RESPONSE.id)).rejects.toThrow();
+  });
+
+  it("422 時（DRAFT 以外）: ApiClientError をスローする", async () => {
+    server.use(
+      http.delete("/api/backend/reservations/:id", () => {
+        return HttpResponse.json(
+          { code: "VALIDATION_ERROR", message: "DRAFT 状態の予約のみ削除できます。" },
+          { status: 422 },
+        );
+      }),
+    );
+
+    await expect(deleteReservationAction(MOCK_RESERVATION_RESPONSE.id)).rejects.toThrow();
   });
 });

@@ -109,9 +109,10 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `GET /api/resources/{id}/availability` | ✅ | ✅ | ✅ |
 | `GET /api/reservations` | ✅（自分のみ） | ✅（自分のみ） | ✅（全件） |
 | `POST /api/reservations` | ✅ | ✅ | ✅ |
-| `GET /api/reservations/{id}` | ✅（本人のみ） | ✅ | ✅ |
-| `PUT /api/reservations/{id}` | ✅（本人のみ） | ✅（本人のみ） | ❌ |
+| `GET /api/reservations/{id}` | ✅（本人のみ） | ✅（`DRAFT` は本人のみ） | ✅ |
+| `PUT /api/reservations/{id}` | ✅（本人のみ・`DRAFT` / `PENDING`） | ✅（本人のみ・`DRAFT` / `PENDING`） | ❌ |
 | `POST /api/reservations/{id}/cancel` | ✅（本人のみ） | ✅（本人のみ） | ✅（全件） |
+| `DELETE /api/reservations/{id}` | ✅（本人のみ・`DRAFT`） | ✅（本人のみ・`DRAFT`） | ❌ |
 | `GET /api/approvals/pending` | ❌ | ✅ | ✅ |
 | `POST /api/approvals/{stepId}/approve` | ❌ | ✅ | ✅ |
 | `POST /api/approvals/{stepId}/reject` | ❌ | ✅ | ✅ |
@@ -128,8 +129,8 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `/resources/{id}` | ✅ | ✅ | ✅ |
 | `/reservations/new` | ✅ | ✅ | ✅ |
 | `/reservations` | ✅ | ✅ | ✅ |
-| `/reservations/{id}` | ✅（本人のみ） | ✅ | ✅ |
-| `/reservations/{id}/edit` | ✅（本人のみ） | ✅（本人のみ） | ❌ |
+| `/reservations/{id}` | ✅（本人のみ） | ✅（`DRAFT` は本人のみ） | ✅ |
+| `/reservations/{id}/edit` | ✅（本人のみ・`DRAFT` / `PENDING`） | ✅（本人のみ・`DRAFT` / `PENDING`） | ❌ |
 | `/approvals` | ❌ | ✅ | ✅ |
 | `/admin/resources` | ❌ | ❌ | ✅ |
 | `/admin/users` | ❌ | ❌ | ✅ |
@@ -139,7 +140,18 @@ BookFlow は 3 種のロールで操作権限を制御する。
 
 ![予約ステータス遷移図](/diagrams/spec/requirements-reservation-status.drawio.svg)
 
-> **注意**：`reservations.status` に DB DEFAULT はない。アプリ層（Service）が申請時に `PENDING`（requires_approval=true）または `APPROVED`（requires_approval=false）を設定する。`DRAFT` はベース実装では未使用（下書き保存は拡張課題用の予約値）。
+> **注意**：`reservations.status` に DB DEFAULT はない。アプリ層（Service）が申請時に `DRAFT`（`draft = true`）、`PENDING`（`requires_approval = true`）、`APPROVED`（`requires_approval = false`）のいずれかを設定する。
+
+`DRAFT` を含む遷移を表でも示す。
+
+| 遷移元 | 遷移先 | 契機 |
+|--------|--------|------|
+| （なし） | `DRAFT` | `POST /api/reservations` に `draft = true` |
+| `DRAFT` | `DRAFT` | `PUT /api/reservations/{id}`（`status` 省略・内容の編集） |
+| `DRAFT` | `PENDING` | `PUT /api/reservations/{id}` に `status = "PENDING"`（`requires_approval` の値によらない） |
+| `DRAFT` | （削除） | `DELETE /api/reservations/{id}`。レコードごと削除するため遷移先のステータスはない |
+
+`DRAFT` から `CANCELLED` と `REJECTED` への遷移はない。`PENDING` や `APPROVED` から `DRAFT` へ戻る遷移もない。詳細は [§予約 下書き保存](#reservation-draft) を参照。
 
 ### 承認ステップ ステータス遷移図
 
@@ -220,16 +232,17 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `endAt` | TIMESTAMP | ✅ | 利用終了日時（`startAt` より後であること） |
 | `purpose` | VARCHAR(255) | ✅ | 利用目的 |
 | `attendeesCount` | INTEGER | ❌ | 参加人数 |
+| `draft` | BOOLEAN | ❌ | `true` で下書き保存。省略時は `false`（§予約 下書き保存を参照） |
 
 #### ステータス初期値（ワンステップ申請）
 
-`POST /api/reservations` を呼び出すと、対象リソースの `requires_approval` 値に基づいてステータスが即時決定される。  
-下書き保存（DRAFT 生成）はベース実装の対象外。
+`POST /api/reservations` を呼び出すと、対象リソースの `requires_approval` 値に基づいてステータスが即時決定される。
 
-| `requires_approval` | 申請後ステータス | `approval_steps` 生成 |
-|--------------------|---------------|----------------------|
-| `false` | `APPROVED`（即時確定） | 生成しない |
-| `true` | `PENDING`（承認待ち） | 生成する（→ §承認 参照） |
+| `draft` | `requires_approval` | 申請後ステータス | `approval_steps` 生成 |
+|---------|--------------------|---------------|----------------------|
+| 省略 / `false` | `false` | `APPROVED`（即時確定） | 生成しない |
+| 省略 / `false` | `true` | `PENDING`（承認待ち） | 生成する（→ §承認 参照） |
+| `true` | 値によらない | `DRAFT`（下書き） | 生成しない |
 
 ### UC-04：承認不要リソースの予約が即時確定される {#uc-04}
 `requires_approval = false` のリソースを予約申請した場合、`approval_steps` を生成せず即座に `status = APPROVED` で確定する（UC-03 の即時確定パスと同一）。
@@ -239,13 +252,46 @@ BookFlow は 3 種のロールで操作権限を制御する。
 
 | # | 要件 |
 |---|------|
-| RSV-01 | 自分の予約一覧を `status`（`PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）でフィルタリングできる |
+| RSV-01 | 自分の予約一覧を `status`（`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）でフィルタリングできる |
 | RSV-02 | ADMIN は全ユーザーの予約を閲覧できる |
 | RSV-03 | 予約の詳細（リソース名・日時・目的・参加人数・ステータス）を確認できる |
 | RSV-04 | 申請者本人は `PENDING` または `APPROVED` の予約をキャンセルできる |
 | RSV-05 | ADMIN はすべての予約をキャンセルできる |
 | RSV-06 | `REJECTED` / `CANCELLED` の予約はキャンセル操作の対象外 |
-| RSV-07 | 申請者本人（MEMBER / APPROVER）は `PENDING` の予約の開始日時・終了日時・利用目的・参加人数を編集できる。リソースの変更は不可。編集時は重複予約チェックを再実行する（自分自身の予約を除外）。`APPROVED` / `REJECTED` / `CANCELLED` の予約は編集不可 |
+| RSV-07 | 申請者本人（MEMBER / APPROVER）は `DRAFT` または `PENDING` の予約の開始日時・終了日時・利用目的・参加人数を編集できる。リソースの変更は不可。`PENDING` の編集時は重複予約チェックを再実行する（自分自身の予約を除外）。`APPROVED` / `REJECTED` / `CANCELLED` の予約は編集不可 |
+
+### 下書き保存 {#reservation-draft}
+
+予約を `DRAFT` ステータスで保存し、後から再編集して正式申請できる。利用目的や参加人数の確認が終わる前に、入力した内容を取り置くための仕組みである。UC-03 の拡張にあたる。
+
+#### 機能要件
+
+| # | 要件 |
+|---|------|
+| RSV-08 | `POST /api/reservations` に `draft = true` を指定すると、リソースの `requires_approval` の値によらず `DRAFT` ステータスで予約を作成する |
+| RSV-09 | `DRAFT` の予約は承認フローに流れない。`approval_steps` を生成せず、承認待ち一覧にも現れない |
+| RSV-10 | `DRAFT` の予約を閲覧できるのは申請者本人と ADMIN のみ。APPROVER を含む他のユーザーがアクセスした場合は `403 Forbidden` を返す |
+| RSV-11 | `PUT /api/reservations/{id}` に `status = "PENDING"` を指定すると、`DRAFT` の予約を正式申請する。遷移先はリソースの `requires_approval` の値によらず `PENDING` とする。承認ステップは `requires_approval = true` の場合のみ生成する |
+| RSV-12 | 下書きでも利用目的・開始日時・終了日時は必須とする。入力途中の保存には対応しない |
+| RSV-13 | 申請者本人は `DRAFT` の予約を削除できる（`DELETE /api/reservations/{id}`）。レコードごと削除し、`DRAFT` 以外は削除できない。ADMIN も削除できない |
+
+> **既知の制約**：RSV-11 により、`requires_approval = false` のリソースを下書きから正式申請すると、承認ステップが生成されないまま `PENDING` になる。この予約は承認待ち一覧に現れず承認できないため、キャンセル以外に進む手段がない。承認不要のリソースは通常の申請で即時確定するのが本来の経路であり、下書きを経由する運用は要件として想定されていない。解消には要件の変更が必要である。
+
+#### 下書きと重複予約チェック
+
+`DRAFT` は重複予約チェックの対象ステータス（`PENDING` と `APPROVED`）に含まれない。下書きは時間帯を占有せず、同じ時間帯に複数の下書きを置ける。重複の判定は正式申請の時点で行う。
+
+| 操作 | 重複予約チェック |
+|------|----------------|
+| 下書きの作成（`draft = true`） | 実行しない |
+| 下書きの編集（`status` 省略） | 実行しない |
+| 下書きの正式申請（`status = "PENDING"`） | 実行する |
+
+#### 下書きの削除とキャンセルの使い分け
+
+`DRAFT` の予約はキャンセルの対象外とする（RSV-04 と RSV-06 の対象は `PENDING` と `APPROVED`）。下書きの破棄は RSV-13 の削除で行い、レコードごと削除する。
+
+確定前の予約には履歴を残す必要がないため削除を許し、確定済みの予約（`PENDING` / `APPROVED`）はキャンセルで `CANCELLED` に遷移させて履歴を残す。
 
 ### 重複予約チェック仕様
 
@@ -262,6 +308,7 @@ AND end_at > :startAt
 
 - 上記レコードが存在する場合は `409 Conflict`（`code: RESERVATION_CONFLICT`）を返す
 - `PUT` 時は自分自身の予約（`id = :id`）を除外してチェックする
+- `DRAFT` は `status IN ('PENDING', 'APPROVED')` の条件に含まれないため、下書きは時間帯を占有しない。下書きの作成と編集ではチェック自体を実行せず、正式申請の時点で実行する（§予約 下書き保存を参照）
 - V001 に DB 制約（専用 UNIQUE INDEX 等）は定義されていないため、**アプリ層（Service）での排他制御が実装責務**
 
 ---

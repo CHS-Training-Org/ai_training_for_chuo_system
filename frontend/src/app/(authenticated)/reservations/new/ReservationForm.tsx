@@ -59,13 +59,16 @@ export function ReservationForm({
     },
   });
 
-  const handleSubmit = (values: FormValues) => {
+  // react-hook-form の handleSubmit は第2引数にイベントを渡すため、draft は別の関数に閉じ込める
+  const submitForm = (values: FormValues, draft: boolean) => {
     setConflictError(null);
     startTransition(async () => {
       try {
-        await createReservationAction(values);
-        router.push("/reservations");
+        const created = await createReservationAction(values, draft);
+        // 下書きは詳細画面へ送る。保存内容をその場で確認でき、正式申請の導線につながるため
+        router.push(draft ? `/reservations/${created.id}` : "/reservations");
       } catch (err) {
+        // 下書き保存では重複チェックが行われないため 409 は返らない
         if (err instanceof ApiClientError && err.code === "RESERVATION_CONFLICT") {
           setConflictError(
             "指定した時間帯は既に予約が入っています。別の時間帯を選択してください。",
@@ -79,7 +82,10 @@ export function ReservationForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit((values) => submitForm(values, false))}
+        className="space-y-4"
+      >
         {/* リソース選択 */}
         <FormField
           control={form.control}
@@ -181,6 +187,16 @@ export function ReservationForm({
         <div className="flex gap-3">
           <Button type="submit" disabled={isPending}>
             {isPending ? "申請中..." : "予約を申請する"}
+          </Button>
+          {/* 下書き保存。type="button" とし handleSubmit 経由で送ることで、通常の申請と同じ検証を通す */}
+          <Button
+            type="button"
+            variant="secondary"
+            data-testid="reservation-form-save-draft-button"
+            onClick={form.handleSubmit((values) => submitForm(values, true))}
+            disabled={isPending}
+          >
+            {isPending ? "保存中..." : "下書き保存"}
           </Button>
           <Button
             type="button"

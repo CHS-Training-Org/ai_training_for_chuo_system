@@ -381,3 +381,305 @@ Documentation: Docs/spec/aidlc-docs/construction/resource-keyword-search/code/"
 
 ---
 
+
+## Workflow Start - Initial User Request
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "/workspace/docs-next/docs/spec/enhancements/intermediate/reservation-draft.md
+今回のビジネス要求シートはこれです。
+/aidlc"
+**AI Response**: "新規 AI-DLC ワークフローを開始。対象タスクは予約の下書き保存（`docs-next/docs/spec/enhancements/intermediate/reservation-draft.md`）。前回ワークフロー（`resource-keyword-search`）は PR #116 で完了済みのため、`Docs/spec/aidlc-state.md` を新規ワークフロー用にリセットした（前回の記録は git 履歴とこの監査ログに残る）。"
+**Context**: INCEPTION - ワークフロー開始
+
+---
+
+## Pre-flight - Branch and Target Task
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "（自動実行・ユーザー入力なし）"
+**AI Response**: "現在のブランチ `feature/CHS-UTSUMI-KENTA/30-reservation-draft` は命名規約に合致しているため、ブランチ操作は行わない。`<short-desc>` は `reservation-draft` で、ユーザーが明示したシート `docs-next/docs/spec/enhancements/intermediate/reservation-draft.md` と一致する。Issue 番号は 30。"
+**Context**: Pre-flight - 対象タスク特定（BookFlow 独自処理・承認ゲート対象外）
+
+---
+
+## Workspace Detection
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "（自動実行・ユーザー入力なし）"
+**AI Response**: "Brownfield と判定。モノレポ（backend: Java 25 / Gradle、frontend: TypeScript / pnpm、docs-next: npm）。Reverse Engineering 成果物が `Docs/spec/aidlc-docs/inception/reverse-engineering/`（9ファイル・2026-09-16 生成）に存在し、以降コードベースに構造的変更がないため current と判定 → Reverse Engineering は SKIP。ただし予約ドメインの現状は 2026-09-16 のスナップショットに依拠せず、Requirements Analysis で実コードを読んで確認する。要求シートの前提『DRAFT は V001 の CHECK 制約に定義済み』を検証し、`V001__create_initial_schema.sql:55` に `CHECK (status IN ('DRAFT', 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'))` を確認。`ReservationStatus.DRAFT`（backend）、`enums.ts` / `labels.ts` / バッジ定義（frontend）も既存。したがって Flyway マイグレーションは不要で Infrastructure Design は SKIP 候補。競合課題として挙げられた『予約一覧のフィルタ拡張』は未着地であることを `git log` で確認した。"
+**Context**: INCEPTION - Workspace Detection 完了。Reverse Engineering を SKIP し Requirements Analysis へ。
+
+---
+
+## Requirements Analysis - Clarifying Questions
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "DRAFT を閲覧できるロールをどう決めますか？=ADMIN は可・APPROVER は 403（推奨） / 下書きで必須とする入力項目をどうしますか？=通常の申請と同じ必須項目（推奨） / 下書きの削除を今回のスコープに含めますか？=含めない（推奨） / 今回の成果物の置き場所をどうしますか？=タスク名で分ける（推奨）"
+**AI Response**: "要求シートの矛盾2点（RSV-02『本人のみ閲覧』と受入条件『ADMIN は除く』、背景『入力途中の保存』とスキーマの NOT NULL 制約）および未定義のスコープ2点（削除の扱い、成果物の配置）を `requirement-verification-questions.md` にまとめ、うち4点を AskUserQuestion で確認した。4点とも推奨案で確定。Q5（拡張ルール3件）は前回ワークフローの opt-out を踏襲、Q6（遷移バリデーションの実装場所）・Q7（権限チェックの方式）・Q8（正式申請の API 設計）は推奨案を質問ファイルに記載し、要件定義書に反映した。Q7 については要求シートの『AI 活用ポイント』が @PreAuthorize での実装を挙げる一方、ReservationController の Javadoc が『行レベルの所有権チェックは ReservationService が担当する（@PreAuthorize 不使用）』と明記しており、既存方針を優先する判断を記録した。"
+**Context**: INCEPTION - Requirements Analysis 確認質問の解消
+
+---
+
+## Requirements Analysis - Document Generated
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "（確認質問の回答を受けて自動実行）"
+**AI Response**: "要件定義書を `Docs/spec/aidlc-docs/inception/requirements/reservation-draft/requirements.md` に生成した。深度は Standard。機能要件 FR-01 から FR-07、非機能要件 NFR-01 から NFR-04、スコープ外 FR-S01 から FR-S03 を定義し、受入条件6項目との対応表を付けた。実コードで検証した前提として、(a) DRAFT が V001 の CHECK 制約と両レイヤーの型定義に既存のため Flyway マイグレーション不要、(b) ApprovalService.listPending は approval_steps のみを参照するため承認ステップを作らなければ承認一覧に現れない、(c) OCCUPIED_STATUSES は PENDING/APPROVED のみで DRAFT は時間帯を占有しない、(d) 一覧画面の ALL_STATUSES に DRAFT を足すだけで RSV-05 を満たす、を記録した。設計上の判断として、下書き保存時は重複予約チェックを省き正式申請時に実行すること、正式申請時は create と同じ requires_approval 分岐を適用して下書き経由かどうかで最終状態が変わらないようにすることを定めた。拡張ルール3件は opt-out のため full rules を読み込まない。"
+**Context**: INCEPTION - Requirements Analysis 完了。承認待ち。
+
+---
+
+## Requirements Analysis - Approval
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "このまま進んで、受け入れ条件等に問題ないか再度確認して"
+**AI Response**: "要件定義を承認として記録し、受入条件6項目を実コードに当たって再点検した。4項目（一覧の DRAFT フィルタ・承認一覧への非表示・403 の返却・遷移テストの追加）は要件定義の内容で満たせることを確認。再点検で新たに判明した3点を記録する。(1) 受入条件『正式申請（PENDING に変更）ができる』と FR-04 の『requires_approval=false なら APPROVED に遷移』が字句として食い違う。requires_approval=false のリソースで PENDING にすると approval_steps が存在せず承認一覧からも到達できないため恒久的に滞留する。学習者の判断を仰ぐ。(2) frontend にエラーバウンダリ（error.tsx）が存在せず、403 は ApiClientError が未捕捉のまま Next.js の既定エラー画面に出る。これは他人の予約にアクセスした場合の既存挙動と同一であり回帰ではないが、受入条件の『403 が返る』を検証できるのは backend 側である。(3) 予約編集画面は status !== 'PENDING' で notFound() するほか、見出し文と Javadoc にも PENDING 限定の記述があり、DRAFT 対応では3箇所の修正が要る。また PUT の status フィールド追加には UpdateReservationSchema・UpdateReservationInput・Server Action の改修が伴う（Zod スキーマが 'use server' の制約で別ファイルに分離されているため）。"
+**Context**: INCEPTION - Requirements Analysis 承認。受入条件の再点検で AC-03 の論点が浮上。
+
+---
+
+## Requirements Analysis - AC-03 Divergence Decision
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "正式申請後のステータスをどう決めますか？=create と同じ分岐を適用（推奨）"
+**AI Response**: "正式申請後のステータスは requires_approval の値に従う（true → PENDING と承認ステップ生成、false → APPROVED）。受入条件の字句『正式申請（PENDING に変更）ができる』からの意図的な逸脱として、要件定義書に §7 を追加し理由を明記した。理由は、requires_approval=false のリソースで PENDING に固定すると承認ステップが存在せず承認一覧から到達できないまま滞留し、キャンセル以外に進む手段がなくなるため。また ReservationService.create の既存分岐とも揃わない。この逸脱は api-spec.md と requirements.md（仕様書側）に明記し、PR 本文にも記載する。あわせて §8 に再点検で判明した実装上の注意3点（403 の画面表示はエラーバウンダリ未設置で既存挙動と同一・スコープ外、予約編集画面は3箇所の修正が必要、status フィールドは DTO と Zod スキーマと型と Server Action の4箇所に波及）を記録した。"
+**Context**: INCEPTION - Requirements Analysis 完了。User Stories へ進む。
+
+---
+
+## User Stories - Assessment and Plan
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "このまま進んで、受け入れ条件等に問題ないか再度確認して"
+**AI Response**: "User Stories を EXECUTE と判定した。High Priority 基準の4項目（New User Features・User Experience Changes・Multi-Persona Systems・Complex Business Logic）すべてに該当する。判定根拠を `inception/plans/reservation-draft/user-stories-assessment.md` に記録。Part 1 の計画は前回ワークフローで学習者が承認した方式（ストーリー分解はハイブリッド Journey x Persona、受入基準は Given/When/Then）を引き継ぎ、新たな確認質問は設けなかった。学習者の『このまま進んで』を Part 1 の承認として扱い、その旨を明示したうえで Part 2 の生成に進んだ。"
+**Context**: INCEPTION - User Stories Part 1 完了
+
+---
+
+## User Stories - Generation
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "（承認済みの計画に従って実行）"
+**AI Response**: "ペルソナ3件とユーザーストーリー7件（受入基準34件）を生成した。成果物は `inception/user-stories/reservation-draft/personas.md` と `stories.md`。ペルソナ分析で、APPROVER が本課題で唯一『既存の権限が狭まる』ロールであることを特定した（現在の checkReadAccess は MEMBER のみを本人の予約に限定し APPROVER は全予約を閲覧できるが、DRAFT では 403 になる）。ADMIN は閲覧可だが既存の権限マトリクスにより更新権限を持たないため、編集・正式申請はできない組み合わせになる。トレーサビリティとして、ストーリーと要件、ペルソナとストーリー、要求シートの受入条件6項目と受入基準の3つの対応表を付けた。story-generation-plan.md のチェックボックス28件をすべて [x] に更新した。"
+**Context**: INCEPTION - User Stories Part 2 完了。承認待ち。
+
+---
+
+## User Stories - Approval
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "Workflow Planning"
+**AI Response**: "ユーザーストーリーとペルソナの承認として扱い、Workflow Planning ステージに進む。"
+**Context**: INCEPTION - User Stories 承認。Workflow Planning へ。
+
+---
+
+## Workflow Planning
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "Workflow Planning"
+**AI Response**: "実行計画を `inception/plans/reservation-draft/execution-plan.md` に生成した。全15ステージのうち EXECUTE 6（Functional Design・Spec Update・Code Generation・Build and Test・CI Quality Gate、および完了済みの Workflow Planning）、COMPLETED 4、SKIP 6。SKIP の根拠は、Reverse Engineering（既存成果物を再利用）、Application Design（新規コンポーネント・サービス・メソッド群なし）、Units Generation（単一の縦切りユニット）、NFR Requirements（新規 NFR なし・拡張3件 opt-out）、NFR Design（前提をスキップ）、Infrastructure Design（DRAFT が V001 の CHECK 制約に定義済みでマイグレーション不要）。リスク水準は Medium と評価した。ReservationService の create と update は既存のすべての予約操作が通る経路であり、そこに分岐を足すため。ただし draft と status はいずれも省略可能で、省略時の振る舞いを変えないため切り戻しは Easy とした。実装順序は仕様書 → backend の DTO とエンティティ → ReservationService → backend テスト → frontend の Zod スキーマと Server Action → 画面4つ → frontend テストの7段階で、並行可能な箇所はないと判断した。Mermaid 図は構文を検証したうえでテキスト版も併記した。"
+**Context**: INCEPTION - Workflow Planning 完了。承認待ち。
+
+---
+
+## Workflow Planning - Approval
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "Functional Design"
+**AI Response**: "実行計画の承認として扱い、CONSTRUCTION フェーズの Functional Design ステージに進む。"
+**Status**: Approved
+**Context**: INCEPTION 完了。CONSTRUCTION フェーズへ。
+
+---
+
+## Functional Design - reservation-draft
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "Functional Design"
+**AI Response**: "ユニット reservation-draft の Functional Design を完了した。計画は `construction/plans/reservation-draft-functional-design-plan.md`、成果物4件は `construction/reservation-draft/functional-design/` 配下（domain-entities.md / business-logic-model.md / business-rules.md / frontend-components.md）。ユーザー判断を要する論点は Requirements Analysis で解消済みのため新たな確認質問は設けず、設計上の判断5件を根拠とともに計画に記録した。主な判断: (1) draft と status を Zod スキーマに含めず Server Action の引数として渡す。これらはフォームの入力項目ではなく押されたボタンの種別を表すため。この設計により要件定義 §8 が挙げた波及範囲が4箇所から2箇所に減る。(2) 下書き作成時はリソース行の悲観ロックを取らない。ロックは重複チェックを直列化するためのもので、下書きは重複チェックを行わないため。(3) エンティティへの追加は markPending() 1つのみ。既存の cancel()/markApproved()/markRejected() が引数なしで固定ステータスを書き込む形に揃っており、遷移先が APPROVED の場合は既存の markApproved() を再利用できるため。(4) 正式申請ボタンは CancelButton と同じ Dialog による確認を置く。(5) SubmitDraftButton は CancelButton にない 409 捕捉を持つ。下書き保存時に重複チェックを通っていないため、正式申請で初めて競合が判明しうる。実装前の検証として、BusinessException が GlobalExceptionHandler で 422 にマップされることを確認し、business-logic-model.md の日時整合性チェックの記載を 400 から 422 に訂正した。業務ルール BR-01 から BR-26 を定義し、バックエンドで検証する受入基準20件との対応表を付けた。"
+**Context**: CONSTRUCTION - Functional Design 完了。承認待ち。
+
+---
+
+## Functional Design - Approval
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "Spec Update"
+**AI Response**: "Functional Design の承認として扱い、Spec Update ステージ（`/update-spec` スキル）に進む。"
+**Status**: Approved
+**Context**: CONSTRUCTION - Functional Design 承認。Spec Update へ。
+
+---
+
+## Spec Update - reservation-draft
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "Spec Update" および "遷移図の扱い=.drawio を更新し SVG 出力は人手で。これでよいが、どこをどう変えたらよいかまで教えてね。"
+**AI Response**: "`/update-spec` スキルに従い仕様書3ファイルを更新した。api-spec.md: エンドポイント一覧の概要と権限、GET /api/reservations の status パラメータに DRAFT、ReservationResponse の status 説明（『ベース実装では未使用』の記述を削除）、POST に draft フィールドと DRAFT での作成、GET /{id} のアクセス制御にロール別の可否表、PUT に status フィールド・重複チェックの実行条件・正式申請時の遷移先、および新規セクション『下書き保存と正式申請』{#reservation-draft}。requirements.md: API 権限マトリクスと画面アクセス権限表の該当行、UC-03 の入力項目に draft とステータス初期値表の3行化、RSV-01 と RSV-07 の改訂、新規セクション『下書き保存』{#reservation-draft}（RSV-08 から RSV-12）、ステータス遷移の補足表、重複予約チェック仕様への追記。screen-spec.md: /reservations/new の下書き保存ボタンと保存後フロー、/reservations のフィルタタブとバッジ、/reservations/{id} の編集・正式申請ボタンとアクセス制御表、/reservations/{id}/edit のアクセス制御。採番の注意点として、エンハンスシートの RSV-01 から RSV-05 は requirements.md の既存 RSV-01 から RSV-07 と衝突するため、仕様書側では RSV-08 以降を新規採番した。図については、ステータス遷移図と画面遷移図が drawio の SVG で管理されており、この環境に drawio の CLI がないため SVG を再出力できない。学習者の判断により .drawio を更新し SVG 出力は VSCode の拡張で人手で行う方針とした。.drawio と .drawio.svg の埋め込み XML が更新前に完全一致していることを検証したうえで、ステータス遷移図に DRAFT ノード1件と矢印4件、画面遷移図に矢印1件を追加した。手順と変更箇所は `construction/reservation-draft/spec-update/diagram-export-instructions.md` に記録した。`npm run build` は成功（画像の警告は既存の全 drawio SVG に出ているもので今回の変更とは無関係）。"
+**Context**: CONSTRUCTION - Spec Update 完了。承認待ち。SVG 再出力は学習者の手作業が残る。
+
+---
+
+## Spec Update - Diagram Incident and Recovery
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "VSCode で .drawio.svg のほうを開く。これがわからんし、図がおかしくなった。確認して。" および "できたわ" および "遷移図への DRAFT 反映をどう進めますか？=私が SVG を直接生成する（推奨）"
+**AI Response**: "調査の結果、`screen-spec-navigation.drawio` にステータス遷移図の XML が貼り付けられており、画面遷移図の中身が失われていた。`.drawio.svg` は2件とも未変更でサイト上の図は無傷だった。原因は私の手順書にファイルの1対1対応を書いていなかったこと。git HEAD から復元し、意図していた矢印1件のみを入れ直した。貼り付け後の内容は作業用ディレクトリに退避した。学習者の判断により、手作業を廃して SVG を直接生成する方針に切り替えた。実施内容: (1) `.drawio` に図形と線を追加、(2) `.drawio.svg` の描画部分に同じ座標系で `<g>` 要素を追記、(3) `<mxGraphModel>` を URL エンコード・raw deflate・Base64 で `content` 属性に書き戻し（往復が元 XML と一致することを検証）、(4) Playwright の Chromium で画像化して目視確認。検証のため Playwright のブラウザと依存ライブラリを導入した（このリポジトリが E2E で使う依存であり、Build and Test でも必要になる）。検証で2件の不具合を検出し修正した。第一に `content` 属性の置換に使った正規表現 `content=\".*?\" ` が、この属性が `<svg>` の最後の属性で `\">` で終わるため属性の外まで照合が伸び、`<svg>` タグを壊していた（Chromium が Attribute style redefined として検出）。引用符を含まない範囲で切り出す方式に改めた。第二に `正式申請（承認不要）` のラベルが既存ラベルの帯（y=53 から 77）と重なっていたため、線とラベルを y=88 に下げた。設計上の判断として、DRAFT の自己ループ（内容の編集）は落とした。図の外形が広がり全要素の座標を平行移動する必要が生じること、および既存図も PENDING の内容編集を描いていないことによる。記録は `construction/reservation-draft/spec-update/diagram-update.md`。`npm run build` 成功。"
+**Context**: CONSTRUCTION - Spec Update の図更新を完了。手作業の残件なし。
+
+---
+
+## Spec Update - Approval
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "Code Generation"
+**AI Response**: "Spec Update の承認として扱い、Code Generation ステージ（Part 1: 計画）に進む。"
+**Status**: Approved
+**Context**: CONSTRUCTION - Spec Update 承認。Code Generation へ。
+
+---
+
+## Code Generation Part 1 - Planning
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "Code Generation"
+**AI Response**: "ユニット reservation-draft の実装計画を `construction/plans/reservation-draft-code-generation-plan.md` に作成した。全16ステップ、変更対象は backend 6ファイル（新規0件）、frontend 8ファイル（新規3件）。新規は `lib/reservation-permissions.ts`（編集可否と正式申請可否の純関数）、`reservations/[id]/SubmitDraftButton.tsx`、`tests/unit/reservation-permissions.test.ts`。変更しないと決めたファイルを明記した。`ReservationController.java` は Service へ委譲する構造を維持するため、`ReservationEditForm.tsx` は送信内容が下書きでも承認待ちでも同じため、`lib/schemas/reservation.ts` は draft と status がフォームの入力項目ではないため。権限判定を lib の純関数に切り出す判断は、詳細画面と編集画面の2箇所から使うことと、既存の `buildResourceFilterHref`（`ResourceFilterForm.tsx` から export して純関数として検証する）と同じテスト方針に揃えられることによる。`data-testid` は本ユニットで新規追加する操作要素2件にのみ付け、既存要素には遡らない方針とした（リポジトリ全体で現在1箇所のみの使用実態に合わせる）。"
+**Context**: CONSTRUCTION - Code Generation Part 1 完了。承認待ち。
+
+---
+
+## Code Generation Part 1 - Approval
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "次へ"
+**AI Response**: "実装計画の承認として扱い、Code Generation Part 2（実装）に進む。"
+**Status**: Approved
+**Context**: CONSTRUCTION - Code Generation Part 1 承認。Part 2 へ。
+
+---
+
+## Code Generation Part 2 - Generation
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "（承認済みの計画に従って実行）"
+**AI Response**: "計画の16ステップをすべて実行した。backend 6ファイル変更（新規0件）、frontend 9ファイル（新規3件: `lib/reservation-permissions.ts` / `[id]/SubmitDraftButton.tsx` / `tests/unit/reservation-permissions.test.ts`）。計画どおり `ReservationController.java`・`ReservationEditForm.tsx`・`lib/schemas/reservation.ts` は変更していない。重複ファイル（_new / _modified）が生成されていないことを確認済み。実装中に判明した点を3件記録する。(1) DTO が record のためフィールド追加でコンストラクタ引数が増え、`ReservationServiceTest` の10箇所が影響を受けた。互換用の補助コンストラクタは足さず呼び出し側に null を渡す形に更新した。DTO は Jackson がデシリアライズする型であり、テストの都合で生成経路を増やすと実際のリクエストと乖離するため。(2) `form.handleSubmit(handler)` の handler は react-hook-form が第2引数にイベントを渡すため、draft を第2引数に足した当初の実装が SubmitHandler の型と衝突しビルドが失敗した。送信処理を `submitForm(values, draft)` に閉じ込め、handleSubmit には引数1つのクロージャを渡す形に修正した。(3) 正式申請での内容更新と重複チェックの順序について、設計書の記述と実装がずれたため設計書を実装に合わせた。重複チェックは保存済みの値ではなくリクエストの日時を対象にするため、どちらの順序でも結果は変わらない。検証結果は backend 181件・frontend 108件すべて通過、`pnpm lint` / `pnpm format:check` / `pnpm build` すべて成功。成果物一覧は `construction/reservation-draft/code/generation-summary.md`。"
+**Context**: CONSTRUCTION - Code Generation Part 2 完了。承認待ち。
+
+---
+
+## Code Generation Part 2 - Approval
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "次の作業をすべて行ってくれてよいが、ブラウザでの確認は私もやりたいので、すべて正常に行えた後に、動作確認用の手順を詳細に教えてほしい。"
+**AI Response**: "実装の承認として扱い、Build and Test ステージに進む。学習者自身もブラウザで確認したいとのことなので、ステージ完了後に動作確認手順を詳細に提示する。コミット・push・PR 作成は外部から見える操作であり、学習者のブラウザ確認が先に来るべきなので、本ステージでは実行せず別途確認する。"
+**Status**: Approved
+**Context**: CONSTRUCTION - Code Generation 承認。Build and Test へ。
+
+---
+
+## Build and Test - reservation-draft
+
+**Timestamp**: 2026-10-02T11:02:40+00:00
+**User Input**: "409 のエラー表示をどこまで扱うか = 別課題にして今回は触らない（推奨）"
+**AI Response**: "Build and Test を完了した。検証結果は backend 181件・frontend 108件すべて通過、spotlessCheck・checkstyleMain・lint・format:check・3モジュールのビルドすべて成功。成果物5件を `construction/reservation-draft/build-and-test/` に作成した。実行中に判明した事項を4件記録する。(1) 最初の一括実行で spotlessJavaCheck が失敗した。Java の整形を適用していなかったため `spotlessApply` を実行して解消。(2) 同じ一括実行でフロントエンドのテストが12ファイル中10ファイル失敗した。開発サーバーを起動したまま並行実行したことによる負荷が原因で、停止して単独実行したところ108件すべて通過した。この注意点を unit-test-instructions.md に記録した。(3) Playwright の Chromium でアプリを実際に操作し、自動テストで扱えない画面側の受入基準10件を確認してすべて通過した。目視確認により不具合を1件検出し修正した。予約詳細画面の DRAFT バッジが、Badge の既定バリアント（背景 primary）に text-muted-foreground のみを指定していたため青地に淡色文字となり読めなかった。bg-muted を併せて指定して解決。セレクタの一致だけを見ていたら見逃していた。(4) 409 のエラー表示が機能しないことを発見した。Server Action の例外はクライアントに渡るときクラス情報を失うため err instanceof ApiClientError が成立しない。ブラウザで検証したところ既存の予約申請フォームでも同じ挙動であり、今回の変更で持ち込んだものではない。修正には Server Action の戻り値を結果型に変える必要があり呼び出し側3箇所に波及するため、学習者の判断で別課題として切り出すこととした。検証で作成した予約5件はデータベースから削除し、シードの2件のみが残る状態に戻した。Checkstyle の warning 2件は ReservationRepository の既存メソッド名（Spring Data JPA のネストプロパティ記法）で本ユニットとは無関係。"
+**Context**: CONSTRUCTION - Build and Test 完了。学習者のブラウザ確認待ち。
+
+---
+
+## Build and Test - Manual Verification Guide Rewritten
+
+**Timestamp**: 2026-10-09
+**User Input**: "シナリオ作成ありがとう。実際に動作確認するうえで、操作がわからないところが多いので、1シナリオずつ詳細に確認方法がわかるように打鍵手順を作成しなおして。"
+**AI Response**: "`manual-verification.md` を打鍵手順として全面的に書き直した（724行・12シナリオ・チェック項目38件）。推測で書かずに、アプリを起動して Playwright で全画面を実際に開き、表示される文言をそのまま採録した。採録した画面はサインイン・ダッシュボード・リソース一覧・リソース詳細・予約申請フォーム・リソース選択肢・マイ予約一覧（タブ含む）・予約詳細（下書き）・正式申請ダイアログ・予約編集・承認待ち一覧・承認者の左メニュー・管理者から見た下書き詳細・管理者の全予約一覧・403 のエラー画面。裏取りで当初の記述の誤りを2件修正した。(1) リソース詳細から予約へ進むボタンを『この日時で予約する』と推測で書いていたが、実際は『このリソースを予約する』だった。あわせて、この導線で開くとリソースが選択済みになることを追記した。(2) 空のまま下書き保存したときのエラー文言4件を実機の表示に合わせた。さらにチェック項目の合計を31と誤記していたのを38に訂正した（シナリオ別の内訳表は正しかった）。各シナリオは目的・ロール・1操作1行の打鍵手順・期待する画面（表示文字をそのまま記載）・チェック欄で構成し、受入条件からの逸脱（シナリオ9）と既知の制約（シナリオ11）には理由と判断の記録へのリンクを添えた。検証で作成した予約はすべて削除し、シード2件のみの状態に戻した。"
+**Context**: CONSTRUCTION - Build and Test の動作確認手順を打鍵レベルに書き直し。学習者の確認待ち。
+
+---
+
+## Build and Test - Datetime Input Defect Found by Learner
+
+**Timestamp**: 2026-10-09
+**User Input**: "シナリオ2の下書き保存ボタン押下後にエラー（スクリーンショット: Runtime ApiClientError / リクエストボディが不正です。/ src/lib/api-client.ts (68:9) @ assertOk）"
+**AI Response**: "再現して原因を特定した。`frontend/src/server/actions/reservations.ts` の `toIsoWithSeconds` が『文字列長が16のときだけ :00 を補う』実装であり、datetime-local の年が4桁でない場合に長さが変わって秒が補われず、バックエンドが LocalDateTime として解釈できずに HttpMessageNotReadableException となる。年を5桁（20261）にして再現したところ、同じエラーになった。通常の予約申請（予約を申請する）でも同じ結果になることを実機で確認しており、本ユニットで持ち込んだものではない既存の不具合である。調査の過程で、私が起動したサーバーはポート 3000 と 8080 が既存プロセスに使われていたため、フロントエンドは 3001 に退避し、バックエンドは起動に失敗していたことも判明した（学習者が使っているのは前のターンから動いている 3000 と 8080 のプロセス。いずれも最新のコードを提供しているため動作確認には支障がない）。対応として、手順書のシナリオ2に年を4桁にする注意書きと原因の説明を追加し、build-and-test-summary.md の残課題に記録した。修正方針は2案（長さ判定をやめて秒の有無で判定する／Zod に年の範囲検証を足す）を提示し、学習者の判断を仰ぐ。動作確認自体は年を正しく入力すれば進められる。"
+**Context**: CONSTRUCTION - 学習者の動作確認で既存不具合を発見。手順書に注意書きを追加。
+
+---
+
+## Build and Test - Datetime Defect Scope Decision
+
+**Timestamp**: 2026-10-09
+**User Input**: "日時入力の年が4桁でないと保存できない不具合をこの PR でどう扱うか = 別課題にして今回は触らない（推奨）"
+**AI Response**: "409 のエラー表示と同じ扱いとし、別課題として切り出す。`build-and-test-summary.md` の残課題に、原因・再現条件・想定される直し方2案を記録済み。動作確認の手順書（シナリオ2）には年を4桁にする注意書きを追加済みのため、学習者は確認を続行できる。"
+**Status**: 別課題として切り出し（今回の PR では修正しない）
+**Context**: CONSTRUCTION - 既存不具合2件（409 のエラー表示・日時入力の年の桁数）をいずれも別課題とする方針で確定。
+
+---
+
+## Build and Test - Scenario 6 and 11 Expected Screens Corrected
+
+**Timestamp**: 2026-10-09
+**User Input**: "シナリオ6のエラー時の挙動がちょっと違う気がするので確認してほしい。指摘が違っていたらごめんなさい。"
+**AI Response**: "学習者の指摘が正しかった。再現してスクリーンショットで確認したところ、実際に見えるのは Next.js の開発用エラーオーバーレイで、`Runtime ApiClientError` の見出しと赤字の `この操作を行う権限がありません。`、`src/lib/api-client.ts (68:9) @ assertOk` のコード片、Call Stack が表示される。私が手順書に書いていた `Application error: a server-side exception has occurred...` は、Playwright の innerText が拾った裏側の HTML であり、オーバーレイを閉じないと見えない画面だった。同じ誤りがシナリオ11（409）にもあったため再現して確認し、赤字が `同一リソースの同一時間帯に承認済みまたは承認待ちの予約が存在します。` になることを確認した。シナリオ6・10・11の『期待する画面』を実機の表示（オーバーレイの構造を図示し、閉じると素のエラー画面が見えることも併記）に書き直した。あわせて、オーバーレイは開発サーバーの機能で本番ビルドでは出ないことを注記した。見た目の判断を innerText で済ませる誤りはこの作業で3回目（drawio の手順書、DRAFT バッジのコントラスト、今回）のため、記憶に『見た目が関わるものは必ず画像で確認する』として記録を更新した。"
+**Context**: CONSTRUCTION - 学習者の指摘により手順書の誤りを修正。
+
+---
+
+## Build and Test - Learner Verification Complete
+
+**Timestamp**: 2026-10-09
+**User Input**: "動作確認問題なく完了した"
+**AI Response**: "学習者によるブラウザでの動作確認が全12シナリオ・チェック項目38件とも問題なく完了した。Build and Test ステージを完了とし、OPERATIONS フェーズ（コミット・push・PR 作成・CI 品質ゲート）に進む。コミット以降は外部から見える操作のため、分割案と base ブランチを提示して確認を取ってから実行する。"
+**Status**: 動作確認完了
+**Context**: CONSTRUCTION 完了。OPERATIONS へ。
+
+---
+
+## Operations - Commits and Push
+
+**Timestamp**: 2026-10-09
+**User Input**: "ブランチ=現在のブランチのまま（推奨） / 分割案=この3分割でよい（推奨） / push=push する（推奨）"
+**AI Response**: "承認された分割案に従い3コミットを作成し push した。fb45cb1b docs(spec) 仕様書3ファイルと遷移図4ファイル（174 insertions / 39 deletions）、80ff2fbc feat 実装とテスト15ファイル・新規3件（992 insertions / 73 deletions）、5342dc58 docs(aidlc) AI-DLC 成果物22ファイル（3617 insertions / 30 deletions）。`git push` は認証のフォールバックなしで成功。作業ツリーはクリーン。前回ワークフロー（PR #116）と同じ docs(spec) → feat → docs(aidlc) の順とし、Spec-first の原則どおり仕様書を先頭に置いた。"
+**Status**: Pushed
+**Context**: OPERATIONS - コミット・push 完了。PR 作成へ。
+
+---
+
+## Operations - Pull Request Creation
+
+**Timestamp**: 2026-10-09
+**User Input**: "head=現在のブランチ（推奨） / base=learner/CHS-UTSUMI-KENTA/main（推奨） / 動作確認結果=所見をすべて記入する / 実行方法=確認のうえ作成する（推奨）" および "問題ない。続けて"
+**AI Response**: "PR #140 を作成した（https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/140）。base は learner/CHS-UTSUMI-KENTA/main、head は feature/CHS-UTSUMI-KENTA/30-reservation-draft、3コミット・44ファイル・+4783/-142。前回 PR #116 で base の候補列挙時にリモートブランチ一覧を head -15 で切って learner トランクを見落とした失敗があったため、今回は git ls-remote を grep で絞って learner/CHS-UTSUMI-KENTA/main の存在（88630c33・このブランチの分岐元）を先に確認し、CI のトリガーが branches: [main, 'learner/*/main'] であることも確認したうえで base を決めた。本文には受入条件からの意図的な逸脱、AI 活用箇所、自動検証の結果、学習者による手動確認12シナリオ38項目の内訳、既存不具合2件と設計上のトレードオフを記載した。セルフレビューのチェックは学習者自身の申告事項のため空のままとした。"
+**Status**: Created — https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/140
+**Context**: OPERATIONS - PR 作成完了。CI 品質ゲートへ。
+
+---
+
+## Operations - CI Quality Gate Result
+
+**Timestamp**: 2026-10-09
+**User Input**: "（自動実行・ユーザー入力なし）"
+**AI Response**: "PR #140 で CI の3ジョブがすべて pass した。CI Frontend 1m9s、build 1m22s、CI Backend 1m27s。OPERATIONS フェーズ（BookFlow 翻案の CI 品質ゲート）完了。AI-DLC ワークフロー全体が完了した。残る作業は学習者によるセルフレビュー（PR 本文のチェックボックス4項目）とマージであり、これは学習者自身の責務として AI は実行しない。"
+**Status**: All CI checks passed
+**Context**: OPERATIONS - CI 品質ゲート完了。AI-DLC ワークフロー終了。
+
+---
+
+## Operations - AI Review Round 1 Response
+
+**Timestamp**: 2026-10-09
+**User Input**: "観点1=実装をシートに合わせよう（本来は要件変更になるはずという旨は残す） / 観点2=テストを追加してほしい / 表のバグ=今すぐ直す / 承認ステップ=生成しない（シートに最も忠実） / 削除=実装する（シートに合わせる）"
+**AI Response**: "PR #140 の AI レビュー（ラウンド1）の指摘に対応した。観点1: (a) 正式申請の遷移先を requires_approval の値によらず PENDING に変更（ReservationService.update から markApproved の分岐を削除）。承認ステップは requires_approval=true のときのみ生成する既存ルールを維持した結果、承認不要リソースの下書きは正式申請後に承認待ちのまま進まなくなる。この既知の制約を api-spec.md・requirements.md・実装コメント・設計書に明記した。(b) RSV-02 の削除を実装。DELETE /api/reservations/{id} を新設し、DRAFT かつ申請者本人のみ（ADMIN も不可）、レコードごと物理削除、DRAFT 以外は 422。frontend に DeleteDraftButton と deleteReservationAction、api-client に del を追加。観点2: クライアントコンポーネントのテストを @testing-library/react と jsdom で追加（SubmitDraftButton 4件・ReservationForm 3件・DeleteDraftButton 3件）。レビューの判定基準である『実装を取り消すとテストが失敗すること』を、SubmitDraftButton の第3引数削除と ReservationForm の draft フラグ反転で実際に検証し、いずれも該当テストが失敗することを確認した。409 以外を再スローする分岐はテストしていない（startTransition 内の例外はエラーバウンダリに渡らず未処理の rejection になるため観測できない）。判定を左右しない観察のうち、requirements.md の draft 行が空行で表から切り離されていた件を修正し、描画結果をブラウザで確認。screen-spec.md の 409 メッセージ表示は既知の制約として注記した。ステータス遷移図から DRAFT→APPROVED の矢印を削除し、ラベルを『正式申請』に変更して SVG を再生成、描画確認済み。検証結果は backend 192件・frontend 128件すべて通過、lint・format・静的解析・3ビルドすべて成功。"
+**Status**: 観点1・観点2 対応完了。観点3 は学習者の回答待ち。
+**Context**: OPERATIONS - AI レビュー ラウンド1 への対応。
+
+---
+
+## Operations - Review Response Commits and Round 3 Answers
+
+**Timestamp**: 2026-10-09
+**User Input**: "観点3=自分で投稿する（回答案を作成・問1の訂正を依頼） / コミット=3分割でコミットし push（推奨）"
+**AI Response**: "AI レビュー対応の3コミットを push し、CI の3ジョブがすべて pass した（b71276ef docs(spec) 仕様書3件と遷移図2件、49979d6c feat 実装とテスト14件、356a4e01 docs(aidlc) 成果物9件）。観点3 の回答案を作成し、学習者の答えのうち問1を訂正した。学習者は A（本人だから両方のボタンが出る）と『見れるけど編集等は何もできない』の2案で迷っており、後者（選択肢 C）が正解である。根拠は、予約詳細画面の編集・正式申請・削除の表示判定がいずれも isOwner && !isAdmin を条件としており、ADMIN は isOwner が true でも !isAdmin が false になるため。キャンセルボタンも CANCELLABLE_STATUSES に DRAFT が含まれないため表示されない。問2（A）と問3（D）はいずれも正解であることを確認した。回答は学習者自身が PR に投稿する方針としたため、AI は投稿しない。"
+**Status**: 観点1・観点2 対応済み・CI pass。観点3 は学習者が投稿予定。
+**Context**: OPERATIONS - AI レビュー ラウンド1 対応完了。ラウンド2 待ち。
+
+---
