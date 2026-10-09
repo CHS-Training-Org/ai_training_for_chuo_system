@@ -180,6 +180,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 | GET | `/api/reservations/{id}` | 予約詳細 | 全ロール（本人 or APPROVER/ADMIN。`DRAFT` は本人 or ADMIN のみ） |
 | PUT | `/api/reservations/{id}` | 予約内容更新（DRAFT / PENDING のみ）と下書きの正式申請 | 申請者本人 |
 | POST | `/api/reservations/{id}/cancel` | キャンセル | 申請者本人 or ADMIN |
+| DELETE | `/api/reservations/{id}` | 下書きの削除（DRAFT のみ） | 申請者本人 |
 
 ### 承認
 
@@ -655,12 +656,9 @@ Content-Type: application/json
 - 現在のステータスが `DRAFT` で内容のみを更新する場合：実行しない（下書きは時間帯を占有しないため）
 - `status = "PENDING"` を指定した正式申請の場合：実行する（この時点で時間帯を占有し始めるため）
 
-**正式申請時の遷移先**：`status = "PENDING"` を指定して `DRAFT` の予約を正式申請すると、リソースの `requires_approval` に応じて遷移先が決まる。
+**正式申請時の遷移先**：`status = "PENDING"` を指定して `DRAFT` の予約を正式申請すると、リソースの `requires_approval` の値によらず `status = "PENDING"` になる。承認ステップは `requires_approval = true` の場合のみ 1 件生成する。
 
-- `requires_approval = true` の場合：`status = "PENDING"` となり、承認ステップを 1 件生成する
-- `requires_approval = false` の場合：`status = "APPROVED"` となり、承認ステップは生成しない
-
-> **注意**：`requires_approval = false` のリソースでは、リクエストで `"PENDING"` を指定しても応答の `status` は `"APPROVED"` になる。`POST /api/reservations` と同じ分岐を適用し、下書きを経由したかどうかで最終的な状態が変わらないようにしている。`PENDING` に固定すると、承認ステップが存在しないまま承認待ち一覧からも到達できず、予約が滞留するため。
+> **既知の制約**：`requires_approval = false` のリソースを下書きから正式申請すると、承認ステップが生成されないまま `PENDING` になる。この予約は承認待ち一覧に現れず承認できないため、キャンセル以外に進む手段がない。承認不要のリソースは通常の申請（`POST`）で即時確定するのが本来の経路であり、下書きを経由する運用は要件として想定されていない。解消するには要件の変更が必要である（[requirements.md §予約 下書き保存](./requirements.md#reservation-draft) 参照）。
 
 #### レスポンス（200 OK）
 
@@ -674,6 +672,32 @@ Content-Type: application/json
 
 ---
 
+### `DELETE /api/reservations/{id}`（下書きの削除）
+
+#### リクエスト
+
+```http
+DELETE /api/reservations/550e8400-e29b-41d4-a716-446655440030
+Authorization: Bearer <JWT>
+```
+
+**制約**：`status = 'DRAFT'` の予約のみ削除可。申請者本人のみ操作可能（ADMIN も不可）。  
+`DRAFT` は `approval_steps` を持たないため、関連レコードの削除は発生しない。
+
+#### レスポンス（204 No Content）
+
+ボディを返さない。
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| 403 | `FORBIDDEN` | 申請者本人以外が操作（ADMIN を含む） |
+| 404 | `NOT_FOUND` | 指定 ID の予約が存在しない |
+| 422 | `VALIDATION_ERROR` | `DRAFT` 以外の予約を削除しようとした |
+
+> **注意**：確定済みの予約（`PENDING` / `APPROVED`）は履歴を残す必要があるため削除できない。`POST /api/reservations/{id}/cancel` で `CANCELLED` に遷移させる。
+
+---
+
 ### 下書き保存と正式申請 {#reservation-draft}
 
 予約を `DRAFT` ステータスで保存し、後から再編集して正式申請できる。利用目的や参加人数の確認が終わる前に、入力した内容を取り置くための仕組みである。
@@ -684,14 +708,15 @@ Content-Type: application/json
 |------|------|----------------|
 | 下書きの作成 | `POST /api/reservations` に `draft = true` | `DRAFT` |
 | 下書きの編集 | `PUT /api/reservations/{id}`（`status` 省略） | `DRAFT`（変わらない） |
-| 正式申請 | `PUT /api/reservations/{id}` に `status = "PENDING"` | `PENDING` または `APPROVED` |
+| 正式申請 | `PUT /api/reservations/{id}` に `status = "PENDING"` | `PENDING` |
+| 下書きの削除 | `DELETE /api/reservations/{id}` | （レコードを削除） |
 
 #### 下書きの性質
 
 - **承認フローに流れない**：`DRAFT` の予約は `approval_steps` を持たない。したがって `GET /api/approvals/pending` にも現れない
 - **時間帯を占有しない**：重複予約チェックの対象ステータス（`PENDING` と `APPROVED`）に含まれないため、同じ時間帯に複数の下書きを置ける。重複の判定は正式申請の時点で行う
 - **閲覧できるのは本人と ADMIN のみ**：APPROVER を含む他のユーザーがアクセスすると `403 Forbidden` を返す
-- **キャンセルできない**：`POST /api/reservations/{id}/cancel` の対象は `PENDING` と `APPROVED` のみで、`DRAFT` を指定すると `422` を返す
+- **キャンセルではなく削除する**：`POST /api/reservations/{id}/cancel` の対象は `PENDING` と `APPROVED` のみで、`DRAFT` を指定すると `422` を返す。下書きの破棄は `DELETE /api/reservations/{id}` で行い、レコードごと削除する（確定前の予約に履歴を残す必要がないため）
 
 ---
 

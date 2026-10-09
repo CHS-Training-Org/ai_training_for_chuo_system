@@ -112,6 +112,7 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `GET /api/reservations/{id}` | ✅（本人のみ） | ✅（`DRAFT` は本人のみ） | ✅ |
 | `PUT /api/reservations/{id}` | ✅（本人のみ・`DRAFT` / `PENDING`） | ✅（本人のみ・`DRAFT` / `PENDING`） | ❌ |
 | `POST /api/reservations/{id}/cancel` | ✅（本人のみ） | ✅（本人のみ） | ✅（全件） |
+| `DELETE /api/reservations/{id}` | ✅（本人のみ・`DRAFT`） | ✅（本人のみ・`DRAFT`） | ❌ |
 | `GET /api/approvals/pending` | ❌ | ✅ | ✅ |
 | `POST /api/approvals/{stepId}/approve` | ❌ | ✅ | ✅ |
 | `POST /api/approvals/{stepId}/reject` | ❌ | ✅ | ✅ |
@@ -147,8 +148,8 @@ BookFlow は 3 種のロールで操作権限を制御する。
 |--------|--------|------|
 | （なし） | `DRAFT` | `POST /api/reservations` に `draft = true` |
 | `DRAFT` | `DRAFT` | `PUT /api/reservations/{id}`（`status` 省略・内容の編集） |
-| `DRAFT` | `PENDING` | `PUT /api/reservations/{id}` に `status = "PENDING"`（`requires_approval = true`） |
-| `DRAFT` | `APPROVED` | `PUT /api/reservations/{id}` に `status = "PENDING"`（`requires_approval = false`） |
+| `DRAFT` | `PENDING` | `PUT /api/reservations/{id}` に `status = "PENDING"`（`requires_approval` の値によらない） |
+| `DRAFT` | （削除） | `DELETE /api/reservations/{id}`。レコードごと削除するため遷移先のステータスはない |
 
 `DRAFT` から `CANCELLED` と `REJECTED` への遷移はない。`PENDING` や `APPROVED` から `DRAFT` へ戻る遷移もない。詳細は [§予約 下書き保存](#reservation-draft) を参照。
 
@@ -231,7 +232,6 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `endAt` | TIMESTAMP | ✅ | 利用終了日時（`startAt` より後であること） |
 | `purpose` | VARCHAR(255) | ✅ | 利用目的 |
 | `attendeesCount` | INTEGER | ❌ | 参加人数 |
-
 | `draft` | BOOLEAN | ❌ | `true` で下書き保存。省略時は `false`（§予約 下書き保存を参照） |
 
 #### ステータス初期値（ワンステップ申請）
@@ -271,10 +271,11 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | RSV-08 | `POST /api/reservations` に `draft = true` を指定すると、リソースの `requires_approval` の値によらず `DRAFT` ステータスで予約を作成する |
 | RSV-09 | `DRAFT` の予約は承認フローに流れない。`approval_steps` を生成せず、承認待ち一覧にも現れない |
 | RSV-10 | `DRAFT` の予約を閲覧できるのは申請者本人と ADMIN のみ。APPROVER を含む他のユーザーがアクセスした場合は `403 Forbidden` を返す |
-| RSV-11 | `PUT /api/reservations/{id}` に `status = "PENDING"` を指定すると、`DRAFT` の予約を正式申請する。遷移先はリソースの `requires_approval` に従い、`true` なら `PENDING`（承認ステップを生成）、`false` なら `APPROVED` とする |
+| RSV-11 | `PUT /api/reservations/{id}` に `status = "PENDING"` を指定すると、`DRAFT` の予約を正式申請する。遷移先はリソースの `requires_approval` の値によらず `PENDING` とする。承認ステップは `requires_approval = true` の場合のみ生成する |
 | RSV-12 | 下書きでも利用目的・開始日時・終了日時は必須とする。入力途中の保存には対応しない |
+| RSV-13 | 申請者本人は `DRAFT` の予約を削除できる（`DELETE /api/reservations/{id}`）。レコードごと削除し、`DRAFT` 以外は削除できない。ADMIN も削除できない |
 
-> **注意**：RSV-11 で `requires_approval = false` のリソースの遷移先を `APPROVED` としているのは、`PENDING` に固定すると承認ステップが存在しないまま承認待ち一覧からも到達できず、予約が滞留するためである。`POST /api/reservations` と同じ分岐を適用し、下書きを経由したかどうかで最終的な状態が変わらないようにしている。
+> **既知の制約**：RSV-11 により、`requires_approval = false` のリソースを下書きから正式申請すると、承認ステップが生成されないまま `PENDING` になる。この予約は承認待ち一覧に現れず承認できないため、キャンセル以外に進む手段がない。承認不要のリソースは通常の申請で即時確定するのが本来の経路であり、下書きを経由する運用は要件として想定されていない。解消には要件の変更が必要である。
 
 #### 下書きと重複予約チェック
 
@@ -286,9 +287,11 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | 下書きの編集（`status` 省略） | 実行しない |
 | 下書きの正式申請（`status = "PENDING"`） | 実行する |
 
-#### 下書きのキャンセル
+#### 下書きの削除とキャンセルの使い分け
 
-`DRAFT` の予約はキャンセルの対象外とする（RSV-04 と RSV-06 の対象は `PENDING` と `APPROVED`）。下書きの削除は学習者拡張課題として扱う。
+`DRAFT` の予約はキャンセルの対象外とする（RSV-04 と RSV-06 の対象は `PENDING` と `APPROVED`）。下書きの破棄は RSV-13 の削除で行い、レコードごと削除する。
+
+確定前の予約には履歴を残す必要がないため削除を許し、確定済みの予約（`PENDING` / `APPROVED`）はキャンセルで `CANCELLED` に遷移させて履歴を残す。
 
 ### 重複予約チェック仕様
 
