@@ -11,7 +11,6 @@ audience: 学習者
 references:
   - ./integration-test/viewpoints.md
   - ./troubleshooting.md
-  - ../operations/playwright-adoption.md
 timestamp: 2026-10-09
 ---
 

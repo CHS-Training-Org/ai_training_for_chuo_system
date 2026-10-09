@@ -15,7 +15,6 @@ references:
   - ./viewpoints.md
   - ./execution.md
   - ../playwright-guide.md
-  - ../../operations/playwright-adoption.md
   - ../../reference/claude-code/agent-config.md
 ---
 

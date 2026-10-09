@@ -15,7 +15,6 @@ references:
   - ./viewpoints.md
   - ./cases.md
   - ./execution.md
-  - ../../operations/playwright-adoption.md
 ---
 
 # 結合テストのワークフロー

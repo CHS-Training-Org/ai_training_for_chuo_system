@@ -11,7 +11,6 @@ tags:
 audience: 学習者
 timestamp: 2026-10-09
 references:
-  - ../../operations/playwright-adoption.md
   - ../../reference/claude-code/agent-config.md
   - ../../spec/screen-spec.md
   - ./cases.md
