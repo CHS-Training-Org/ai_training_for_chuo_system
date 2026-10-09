@@ -100,6 +100,14 @@
         <mxCell id="21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" edge="1" parent="1" source="5" target="8">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <!-- reservationNew → reservationDetail（下書き保存完了） -->
+        <mxCell id="22" value="下書き保存完了" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;labelBackgroundColor=#ffffff;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0.364;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="10" target="8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="596" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
