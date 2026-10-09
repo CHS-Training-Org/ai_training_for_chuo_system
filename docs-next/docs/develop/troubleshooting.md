@@ -9,7 +9,7 @@ tags:
 audience: 学習者
 references:
   - ../learn/getting-started.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-10-09T00:00:00+09:00'
 ---
 
 # トラブルシューティング
@@ -25,9 +25,29 @@ last_updated: '2026-08-01T11:56:18+09:00'
 ---
 
 ## DevContainer・Docker 関連 {#devcontainer}
-### 「Reopen in Container」を選んでも DevContainer に接続されない
+### コマンドパレットに「Dev Containers: Reopen in Container」が出てこない
 
-- **症状**: DevContainer に自動接続されない。VS Code を開いてもコンテナで開き直すかを尋ねるプロンプトが出ない、またはコマンドパレットから「Reopen in Container」を選んでも反応がない。エラーメッセージは出ない。
+- **症状**: コマンドパレットで「Reopen in Container」を検索しても候補に現れない。VS Code を開いてもコンテナで開き直すかを尋ねるプロンプトが出ない。コマンド自体が存在しないため、エラーメッセージも出ません。
+- **原因**: Dev Containers 拡張（`ms-vscode-remote.remote-containers`）が VS Code に入っていない、無効化されている、またはインストール後に VS Code を再読み込みしていない。この拡張がコマンドパレットに「Dev Containers:」で始まるコマンド群を追加するため、拡張がない状態では「Reopen in Container」という選択肢そのものが存在しません。
+- **切り分け**: 拡張ビュー（<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>）の検索窓に `@installed dev containers` と入力し、Dev Containers が一覧に出るか、出た場合に「有効にする」ボタンが残っていないかを見ます。ターミナルからは次のコマンドでも確認できます。
+
+    ```bash
+    code --list-extensions | grep remote-containers
+    ```
+
+    Windows では**このコマンドを WSL2 ターミナル（Ubuntu）で実行してください**。PowerShell で実行すると Windows 側の VS Code の一覧が返り、WSL リモートに入っている拡張とは別のものを見ることになります。
+
+- **解決策**:
+    1. 拡張が出てこない場合は、WSL2 ターミナル（macOS・Linux では通常のターミナル）で `code --install-extension ms-vscode-remote.remote-containers` を実行する。Windows ではあわせて `code --install-extension ms-vscode-remote.remote-wsl` も入れる（[OS 別の事前準備](../learn/getting-started.md)参照）
+    2. 拡張ビューに出ているが「有効にする」ボタンが残っている場合は、それを押して有効化する
+    3. インストール・有効化のあと、コマンドパレットから「**Developer: Reload Window**」を実行して VS Code を再読み込みする
+    4. コマンドパレットでは `Reopen` だけでなく `Dev Containers:` まで入力して探す。前半を省くと候補が絞り込まれず、目的のコマンドが埋もれることがあります
+
+    コマンドは出るようになったが実行しても何も起きない場合は、次の項目を参照してください。
+
+### 「Reopen in Container」を実行してもコンテナで開き直されない
+
+- **症状**: コマンドパレットに「Dev Containers: Reopen in Container」は出るが、実行しても DevContainer に接続されない。コンテナで開き直すかを尋ねるプロンプトも出ない。エラーメッセージは出ない。
 - **原因**: VS Code で開いているフォルダが、リポジトリのルート（`.devcontainer` ディレクトリがある階層）になっていない。`frontend/` や `backend/` などのサブディレクトリや、リポジトリの親フォルダを開いていると、Dev Containers 拡張が `.devcontainer/devcontainer.json` を検出できず、起動そのものが始まりません。エラーで失敗するのではなく何も起きないため、他の起動失敗と症状が異なります。
 - **切り分け**: VS Code のエクスプローラーのルート表示、またはウィンドウのタイトルバーのフォルダ名を確認します。開いているのがリポジトリのルートであれば、エクスプローラーの直下に `.devcontainer` が見えます。
 - **解決策**: リポジトリのルートを開き直します。WSL2 ターミナルでルートへ移動して `code .` を実行するか、VS Code の **File → Open Folder** でルートを選び直してください。
@@ -48,6 +68,23 @@ last_updated: '2026-08-01T11:56:18+09:00'
     2. トレイアイコン → **Preferences → WSL → Integrations** で **Ubuntu** を ON にして **Apply**
     3. PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直す
     4. WSL2 ターミナルで `docker info` がエラーなく返れば OK。手順の詳細は [README「Windows ユーザー向け: WSL2 セットアップ」](https://github.com/CHS-Training-Org/ai_training_for_chuo_system/blob/main/README.md)を参照
+
+### （Windows）Rancher Desktop の Integrations に Ubuntu が出てこない {#wsl-account-mismatch}
+
+- **症状**: Rancher Desktop の **Preferences → WSL → Integrations** に `Ubuntu` が現れず、統合を有効化できない。昇格していない PowerShell で `wsl -l -v` を実行すると `rancher-desktop` と `rancher-desktop-data` だけが表示され、管理者で実行した PowerShell では `Ubuntu` が表示される。
+- **原因**: WSL のディストロは Windows のユーザーアカウントごとに登録されるため、別のアカウントで入れた `Ubuntu` は見えない。管理者権限が別アカウントとして配られている PC で「管理者として実行」した PowerShell から `wsl --install` すると、この状態になる。Rancher Desktop は普段使いのアカウントで動くので、統合先の候補に `Ubuntu` が出てこない。
+- **切り分け**: 昇格した PowerShell と通常の PowerShell でそれぞれ `whoami` を実行し、出力を見比べる。同じアカウントの昇格であれば出力は一致する。違っていれば別アカウントで動いている。
+- **解決策**: 普段使いのアカウント（昇格していない PowerShell）で `wsl --install -d Ubuntu` を実行し直す。新しく登録された `Ubuntu` は別のディストロなので中身は空で、管理者アカウント側で行った git のインストールや clone は引き継がれない。新しい `Ubuntu` に対して統合を有効化し直す必要があるため、[環境構築・起動手順](../learn/getting-started.md)の Windows 向け手順 5 以降をやり直すこと。VS Code も普段使いのアカウントに入っている必要があるため、昇格していない PowerShell で `code --version` がバージョンを返すことを併せて確認する。
+
+:::note[管理者アカウント側に残った Ubuntu]
+ディスクを消費するだけで開発の妨げにはならないため、そのままにしておいてよい。`wsl --unregister` はディストロのディスクイメージを削除する非可逆操作なので、容量を空ける必要が出るまで実行しない。
+:::
+
+### （Windows）winget でのインストールがすべて失敗する {#winget-fails}
+
+- **症状**: `winget install` が、対象パッケージを問わずエラーになる。
+- **切り分け**: 昇格していない PowerShell で `winget --version` と `winget source list` を実行する。
+- **原因と解決策**: 昇格していない PowerShell では動く場合、winget（App Installer）がユーザー単位で導入される仕組みのため、別アカウントで昇格した PowerShell からは使えない状態になっている。上の項目と同じ原因なので、インストールは昇格していない PowerShell で行う。昇格していない PowerShell でもネットワークや証明書のエラーになる場合は別の原因で、社内プロキシやグループポリシーによる制限が考えられる。エラーメッセージの全文を添えて運営者に相談すること。
 
 ### （Windows）Rancher Desktop の Container Engine 設定が原因で起動に失敗する
 
@@ -134,6 +171,18 @@ Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本�
   ```
 
   provisioning が出力する Pool ID / Client ID の `.env.local` への設定は [getting-started.md](../learn/getting-started.md) ステップ 3 を参照。
+
+### Playwright のテストが `Executable doesn't exist` で失敗する {#playwright-browser}
+
+- **症状**: `pnpm test:e2e` を実行すると、ログインの準備（`auth.setup.ts`）が `browserType.launch: Executable doesn't exist at ...` や、共有ライブラリが見つからないエラーで失敗し、ほかのテストが実行されません。
+- **原因**: DevContainer のイメージには、Playwright のブラウザ（Chromium）も、ブラウザが使う共有ライブラリも入っていません。入れたあとでも、コンテナを作り直すと消えます。
+- **解決策**: コンテナ内で、ブラウザと共有ライブラリを入れます。ダウンロードを含めて数分かかります。
+
+  ```bash
+  cd /workspace/frontend && pnpm exec playwright install --with-deps chromium
+  ```
+
+  結合テストのワークフローでは、テストを流す前の環境の準備（`node scripts/e2e-workflow/env.mjs browser`）が、ブラウザが立ち上がるかを確かめて、立ち上がらなければこのコマンドを実行します。
 
 ---
 

@@ -69,19 +69,44 @@ const config: Config = {
   // 移行時に `\{#id}` へエスケープせざるを得なくなっていた（アンカーが全滅する原因）。
   markdown: {
     format: 'detect',
+    // theme-mermaid を themes に入れるだけでは ```mermaid コードブロックは図にならず、
+    // コードのまま表示される。図として描画するにはこのフラグが要る。
+    mermaid: true,
+    // 脚注の見出しと戻りリンクの読み上げを日本語にする（既定は英語の Footnotes）。
+    remarkRehypeOptions: {
+      footnoteLabel: '脚注',
+      footnoteBackLabel: '本文に戻る',
+    },
   },
 
-  themes: ['@docusaurus/theme-mermaid'],
-
-  plugins: [
+  themes: [
+    '@docusaurus/theme-mermaid',
+    // 検索の索引は `npm run build` の postBuild でだけ作られる。
+    // 開発サーバー（npm run start）では検索できないので、確かめるときは build → serve を使う。
     [
-      'docusaurus-plugin-search-local',
+      '@easyops-cn/docusaurus-search-local',
       {
+        // 'ja' がないと日本語が分かち書きされず、ほとんどの語が索引に入らない。
+        language: ['en', 'ja'],
+        // docs の routeBasePath が '/' なので合わせる（既定の 'docs' のままだと見出し単位で索引されない）。
+        docsRouteBasePath: '/',
         indexBlog: false,
         indexPages: true,
         hashed: true,
       },
     ],
+  ],
+
+  plugins: [
+    // 開発サーバー専用のレビューコメント保存先（本番ビルドには影響しない）。
+    './plugins/review-comments.js',
+  ],
+
+  // Mermaid の図に拡大縮小と全画面表示を付ける。
+  clientModules: [
+    './src/clientModules/mermaidPanZoom.js',
+    // 開発サーバー専用: 文言を選んでコメントを残す。
+    './src/clientModules/reviewComments.js',
   ],
 
   themeConfig: {
