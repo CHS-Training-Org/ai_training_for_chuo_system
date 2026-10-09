@@ -6,6 +6,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.bookflow.application.exception.BusinessException;
@@ -160,7 +163,7 @@ class ReservationServiceTest {
     @Test
     void create_noConflictRequiresApprovalFalse_returnsApproved() {
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "週次ミーティング", 5);
+          new CreateReservationRequest(resourceId, start, end, "週次ミーティング", 5, null);
 
       ReservationResponse response = reservationService.create(req, requester);
 
@@ -172,7 +175,7 @@ class ReservationServiceTest {
     void create_noConflictRequiresApprovalTrue_returnsPending() throws Exception {
       setField(resource, "requiresApproval", true);
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "承認が必要な会議", null);
+          new CreateReservationRequest(resourceId, start, end, "承認が必要な会議", null, null);
 
       ReservationResponse response = reservationService.create(req, requester);
 
@@ -194,7 +197,7 @@ class ReservationServiceTest {
           .thenReturn(List.of(existing));
 
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "テスト", null);
+          new CreateReservationRequest(resourceId, start, end, "テスト", null, null);
 
       assertThatThrownBy(() -> reservationService.create(req, requester))
           .isInstanceOf(ReservationConflictException.class);
@@ -215,7 +218,7 @@ class ReservationServiceTest {
           .thenReturn(List.of(existing));
 
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "テスト", null);
+          new CreateReservationRequest(resourceId, start, end, "テスト", null, null);
 
       ReservationResponse response = reservationService.create(req, requester);
 
@@ -225,7 +228,8 @@ class ReservationServiceTest {
     @Test
     void create_endBeforeStart_throwsBusinessException() {
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, end, start, "テスト", null); // endAt < startAt
+          new CreateReservationRequest(
+              resourceId, end, start, "テスト", null, null); // endAt < startAt
 
       assertThatThrownBy(() -> reservationService.create(req, requester))
           .isInstanceOf(BusinessException.class);
@@ -237,7 +241,7 @@ class ReservationServiceTest {
       when(resourceRepository.findByIdForUpdate(unknownId)).thenReturn(Optional.empty());
 
       CreateReservationRequest req =
-          new CreateReservationRequest(unknownId, start, end, "テスト", null);
+          new CreateReservationRequest(unknownId, start, end, "テスト", null, null);
 
       assertThatThrownBy(() -> reservationService.create(req, requester))
           .isInstanceOf(ResourceNotFoundException.class);
@@ -359,7 +363,8 @@ class ReservationServiceTest {
       when(reservationRepository.save(any(Reservation.class)))
           .thenAnswer(inv -> inv.getArgument(0));
 
-      UpdateReservationRequest req = new UpdateReservationRequest(newStart, newEnd, "更新後の会議", 3);
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(newStart, newEnd, "更新後の会議", 3, null);
       ReservationResponse response = reservationService.update(reservationId, req, owner);
 
       assertThat(response.startAt()).isEqualTo(newStart);
@@ -380,7 +385,8 @@ class ReservationServiceTest {
               ReservationStatus.APPROVED);
       when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
 
-      UpdateReservationRequest req = new UpdateReservationRequest(newStart, newEnd, "テスト", null);
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(newStart, newEnd, "テスト", null, null);
 
       assertThatThrownBy(() -> reservationService.update(reservationId, req, owner))
           .isInstanceOf(BusinessException.class);
@@ -401,7 +407,8 @@ class ReservationServiceTest {
               ReservationStatus.PENDING);
       when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
 
-      UpdateReservationRequest req = new UpdateReservationRequest(newStart, newEnd, "テスト", null);
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(newStart, newEnd, "テスト", null, null);
 
       assertThatThrownBy(() -> reservationService.update(reservationId, req, other))
           .isInstanceOf(AccessDeniedException.class);
@@ -435,7 +442,8 @@ class ReservationServiceTest {
       when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
           .thenReturn(List.of(reservation, conflicting)); // 自己 + 重複他予約
 
-      UpdateReservationRequest req = new UpdateReservationRequest(newStart, newEnd, "テスト", null);
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(newStart, newEnd, "テスト", null, null);
 
       assertThatThrownBy(() -> reservationService.update(reservationId, req, owner))
           .isInstanceOf(ReservationConflictException.class);
@@ -549,6 +557,239 @@ class ReservationServiceTest {
 
       assertThatThrownBy(() -> reservationService.cancel(reservationId, owner))
           .isInstanceOf(BusinessException.class);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 下書き保存と正式申請（reservation-draft）
+  // ---------------------------------------------------------------------------
+
+  @Nested
+  class Draft {
+
+    private final UUID resourceId = UUID.fromString("20000000-0000-0000-0000-000000000030");
+    private final UUID ownerId = UUID.fromString("20000000-0000-0000-0000-000000000031");
+    private final UUID otherId = UUID.fromString("20000000-0000-0000-0000-000000000032");
+    private final UUID reservationId = UUID.fromString("20000000-0000-0000-0000-000000000033");
+    private final LocalDateTime start = LocalDateTime.of(2025, 6, 10, 10, 0);
+    private final LocalDateTime end = LocalDateTime.of(2025, 6, 10, 12, 0);
+
+    private Resource resource;
+    private User owner;
+
+    @BeforeEach
+    void setUp() {
+      resource = makeResource(resourceId, false);
+      owner = makeUser(ownerId, Role.MEMBER);
+      lenient().when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
+      lenient()
+          .when(resourceRepository.findByIdForUpdate(resourceId))
+          .thenReturn(Optional.of(resource));
+      lenient()
+          .when(reservationRepository.save(any(Reservation.class)))
+          .thenAnswer(inv -> inv.getArgument(0));
+      lenient().doNothing().when(approvalService).createInitialStep(any(Reservation.class));
+    }
+
+    private CreateReservationRequest draftRequest() {
+      return new CreateReservationRequest(resourceId, start, end, "検討中の打ち合わせ", 4, true);
+    }
+
+    private Reservation draftReservation() {
+      return makeReservation(reservationId, resource, owner, start, end, ReservationStatus.DRAFT);
+    }
+
+    // ---- 作成 ----
+
+    @Test
+    void create_draftWithRequiresApprovalFalse_returnsDraft() {
+      ReservationResponse response = reservationService.create(draftRequest(), owner);
+
+      assertThat(response.status()).isEqualTo("DRAFT");
+    }
+
+    @Test
+    void create_draftWithRequiresApprovalTrue_returnsDraft() throws Exception {
+      setField(resource, "requiresApproval", true);
+
+      ReservationResponse response = reservationService.create(draftRequest(), owner);
+
+      assertThat(response.status()).isEqualTo("DRAFT");
+    }
+
+    @Test
+    void create_draft_doesNotCreateApprovalStep() throws Exception {
+      setField(resource, "requiresApproval", true);
+
+      reservationService.create(draftRequest(), owner);
+
+      verify(approvalService, never()).createInitialStep(any(Reservation.class));
+    }
+
+    @Test
+    void create_draftWithOverlappingReservation_returnsDraftWithoutConflict() {
+      // 下書きは時間帯を占有しないため、重複チェック自体を行わない。
+      // findByResource_IdAndStatusIn を stub しないことで、呼ばれないことも併せて確認する
+      ReservationResponse response = reservationService.create(draftRequest(), owner);
+
+      assertThat(response.status()).isEqualTo("DRAFT");
+      verify(reservationRepository, never())
+          .findByResource_IdAndStatusIn(eq(resourceId), anyCollection());
+    }
+
+    // ---- 内容の更新 ----
+
+    @Test
+    void update_draftWithoutStatus_staysDraft() {
+      Reservation reservation = draftReservation();
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(
+              start.plusHours(1), end.plusHours(1), "内容を詰めた打ち合わせ", 6, null);
+
+      ReservationResponse response = reservationService.update(reservationId, req, owner);
+
+      assertThat(response.status()).isEqualTo("DRAFT");
+      assertThat(response.purpose()).isEqualTo("内容を詰めた打ち合わせ");
+      // DRAFT の内容更新では重複チェックを行わない
+      verify(reservationRepository, never())
+          .findByResource_IdAndStatusIn(eq(resourceId), anyCollection());
+    }
+
+    // ---- 正式申請 ----
+
+    @Test
+    void update_submitDraftWithRequiresApprovalTrue_returnsPendingAndCreatesApprovalStep()
+        throws Exception {
+      setField(resource, "requiresApproval", true);
+      Reservation reservation = draftReservation();
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+      when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
+          .thenReturn(List.of());
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(start, end, "検討中の打ち合わせ", 4, ReservationStatus.PENDING);
+
+      ReservationResponse response = reservationService.update(reservationId, req, owner);
+
+      assertThat(response.status()).isEqualTo("PENDING");
+      verify(approvalService, times(1)).createInitialStep(any(Reservation.class));
+    }
+
+    @Test
+    void update_submitDraftWithRequiresApprovalFalse_returnsApprovedWithoutApprovalStep() {
+      Reservation reservation = draftReservation();
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+      when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
+          .thenReturn(List.of());
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(start, end, "検討中の打ち合わせ", 4, ReservationStatus.PENDING);
+
+      ReservationResponse response = reservationService.update(reservationId, req, owner);
+
+      // 受入条件の字句は PENDING だが、承認不要リソースでは APPROVED とする（要件定義 §7）
+      assertThat(response.status()).isEqualTo("APPROVED");
+      verify(approvalService, never()).createInitialStep(any(Reservation.class));
+    }
+
+    @Test
+    void update_submitDraftWithConflict_throwsAndKeepsDraft() {
+      Reservation reservation = draftReservation();
+      Reservation existing =
+          makeReservation(
+              UUID.randomUUID(),
+              resource,
+              owner,
+              start.minusHours(1),
+              start.plusHours(1),
+              ReservationStatus.APPROVED);
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+      when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
+          .thenReturn(List.of(existing));
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(start, end, "検討中の打ち合わせ", 4, ReservationStatus.PENDING);
+
+      assertThatThrownBy(() -> reservationService.update(reservationId, req, owner))
+          .isInstanceOf(ReservationConflictException.class);
+      assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.DRAFT);
+    }
+
+    @Test
+    void update_submitNonDraftReservation_throwsBusinessException() {
+      Reservation reservation =
+          makeReservation(reservationId, resource, owner, start, end, ReservationStatus.PENDING);
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(start, end, "承認待ちの予約", 4, ReservationStatus.PENDING);
+
+      assertThatThrownBy(() -> reservationService.update(reservationId, req, owner))
+          .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    void update_submitWithStatusOtherThanPending_throwsBusinessException() {
+      Reservation reservation = draftReservation();
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+      UpdateReservationRequest req =
+          new UpdateReservationRequest(start, end, "検討中の打ち合わせ", 4, ReservationStatus.APPROVED);
+
+      assertThatThrownBy(() -> reservationService.update(reservationId, req, owner))
+          .isInstanceOf(BusinessException.class);
+    }
+
+    // ---- 閲覧権限 ----
+
+    @Test
+    void get_draftByOwner_returnsResponse() {
+      when(reservationRepository.findById(reservationId))
+          .thenReturn(Optional.of(draftReservation()));
+
+      ReservationResponse response = reservationService.get(reservationId, owner);
+
+      assertThat(response.status()).isEqualTo("DRAFT");
+    }
+
+    @Test
+    void get_draftByAdmin_returnsResponse() {
+      when(reservationRepository.findById(reservationId))
+          .thenReturn(Optional.of(draftReservation()));
+
+      ReservationResponse response =
+          reservationService.get(reservationId, makeUser(otherId, Role.ADMIN));
+
+      assertThat(response.status()).isEqualTo("DRAFT");
+    }
+
+    @Test
+    void get_draftByApprover_throwsAccessDeniedException() {
+      when(reservationRepository.findById(reservationId))
+          .thenReturn(Optional.of(draftReservation()));
+      User approver = makeUser(otherId, Role.APPROVER);
+
+      assertThatThrownBy(() -> reservationService.get(reservationId, approver))
+          .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void get_draftByOtherMember_throwsAccessDeniedException() {
+      when(reservationRepository.findById(reservationId))
+          .thenReturn(Optional.of(draftReservation()));
+      User other = makeUser(otherId, Role.MEMBER);
+
+      assertThatThrownBy(() -> reservationService.get(reservationId, other))
+          .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void get_pendingByApprover_returnsResponse() {
+      // DRAFT 以外の可視範囲は変えない（非回帰）
+      Reservation reservation =
+          makeReservation(reservationId, resource, owner, start, end, ReservationStatus.PENDING);
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+
+      ReservationResponse response =
+          reservationService.get(reservationId, makeUser(otherId, Role.APPROVER));
+
+      assertThat(response.status()).isEqualTo("PENDING");
     }
   }
 }

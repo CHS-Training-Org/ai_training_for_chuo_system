@@ -43,7 +43,7 @@ function statusBadgeClass(status: string): string {
   return map[status] ?? "";
 }
 
-const ALL_STATUSES = ["PENDING", "APPROVED", "REJECTED", "CANCELLED"];
+const ALL_STATUSES = ["DRAFT", "PENDING", "APPROVED", "REJECTED", "CANCELLED"];
 
 export default async function ReservationsPage({
   searchParams,

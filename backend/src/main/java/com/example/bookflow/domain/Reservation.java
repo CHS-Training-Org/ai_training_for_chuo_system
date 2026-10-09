@@ -124,6 +124,17 @@ public class Reservation {
   }
 
   /**
+   * 予約を承認待ちにする。
+   *
+   * <p>下書き（{@link ReservationStatus#DRAFT}）の正式申請で、リソースが承認を要する場合に呼ばれる。 呼び出し前に Service
+   * 層で遷移可否と重複予約を確認すること。
+   */
+  public void markPending() {
+    this.status = ReservationStatus.PENDING;
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  /**
    * 予約を承認済みにする（カテゴリ 6 承認ワークフロー用）。
    *
    * <p>承認者が {@code POST /api/approvals/{stepId}/approve} を実行した際に呼ばれる。 呼び出し前に Service
