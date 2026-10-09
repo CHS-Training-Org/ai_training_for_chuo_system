@@ -10,7 +10,7 @@ audience: 学習者
 references:
   - ../develop/troubleshooting.md
   - ./ai-tools-guide.md
-last_updated: '2026-09-03T00:00:00+09:00'
+last_updated: '2026-09-11T00:00:00+09:00'
 ---
 
 # 環境構築・起動手順
@@ -57,19 +57,39 @@ Windows 側（WSL2 からは `/mnt/c/...`）にソースを置くと、クロス
 必ず WSL2 ネイティブファイルシステム（`/home/<user>/...`）に配置してください。
 :::
 
-1. **VS Code のインストール**（PowerShell を管理者で実行）
+:::warning[WSL と各ツールは同じ Windows ユーザーアカウントで入れる]
+WSL のディストロは Windows のユーザーアカウントごとに登録されます。管理者権限が別アカウントとして配られている PC では、「管理者として実行」した PowerShell が普段使いのアカウントとは別のアカウントで動くため、そこで入れた Ubuntu は普段使いのアカウントからは見えません。Rancher Desktop の統合先の候補にも現れないため、DevContainer の起動まで失敗します。
+
+昇格が必要なのは手順 1 の WSL 有効化だけです。手順 2 以降は昇格していない PowerShell で実行してください。分離が起きている環境かどうかは、昇格した PowerShell と通常の PowerShell で `whoami` の出力を見比べるとわかります。同じアカウントの昇格であれば出力は一致します。
+
+手順 2 から 4 の途中で UAC のダイアログが出て別アカウントの資格情報を求められた場合、そのインストーラーは別アカウントとして動くため、普段使いのアカウントには入りません。昇格していない PowerShell から始めても起こりうるので、求められた時点で運営者に相談してください。
+:::
+
+1. **WSL2 の有効化**（この手順だけ PowerShell を管理者で実行）
 
     ```powershell
-    winget install -e --id Microsoft.VisualStudioCode
+    wsl --install --no-distribution
     ```
 
-2. **WSL2 / Ubuntu のインストール**（PowerShell を管理者で実行）
+    実行後に Windows を再起動してください。WSL がすでに入っている環境ではヘルプが表示されるだけなので、その場合は手順 2 に進みます。
+
+2. **Ubuntu のインストール**（ここから先は昇格していない PowerShell で実行）
 
     ```powershell
     wsl --install -d Ubuntu
     ```
 
-3. **Rancher Desktop のインストール**（PowerShell を管理者で実行）
+    権限エラーで失敗する場合は管理者で実行しますが、その前に昇格した PowerShell の `whoami` が普段使いのアカウントと一致することを確かめてください。
+
+3. **VS Code のインストール**
+
+    ```powershell
+    winget install -e --id Microsoft.VisualStudioCode
+    ```
+
+    公式サイトのインストーラーを使う場合、既定のユーザー単位インストーラーは実行したアカウントの配下に入ります。手順 8 で WSL2 側から `code` コマンドを呼ぶため、普段使いのアカウントで実行してください。
+
+4. **Rancher Desktop のインストール**
 
     ```powershell
     winget install -e --id SUSE.RancherDesktop
@@ -77,27 +97,29 @@ Windows 側（WSL2 からは `/mnt/c/...`）にソースを置くと、クロス
 
     初回起動時のセットアップウィザードで、Container Engine に **`dockerd (moby)`** を選択してください（既定は `containerd` ですが、本リポジトリは `dockerd (moby)` を前提としています）。
 
-4. **Rancher Desktop の WSL2 統合を有効化**（重要）：Rancher Desktop は既定では専用ディストロ内でのみ Docker デーモンが動きます。開発に使う `Ubuntu` ディストロに統合を有効化しないと `/var/run/docker.sock` が現れず、DevContainer 起動が失敗します。
+5. **Rancher Desktop の WSL2 統合を有効化**（重要）：Rancher Desktop は既定では専用ディストロ内でのみ Docker デーモンが動きます。開発に使う `Ubuntu` ディストロに統合を有効化しないと `/var/run/docker.sock` が現れず、DevContainer 起動が失敗します。
 
     トレイアイコン → **Preferences → WSL → Integrations** → **`Ubuntu`** を **ON** → **Apply**
 
     反映後、PowerShell で `wsl --shutdown` を実行してから Ubuntu を開き直してください。  
     Ubuntu ターミナルで `docker ps` が権限エラーなく通れば OK です。
 
-5. **WSL2 ターミナルに入る**（いずれかの方法）
+    Integrations に `Ubuntu` が出てこない場合は、[別アカウントで入れた Ubuntu が見えていない](../develop/troubleshooting.md#wsl-account-mismatch)可能性があります。
+
+6. **WSL2 ターミナルに入る**（いずれかの方法）
 
     - **Windows Terminal** を起動し、タブのドロップダウンから「Ubuntu」を選択（推奨）
     - スタートメニューで「Ubuntu」を検索して起動
     - PowerShell / コマンドプロンプトで `wsl`（ディストリ指定は `wsl -d Ubuntu`）
     - VS Code 統合ターミナルのドロップダウンで「Ubuntu (WSL)」を選択
 
-6. **git のインストール**：`wsl --install` が作る Ubuntu イメージには git が含まれていないため、次のステップの `git clone` の前に入れておく必要があります。
+7. **git のインストール**：`wsl --install` が作る Ubuntu イメージには git が含まれていないため、次のステップの `git clone` の前に入れておく必要があります。
 
     ```bash
     sudo apt-get update && sudo apt-get install -y git
     ```
 
-7. **VS Code 拡張のインストール**：手順1でインストールした VS Code の PATH は WSL2 側にも引き継がれるため、WSL2 のターミナルから `code` コマンドで拡張機能をインストールできます。
+8. **VS Code 拡張のインストール**：手順 3 でインストールした VS Code の PATH は WSL2 側にも引き継がれるため、WSL2 のターミナルから `code` コマンドで拡張機能をインストールできます。
 
     ```bash
     code --install-extension ms-vscode-remote.remote-wsl

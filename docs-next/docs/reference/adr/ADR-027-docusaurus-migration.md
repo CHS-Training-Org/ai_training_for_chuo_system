@@ -9,7 +9,7 @@ status: accepted
 date: 2026-08-01T00:00:00.000Z
 deciders:
   - '@tomaf'
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-10-07T00:00:00+09:00'
 ---
 
 # ADR-027 — ドキュメントサイトを Zensical から Docusaurus に移行する
@@ -32,7 +32,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 |---------|--------|
 | デプロイ先 | GitHub Pages (`/docs-next/` サブパスで並行運用後、切替) |
 | i18n | 日本語のみ（英語スキャフォールドなし） |
-| 検索 | ローカル検索 (`docusaurus-plugin-search-local`) |
+| 検索 | ローカル検索 (`@easyops-cn/docusaurus-search-local`。当初の `docusaurus-plugin-search-local` から置き換え。[2026-10-07 の追記](#search-plugin-replacement)を参照) |
 | ADR 表示 | サイドバーに個別ファイルとして並べる |
 | Mermaid | `@docusaurus/theme-mermaid` で標準移行 |
 | 並行運用期間 | 検証完了まで（数日〜1週間） |
@@ -128,3 +128,27 @@ action から Zensical のビルドを外した。並行運用の案内バナー
 **DevContainer**：ローカルプレビュー用の `docs` サービスは uv/Python イメージで
 `zensical serve` を起動していたため、Node イメージで Docusaurus の開発サーバーを
 起動する構成に差し替えた。公開ポート（`:8000`）は変えていない。
+
+## 追記（2026-10-07）：検索プラグインの置き換え {#search-plugin-replacement}
+
+完了基準の「検索が日本語で動作」は、当初採用した `docusaurus-plugin-search-local`（2.1.2）では満たせていなかった。
+このプラグインは索引を lunr の既定の処理で作る。
+空白とハイフンでしか語を分けないため、日本語の文は丸ごと 1 語になる。
+さらに語の先頭と末尾から非 ASCII 文字を削るので、「カリキュラム」のような日本語だけの語は空文字になり、索引に入らない。
+日本語が残るのは ASCII に挟まれた部分だけで、「カリキュラム」「施設」で検索しても結果は 0 件だった。
+README には `language` オプションの記載があるが、このフォークのオプション定義には存在せず、設定で日本語に対応させる手段もなかった。
+
+加えて、docs の `routeBasePath` が `'/'` であるのに、プラグインの `docsRouteBasePath` は既定の `'docs'` のままだった。
+そのため全ページが docs ではなく単独ページとして扱われ、見出し単位の索引が 0 件になっていた。
+
+そこで、lunr-languages の日本語分かち書きに対応した `@easyops-cn/docusaurus-search-local` に置き換えた。
+`language: ['en', 'ja']` と `docsRouteBasePath: '/'` を指定し、theme として登録している。
+置き換え後のビルドでは、`docs/` 配下の 85 ページと見出し 755 件が索引に入り、「カリキュラム」「施設」も索引の語として登録された。
+
+どちらのプラグインも、索引（`search-index.json`）を作るのはビルドの最後（`postBuild`）だけである。
+GitHub Pages への公開はビルドを経るので索引が作られるが、開発サーバー（`npm run start`）では作られず、検索しても結果は出ない。
+ローカルで検索を確かめるときは `npm run build` のあとに `npm run serve` を使う。
+
+DevContainer の `docs` サービスは `node_modules` を専用の named volume に持っている。
+依存を入れ替えた変更を取り込んだあとは、`docs` コンテナを再起動して起動時の `npm ci` を走らせる必要がある。
+再起動しないと、古い検索プラグインの検索バーが新しい設定のもとで描画され、ナビゲーションバーの描画でページがクラッシュする。
