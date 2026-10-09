@@ -130,15 +130,20 @@ pnpm test:e2e:workflow             # 結合テストのワークフローで生�
 
 `tests/e2e/workflow/` のテストは学習者の成果物で、`pnpm test:e2e` には含まれません。前提のデータ（同じ時間帯の既存予約、無効なリソースなど）を API で用意する関数は `tests/e2e/helpers/setup-data.ts` にあります。
 
-`tests/e2e/workflow/` のテストは、開発用とは別の、結合テスト専用のデータベース（`bookflow_e2e`）で動かします。テストごとに、このデータベースを初期データ（`scripts/seed.sql`）だけの状態に戻すためです。開発用のデータベースを戻すと、手で作ったデータまで消えてしまいます。動かす前に、専用のデータベースを作り、バックエンドをそこにつないで起動します。
+`tests/e2e/workflow/` のテストは、開発用とは別の、結合テスト専用のデータベース（`bookflow_e2e`）で動かします。テストごとに、このデータベースを初期データ（`scripts/seed.sql`）だけの状態に戻すためです。開発用のデータベースを戻すと、手で作ったデータまで消えてしまいます。動かす前に、専用のデータベースを作り、バックエンドをそこにつないで起動します。開発用のバックエンドが動いていれば、先に止めます。
 
 ```bash
-node scripts/e2e-workflow/db.mjs create                                     # 専用のデータベースを作る（初回だけ）
-cd backend && DB_URL=jdbc:postgresql://postgres:5432/bookflow_e2e ./gradlew bootRun   # 専用のデータベースにつないで起動する（表が作られる）
-node scripts/e2e-workflow/db.mjs reset                                      # 初期データを入れる（pnpm test:e2e:workflow で流す前に要る）
+# リポジトリのルート（/workspace）で
+node scripts/e2e-workflow/db.mjs create                                       # 専用のデータベースを作る（初回だけ）
+
+# 別のターミナルで（バックエンドは止めるまで動き続ける）
+cd /workspace/backend && DB_URL=jdbc:postgresql://postgres:5432/bookflow_e2e ./gradlew bootRun   # 専用のデータベースにつないで起動する（表が作られる）
+
+# バックエンドが起動したら、リポジトリのルートで
+node scripts/e2e-workflow/db.mjs reset                                        # 初期データを入れる（データベースを作った直後に1回）
 ```
 
-作った直後のデータベースには表しかなく、ログインに使うユーザーもいません。`node scripts/e2e-workflow/run.mjs` で流すときは、スクリプトが流す前に初期データを入れます。
+作った直後のデータベースには表しかなく、ログインに使うユーザーもいません。ログインの準備は初期データのユーザーを使うので、`pnpm test:e2e:workflow` で流す前に一度 `reset` が要ります。そのあとはテストごとに初期データに戻るので、流すたびに `reset` する必要はありません。`node scripts/e2e-workflow/run.mjs` で流すときは、スクリプトが流す前に初期データを入れます。
 
 バックエンドが開発用のデータベースにつながったまま流すと、テストは最初に止まり、その旨を表示します。開発用のデータベースが初期データとまったく同じ状態のときだけは、見分けられません。
 
