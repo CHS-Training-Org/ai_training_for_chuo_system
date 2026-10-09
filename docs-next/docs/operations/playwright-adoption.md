@@ -18,7 +18,7 @@ references:
   - ../learn/curriculum.md
   - ../spec/enhancements/beginner/e2e-test-coverage.md
   - ../reference/claude-code/agent-config.md
-timestamp: 2026-10-08
+timestamp: 2026-10-09
 ---
 
 # Playwright 導入の進行状況
@@ -81,6 +81,7 @@ Playwright による結合テストを、予約申請画面（`/reservations/new
 | 2026-10-08 | 試験観点の段階の手順1「壊れたら困ることを書く」（AI の出力を見る前に3つ書く）をやめ、レビューの中の「抜けがないかを確かめる」に置き換える。手元のメモに3つ書くだけでは誰も確かめず、現場のテスト設計の進め方とも合わないため。AI の出力をうのみにしないことは、すべての観点の根拠を仕様書で確かめる手順で担う | [抜けがないかを確かめる](../develop/integration-test/viewpoints.md#step2-4) |
 | 2026-10-08 | 2つ目の段階の成果物（`cases.md`）の呼び方を「試験ケース一覧」から「試験仕様書」に改め、段階の名前も「試験仕様書」にする。1件ずつは「試験ケース」のまま。前提、手順、期待結果を持つ1件をテストケース、それを集めた文書をテスト仕様書と呼ぶ一般的な使い分けに合わせるため | [試験仕様書を作る](../develop/integration-test/cases.md) |
 | 2026-10-08 | 教材の「Playwright コードを生成する」と「テストを実行する」を1ページ（テストの結果を確かめる）にまとめる。学習者はテストコードを読まず、テストコードは結果を得るための中間生成物として扱う。品質は、投入した試験観点と試験ケース、最終生成物であるテストの結果で担保する | [テストコードを読まない理由](../develop/integration-test/execution.md#why-not-code) |
+| 2026-10-09 | Playwright のブラウザ（Chromium）と共有ライブラリは、結合テストの環境の準備（`env.mjs up`）が、ブラウザが立ち上がらないときだけ入れる（`playwright install --with-deps chromium`）。devcontainer のイメージ（`node:24-slim`）にはどちらも入っておらず、コンテナを作り直すと消えるため。`postCreate.sh` には入れない。結合テストのチュートリアルに取り組まない人のコンテナ作成まで重くなるため。普段の `pnpm test:e2e` を手で流す人向けに、手順を Playwright の解説とトラブルシューティングに書いた | [BookFlow での実行](../develop/playwright-guide.md#run)、[トラブルシューティング](../develop/troubleshooting.md#playwright-browser) |
 
 ### 提案中で確認待ちのこと {#status-proposed}
 

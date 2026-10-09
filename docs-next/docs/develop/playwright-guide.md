@@ -12,7 +12,7 @@ references:
   - ./integration-test/viewpoints.md
   - ./troubleshooting.md
   - ../operations/playwright-adoption.md
-timestamp: 2026-10-03
+timestamp: 2026-10-09
 ---
 
 # Playwright とは ![](/img/playwright-logo.svg)
@@ -101,7 +101,13 @@ Playwright には、AI エージェントにテストを作らせたり直させ
 
 ## BookFlow での実行 {#run}
 
-Playwright は導入済みで、テストは `frontend/tests/e2e/` に置きます。
+Playwright のパッケージは導入済みで、テストは `frontend/tests/e2e/` に置きます。
+
+ブラウザ（Chromium）と、ブラウザが使う共有ライブラリは、devcontainer に入っていません。初めて流す前と、コンテナを作り直したあとに入れます。
+
+```bash
+cd frontend && pnpm exec playwright install --with-deps chromium
+```
 
 手元で起動するのは postgres、cognito-local、バックエンドです。devcontainer では前の2つが起動済みなので、起動するのはバックエンドだけです。
 
@@ -136,7 +142,7 @@ node scripts/e2e-workflow/db.mjs reset                                      # �
 
 バックエンドが開発用のデータベースにつながったまま流すと、テストは最初に止まり、その旨を表示します。開発用のデータベースが初期データとまったく同じ状態のときだけは、見分けられません。
 
-[結合テストのチュートリアル](./integration-test/execution.md)では、この準備と実行も AI（案内スキル）が行います。準備には `node scripts/e2e-workflow/env.mjs up` を使い、専用のデータベースの用意とバックエンドの起動をまとめて行います。
+[結合テストのチュートリアル](./integration-test/execution.md)では、この準備と実行も AI（案内スキル）が行います。準備には `node scripts/e2e-workflow/env.mjs browser` と `node scripts/e2e-workflow/env.mjs up` を使い、ブラウザの導入（立ち上がらないときだけ）、専用のデータベースの用意、バックエンドの起動を行います。
 
 ---
 
@@ -207,7 +213,7 @@ test("予約を申請すると一覧画面に遷移する", async ({ page }, tes
 
 トレースが記録されるのは再試行したときです。手元の実行は再試行しない設定なので、記録するには `--trace on` を付けます。
 
-環境側の問題は[トラブルシューティング](./troubleshooting.md)にまとめてあります。バックエンドの起動漏れや、初期データの投入漏れがこれに当たります。
+環境側の問題は[トラブルシューティング](./troubleshooting.md)にまとめてあります。ブラウザの導入漏れ（[`Executable doesn't exist` で失敗する](./troubleshooting.md#playwright-browser)）、バックエンドの起動漏れ、初期データの投入漏れがこれに当たります。
 
 ---
 

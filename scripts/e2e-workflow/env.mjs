@@ -7,7 +7,8 @@
  * フロントエンドの開発サーバーは、Playwright の設定（webServer）が起動する。
  *
  * 使い方:
- *   node scripts/e2e-workflow/env.mjs up            専用のデータベースを用意し、バックエンドを起動して応答を待つ
+ *   node scripts/e2e-workflow/env.mjs browser       ブラウザが立ち上がらなければ入れる
+ *   node scripts/e2e-workflow/env.mjs up            ブラウザと専用のデータベースを用意し、バックエンドを起動して応答を待つ
  *   node scripts/e2e-workflow/env.mjs up --replace  動いている開発用のバックエンドを止めてから起動する
  *   node scripts/e2e-workflow/env.mjs down          このスクリプトが起動したバックエンドを止める
  *   node scripts/e2e-workflow/env.mjs status        今の状態を表示する
@@ -20,16 +21,23 @@
  * 開発用のバックエンドを --replace で止めるときだけは、Java のプロセスをコマンドの文字列で探す。
  * そのときも、このスクリプト自身とその親のプロセスは対象から外す。
  *
+ * devcontainer のイメージ（node:24-slim）には、Playwright のブラウザも、ブラウザが使う共有ライブラリも入っていない。
+ * postCreate.sh で入れると結合テストのチュートリアルに取り組まない人の環境まで重くなるため、ここで入れる。
+ * どちらもコンテナを作り直すと消えるので、起動するたびにブラウザを実際に立ち上げて確かめ、立ち上がらなければ入れ直す。
+ * 案内スキルは、browser と up を別々に実行する。導入とバックエンドの起動を1回で行うと、
+ * 合わせて AI のコマンドの時間の上限（10分）を超えることがあるためである。
+ *
  * メモリの少ない devcontainer で、バックエンド、開発サーバー、ブラウザを同時に動かすと落ちたことがあるため、
  * JAVA_TOOL_OPTIONS が設定されていなければ、Java のヒープの上限を 768MB にする。
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createDatabase, E2E_DATABASE } from './db.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const FRONTEND = path.join(REPO_ROOT, 'frontend');
 const WORK_DIR = path.join(REPO_ROOT, '.tmp', 'e2e-workflow');
 const PID_FILE = path.join(WORK_DIR, 'backend.pid');
 const LOG_FILE = path.join(WORK_DIR, 'backend.log');
@@ -101,6 +109,28 @@ function backendPids() {
   return out;
 }
 
+/**
+ * Chromium を立ち上げられるか。ファイルの有無ではなく実際に立ち上げて確かめる。
+ * ブラウザ本体があっても、共有ライブラリが足りないと立ち上がらないためである。
+ */
+function browserLaunches() {
+  const script = "const { chromium } = await import('@playwright/test'); const b = await chromium.launch(); await b.close();";
+  const res = spawnSync(process.execPath, ['--input-type=module', '-e', script], { cwd: FRONTEND, stdio: 'ignore', timeout: 60_000 });
+  return res.status === 0;
+}
+
+/** ブラウザが立ち上がらなければ、ブラウザ本体と共有ライブラリ（apt）を入れる。 */
+function ensureBrowser() {
+  if (browserLaunches()) return console.log('ブラウザ（Chromium）はあります');
+  console.log('ブラウザ（Chromium）を入れています。数分かかります');
+  const bin = path.join(FRONTEND, 'node_modules', '.bin', 'playwright');
+  const res = spawnSync(bin, ['install', '--with-deps', 'chromium'], { cwd: FRONTEND, stdio: 'inherit' });
+  if (res.status !== 0 || !browserLaunches()) {
+    throw new Error('ブラウザ（Chromium）を入れられませんでした。上の出力を確かめてください（ネットワークやプロキシで止まっていることがあります）');
+  }
+  console.log('ブラウザ（Chromium）を入れました');
+}
+
 async function waitStopped(timeoutMs) {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
@@ -112,6 +142,7 @@ async function waitStopped(timeoutMs) {
 
 async function up(replace) {
   fs.mkdirSync(WORK_DIR, { recursive: true });
+  ensureBrowser();
   const created = createDatabase();
   console.log(created ? `${E2E_DATABASE} を作りました` : `${E2E_DATABASE} はあります`);
 
@@ -170,15 +201,17 @@ async function down() {
 
 async function status() {
   const pid = ownPid();
+  console.log(`ブラウザ：${browserLaunches() ? '立ち上がる' : '立ち上がらない（up で入れる）'}`);
   console.log(`バックエンド：${(await responding()) ? '応答あり' : '応答なし'}（${pid ? `結合テスト用、プロセス ${pid}` : 'このスクリプトが起動したものではない'}）`);
 }
 
 try {
   const [cmd, ...rest] = process.argv.slice(2);
-  if (cmd === 'up') await up(rest.includes('--replace'));
+  if (cmd === 'browser') ensureBrowser();
+  else if (cmd === 'up') await up(rest.includes('--replace'));
   else if (cmd === 'down') await down();
   else if (cmd === 'status') await status();
-  else throw new Error('使い方: node scripts/e2e-workflow/env.mjs up [--replace] | down | status');
+  else throw new Error('使い方: node scripts/e2e-workflow/env.mjs browser | up [--replace] | down | status');
 } catch (e) {
   console.error(`エラー: ${e.message}`);
   process.exitCode = 1;
