@@ -9,7 +9,7 @@ audience: 運営者・学習者
 references:
   - ../../spec/overview.md
   - ../../spec/index.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-10-04T00:00:00+09:00'
 ---
 
 # ADR（Architecture Decision Records）ガイド
@@ -152,6 +152,9 @@ Accepted（YYYY-MM-DD）
 | [ADR-029](./ADR-029-single-learning-path.md) | 学習パスの分岐を廃止し全員共通の一本道にする | Accepted |
 | [ADR-030](./ADR-030-personal-trunk-branch-strategy.md) | 学習者ごとの個人トランクブランチ導入 | Accepted |
 | [ADR-031](./ADR-031-docs-pr-preview.md) | ドキュメントの PR プレビュー（gh-pages 配信＋ラベル駆動） | Accepted |
+| [ADR-032](./ADR-032-integration-test-tutorial-adoption.md) | 結合テストを独立チュートリアルとして導入 | Accepted |
+| [ADR-033](./ADR-033-claude-usage-metrics.md) | トークン消費量を週次で収集し専用ブランチへ蓄積 | Accepted |
+| [ADR-034](./ADR-034-e2e-workflow-mechanism.md) | 結合テストのワークフローを簡易な状態管理とダッシュボードで進める | Accepted |
 
 ### 開発環境（ADR-022〜）
 

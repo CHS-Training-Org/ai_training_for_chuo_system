@@ -566,3 +566,31 @@ html {
     grid-template-columns: 1fr;
   }
 }
+/* ページ内では縮めて表示し、細部は全画面表示（Mermaid の拡大ボタン）で見る図。
+   拡大処理が表示枠に付ける max-height（インライン指定）より優先させる。 */
+.diagram-compact .docusaurus-mermaid-container {
+  max-height: 480px !important;
+}
+
+/* 結合テストのワークフロー「段階ごとの役割分担」表。列幅を内容任せにすると、
+   長いセルのある列が細く潰れるため、列ごとに割合を決める。 */
+.stage-table table {
+  table-layout: fixed;
+  width: 100%;
+}
+.stage-table th:nth-child(1) { width: 11%; }
+.stage-table th:nth-child(2) { width: 27%; }
+.stage-table th:nth-child(3) { width: 27%; }
+.stage-table th:nth-child(4) { width: 22%; }
+.stage-table th:nth-child(5) { width: 13%; }
+.stage-table td { overflow-wrap: anywhere; }
+
+/* 内容の長い表を本文の幅いっぱいに広げる。<div class="wide-table"> で囲んで使う。 */
+.wide-table table {
+  display: table;
+  width: 100%;
+}
+.wide-table th:first-child,
+.wide-table td:first-child {
+  white-space: nowrap;
+}

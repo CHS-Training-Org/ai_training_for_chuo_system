@@ -12,7 +12,7 @@ audience: 学習者・運営者
 references:
   - ../../requirements.md
   - ../index.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-09-09T00:00:00+09:00'
 ---
 
 # 既存機能の E2E テスト追加
@@ -23,7 +23,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 BookFlow の Playwright テストは `frontend/tests/e2e/example.spec.ts` の 1 件のみ（「トップページが表示される」）で、主要なユーザーフローはまったくカバーされていません。
 
-サインイン・予約申請・承認といった主要操作に対する E2E テストを追加することで、機能改修時のリグレッションを自動検出できるようにします。これは `ci-frontend.yml` の Playwright ステップ（`pnpm test:e2e`）が CI で動く基盤はすでに整っているため、テストシナリオを追加するだけで CI 保護が機能します。
+サインイン・予約申請・承認といった主要操作に対する E2E テストを追加することで、機能改修時のリグレッションを検出できるようにします。`@playwright/test` と `playwright.config.ts` はすでにリポジトリに入っているため、シナリオを追加すれば `pnpm test:e2e` でローカル実行できます。ただし `ci-frontend.yml` に `pnpm test:e2e` を実行するステップはないため、CI で自動実行させるにはワークフローへのステップ追加も必要です。
 
 ## 依存関係
 
@@ -39,7 +39,7 @@ BookFlow の Playwright テストは `frontend/tests/e2e/example.spec.ts` の 1 
 | TEST-02 | リソース一覧の閲覧・詳細確認のシナリオをカバーする（未サインインでのリダイレクト確認を含む） |
 | TEST-03 | 予約申請フォームへの入力・送信（正常系）のシナリオをカバーする |
 | TEST-04 | APPROVER ロールでの承認操作（承認・却下）のシナリオをカバーする |
-| TEST-05 | 追加した E2E テストが `pnpm test:e2e` で全件 pass し、CI（`ci-frontend.yml`）で自動実行される |
+| TEST-05 | 追加した E2E テストが `pnpm test:e2e` で全件 pass する。CI で自動実行させる場合は `ci-frontend.yml` に実行ステップを追加する |
 
 ## 受入条件
 

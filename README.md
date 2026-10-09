@@ -29,6 +29,10 @@
   ```bash
   cd docs-next && npm run build
   ```
+- **本番ビルドのプレビュー**（`npm run build` の出力をそのまま確認したい場合）: `npm run serve` は自動起動中の開発サーバーと同じ 8000 番ポートを使う設定にしているため、事前に開発サーバーを停止してから実行してください。8000 番以外のポートはホストへ公開されていません。
+  ```bash
+  cd docs-next && npm run serve
+  ```
 
 ---
 
