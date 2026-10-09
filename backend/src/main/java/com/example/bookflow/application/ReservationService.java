@@ -268,15 +268,14 @@ public class ReservationService {
 
     reservation.update(req.startAt(), req.endAt(), req.purpose(), req.attendeesCount());
 
-    // 正式申請の遷移先は create と同じ分岐を適用する。
-    // 下書きを経由したかどうかで最終的な状態が変わらないようにするため
+    // 正式申請の遷移先は常に PENDING とする（ビジネス要求シート RSV-03）。
+    // 承認ステップは requires_approval=true のときのみ生成する（既存ルールを維持）。
+    // 【既知の制約】requires_approval=false のリソースでは承認ステップが生成されないため、
+    // 正式申請した予約は承認待ちのまま進まなくなる。シートの受入条件に忠実な実装であり、
+    // 解消には要件の変更が要る（requirements.md §下書き保存 の注記を参照）。
     boolean requiresApproval = reservation.getResource().isRequiresApproval();
     if (submitting) {
-      if (requiresApproval) {
-        reservation.markPending();
-      } else {
-        reservation.markApproved();
-      }
+      reservation.markPending();
     }
 
     Reservation saved = reservationRepository.save(reservation);
@@ -319,6 +318,45 @@ public class ReservationService {
 
     reservation.cancel();
     return ReservationResponse.from(reservationRepository.save(reservation));
+  }
+
+  // ---------------------------------------------------------------------------
+  // 下書きの削除
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 下書きを削除する（{@code DRAFT} 状態のみ可）。
+   *
+   * <p>業務ロジック：
+   *
+   * <ol>
+   *   <li>予約存在確認（404）
+   *   <li>所有権チェック（申請者本人のみ・403。ADMIN も削除できない）
+   *   <li>ステータスガード（{@code DRAFT} のみ・422）
+   *   <li>物理削除
+   * </ol>
+   *
+   * <p>{@code DRAFT} は承認ステップを持たないため、関連レコードの削除は不要である。 確定済みの予約には履歴を残す必要があるため、削除の対象は {@code DRAFT} に限る
+   * （{@code PENDING}/{@code APPROVED} はキャンセルで {@code CANCELLED} に遷移させる）。
+   *
+   * @param id 予約 ID
+   * @param currentUser ログインユーザー
+   */
+  public void delete(UUID id, User currentUser) {
+    Reservation reservation = findOrThrow(id);
+
+    // 所有権チェック（本人のみ。下書きは申請者本人のものであり ADMIN も削除できない）
+    if (!reservation.getRequester().getId().equals(currentUser.getId())) {
+      throw new AccessDeniedException("この予約を削除する権限がありません。");
+    }
+
+    // ステータスガード（DRAFT のみ）
+    if (reservation.getStatus() != ReservationStatus.DRAFT) {
+      throw new BusinessException(
+          ErrorCode.VALIDATION_ERROR, "DRAFT 状態の予約のみ削除できます。現在のステータス: " + reservation.getStatus());
+    }
+
+    reservationRepository.delete(reservation);
   }
 
   // ---------------------------------------------------------------------------

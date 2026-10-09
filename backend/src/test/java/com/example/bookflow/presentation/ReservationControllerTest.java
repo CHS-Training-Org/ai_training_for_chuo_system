@@ -1,6 +1,7 @@
 package com.example.bookflow.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -234,12 +235,13 @@ class ReservationControllerTest extends BaseControllerTest {
             + " (SELECT id FROM reservations WHERE requester_id = ?)",
         MEMBER_ID);
     jdbcTemplate.update(
-        "DELETE FROM reservations WHERE id IN (?, ?, ?, ?, ?)",
+        "DELETE FROM reservations WHERE id IN (?, ?, ?, ?, ?, ?)",
         RESERVATION_MEMBER_ID,
         RESERVATION_OTHER_ID,
         RESERVATION_PENDING_ID,
         RESERVATION_MEMBER_DRAFT_ID,
-        RESERVATION_OTHER_DRAFT_ID);
+        RESERVATION_OTHER_DRAFT_ID,
+        UUID.fromString("30000000-0000-0000-0000-000000000025"));
     // POST テストで追加された動的予約も削除
     jdbcTemplate.update("DELETE FROM reservations WHERE requester_id = ?", MEMBER_ID);
     jdbcTemplate.update(
@@ -726,6 +728,97 @@ class ReservationControllerTest extends BaseControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
         .andExpect(status().isUnprocessableEntity());
+  }
+
+  @Test
+  @WithMockMember
+  void update_submitDraftOnNoApprovalResource_returns200Pending() throws Exception {
+    // 承認不要リソースでも正式申請の遷移先は PENDING（ビジネス要求シート RSV-03）。
+    // 承認ステップは生成されないため、この予約は承認待ちのまま進まない（既知の制約）
+    UUID draftId = UUID.fromString("30000000-0000-0000-0000-000000000025");
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        draftId,
+        RESOURCE_NO_APPROVAL_ID,
+        MEMBER_ID,
+        LocalDateTime.of(2025, 6, 20, 10, 0),
+        LocalDateTime.of(2025, 6, 20, 12, 0),
+        "承認不要リソースの下書き",
+        "DRAFT",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
+
+    String body =
+        """
+        {
+          "startAt": "2025-06-20T10:00:00",
+          "endAt": "2025-06-20T12:00:00",
+          "purpose": "承認不要リソースの下書き",
+          "status": "PENDING"
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + draftId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("PENDING"));
+
+    Integer steps =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM approval_steps WHERE reservation_id = ?", Integer.class, draftId);
+    assertThat(steps).isZero();
+  }
+
+  @Test
+  @WithMockMember
+  void delete_ownDraft_returns204() throws Exception {
+    mockMvc
+        .perform(delete("/api/reservations/" + RESERVATION_MEMBER_DRAFT_ID))
+        .andExpect(status().isNoContent());
+
+    Integer remaining =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM reservations WHERE id = ?",
+            Integer.class,
+            RESERVATION_MEMBER_DRAFT_ID);
+    assertThat(remaining).isZero();
+  }
+
+  @Test
+  @WithMockMember
+  void delete_otherMemberDraft_returns403() throws Exception {
+    mockMvc
+        .perform(delete("/api/reservations/" + RESERVATION_OTHER_DRAFT_ID))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockAdmin
+  void delete_otherMemberDraftByAdmin_returns403() throws Exception {
+    // ADMIN は DRAFT を閲覧できるが削除はできない
+    mockMvc
+        .perform(delete("/api/reservations/" + RESERVATION_OTHER_DRAFT_ID))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockMember
+  void delete_nonDraftReservation_returns422() throws Exception {
+    mockMvc
+        .perform(delete("/api/reservations/" + RESERVATION_PENDING_ID))
+        .andExpect(status().isUnprocessableEntity());
+  }
+
+  @Test
+  void delete_unauthenticated_returns401() throws Exception {
+    mockMvc
+        .perform(delete("/api/reservations/" + RESERVATION_MEMBER_DRAFT_ID))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test

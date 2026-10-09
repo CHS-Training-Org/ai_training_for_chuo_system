@@ -5,7 +5,7 @@
  * （resource-filter-href.test.ts と同じ方針）。
  */
 import { describe, it, expect } from "vitest";
-import { canEditReservation, canSubmitDraft } from "@/lib/reservation-permissions";
+import { canDeleteDraft, canEditReservation, canSubmitDraft } from "@/lib/reservation-permissions";
 
 const owner = { isOwner: true, isAdmin: false };
 const otherMember = { isOwner: false, isAdmin: false };
@@ -50,5 +50,23 @@ describe("canSubmitDraft", () => {
 
   it("ADMIN は他人の下書きを代理で正式申請できない", () => {
     expect(canSubmitDraft("DRAFT", admin)).toBe(false);
+  });
+});
+
+describe("canDeleteDraft", () => {
+  it("申請者本人の DRAFT は削除できる", () => {
+    expect(canDeleteDraft("DRAFT", owner)).toBe(true);
+  });
+
+  it.each(["PENDING", "APPROVED", "REJECTED", "CANCELLED"])("%s は削除できない", (status) => {
+    expect(canDeleteDraft(status, owner)).toBe(false);
+  });
+
+  it("他人の下書きは削除できない", () => {
+    expect(canDeleteDraft("DRAFT", otherMember)).toBe(false);
+  });
+
+  it("ADMIN は閲覧できる下書きでも削除できない", () => {
+    expect(canDeleteDraft("DRAFT", admin)).toBe(false);
   });
 });

@@ -27,6 +27,7 @@ const {
   getReservationAction,
   createReservationAction,
   updateReservationAction,
+  deleteReservationAction,
   cancelReservationAction,
 } = await import("@/server/actions/reservations");
 
@@ -290,5 +291,50 @@ describe("cancelReservationAction", () => {
     );
 
     await expect(cancelReservationAction(MOCK_RESERVATION_RESPONSE.id)).rejects.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// deleteReservationAction
+// ---------------------------------------------------------------------------
+
+describe("deleteReservationAction", () => {
+  it("正常時: 204 を受けて何も返さない", async () => {
+    let called = false;
+    server.use(
+      http.delete("/api/backend/reservations/:id", () => {
+        called = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await expect(deleteReservationAction(MOCK_RESERVATION_RESPONSE.id)).resolves.toBeUndefined();
+    expect(called).toBe(true);
+  });
+
+  it("403 時（他人の下書き）: ApiClientError をスローする", async () => {
+    server.use(
+      http.delete("/api/backend/reservations/:id", () => {
+        return HttpResponse.json(
+          { code: "FORBIDDEN", message: "権限がありません" },
+          { status: 403 },
+        );
+      }),
+    );
+
+    await expect(deleteReservationAction(MOCK_RESERVATION_RESPONSE.id)).rejects.toThrow();
+  });
+
+  it("422 時（DRAFT 以外）: ApiClientError をスローする", async () => {
+    server.use(
+      http.delete("/api/backend/reservations/:id", () => {
+        return HttpResponse.json(
+          { code: "VALIDATION_ERROR", message: "DRAFT 状態の予約のみ削除できます。" },
+          { status: 422 },
+        );
+      }),
+    );
+
+    await expect(deleteReservationAction(MOCK_RESERVATION_RESPONSE.id)).rejects.toThrow();
   });
 });

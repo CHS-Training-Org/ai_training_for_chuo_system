@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CancelButton } from "./CancelButton";
 import { SubmitDraftButton } from "./SubmitDraftButton";
-import { canEditReservation, canSubmitDraft } from "@/lib/reservation-permissions";
+import { DeleteDraftButton } from "./DeleteDraftButton";
+import { canDeleteDraft, canEditReservation, canSubmitDraft } from "@/lib/reservation-permissions";
 import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
 
 /**
@@ -15,7 +16,7 @@ import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
  * MEMBER は本人の予約のみ閲覧可（他人の予約は BE が 403 → エラー画面）。
  * DRAFT は申請者本人と ADMIN のみ閲覧可（APPROVER も 403）。
  * DRAFT / PENDING で編集ボタンを表示（本人のみ、ADMIN は不可）。
- * DRAFT のみ正式申請ボタンを表示（本人のみ）。
+ * DRAFT のみ正式申請ボタンと削除ボタンを表示（本人のみ）。
  * PENDING/APPROVED 状態のみキャンセルボタンを表示（本人 or ADMIN）。
  * 承認ステップの表示はカテゴリ 6（ApprovalStepResponse）で実装。
  */
@@ -53,6 +54,7 @@ export default async function ReservationDetailPage({
   // 編集・正式申請の可否は lib の純関数に集約する（予約編集画面と判定を揃えるため）
   const canEdit = canEditReservation(reservation.status, actor);
   const canSubmit = canSubmitDraft(reservation.status, actor);
+  const canDelete = canDeleteDraft(reservation.status, actor);
   const canCancel = CANCELLABLE_STATUSES.includes(reservation.status) && (isOwner || isAdmin);
 
   return (
@@ -126,6 +128,9 @@ export default async function ReservationDetailPage({
 
         {/* キャンセルボタン（PENDING/APPROVED・本人 or ADMIN のみ） */}
         {canCancel && <CancelButton reservationId={reservation.id} />}
+
+        {/* 削除ボタン（DRAFT・本人のみ） */}
+        {canDelete && <DeleteDraftButton reservationId={reservation.id} />}
       </div>
 
       {/* カテゴリ 6 TODO: 承認ステップ表示（ApprovalStepResponse） */}

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  *   <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN）
  *   <li>{@code PUT /api/reservations/{id}} — 予約更新（申請者本人・PENDING のみ）
  *   <li>{@code POST /api/reservations/{id}/cancel} — キャンセル（本人 or ADMIN）
+ *   <li>{@code DELETE /api/reservations/{id}} — 下書きの削除（申請者本人・DRAFT のみ）
  * </ul>
  *
  * <p>行レベルの所有権チェック（本人 or ADMIN）は {@link ReservationService} が担当する（{@code @PreAuthorize} 不使用）。
@@ -91,5 +93,12 @@ public class ReservationController {
   @PostMapping("/{id}/cancel")
   public ReservationResponse cancel(@PathVariable UUID id, @CurrentUser User currentUser) {
     return reservationService.cancel(id, currentUser);
+  }
+
+  /** 下書きを削除する（{@code DRAFT} のみ・申請者本人）。 */
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable UUID id, @CurrentUser User currentUser) {
+    reservationService.delete(id, currentUser);
   }
 }

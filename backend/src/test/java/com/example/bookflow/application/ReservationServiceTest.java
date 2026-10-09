@@ -676,7 +676,7 @@ class ReservationServiceTest {
     }
 
     @Test
-    void update_submitDraftWithRequiresApprovalFalse_returnsApprovedWithoutApprovalStep() {
+    void update_submitDraftWithRequiresApprovalFalse_returnsPendingWithoutApprovalStep() {
       Reservation reservation = draftReservation();
       when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
       when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
@@ -686,8 +686,9 @@ class ReservationServiceTest {
 
       ReservationResponse response = reservationService.update(reservationId, req, owner);
 
-      // 受入条件の字句は PENDING だが、承認不要リソースでは APPROVED とする（要件定義 §7）
-      assertThat(response.status()).isEqualTo("APPROVED");
+      // 正式申請の遷移先は requires_approval によらず PENDING（ビジネス要求シート RSV-03）。
+      // 承認ステップは requires_approval=true のときのみ生成する既存ルールを維持する
+      assertThat(response.status()).isEqualTo("PENDING");
       verify(approvalService, never()).createInitialStep(any(Reservation.class));
     }
 
@@ -790,6 +791,60 @@ class ReservationServiceTest {
           reservationService.get(reservationId, makeUser(otherId, Role.APPROVER));
 
       assertThat(response.status()).isEqualTo("PENDING");
+    }
+
+    // ---- 削除 ----
+
+    @Test
+    void delete_draftByOwner_removesReservation() {
+      Reservation reservation = draftReservation();
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+
+      reservationService.delete(reservationId, owner);
+
+      verify(reservationRepository, times(1)).delete(reservation);
+    }
+
+    @Test
+    void delete_draftByOtherMember_throwsAccessDeniedException() {
+      when(reservationRepository.findById(reservationId))
+          .thenReturn(Optional.of(draftReservation()));
+      User other = makeUser(otherId, Role.MEMBER);
+
+      assertThatThrownBy(() -> reservationService.delete(reservationId, other))
+          .isInstanceOf(AccessDeniedException.class);
+      verify(reservationRepository, never()).delete(any(Reservation.class));
+    }
+
+    @Test
+    void delete_draftByAdmin_throwsAccessDeniedException() {
+      // ADMIN は DRAFT を閲覧できるが削除はできない
+      when(reservationRepository.findById(reservationId))
+          .thenReturn(Optional.of(draftReservation()));
+      User admin = makeUser(otherId, Role.ADMIN);
+
+      assertThatThrownBy(() -> reservationService.delete(reservationId, admin))
+          .isInstanceOf(AccessDeniedException.class);
+      verify(reservationRepository, never()).delete(any(Reservation.class));
+    }
+
+    @Test
+    void delete_nonDraftReservation_throwsBusinessException() {
+      Reservation reservation =
+          makeReservation(reservationId, resource, owner, start, end, ReservationStatus.PENDING);
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+
+      assertThatThrownBy(() -> reservationService.delete(reservationId, owner))
+          .isInstanceOf(BusinessException.class);
+      verify(reservationRepository, never()).delete(any(Reservation.class));
+    }
+
+    @Test
+    void delete_notFound_throwsResourceNotFoundException() {
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.empty());
+
+      assertThatThrownBy(() -> reservationService.delete(reservationId, owner))
+          .isInstanceOf(ResourceNotFoundException.class);
     }
   }
 }

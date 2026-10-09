@@ -106,6 +106,17 @@ export async function updateReservationAction(
 }
 
 /**
+ * 下書きを削除する（DRAFT のみ・申請者本人）。
+ *
+ * レスポンスボディはない（204 No Content）。
+ * DRAFT 以外を指定すると ApiClientError(422)、本人以外は ApiClientError(403) をスロー。
+ */
+export async function deleteReservationAction(id: string): Promise<void> {
+  const client = createApiClient(getAccessToken);
+  await client.del(`/reservations/${id}`);
+}
+
+/**
  * 予約をキャンセルする（PENDING/APPROVED のみ・本人 or ADMIN）。
  *
  * レスポンスは更新後の ReservationResponse（status='CANCELLED'）。

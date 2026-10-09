@@ -36,3 +36,14 @@ export function canEditReservation(
 export function canSubmitDraft(status: string, { isOwner, isAdmin }: ReservationActor): boolean {
   return status === "DRAFT" && isOwner && !isAdmin;
 }
+
+/**
+ * 下書きを削除できるかを返す。
+ *
+ * 対象は `DRAFT` の予約に限り、操作できるのは申請者本人のみ。ADMIN も削除できない。
+ * 条件は現時点で `canSubmitDraft` と一致するが、仕様上は別のルール（削除可否と正式申請可否）
+ * として定義されているため、関数を分けて個別に検証する。
+ */
+export function canDeleteDraft(status: string, { isOwner, isAdmin }: ReservationActor): boolean {
+  return status === "DRAFT" && isOwner && !isAdmin;
+}
