@@ -11,7 +11,7 @@ references:
   - ../reference/adr/index.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
   - ../learn/ai-tools-guide.md
-last_updated: '2026-09-04T00:00:00+09:00'
+last_updated: '2026-10-09T00:00:00+09:00'
 ---
 
 # コーディング規約
@@ -30,7 +30,7 @@ BookFlow で開発するときの約束事をまとめたガイドです。技�
 | 項目 | ルール |
 |------|--------|
 | トランクブランチ命名 | `learner/<GitHubユーザー名>/main`（例：`learner/taro/main`）。学習者ごとに 1 本だけ持つ個人の作業基点 |
-| フィーチャーブランチ命名 | `feature/<GitHubユーザー名>/<issue番号>-<short-desc>`（例：`feature/taro/42-resource-detail`）。同じ課題を 2 回実装する STEP-04 では末尾に `-aidlc` を付ける（詳細は[同じ課題を 2 回実装するときのブランチ名](#branch-redo)） |
+| フィーチャーブランチ命名 | `feature/<GitHubユーザー名>/<issue番号>-<short-desc>`（例：`feature/taro/42-resource-detail`）。同じ課題を 2 回実装する STEP-04 では末尾に `-aidlc` を付ける（詳細は[同じ課題を 2 回実装するときのブランチ名](#branch-redo)）。Issue を起票しない結合テストのチュートリアルは `feature/<GitHubユーザー名>/e2e-tutorial`（詳細は[結合テストの作業ブランチ](./integration-test/workflow.md#branch)） |
 | コミット | Conventional Commits 形式（詳細は[§コミット・PR 規約](#commit-pr)） |
 | 言語 | コメント・コミットメッセージ・ドキュメントは日本語で書いてよい（識別子は英語） |
 | 仕様の扱い | `docs-next/docs/spec/` が真実の源。仕様と実装が食い違ったら仕様を確認し、必要なら仕様の更新を先に行う |

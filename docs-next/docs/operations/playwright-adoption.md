@@ -82,6 +82,7 @@ Playwright による結合テストを、予約申請画面（`/reservations/new
 | 2026-10-08 | 2つ目の段階の成果物（`cases.md`）の呼び方を「試験ケース一覧」から「試験仕様書」に改め、段階の名前も「試験仕様書」にする。1件ずつは「試験ケース」のまま。前提、手順、期待結果を持つ1件をテストケース、それを集めた文書をテスト仕様書と呼ぶ一般的な使い分けに合わせるため | [試験仕様書を作る](../develop/integration-test/cases.md) |
 | 2026-10-08 | 教材の「Playwright コードを生成する」と「テストを実行する」を1ページ（テストの結果を確かめる）にまとめる。学習者はテストコードを読まず、テストコードは結果を得るための中間生成物として扱う。品質は、投入した試験観点と試験ケース、最終生成物であるテストの結果で担保する | [テストコードを読まない理由](../develop/integration-test/execution.md#why-not-code) |
 | 2026-10-09 | Playwright のブラウザ（Chromium）と共有ライブラリは、結合テストの環境の準備（`env.mjs up`）が、ブラウザが立ち上がらないときだけ入れる（`playwright install --with-deps chromium`）。devcontainer のイメージ（`node:24-slim`）にはどちらも入っておらず、コンテナを作り直すと消えるため。`postCreate.sh` には入れない。結合テストのチュートリアルに取り組まない人のコンテナ作成まで重くなるため。普段の `pnpm test:e2e` を手で流す人向けに、手順を Playwright の解説とトラブルシューティングに書いた | [BookFlow での実行](../develop/playwright-guide.md#run)、[トラブルシューティング](../develop/troubleshooting.md#playwright-browser) |
+| 2026-10-09 | 作業ブランチは、トランクブランチから `feature/<GitHubユーザー名>/e2e-tutorial` で1本切り、別の画面も同じブランチで進める。PR は作らず、ブランチはそのまま残す。成果物をトランクブランチにマージしてもよい（2026-09-23 の「トランクブランチに積まない」を改めた）。main に入れないことは変えない | [ADR-032 の追記](../reference/adr/ADR-032-integration-test-tutorial-adoption.md#addendum-2026-10-09)、[作業ブランチ](../develop/integration-test/workflow.md#branch) |
 
 ### 提案中で確認待ちのこと {#status-proposed}
 

@@ -99,7 +99,7 @@ AI が観点を外しても、外したことには気づきにくく、その�
 
 ## 手順1 スキルで観点のたたき台を作る {#step1}
 
-Claude Code に次のように依頼します。
+[作業ブランチ](./workflow.md#branch)を切ってから、Claude Code に次のように依頼します。
 
 ```text
 /e2e-workflow 予約申請画面（/reservations/new）の結合テストを進めたい
