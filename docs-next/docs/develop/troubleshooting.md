@@ -9,7 +9,7 @@ tags:
 audience: 学習者
 references:
   - ../learn/getting-started.md
-last_updated: '2026-09-11T00:00:00+09:00'
+last_updated: '2026-10-09T00:00:00+09:00'
 ---
 
 # トラブルシューティング
@@ -171,6 +171,18 @@ Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本�
   ```
 
   provisioning が出力する Pool ID / Client ID の `.env.local` への設定は [getting-started.md](../learn/getting-started.md) ステップ 3 を参照。
+
+### Playwright のテストが `Executable doesn't exist` で失敗する {#playwright-browser}
+
+- **症状**: `pnpm test:e2e` を実行すると、ログインの準備（`auth.setup.ts`）が `browserType.launch: Executable doesn't exist at ...` や、共有ライブラリが見つからないエラーで失敗し、ほかのテストが実行されません。
+- **原因**: DevContainer のイメージには、Playwright のブラウザ（Chromium）も、ブラウザが使う共有ライブラリも入っていません。入れたあとでも、コンテナを作り直すと消えます。
+- **解決策**: コンテナ内で、ブラウザと共有ライブラリを入れます。ダウンロードを含めて数分かかります。
+
+  ```bash
+  cd /workspace/frontend && pnpm exec playwright install --with-deps chromium
+  ```
+
+  結合テストのワークフローでは、テストを流す前の環境の準備（`node scripts/e2e-workflow/env.mjs browser`）が、ブラウザが立ち上がるかを確かめて、立ち上がらなければこのコマンドを実行します。
 
 ---
 

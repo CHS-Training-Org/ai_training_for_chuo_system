@@ -63,7 +63,13 @@
       }
     }
   },
-  "forwardPorts": [3000, 8000, 8080],
+  "forwardPorts": [3000, 8000, 8080, 3130],
+  "portsAttributes": {
+    "3130": {
+      "label": "結合テストのダッシュボード",
+      "onAutoForward": "silent"
+    }
+  },
   "containerEnv": {
     "WAYLAND_DISPLAY": "",
     "DISPLAY": "",
