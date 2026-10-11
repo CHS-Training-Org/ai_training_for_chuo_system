@@ -1,5 +1,6 @@
 package com.example.bookflow.presentation;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -7,10 +8,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.bookflow.domain.ResourceCategory;
 import com.example.bookflow.support.BaseControllerTest;
 import com.example.bookflow.support.WithMockAdmin;
 import com.example.bookflow.support.WithMockMember;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -195,6 +200,242 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /api/resources?keyword= — キーワード検索
+  //
+  // 共有 H2 には他テストの残存行がありうるため、絶対件数は検証しない。
+  // 一意なトークン KEYWORD_TOKEN を含む自分の投入行の ID で検証する。
+  // ---------------------------------------------------------------------------
+
+  private static final String KEYWORD_TOKEN = "ZZ-FILTER-";
+
+  /** keyword テストで投入した行の ID（{@link #deleteKeywordSeedData()} で削除する）。 */
+  private final List<UUID> keywordSeedIds = new ArrayList<>();
+
+  @AfterEach
+  void deleteKeywordSeedData() {
+    for (UUID id : keywordSeedIds) {
+      jdbcTemplate.update("DELETE FROM resources WHERE id = ?", id);
+    }
+    keywordSeedIds.clear();
+  }
+
+  private UUID insertResource(
+      String name, ResourceCategory category, boolean isActive, String description) {
+    UUID id = UUID.randomUUID();
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, description, requires_approval, is_active,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        id,
+        name,
+        category.name(),
+        description,
+        false,
+        isActive,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    keywordSeedIds.add(id);
+    return id;
+  }
+
+  private String idFilter(UUID id) {
+    return "$.content[?(@.id == '" + id + "')]";
+  }
+
+  private List<String> contentIds(String json) throws Exception {
+    List<String> ids = new ArrayList<>();
+    for (JsonNode node : objectMapper.readTree(json).get("content")) {
+      ids.add(node.get("id").asText());
+    }
+    return ids;
+  }
+
+  private String listBody(String keyword) throws Exception {
+    var request = get("/api/resources").accept(MediaType.APPLICATION_JSON);
+    if (keyword != null) {
+      request = request.param("keyword", keyword);
+    }
+    return mockMvc
+        .perform(request)
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesName_returnsMatchingResourceOnly() throws Exception {
+    UUID hit = insertResource(KEYWORD_TOKEN + "projector-a", ResourceCategory.ROOM, true, null);
+    UUID miss = insertResource(KEYWORD_TOKEN + "other", ResourceCategory.ROOM, true, null);
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", KEYWORD_TOKEN + "projector")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idFilter(hit)).exists())
+        .andExpect(jsonPath(idFilter(miss)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesDescription_returnsResource() throws Exception {
+    UUID hit =
+        insertResource(
+            "plain-1",
+            ResourceCategory.ROOM,
+            true,
+            "equipped with " + KEYWORD_TOKEN + "whiteboard");
+    UUID miss = insertResource("plain-2", ResourceCategory.ROOM, true, "nothing");
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", KEYWORD_TOKEN + "whiteboard")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idFilter(hit)).exists())
+        .andExpect(jsonPath(idFilter(miss)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordInDifferentCase_matchesRegardlessOfCase() throws Exception {
+    UUID hit = insertResource(KEYWORD_TOKEN + "Projector", ResourceCategory.ROOM, true, null);
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", (KEYWORD_TOKEN + "PROJECTOR").toLowerCase())
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idFilter(hit)).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithSurroundingSpaces_isTrimmed() throws Exception {
+    UUID hit = insertResource(KEYWORD_TOKEN + "trim-target", ResourceCategory.ROOM, true, null);
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "  " + KEYWORD_TOKEN + "trim-target  ")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idFilter(hit)).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_blankKeyword_returnsSameResultAsWithoutKeyword() throws Exception {
+    insertResource(KEYWORD_TOKEN + "blank-case", ResourceCategory.ROOM, true, null);
+
+    String withoutKeyword = listBody(null);
+    String emptyKeyword = listBody("");
+    String whitespaceKeyword = listBody("   ");
+
+    // 固定件数ではなく、keyword なしと同じ結果（総件数と ID 一覧）であることを確認する
+    assertThat(contentIds(emptyKeyword)).isEqualTo(contentIds(withoutKeyword));
+    assertThat(contentIds(whitespaceKeyword)).isEqualTo(contentIds(withoutKeyword));
+    assertThat(objectMapper.readTree(emptyKeyword).get("totalElements"))
+        .isEqualTo(objectMapper.readTree(withoutKeyword).get("totalElements"));
+    assertThat(objectMapper.readTree(whitespaceKeyword).get("totalElements"))
+        .isEqualTo(objectMapper.readTree(withoutKeyword).get("totalElements"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithPercent_isTreatedAsLiteral() throws Exception {
+    UUID percent = insertResource(KEYWORD_TOKEN + "100%", ResourceCategory.ROOM, true, null);
+    UUID zeros = insertResource(KEYWORD_TOKEN + "1000", ResourceCategory.ROOM, true, null);
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", KEYWORD_TOKEN + "100%")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idFilter(percent)).exists())
+        .andExpect(jsonPath(idFilter(zeros)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberWithKeyword_doesNotReturnInactiveResource() throws Exception {
+    UUID active = insertResource(KEYWORD_TOKEN + "active", ResourceCategory.ROOM, true, null);
+    UUID inactive = insertResource(KEYWORD_TOKEN + "inactive", ResourceCategory.ROOM, false, null);
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", KEYWORD_TOKEN)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idFilter(active)).exists())
+        .andExpect(jsonPath(idFilter(inactive)).doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminWithKeyword_includesInactiveResource() throws Exception {
+    UUID active = insertResource(KEYWORD_TOKEN + "active", ResourceCategory.ROOM, true, null);
+    UUID inactive = insertResource(KEYWORD_TOKEN + "inactive", ResourceCategory.ROOM, false, null);
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", KEYWORD_TOKEN)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idFilter(active)).exists())
+        .andExpect(jsonPath(idFilter(inactive)).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithCategory_combinesWithAnd() throws Exception {
+    UUID room = insertResource(KEYWORD_TOKEN + "room", ResourceCategory.ROOM, true, null);
+    UUID equipment =
+        insertResource(KEYWORD_TOKEN + "equipment", ResourceCategory.EQUIPMENT, true, null);
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("category", "ROOM")
+                .param("keyword", KEYWORD_TOKEN)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idFilter(room)).exists())
+        .andExpect(jsonPath(idFilter(equipment)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithTimeRange_combinesWithAnd() throws Exception {
+    // 「会議室」に一致するのは、予約のあるシード（第1会議室）と、予約のない投入行
+    UUID free = insertResource(KEYWORD_TOKEN + "会議室-free", ResourceCategory.ROOM, true, null);
+    UUID notMatching =
+        insertResource(KEYWORD_TOKEN + "other-free", ResourceCategory.ROOM, true, null);
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議室")
+                .param("from", "2025-06-02T09:00:00")
+                .param("to", "2025-06-02T11:00:00")
+                .param("size", "100")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        // keyword に一致しても、占有中（10:00〜12:00 の予約と重複）のシードは除外される
+        .andExpect(jsonPath(idFilter(ACTIVE_RESOURCE_ID)).doesNotExist())
+        // keyword に一致し、空いている行は残る
+        .andExpect(jsonPath(idFilter(free)).exists())
+        // keyword に一致しない行は、空いていても含まれない
+        .andExpect(jsonPath(idFilter(notMatching)).doesNotExist());
   }
 
   // ---------------------------------------------------------------------------

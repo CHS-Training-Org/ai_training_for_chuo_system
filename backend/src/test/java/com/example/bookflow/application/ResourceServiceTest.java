@@ -2,9 +2,11 @@ package com.example.bookflow.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.bookflow.application.exception.ResourceNotFoundException;
@@ -32,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * {@link ResourceService} 単体テスト（ADR-018 準拠・Mockito）。
@@ -198,10 +201,10 @@ class ResourceServiceTest {
 
     @Test
     void list_memberWithoutFilter_returnsActiveOnly() {
-      when(resourceRepository.findByIsActiveTrue(pageable))
+      when(resourceRepository.findAll(any(Specification.class), eq(pageable)))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
@@ -209,10 +212,10 @@ class ResourceServiceTest {
 
     @Test
     void list_adminWithoutFilter_returnsAllIncludingInactive() {
-      when(resourceRepository.findAll(pageable))
+      when(resourceRepository.findAll(any(Specification.class), eq(pageable)))
           .thenReturn(new PageImpl<>(java.util.List.of(activeResource, inactiveResource)));
 
-      Page<ResourceResponse> result = resourceService.list(null, null, null, true, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, null, null, true, pageable);
 
       assertThat(result.getContent()).hasSize(2);
     }
@@ -222,7 +225,8 @@ class ResourceServiceTest {
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
-      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+      when(resourceRepository.findAll(any(Specification.class)))
+          .thenReturn(java.util.List.of(activeResource));
 
       // 完全重複する予約が存在する
       Reservation occupying =
@@ -235,7 +239,7 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(occupying));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, from, to, false, pageable);
 
       assertThat(result.getContent()).isEmpty();
     }
@@ -245,7 +249,8 @@ class ResourceServiceTest {
       LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
       LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
 
-      when(resourceRepository.findByIsActiveTrue()).thenReturn(java.util.List.of(activeResource));
+      when(resourceRepository.findAll(any(Specification.class)))
+          .thenReturn(java.util.List.of(activeResource));
 
       // 隣接（to == 既存開始）→ 非重複なので除外しない
       Reservation adjacent =
@@ -254,9 +259,48 @@ class ResourceServiceTest {
       when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
           .thenReturn(java.util.List.of(adjacent));
 
-      Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
+      Page<ResourceResponse> result = resourceService.list(null, null, from, to, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithKeyword_usesSpecificationPagedQuery() {
+      when(resourceRepository.findAll(any(Specification.class), eq(pageable)))
+          .thenReturn(new PageImpl<>(java.util.List.of(activeResource)));
+
+      Page<ResourceResponse> result = resourceService.list(null, "会議", null, null, false, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+      assertThat(result.getContent().get(0).id()).isEqualTo(ACTIVE_ID);
+      verify(resourceRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void list_memberWithKeywordAndTimeFilterAndOccupied_excludesOccupiedResource() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+      Resource other = makeResource(UUID.randomUUID(), "第2会議室", ResourceCategory.ROOM, true);
+
+      // keyword は候補の取得段階（findAll(spec)）で適用される。ここでは候補 2 件が返る前提
+      when(resourceRepository.findAll(any(Specification.class)))
+          .thenReturn(java.util.List.of(activeResource, other));
+
+      Reservation occupying =
+          makeReservation(
+              UUID.randomUUID(),
+              activeResource,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.APPROVED);
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(java.util.List.of(occupying));
+
+      Page<ResourceResponse> result = resourceService.list(null, "会議", from, to, false, pageable);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::id)
+          .containsExactly(other.getId());
     }
   }
 
