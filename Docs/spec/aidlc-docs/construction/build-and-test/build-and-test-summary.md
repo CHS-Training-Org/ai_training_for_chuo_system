@@ -1,17 +1,17 @@
-# Build and Test Summary — e2e-test-coverage
+# Build and Test Summary — calendar-view
 
 ## 適用範囲の判定
 
-本ユニットは単一 Issue（#26）に対する brownfield の E2E テスト追加であり、Workflow Planning で Functional Design・NFR Requirements/Design・Infrastructure Design は SKIP 済み。これに整合させ、Build and Test でも以下のとおり適用範囲を判定した（過去ユニットと異なり、本ユニットでは E2E を「実施」とする）。
+本ユニットは単一 Issue（#27）に対する brownfield の表示拡張であり、Workflow Planning で Application Design・Units Generation・NFR Requirements/Design・Infrastructure Design は SKIP 済み、Functional Design は EXECUTE 済み。これに整合させ、Build and Test でも以下のとおり適用範囲を判定した。
 
 | テスト種別 | 判定 | 理由 |
 |---|---|---|
-| Unit Test | 実施 | `ResourceServiceTest`・`ReservationServiceTest`（Mockito）・各 `*.test.ts`/`*.test.tsx`（Vitest + MSW）。本ユニットでの追加・変更はなし（回帰確認として実行） |
-| Integration Test | Unit Test に統合して実施 | `ResourceControllerTest`・`ReservationControllerTest`（H2 実データに対する MockMvc 結合テスト）が本リポジトリの唯一の結合テスト層であり、`./gradlew test` に含まれる |
+| Unit Test | 実施（本ユニットの主眼） | `availability-calendar.test.tsx`（新規8件）・`reservation-form.test.tsx`（新規2件）・`resource-detail-page.test.tsx`（更新） |
+| Integration Test | Unit Test に統合して実施（回帰確認） | `ResourceControllerTest`・`ReservationControllerTest` が本リポジトリの唯一の結合テスト層であり、`./gradlew test` に含まれる。本ユニットでの変更はない |
+| E2E Test | 実施（回帰確認） | `resources/[id]/page.tsx`・`reservations/new/` 配下を改修しているため、e2e-test-coverage ユニットで追加した既存 E2E スイート（`pnpm test:e2e`）に回帰がないことを確認する |
 | Performance Test | SKIP | NFR Requirements が SKIP 済み（性能要件なし） |
 | Contract Test | SKIP | マイクロサービス構成ではない（モノレポ・単一 backend） |
 | Security Test | SKIP | Security Baseline 拡張は Requirements Analysis で不採用と決定済み |
-| E2E Test | **実施（本ユニットの主眼）** | `docs-next/docs/spec/enhancements/beginner/e2e-test-coverage.md` の受入条件どおり、`pnpm test:e2e` でサインイン・サインアウト、リソース一覧・詳細閲覧、予約申請の一本化シナリオ、APPROVER の承認・却下操作を検証する |
 
 ## Build Status
 
@@ -28,14 +28,14 @@
 
 ### Frontend ユニット・コンポーネントテスト（`pnpm test`）
 
-- **Total Tests**: 121（15ファイル、本ユニットでの追加・変更なし）
-- **Passed**: 121 / **Failed**: 0
+- **Total Tests**: 132（17ファイル。既存121件 + 本ユニットの新規追加分：`availability-calendar.test.tsx` 8件・`reservation-form.test.tsx` 2件・`resource-detail-page.test.tsx` の更新分1件増）
+- **Passed**: 132 / **Failed**: 0
 - **Status**: Pass
 
-### Frontend E2E テスト（`pnpm test:e2e`、本ユニットの新規追加分）
+### Frontend E2E テスト（`pnpm test:e2e`、回帰確認）
 
-- **Total Tests**: 8（既存 `example.spec.ts` 1件 + 新規 `auth.spec.ts`・`resources.spec.ts`・`reservation-flow.spec.ts`・`approval.spec.ts` 計7件）
-- **Passed**: 8 / **Failed**: 0（`workers: 1` 固定のもとで連続3回実行し再現性を確認）
+- **Total Tests**: 8（本ユニットでの追加・変更なし）
+- **Passed**: 8 / **Failed**: 0（本ユニットで改修した `resources/[id]/page.tsx`・`reservations/new/` 配下に回帰がないことを確認）
 - **Status**: Pass
 
 ### Lint / Format
@@ -43,19 +43,20 @@
 - `./gradlew spotlessApply checkstyleMain`：差分なし。Checkstyle 警告194件（すべて本ユニットより前から存在する `MethodName` パターン既知 WARN、severity=warning）
 - `pnpm lint && pnpm format:check`：差分・エラーなし
 
-## 自己検証（break-and-verify、本ユニットで新規追加した E2E テスト対象）
+## 自己検証（break-and-verify）
 
-Code Generation Part 2（Step 6）で、過去ユニットの CI レビューで指摘された「対象コードを無効化しても pass してしまう弱いテスト」パターンを避けるため、サインアウト検証・承認確認の2点について対象コードを一時的に無効化し、意図したテストのみが red になることを確認してから復元する自己検証を実施済み（詳細は `construction/e2e-test-coverage/code/frontend-summary.md` を参照）。
+`AvailabilityCalendar.tsx` の占有判定ロジック（`isOverlapping`）を一時的に無効化（常に `false` を返すよう改変）し、週表示・月表示の占有判定テスト2件が red になることを確認したうえで復元し、再度 green になることを確認した（詳細は `construction/calendar-view/code/frontend-summary.md` 参照）。
 
-## 低メモリ環境への対応（本ユニットで実施した設定変更）
+## 動作確認（手動・ブラウザ）
 
-学習者PCのメモリ制約への対応として、以下2点を環境を問わず常に適用する設定に変更した（詳細は `build-instructions.md` のトラブルシューティング参照）。
+ローカルの `pnpm dev` 環境で MEMBER ロールでサインインし、リソース詳細画面（「第1会議室」）を実際に開いて、週表示（月曜始まり・8:00〜19:00のグリッド）・月表示（当月のグリッド、前月の空白セルを含む）の見た目と、週表示セルクリック→予約申請フォームへの日時引き継ぎ（`startAt` クエリパラメータ・開始日時入力欄への反映）を確認した。
 
-- `frontend/playwright.config.ts`：`workers` を常に `1` に固定
-- `frontend/vitest.config.ts`：`poolOptions.forks.{max,min}Forks: 1` を追加（テスト分離は維持したまま並列度のみ1に絞る。Vitest 3 のデフォルト pool は `"forks"` のため）
+## テスト実装上の技術的な注意点（今後の参考用）
+
+`vi.useFakeTimers()` と `@testing-library/react` の `waitFor`・`@testing-library/user-event` の組み合わせで、テストがタイムアウトする事象が発生した。`vi.waitFor`（Vitest本体が提供する、fake timers使用時に内部で自動的に時計を進める実装）と `fireEvent.click()`（同期的でタイマーに依存しない）に置き換えることで解決した。日時に依存するコンポーネントを `vi.setSystemTime` で固定してテストする際は、この組み合わせを踏襲することを推奨する。
 
 ## Overall Status
 
 - **Build**: Success（backend・frontend 両方）
-- **All Tests**: Pass（317 テスト全成功：backend 188 + frontend unit 121 + frontend E2E 8）
+- **All Tests**: Pass（328 テスト全成功：backend 188 + frontend unit 132 + frontend E2E 8）
 - **Ready for Operations**: Yes

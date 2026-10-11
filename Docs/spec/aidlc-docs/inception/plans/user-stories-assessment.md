@@ -1,26 +1,24 @@
-# User Stories Assessment — resource-detail-info
+# User Stories Assessment — calendar-view
 
 ## Request Analysis
 
-- **Original Request**: Issue #25「リソース詳細画面の情報拡充」。`resources` テーブルに `equipment`（設備一覧）・`notes`（利用上の注意）を追加し、管理者による登録・編集とリソース詳細画面への表示を実現する。
-- **User Impact**: Direct（ADMIN は新しい入力フィールドを操作し、MEMBER/APPROVER は詳細画面で新しい情報を閲覧する）
-- **Complexity Level**: Simple〜Medium（新規ロジックなしの定型拡張だが、2つの異なるペルソナ（入力する ADMIN・閲覧する MEMBER/APPROVER）に影響する）
-- **Stakeholders**: ADMIN（リソース管理者）、MEMBER（一般利用者）、APPROVER（承認者、MEMBER と同じ詳細画面を使う）
+- **Original Request**: リソース詳細画面にカレンダー形式の空き状況ビューを追加し、週/月表示切り替え・期間ナビゲーション・空き枠クリックでの予約申請フォーム連携を実現する
+- **User Impact**: Direct（利用者が直接操作する新しいUI要素：カレンダーの表示切り替え・期間移動・空き枠クリック）
+- **Complexity Level**: Medium（単一画面の変更だが、複数の操作パターン（週/月切り替え、期間移動、クリック連携）を持つ）
+- **Stakeholders**: BookFlow認証済みユーザー（MEMBER/APPROVER/ADMIN共通、権限による表示差分なし）
 
 ## Assessment Criteria Met
 
-- [x] High Priority: **New User Features** — ADMIN にとって新しい入力項目、MEMBER/APPROVER にとって新しい閲覧情報という、直接操作・閲覧する新機能である
-- [x] High Priority: **Multi-Persona Systems** — 入力側（ADMIN）と閲覧側（MEMBER/APPROVER）という異なる役割のユーザーが関与する
-- [ ] Medium Priority: 該当なし（High Priority 基準で十分に充足）
-- [x] Benefits: 「未登録時は非表示」という条件表示の挙動、ADMIN 視点の入力体験、MEMBER/APPROVER 視点の閲覧体験をそれぞれストーリーとして明確化することで、受入条件の解釈のブレを防げる
+- [x] High Priority: **New User Features**（カレンダー操作はユーザーが直接触れる新規UI）、**User Experience Changes**（既存のリスト表示をカレンダーに置き換えるため、既存の閲覧体験が変わる）
+- [ ] Medium Priority: （High Priorityに該当するため評価不要）
+- [x] Benefits: 週表示/月表示・期間ナビゲーション・クリック連携という複数の操作パターンをストーリー単位に分解することで、各操作の受入条件を明確化できる
 
 ## Decision
 
 **Execute User Stories**: Yes
-
-**Reasoning**: High Priority 基準（新規ユーザー向け機能・複数ペルソナ）に明確に合致する。`requirements.md` の受入条件（「管理者が入力・更新できる」「詳細画面に表示される（未登録時は非表示）」）はロールごとに異なる視点を持つため、ユーザーストーリー化することで Code Generation 時の実装判断（表示条件・入力UI）の解釈のブレを防ぐ。
+**Reasoning**: カレンダー操作はユーザーが直接触れる新規機能であり、High Priority Execution の「New User Features」「User Experience Changes」の両方に該当する。SKIP条件（純粋なリファクタリング・単純なバグ修正・インフラのみ・ドキュメントのみ）はいずれも該当しない。
 
 ## Expected Outcomes
 
-- ADMIN 視点（入力・更新）と MEMBER/APPROVER 視点（閲覧）を分けたストーリーにより、受入条件を Gherkin 形式でテスト可能な形に落とし込める
-- 「未登録時は非表示」という条件表示の挙動を、閲覧者視点のストーリーとして明示できる
+- 週表示・月表示・期間ナビゲーション・空き枠クリック連携のそれぞれについて独立した受入条件を持つストーリーとして整理できる
+- Code Generation 段階での実装範囲の漏れ（例：期間移動時の再取得忘れ）を防ぐ
