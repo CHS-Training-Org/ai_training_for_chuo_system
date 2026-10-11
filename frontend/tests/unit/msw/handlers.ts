@@ -23,6 +23,8 @@ export const MOCK_RESOURCE_RESPONSE = {
   requiresApproval: false,
   isActive: true,
   description: "プロジェクター完備",
+  equipment: "プロジェクター1台、ホワイトボード2台",
+  notes: "利用後はホワイトボードを消してください",
   createdAt: "2025-04-01T09:00:00",
 };
 
