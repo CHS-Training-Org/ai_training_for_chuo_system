@@ -40,9 +40,11 @@ type FormValues = z.infer<typeof FormSchema>;
 export function ReservationForm({
   resources,
   defaultResourceId,
+  defaultStartAt,
 }: {
   resources: ResourceResponse[];
   defaultResourceId?: string;
+  defaultStartAt?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -52,7 +54,7 @@ export function ReservationForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       resourceId: defaultResourceId ?? "",
-      startAt: "",
+      startAt: defaultStartAt ?? "",
       endAt: "",
       purpose: "",
       attendeesCount: null,

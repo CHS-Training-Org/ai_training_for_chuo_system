@@ -1160,3 +1160,223 @@ timestamp: 2026-08-29
 **User Input**: "PRれビューで指摘がありました。対応方法をおしえてください。"（再レビュー結果のスクリーンショット2枚添付。前回指摘1〜7・9・10はすべて対応済みと確認され、マージを妨げる問題はないと明記。残りは任意の改善4点：①サインアウトのテスト名と実動作のずれ（Issue化の提案）、②予約日時のランダム化による低確率の衝突・DBへのデータ蓄積（DBリセット手順のDocs追記提案）、③createPendingReservationとreservation-flow.spec.tsのフォーム入力手順の重複（共通ヘルパー化の提案）、④PR本文のセルフレビュー欄が未チェックである旨の確認）"
 **AI Response**: "4点のうち対応要否をAskUserQuestionで確認。①Issue化する（推奨）→ `/create-issue` スキルでIssue #138「[バグ] 通常のサインアウトでdev-id-token cookieが消えない」を起票（ラベル: バグ報告、難易度ラベルなし）。②DBリセット手順を追記する（推奨）→ `build-instructions.md` のトラブルシューティングに `DROP DATABASE`/`CREATE DATABASE`/`seed.sql` 再投入の具体的なコマンドを追記、`frontend-summary.md` にも注記。③今回は対応しない（推奨、レビュー自身も「重複が増えるようなら検討」という任意扱い）→ 見送り。④は学習者本人の確認待ち事項のため対応不要（前回のセルフレビュー欄の全角「×」修正は既に完了済みであることをレビューが確認）。あわせて `build-and-test-summary.md`・`unit-test-instructions.md` に残っていた古い `poolOptions.threads` の記述を、レビュー対応で実際に修正した `poolOptions.forks` に合わせて更新した。コミット `edd8c261`（docs(aidlc): テスト用DBのリセット手順を追記し、vitest設定の記載を修正する）として push した。"
 **Context**: resource-search・resource-sort ユニットに続く CI/レビュー指摘対応パターンの踏襲（`/aidlc` エンジンのステージ外、PR #137 への追加コミット・Issue #138 起票として対応）
+
+
+---
+
+## Workflow Start（新規ユニット: calendar-view）
+**Timestamp**: 2026-10-11T09:00:00Z
+**User Input**: "/aidlc\nカレンダービュー機能を実装したいです。\n\n要件:\n- リソース詳細画面に追加\n- 週表示/月表示切替\n- 既存 GET /api/resources/{id}/availability を利用\n- 空き枠クリックで予約申請画面へ開始日時を引き継ぐ\n- バックエンド変更なし\n\n実装計画を作成してください。\n特に既存画面のどこを変更するべきか調査してください。"
+**AI Response**: "Pre-flight：`Docs/spec/aidlc-state.md` は前回ユニット（Issue #26・e2e-test-coverage、PR #137マージ済み）の完了状態を保持しているのみで、新規ワークフローと判断。現在ブランチ `learner/CHS-FUJITA-RIKA/main`（個人トランク、`main`相当）上だったため対象タスク特定（A）→ ブランチ作成（B）を実施。ユーザー入力から `docs-next/docs/spec/enhancements/intermediate/calendar-view.md` を対象シートとして一意に特定（short-desc=`calendar-view`）。`gh issue list --state all --search \"in:body calendar-view\"` で Issue #27「[Enhance] カレンダービュー」を一意特定。ブランチ名 `feature/CHS-FUJITA-RIKA/27-calendar-view` を AskUserQuestion で提示したところ修正希望があり、ユーザー指定の `feature/CHS-FUJITA-RIKA/27-calendar-view-aidlc`（STEP-04 AI-DLC redo の `-aidlc` 接尾辞慣習に合致）で `git checkout -b` を実行（`learner/CHS-FUJITA-RIKA/main` 基点）。"
+**Context**: Pre-flight（対象タスク特定・ブランチ作成）完了 → エンジン起動（Workspace Detection）へ
+
+
+---
+
+## Workspace Detection（calendar-view）
+**Timestamp**: 2026-10-11T09:01:00Z
+**User Input**: "(N/A — ワークスペーススキャンによる自動判定)"
+**AI Response**: "既存コードベースあり（Brownfield）と判定。`Docs/spec/aidlc-docs/inception/reverse-engineering/` には既存成果物（resource-search・resource-sort・resource-detail-info・e2e-test-coverage 各ユニット向けのスコープ限定ファイル）が存在するが、いずれも他ユニット専用スコープで本課題（リソース詳細画面の空き状況カレンダー表示）には転用不可と判断。次ステージを Reverse Engineering（本課題スコープに限定した追加調査）に設定。"
+**Context**: Workspace Detection — EXECUTE（必須ステージ）、Brownfield 判定、次ステージ = Reverse Engineering（スコープ限定）
+
+
+---
+
+## Reverse Engineering（calendar-view）
+**Timestamp**: 2026-10-11T09:10:00Z
+**User Input**: "/aidlc\n\nIssue #27 カレンダービューを実装します。\n\n要件:\n- リソース詳細画面(/resources/[id])にカレンダー形式の空き状況ビューを追加\n- 週表示と月表示を切り替えられる\n- 既存API GET /api/resources/{id}/availability を利用\n- 空き枠クリックで予約申請画面(/reservations/new)へ開始日時を引き継ぐ\n- 前週/次週、前月/次月へ移動できる\n- バックエンド変更は不要\n- 対象レイヤーは frontend\n\nまず既存コードを調査し、\n1. 関連ファイル\n2. 現在のデータ取得処理\n3. 実装方針\n4. 作業タスク分解\nを提示してください。"（なお、本ユーザー入力の直前に同趣旨の依頼が一度あり、Explore subagentで調査済みだったが、ユーザーから「もう一度依頼しなおしたい」との申し出があり、本メッセージとして再依頼された。Pre-flightは `Docs/spec/aidlc-state.md` 既存のためスキップ、既存ワークフロー（calendar-view、ブランチ `feature/CHS-FUJITA-RIKA/27-calendar-view-aidlc`）のレジュームとして処理）
+**AI Response**: "EXECUTE 判定（Brownfield かつ本課題スコープの既存RE成果物なし）。Explore subagentでリソース詳細画面（`frontend/src/app/(authenticated)/resources/[id]/page.tsx`）・空き確認API（フロント`getAvailabilityAction`・バックエンド`ResourceController#availability`/`ResourceService#availability`）・予約フォームへの日時引き継ぎ現状（`resourceId`のみ対応、日時パラメータは先例なし）・使えるUI資産（カレンダー専用ライブラリ・日付ライブラリとも未導入）・既存テストを調査。`code-structure-calendar-view.md` を生成。承認待ち。"
+**Context**: Reverse Engineering — EXECUTE（スコープ限定）、成果物生成完了、承認待ち
+
+
+---
+
+## Reverse Engineering — Approval（calendar-view）
+**Timestamp**: 2026-10-11T09:15:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Requirements Analysis へ遷移。"
+**Context**: Reverse Engineering 承認 → 次ステージ Requirements Analysis
+
+
+---
+
+## Requirements Analysis — Intent Analysis（calendar-view）
+**Timestamp**: 2026-10-11T09:20:00Z
+**User Input**: "(N/A — 前ステージからの自動遷移。分析対象はビジネス要求シート calendar-view.md + ユーザーの要件列挙)"
+**AI Response**: "Request Clarity: Clear。Request Type: Enhancement（既存機能の表示拡張）。Scope: Single Component（frontend のリソース詳細画面に閉じる、バックエンド変更なし）。Complexity: Moderate（週/月表示切り替え・期間ナビゲーション・予約フォームへの新規クエリパラメータ設計・カレンダーUI実装方式の選定が必要）。Depth: Standard に設定。"
+**Context**: Requirements Analysis Step 2-3（Intent Analysis・Depth 決定）
+
+---
+
+## Requirements Analysis — Clarifying Questions（calendar-view）
+**Timestamp**: 2026-10-11T09:25:00Z
+**User Input**: "既存の「空き状況（予約済み一覧）」リスト表示をどう扱いますか？（ビジネス要求シートRSV-05で実装者判断とされています）\"=\"カレンダーに置き換える（推奨）\", \"カレンダーUIの実装方法は？\"=\"shadcn/uiベースで自作（推奨）\", \"週表示の週の開始曜日は？\"=\"月曜始まり（推奨）\" ／ \"Security Baseline拡張を本ユニットに適用しますか？\"=\"適用しない（推奨）\", \"Resiliency Baseline拡張を本ユニットに適用しますか？\"=\"適用しない（推奨）\", \"Property-Based Testing拡張をフロントエンドロジックに適用しますか？\"=\"適用しない（推奨）\""
+**AI Response**: "AskUserQuestion（2回・計6問）で回答受領。既存の空き状況リストはカレンダーに置き換え（RSV-05の実装者判断を確定）、カレンダーUIはshadcn/uiベースの自作（外部ライブラリ非導入、依存追加なし）、週表示は月曜始まりに決定。Security/Resiliency/PBTの3拡張はいずれも不採用（Enabled=No）と `Docs/spec/aidlc-state.md` に記録。矛盾・曖昧な回答なし、追加確認質問は不要と判断。"
+**Context**: Requirements Analysis Step 5〜6（曖昧点解消・拡張 opt-in）完了
+
+
+---
+
+## Requirements Analysis — Document Generated（calendar-view）
+**Timestamp**: 2026-10-11T09:28:00Z
+**User Input**: "(N/A — 前ステップからの継続)"
+**AI Response**: "`Docs/spec/aidlc-docs/inception/requirements/requirements.md` を生成。機能要件RSV-01〜05、決定事項3件（既存リスト置き換え・カレンダー自作・月曜始まり）、非機能要件NFR-01〜04（再取得・日時引き継ぎクエリパラメータ`startAt`・バックエンド変更なし・新規依存なし）、拡張設定（すべて不採用）、影響ファイル一次見立てを記載。承認待ち。"
+**Context**: Requirements Analysis Step 7、承認ゲート提示
+
+
+---
+
+## Requirements Analysis — Approval（calendar-view）
+**Timestamp**: 2026-10-11T09:30:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。User Stories へ遷移。"
+**Context**: Requirements Analysis 承認 → 次ステージ User Stories
+
+
+---
+
+## User Stories — Assessment & Clarifying Questions（calendar-view）
+**Timestamp**: 2026-10-11T09:35:00Z
+**User Input**: "(N/A — 前ステージからの自動遷移)"
+**AI Response**: "`user-stories-assessment.md` を生成し EXECUTE 判定（New User Features・User Experience Changes 該当）を記録。ストーリー作成前に、RSV-03「空き枠クリックで開始日時を引き渡す」の実現に必要な時刻粒度が requirements.md 未確定だったため AskUserQuestion（2問）で確認：週表示は1時間単位のグリッド（8:00〜20:00）、月表示の日セルクリックはその日の既定時刻（9:00）を引き継ぎフォームで調整、に決定。"
+**Context**: User Stories Part 1 Step 1-3（Assessment・追加クラリファイング）
+
+
+---
+
+## User Stories — Plan Approval（提示, calendar-view）
+**Timestamp**: 2026-10-11T09:37:00Z
+**AI Prompt**: "この計画でよろしいですか？（承認でPart 2の生成へ進みます）"
+**Context**: User Stories Part 1 承認ゲート提示、回答待ち
+
+
+---
+
+## User Stories — Plan Approval（calendar-view）
+**Timestamp**: 2026-10-11T09:38:00Z
+**User Input**: "はい"
+**AI Response**: "承認を記録。Part 2（生成）へ進み、personas.md・stories.md を生成する。"
+**Context**: User Stories Part 1 → Part 2 遷移
+
+
+---
+
+## User Stories — Generation Complete（calendar-view）
+**Timestamp**: 2026-10-11T09:40:00Z
+**User Input**: "(N/A — 計画に基づく自動生成)"
+**AI Response**: "`personas.md`（主ペルソナ：BookFlow認証済みユーザー、権限による表示差分なし）と `stories.md`（US-01〜US-04、requirements.mdの受入条件6項目をすべてカバー、Gherkin形式）を生成。`story-generation-plan.md` のStep A〜Cを `[x]` に更新。承認待ち。"
+**Context**: User Stories Part 2 Step 15-20、承認ゲート提示
+
+
+---
+
+## User Stories — Approval（calendar-view）
+**Timestamp**: 2026-10-11T09:42:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Workflow Planning へ遷移。"
+**Context**: User Stories 承認 → 次ステージ Workflow Planning
+
+
+---
+
+## Workflow Planning（calendar-view）
+**Timestamp**: 2026-10-11T09:45:00Z
+**AI Prompt**: "Ready to proceed with this plan?"
+**User Response**: "(N/A — 計画提示前。以下は計画内容の記録)"
+**Status**: Plan Created
+**Context**: `execution-plan.md` を生成。Application Design/Units Generationは SKIP（新規サービス・モジュール境界不要、単一units of work）。Functional DesignはEXECUTE（占有スロット→カレンダーグリッドの空き/予約済み判定ロジック、週/月のfrom-to算出、クリック位置→開始日時組み立てロジックが複雑なビジネスロジックに該当するため）。NFR Requirements/Design・Infrastructure DesignはSKIP。Code Generation・Build and TestはALWAYS EXECUTE。Risk Level: Low（単一画面・frontendのみの孤立した変更）。Mermaidワークフロー図を生成・構文検証済み。承認待ち。
+
+
+---
+
+## Workflow Planning — Approval（calendar-view）
+**Timestamp**: 2026-10-11T09:48:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Construction フェーズ、ユニット「calendar-view」の Functional Design へ遷移。"
+**Context**: Workflow Planning 承認 → 次ステージ Functional Design（Construction）
+
+
+---
+
+## Functional Design（calendar-view）
+**Timestamp**: 2026-10-11T09:52:00Z
+**User Input**: "(N/A — 前ステージからの自動遷移)"
+**AI Response**: "Application Design/Units Generationを SKIP しているため requirements.md・stories.md を直接入力として使用。`calendar-view-functional-design-plan.md` を作成。残っていた曖昧点（月表示での「予約済み」判定基準）をAskUserQuestionで確認：営業時間全体（8:00〜20:00）が埋まっている日のみグレーアウトに決定。business-logic-model.md（from-to算出・グリッドセル生成・占有判定ロジック）・business-rules.md（BR-01〜08）・domain-entities.md（新規エンティティなしの確認）・frontend-components.md（AvailabilityCalendar.tsxのprops/state、既存ファイルの改修点）を生成。承認待ち。"
+**Context**: Functional Design Step 1-7、承認ゲート提示
+
+
+---
+
+## Functional Design — Approval（calendar-view）
+**Timestamp**: 2026-10-11T10:00:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "承認を記録。Code Generation へ遷移。"
+**Context**: Functional Design 承認 → 次ステージ Code Generation
+
+
+---
+
+## Code Generation Part 1 — Planning（calendar-view）
+**Timestamp**: 2026-10-11T10:05:00Z
+**User Input**: "(N/A — 前ステージからの自動遷移)"
+**AI Response**: "`calendar-view-code-generation-plan.md` を作成。Functional Designで確定済みのロジック・業務ルールを参照する形にし、本プラン内では再掲しない方針とした。6ステップ（仕様書更新→AvailabilityCalendarコンポーネント生成→リソース詳細画面組み込み→予約フォーム日時引き継ぎ→ユニットテスト→フロントエンドサマリ）で構成。自動化しやすいUIにするため各要素にdata-testidを付与する方針を明記。backend変更が無いためbackend-summary.mdは作成しない方針を明記。承認待ち。"
+**Context**: Code Generation Part 1、承認ゲート提示
+
+
+---
+
+## Code Generation Part 1 — Approval（calendar-view）
+**Timestamp**: 2026-10-11T10:06:00Z
+**User Input**: "はい"
+**AI Response**: "承認を記録。Part 2（生成）へ進み、Step 1（仕様書更新）から実行する。"
+**Context**: Code Generation Part 1 承認 → Part 2 実行開始
+
+
+---
+
+## Code Generation Part 2 — Steps 1-6 Complete（calendar-view）
+**Timestamp**: 2026-10-11T10:50:00Z
+**User Input**: "(N/A — 承認済みプランに基づく自動実行)"
+**AI Response**: "Step 1: `screen-spec.md` §`/resources/{id}`・§`/reservations/new` を更新。Step 2: `AvailabilityCalendar.tsx` を新規作成（週/月グリッド・占有判定・クリック時の日時組み立て、data-testid付与）。Step 3: `resources/[id]/page.tsx` から既存の空き状況リスト表示を削除し `AvailabilityCalendar` を組み込み。Step 4: `reservations/new/page.tsx`・`ReservationForm.tsx` に `startAt` クエリパラメータの引き継ぎを実装。Step 5: `availability-calendar.test.tsx`（8件）・`reservation-form.test.tsx`（2件、新規）を作成、`resource-detail-page.test.tsx` を更新。テスト実装中に (1) RTLのwaitForがfake timers配下でハングする問題→`vi.waitFor`に変更、(2) userEventがfake timersと組み合わせるとハングする問題→`fireEvent`に変更、(3) ナビゲーションボタンのdisabled状態を待たずにクリックすると操作が無視される不具合、を発見・解決。占有判定ロジックを一時的に無効化する自己検証（break-and-verify）で対象テストがredになることを確認し復元。Step 6: `frontend-summary.md` を生成。`pnpm lint && pnpm format:check && pnpm test`（132件全成功）・`pnpm build`成功、`./gradlew spotlessApply checkstyleMain test`（188件、backend変更なしの回帰確認）成功を確認。ローカル `pnpm dev` でMEMBERロールでサインインし、第1会議室のリソース詳細画面で週表示・月表示の実際の見た目とクリック連携（セルクリック→予約申請フォームへの日時引き継ぎ）を手動確認した。"
+**Context**: Code Generation Part 2 全6ステップ完了
+
+
+---
+
+## Code Generation — Approval（calendar-view）
+**Timestamp**: 2026-10-11T10:55:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "承認を記録。calendar-view ユニットの Code Generation を完了とし、Build and Test ステージへ遷移。"
+**Context**: Code Generation 承認 → 次ステージ Build and Test（Construction フェーズ）
+
+
+---
+
+## Build and Test Stage（calendar-view）
+**Timestamp**: 2026-10-11T11:10:00Z
+**Build Status**: Success（backend: `./gradlew build` BUILD SUCCESSFUL／frontend: `pnpm build` 成功）
+**Test Status**: Pass（backend 188件全成功〔本ユニットでの変更なし、回帰確認〕／frontend unit 132件全成功〔新規10件を含む〕／frontend E2E 8件全成功〔本ユニットで改修した resources/[id]・reservations/new 配下への回帰確認〕）
+**追加対応**: `pnpm build`（production）実行後に同じ `.next` を共有する `pnpm dev` プロセスのmanifestが壊れる事象が発生したため、`.next` を削除して `pnpm dev` を再起動して復旧した（開発環境固有の運用上の注意であり、コードの不具合ではない）。
+**Files Generated**:
+- `Docs/spec/aidlc-docs/construction/build-and-test/build-instructions.md`（calendar-view 向けに更新）
+- `Docs/spec/aidlc-docs/construction/build-and-test/unit-test-instructions.md`（calendar-view 向けに更新）
+- `Docs/spec/aidlc-docs/construction/build-and-test/build-and-test-summary.md`（calendar-view 向けに更新）
+**Context**: Build and Test ステージ実行完了、承認待ち
+
+
+---
+
+## Build and Test — Approval（calendar-view）
+**Timestamp**: 2026-10-11T11:15:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "承認を記録。calendar-view ユニットの CONSTRUCTION フェーズ（Functional Design・Code Generation・Build and Test）を完了。BookFlow では OPERATIONS フェーズは CI 品質ゲート（`CI Frontend`）として運用され、PR 作成・push 時に自動実行されるため、`/aidlc` 自体がこの場で追加生成するステージはない旨をユーザーに説明し、次のアクション（`/commit-push`・`/create-pr`）を案内する。"
+**Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。`/aidlc` ワークフロー本体はここで完了
+
+
+---
+
+## PR #144 レビュー指摘対応（観点2 実装と非機能部分の整合性・ラウンド1 NG、calendar-view）
+**Timestamp**: 2026-10-11T11:40:00Z
+**User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド1でNGになりました。対応方法をおしえてください。"（レビュー画面のスクリーンショット3枚添付。指摘内容：(1) `reservations/new/page.tsx` の `startAt` クエリパラメータを `ReservationForm` に中継する処理（page.tsx:21・:40）が未検証。追加テストはカレンダー側（クリックでstartAtを含むURLにpush）とフォーム側（defaultStartAtを直接渡した時の反映）の両端のみを検証しており、中継処理自体を検証するテストがないため、該当2行を削除してもテストがpassしてしまう。(2) 月表示の期間移動と「前へ」方向の移動が未検証。期間移動のテストは週表示「次週」のみで、週表示「前週」・月表示「次月」「前月」はどの経路も通らない。月表示側のaddMonthsの符号を反転させてもテストがpassしてしまう。補足（NGの根拠ではない）：isFullyCoveredの隙間検出ロジック（複数予約をつないで営業時間を覆うかの判定）が「1件で全体を覆う日」「1件で一部だけ覆う日」の2ケースのみで検証されており、隙間がある場合の早期returnが一度も実行されていない。参考（判定に影響しない）：toQueryDateTimeがtoISOString()でUTC変換する一方、バックエンドのLocalDateTimeはタイムゾーンなし文字列としてブラウザのローカル時刻と解釈されるため、UTC以外のタイムゾーンでは照会範囲がずれる可能性があるが、既存page.tsxから引き継いだパターンであり本レビューの担当外として記録のみ。"
+**AI Response**: "指摘(1)：`reservation-new-page.test.tsx` を新規作成し、`ReservationNewPage`（Server Component）を直接呼び出して`searchParams`に`startAt`を含めた場合に`ReservationForm`の開始日時入力欄へ実際に反映されることを検証するテストを追加。`defaultStartAt={defaultStartAt}`を一時的に`defaultStartAt={undefined}`に変更する自己検証でテストがredになることを確認し復元。指摘(2)：`availability-calendar.test.tsx`に「前週」「月表示・次月」「月表示・前月」の3テストを追加。`handlePrev`の月表示分岐の符号を一時的に反転（`addMonths(current, -1)`→`addMonths(current, 1)`）する自己検証で新規テストのみがredになることを確認し復元。補足のisFullyCoveredについても対応し、複数予約の間に隙間がある日（8:00-10:00・14:00-20:00、10:00-14:00が空き）が正しくクリック可能と判定されるケースを既存テストに追加、隙間検出の早期return（`if (start > coveredUntil) return false;`）を一時的に無効化する自己検証でredになることを確認し復元。タイムゾーンの参考コメントは既存page.tsxから引き継いだパターンであり本PRのスコープ外として対応を見送った。`pnpm lint && pnpm format:check && pnpm test`（137件全成功）・`pnpm build`成功、`./gradlew spotlessApply checkstyleMain test`（188件、backend変更なしの回帰確認）成功を確認し、コミット `de0879a5`（test(calendar-view): PRレビュー指摘に対応する）として push した。"
+**Context**: resource-search・resource-sort・e2e-test-coverage ユニットに続く CI/レビュー指摘対応パターンの踏襲（`/aidlc` エンジンのステージ外、PR #144 への追加コミットとして対応）

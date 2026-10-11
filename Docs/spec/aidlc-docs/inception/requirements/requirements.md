@@ -1,73 +1,87 @@
-# Requirements — e2e-test-coverage（既存機能の E2E テスト追加）
+# Requirements — ユニット: calendar-view（カレンダービュー）
 
 ## Intent Analysis Summary
 
-- **User Request**: GitHub Issue #26「既存機能の E2E テスト追加」。ビジネス要求シート `docs-next/docs/spec/enhancements/beginner/e2e-test-coverage.md` に基づく。
-- **Request Type**: Enhancement（テスト追加のみ、機能仕様の変更なし）
-- **Scope Estimate**: Multiple Components（認証・リソース一覧/詳細・予約申請・承認操作の4画面フローをまたぐ）
-- **Complexity Estimate**: Medium（新規ロジックは無いが、認証状態の共有・テストデータの再実行可能性等、設計判断を要する論点が複数ある。シート記載の推定工数は3〜5時間）
-
-## 背景
-
-BookFlow の Playwright テストは `frontend/tests/e2e/example.spec.ts` の1件のみで、主要なユーザーフロー（サインイン・リソース閲覧・予約申請・承認）はカバーされていない。これらに E2E テストを追加し、機能改修時のリグレッションを検出できるようにする。
+- **User Request**: リソース詳細画面（`/resources/{id}`）に、週表示・月表示を切り替えられるカレンダー形式の空き状況ビューを追加する（Issue #27、ビジネス要求シート `docs-next/docs/spec/enhancements/intermediate/calendar-view.md`）
+- **Request Type**: Enhancement（既存機能の表示拡張。ユースケース UC-02 の表示拡張）
+- **Scope Estimate**: Single Component（frontend のリソース詳細画面に閉じる。バックエンド変更なし）
+- **Complexity Estimate**: Moderate（週/月表示切り替え・期間ナビゲーション・予約フォームへの新規クエリパラメータ設計・カレンダーUIの自作実装が必要）
 
 ## 機能要件
 
 | # | 要件 |
 |---|------|
-| TEST-01 | MEMBER ロールでのサインイン・サインアウトをシナリオとしてカバーする |
-| TEST-02 | リソース一覧の閲覧・詳細確認のシナリオをカバーする（未サインインでのリダイレクト確認を含む） |
-| TEST-03 | 予約申請フォームへの入力・送信（正常系）のシナリオをカバーする |
-| TEST-04 | APPROVER ロールでの承認操作（承認・却下）のシナリオをカバーする |
-| TEST-05 | 追加した E2E テストが `pnpm test:e2e` で全件 pass する |
+| RSV-01 | リソース詳細画面（`/resources/{id}`）にカレンダー形式の空き状況ビューを追加する |
+| RSV-02 | カレンダーは週表示・月表示を切り替えられる |
+| RSV-03 | カレンダー上で予約済み枠はグレーアウト、空き枠はクリック可能とし、クリックで予約申請フォーム（`/reservations/new`）に開始日時を引き渡す |
+| RSV-04 | 表示期間を変更（前週/次週、前月/次月）すると、その期間の空き情報を再取得して更新する |
+| RSV-05 | 既存の「空き状況（予約済み一覧）」リスト表示は、カレンダーに**置き換える**（確定事項。詳細は「決定事項」参照） |
 
-## 設計判断の決定（確認質問の回答）
+## 決定事項（Requirements Analysis で確定）
 
-### サインアウト検証（TEST-01）
+### 1. 既存リスト表示の扱い：カレンダーへの置き換え
 
-開発用ロールログイン（`devLoginAction`）は専用 cookie（`dev-id-token`）を発行するが、Header の「サインアウト」ボタン（`signOutAction`）は Better Auth のセッションのみを解除し、この cookie を削除しない（RE調査で判明した既存のギャップ）。
+既存の空き状況リスト（`resources/[id]/page.tsx` の `<ul>` によるスロット一覧表示）は削除し、カレンダー表示に置き換える。
 
-- **決定**: E2E テスト側で Playwright の `context.clearCookies()`（または `dev-id-token` の個別削除）により `dev-id-token` を削除し、その後に保護ページ（例：`/resources`）へアクセスして `/auth/signin` へリダイレクトされることを確認する。アプリケーションコード（`auth.ts`/`dev-auth.ts`）は変更しない。
-- **理由**: 本課題は「機能仕様に変更なし」（影響範囲節）と明記されており、`signOutAction` の挙動修正は本課題のスコープを超える機能修正にあたる。
+- **理由**: ビジネス要求シートの背景説明が「リスト形式では週・月単位での混雑感が把握しにくい」という課題を前提にしており、カレンダーはこの課題を解決する代替手段として位置づけられている。両方を並べて表示すると同じ情報が二重に見え、画面が冗長になる
+- **影響**: 既存テスト `resource-detail-page.test.tsx` はリスト表示の中身自体を検証していない（`getAvailabilityAction` を空配列にモックしているのみ）ため、置き換えによる既存テスト破壊リスクは低い
 
-### APPROVER 承認操作テストのデータ戦略（TEST-04）
+### 2. カレンダーUIの実装方法：shadcn/uiベースの自作
 
-`scripts/seed.sql` には PENDING 予約（承認待ち）が固定で1件投入済みだが、テストで承認/却下すると状態が変わり、DB が再シードされない限り再実行できない。
+外部カレンダーライブラリ（react-big-calendar・@fullcalendar/react 等）は導入せず、既存の shadcn/ui コンポーネント（`table.tsx` 等）をベースに自作する。
 
-- **決定**: APPROVER 承認操作テストは、テスト自身が事前に MEMBER ロールでサインインし、「第1会議室」（`requires_approval=true`）への新規予約申請を行って PENDING 項目を作成したうえで、APPROVER に切り替えて承認・却下を行う。固定シード項目には依存しない。
-- **理由**: 何度でも再実行可能にするため。TEST-03（予約申請）のフローと内部的に連携するが、テストケース自体は独立して実行できる。
+- **理由**: 新規依存を追加しないため、ライセンス確認・バンドルサイズ増加・将来のライブラリアップデート追従といったコストが発生しない。BookFlow の既存 UI トーン（shadcn/ui ベース）とも統一できる
+- **影響**: 週7列・月5〜6週分のグリッド表示ロジックを自前で実装する。日付計算ライブラリ（date-fns 等）は新規導入せず、既存パターン（ネイティブ `Date` と `toISOString().slice(0, 19)`）を踏襲する
 
-### CI 組み込み（TEST-05 の「CI で自動実行させる場合は」の解釈）
+### 3. 週表示の週の開始曜日：月曜始まり
 
-- **決定**: 今回のスコープは「追加した E2E テストがローカルの `pnpm test:e2e` で全件 pass すること」までとし、`ci-frontend.yml` への組み込みは対象外とする。
-- **理由**: `ci-frontend.yml` にはバックエンド・PostgreSQL・cognito-local を起動する手順が無く、組み込む場合は小さくない CI インフラ整備が別途必要になる。ビジネス要求シートの推定工数（3〜5時間・対象レイヤー：frontend）と整合しない規模の作業になるため、将来の別課題として切り出すのが妥当。
+週表示の最初の列を月曜日とする（日本の業務カレンダーで一般的な週区切りに合わせる）。
+
+- **影響**: 週の開始日計算ロジック（`date.getDay()` を月曜始まりのオフセットに変換する処理）に反映する
+
+### 4. カレンダーの時刻粒度（RSV-03 の具体化）
+
+- 週表示：1時間単位のグリッド（8:00〜20:00）。曜日×時間帯のマス目をクリックするとその時刻が開始日時として引き継がれる
+- 月表示：日単位のセル。日をクリックするとその日の既定時刻（9:00）を開始日時として引き継ぎ、正確な時刻は予約申請フォーム側で調整する
+
+- **理由**: 既存データ・spec に「営業時間」の概念はなく新規定義が必要。週表示は時刻クリックの精度を優先し、月表示は混雑状況の概観把握を優先する（正確な時刻入力は週表示またはフォーム側に委ねる）
 
 ## 非機能要件
 
-- **再実行可能性**: 各テストは、他のテストの実行順序やシード状態に依存せず、繰り返し実行できること（上記 APPROVER テストデータ戦略に基づく）。
-- **認証状態の共有**: サインイン操作（`devLoginAction` のフォーム送信）を各テストで毎回繰り返すとテスト時間が増えるため、Playwright の `storageState` を活用してロールごとの認証済み状態を再利用する（`global setup` でロール別に事前サインインし、`storageState` ファイルを生成）。
+| # | 要件 |
+|---|------|
+| NFR-01 | 期間移動（前週/次週・前月/次月）のたびに `getAvailabilityAction` を再呼び出しし、表示を更新する（クライアントサイドでの再取得） |
+| NFR-02 | 空き枠クリック→予約申請フォーム遷移時、フォームの `開始日時` 入力欄（`datetime-local` 形式）にクリックした枠の開始時刻が反映される。新規クエリパラメータ名は `startAt` とする（`YYYY-MM-DDTHH:mm` 形式、`resourceId` と同じ `searchParams` 経由） |
+| NFR-03 | 既存の空き確認 API（`GET /api/resources/{id}/availability`）以外のバックエンド変更を行わない |
+| NFR-04 | 新規 npm 依存を追加しない（決定事項2のとおり自作のため） |
 
-## 受入条件（ビジネス要求シートより）
+## 拡張設定（いずれも不採用）
 
-- [ ] `pnpm test:e2e` を実行すると、追加したシナリオがすべて pass する
-- [ ] サインイン → リソース一覧閲覧 → 予約申請 のフローが1本のテストシナリオとして実行できる
-- [ ] APPROVER ロールでサインインして承認操作を行うシナリオが実行できる
-- [ ] 既存の `example.spec.ts` も引き続き pass する
-- [ ] テストはフィクスチャ（`playwright.config.ts` の設定や `global-setup` 等）を活用してサインイン状態を共有し、重複を最小化している
+| Extension | Enabled | 理由 |
+|---|---|---|
+| Security Baseline | No | 既存APIをそのまま活用するfrontendの表示変更のみで、新たな認証・権限面の変更が発生しない |
+| Resiliency Baseline | No | 既存APIの失敗時（空配列）処理はすでにリソース詳細画面で慣行化されており、新たな耐障害性要求はない |
+| Property-Based Testing | No | 既存ユニットでも不採用。代表的な境界値（月末・年跨ぎ等）を例挙テストでカバーすれば十分 |
 
-## 影響範囲
+## 受入条件（ビジネス要求シートより。真実の源として再掲のみ）
 
-- **対象レイヤー**: frontend のみ（テストコード追加のみ、アプリケーションコードの変更なし）
-- **更新が必要な spec**: なし（ビジネス要求シートに明記のとおり、機能仕様に変更なし）
-- **変更対象ファイル**（RE 調査 `code-structure-e2e-test-coverage.md` 参照）: `frontend/tests/e2e/` 配下の新規テストファイル、`frontend/playwright.config.ts`（`storageState`/`globalSetup` 設定追加の可能性）、新規 `frontend/tests/e2e/global-setup.ts`（または同等のフィクスチャ）
+- [ ] リソース詳細画面でカレンダー形式の空き状況が表示される
+- [ ] 週表示と月表示を切り替えられる
+- [ ] カレンダー上の空き枠をクリックすると予約申請フォーム（`/reservations/new`）に開始日時が引き渡される
+- [ ] 予約済み枠は視覚的に区別されている（色・パターン・テキスト等）
+- [ ] 表示期間を前後に移動できる
+- [ ] 既存の空き確認 API（`GET /api/resources/{id}/availability`）以外のバックエンド変更が不要である
 
-## 依存関係・競合課題
+## 影響ファイル（一次見立て。Code Generation で確定）
 
-- 前提課題：なし
-- 競合課題：なし（テスト追加のみで機能仕様を変更しないため、他のエンハンス課題との競合は発生しない）
+- `frontend/src/app/(authenticated)/resources/[id]/page.tsx`（改修：空き状況リストをカレンダー呼び出しに置き換え）
+- `frontend/src/app/(authenticated)/resources/[id]/AvailabilityCalendar.tsx`（新規：カレンダー本体、Client Component）
+- `frontend/src/app/(authenticated)/reservations/new/page.tsx`（改修：`startAt` クエリパラメータの読み取り追加）
+- `frontend/src/app/(authenticated)/reservations/new/ReservationForm.tsx`（改修：`defaultStartAt` の反映）
+- `frontend/tests/unit/` 配下への新規・更新テスト
 
 ## スコープ外
 
-- `ci-frontend.yml` への E2E 実行ステップ追加（上記の決定により今回は対象外）
-- `signOutAction`/`devLoginAction` のアプリケーションコード修正（機能仕様変更に該当するため対象外）
-- ADMIN ロールのシナリオ（ビジネス要求シートの要件に含まれないため対象外）
+- バックエンドの変更（`GET /api/resources/{id}/availability` 以外の新規API・既存APIの変更）
+- ADMIN ロール向けの特別な表示
+- 日付計算ライブラリ・カレンダー専用ライブラリの新規導入

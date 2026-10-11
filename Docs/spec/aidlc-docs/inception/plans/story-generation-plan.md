@@ -1,36 +1,22 @@
-# Story Generation Plan — resource-detail-info
+# Story Generation Plan — calendar-view
 
-## 採用する分解アプローチ: Persona-Based
+## 方針
 
-本課題は「入力する ADMIN」と「閲覧する MEMBER/APPROVER」という2つの異なるペルソナにはっきり分かれるため、Persona-Based での分解を採用する。
+- **Breakdown Approach**: Feature-Based（カレンダーの各操作単位でストーリーを分割する。週表示/月表示は単一の画面機能の表示モードであり別ペルソナを要しないため、User Journey-Based や Persona-Based は採らない）
+- **ペルソナ**: 単一の主ペルソナ（BookFlow 認証済みユーザー。MEMBER/APPROVER/ADMIN 共通、権限による表示差分なし）とする。requirements.md のとおり本課題に権限分岐はないため、複数ペルソナを立てない
+- **粒度**: 受入条件（requirements.md 記載の6項目）に1対1〜1対2で対応する4ストーリー程度に分解する
+- **フォーマット**: 「〜として、〜したい。それによって〜できる」形式 + Gherkin 形式の受入条件（既存ユニットの stories.md と同じ形式を踏襲）
 
-**他アプローチとのトレードオフ**（参考）:
+## 実行チェックリスト
 
-| アプローチ | 本課題への適合 |
-|---|---|
-| User Journey-Based | ADMIN の「登録→編集」という単線フローのみで、分岐が少なく過剰 |
-| Feature-Based | ペルソナ軸と実質同じ分解になるため Persona-Based に吸収される |
-| **Persona-Based（採用）** | ADMIN（入力）・MEMBER/APPROVER（閲覧）の2軸が要件と自然に一致する |
-| Domain-Based | 単一ドメイン（Resource）のみのため分解不要 |
-| Epic-Based | 本課題の規模（3〜4時間）に対して階層化は過剰 |
+- [x] Step A: `personas.md` を生成する（主ペルソナ1件：BookFlow 認証済みユーザー）
+- [x] Step B: `stories.md` を生成する。以下の4ストーリー候補を INVEST 基準で検証しながら作成する
+  - カレンダー形式での空き状況閲覧（週表示・月表示切り替えを含む）
+  - 表示期間の移動（前週/次週・前月/次月）
+  - 空き枠クリックによる予約申請フォームへの日時引き継ぎ（週表示の時刻クリック・月表示の日クリックの両方）
+  - 予約済み枠の視覚的区別（グレーアウト表示）
+- [x] Step C: 各ストーリーに受入条件（Gherkin形式）を記載し、requirements.md の受入条件6項目をすべてカバーしていることを確認する
 
-## 明確化が必要な論点の確認
+## 確認事項
 
-要件（`requirements.md`）・RE 調査（`code-structure.md`）を精査した結果、ストーリー生成に影響する曖昧な点は見当たらなかった：
-
-- ペルソナ：ADMIN（登録・編集）・MEMBER/APPROVER（閲覧、挙動は同一のため1ペルソナとして統合）の2者で確定
-- ストーリー粒度：新規登録・編集は同一フォーム（`ResourceForm`）を共用するため1ストーリーに統合
-- 受入条件形式：本リポジトリの既存ユニット（resource-search・resource-sort・reservation-list-filter）で確立済みの Gherkin 形式を踏襲
-
-## 実行ステップ
-
-- [x] Step 1: `personas.md` を生成（ADMIN・MEMBER/APPROVER の2ペルソナ）
-- [x] Step 2: `stories.md` を生成（INVEST 原則に従うストーリー、各ストーリーに Gherkin 受入条件とペルソナ対応表を含む）
-
-## 含めるストーリー（概要）
-
-| ID | タイトル | ペルソナ |
-|---|---|---|
-| US-01 | 設備情報・利用上の注意を登録・編集する | ADMIN |
-| US-02 | リソース詳細画面で設備情報・利用上の注意を確認する | MEMBER/APPROVER |
-| US-03 | 未登録のリソースでは新フィールドが表示されない | MEMBER/APPROVER |
+requirements.md と本セッションの追加確認（週表示1時間グリッド・月表示日クリック＋既定時刻9:00）により、ストーリー作成に必要な曖昧点はすべて解消済みと判断する。追加の確認質問はない。

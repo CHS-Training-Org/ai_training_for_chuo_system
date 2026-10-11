@@ -1,32 +1,33 @@
-# Execution Plan — e2e-test-coverage
+# Execution Plan — calendar-view
 
 ## Detailed Analysis Summary
 
 ### Transformation Scope（Brownfield）
 
-- **Transformation Type**: Single component change（frontend の E2E テスト層への追加のみ）
-- **Primary Changes**: Playwright のテストシナリオ追加（サインイン/サインアウト・リソース閲覧・予約申請・承認操作）、認証状態共有のための `global-setup`/`storageState` 導入
-- **Related Components**: `frontend/tests/e2e/`、`frontend/playwright.config.ts`
+- **Transformation Type**: Single component change（リソース詳細画面1画面内の表示拡張）
+- **Primary Changes**: 既存の空き状況リスト表示をカレンダー形式のUIに置き換える。新規Client Component（カレンダー本体）を追加し、既存のBFF関数（`getAvailabilityAction`）をそのまま流用する
+- **Related Components**: `resources/[id]/page.tsx`（改修）、新規 `AvailabilityCalendar.tsx`、`reservations/new/page.tsx`・`ReservationForm.tsx`（日時引き継ぎクエリパラメータ追加）
 
 ### Change Impact Assessment
 
-- **User-facing changes**: No — アプリケーションの挙動・UI に変更なし
-- **Structural changes**: No — 新規コンポーネント・新規サービスは発生しない
-- **Data model changes**: No
-- **API changes**: No
-- **NFR impact**: No — 性能・セキュリティ・スケーラビリティへの新規要求なし
+- **User-facing changes**: Yes（カレンダー表示・週/月切り替え・期間移動・空き枠クリックという新しい操作体験）
+- **Structural changes**: No（新しいAPI・新しいルートは追加しない。既存画面内に閉じる）
+- **Data model changes**: No（DBスキーマ変更なし、既存の`AvailabilitySlotSchema`をそのまま使う）
+- **API changes**: No（`GET /api/resources/{id}/availability`をそのまま利用、バックエンド変更なし）
+- **NFR impact**: No（requirements.mdのとおりSecurity/Resiliency/PBT拡張はいずれも不採用）
 
-### Component Relationships
+### Component Relationships（Brownfield）
 
-- **Primary Component**: `frontend/tests/e2e/`（新規テストファイル群）
-- **Dependent Components**: なし（アプリケーションコードはテスト対象として参照するのみで変更しない）
-- **Supporting Components**: `frontend/src/server/actions/dev-auth.ts`（開発用ロールログイン、テストのセットアップから利用）
+- **Primary Component**: `frontend/src/app/(authenticated)/resources/[id]/`
+- **Shared Components**: `server/actions/resources.ts`（`getAvailabilityAction`、変更なし）、`lib/types/api.ts`（`AvailabilitySlotSchema`、変更なし）
+- **Dependent Components**: `reservations/new/`（日時引き継ぎクエリパラメータの受け取り側として改修）
+- **Supporting Components**: `frontend/tests/unit/resource-detail-page.test.tsx`（既存リスト表示の置き換えに伴い更新が必要）
 
 ### Risk Assessment
 
-- **Risk Level**: Low（アプリケーションコードを一切変更しないテスト追加のみ）
-- **Rollback Complexity**: Easy（テストファイルの追加のみで、既存動作への影響なし）
-- **Testing Complexity**: Simple〜Moderate（認証状態の共有・テストデータの自己フィクスチャ化など設計判断はあるが、実装自体は定型的）
+- **Risk Level**: Low（単一画面・frontendのみ・既存APIをそのまま利用する孤立した変更。ロールバックは当該ファイル群の変更を戻すだけで完結する）
+- **Rollback Complexity**: Easy
+- **Testing Complexity**: Moderate（週/月の境界計算・時刻グリッドのクリック判定など、ユニットテストで検証すべきロジックが複数ある）
 
 ## Workflow Visualization
 
@@ -35,26 +36,26 @@ flowchart TD
     Start(["User Request"])
 
     subgraph INCEPTION["INCEPTION PHASE"]
-        WD["Workspace Detection<br/>COMPLETED"]
-        RE["Reverse Engineering<br/>COMPLETED"]
-        RA["Requirements Analysis<br/>COMPLETED"]
-        US["User Stories<br/>SKIP"]
-        WP["Workflow Planning<br/>IN PROGRESS"]
-        AD["Application Design<br/>SKIP"]
-        UG["Units Generation<br/>SKIP"]
+        WD["Workspace Detection<br/><b>COMPLETED</b>"]
+        RE["Reverse Engineering<br/><b>COMPLETED</b>"]
+        RA["Requirements Analysis<br/><b>COMPLETED</b>"]
+        US["User Stories<br/><b>COMPLETED</b>"]
+        WP["Workflow Planning<br/><b>IN PROGRESS</b>"]
+        AD["Application Design<br/><b>SKIP</b>"]
+        UG["Units Generation<br/><b>SKIP</b>"]
     end
 
     subgraph CONSTRUCTION["CONSTRUCTION PHASE"]
-        FD["Functional Design<br/>SKIP"]
-        NFRA["NFR Requirements<br/>SKIP"]
-        NFRD["NFR Design<br/>SKIP"]
-        ID["Infrastructure Design<br/>SKIP"]
-        CG["Code Generation<br/>EXECUTE"]
-        BT["Build and Test<br/>EXECUTE"]
+        FD["Functional Design<br/><b>EXECUTE</b>"]
+        NFRA["NFR Requirements<br/><b>SKIP</b>"]
+        NFRD["NFR Design<br/><b>SKIP</b>"]
+        ID["Infrastructure Design<br/><b>SKIP</b>"]
+        CG["Code Generation<br/><b>EXECUTE</b>"]
+        BT["Build and Test<br/><b>EXECUTE</b>"]
     end
 
     subgraph OPERATIONS["OPERATIONS PHASE"]
-        OPS["Operations<br/>PLACEHOLDER"]
+        OPS["Operations<br/><b>PLACEHOLDER</b>"]
     end
 
     Start --> WD
@@ -76,11 +77,11 @@ flowchart TD
     style WD fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style RE fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style RA fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
-    style US fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+    style US fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style WP fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style AD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style UG fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style FD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+    style FD fill:#FFA726,stroke:#E65100,stroke-width:3px,stroke-dasharray: 5 5,color:#000
     style NFRA fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style NFRD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style ID fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
@@ -94,46 +95,45 @@ flowchart TD
 
 ## Phases to Execute
 
-### INCEPTION PHASE
+### 🔵 INCEPTION PHASE
 
-- [x] Workspace Detection (COMPLETED)
-- [x] Reverse Engineering (COMPLETED) — 認証フロー・各画面のスコープ追加調査を実施
-- [x] Requirements Analysis (COMPLETED)
-- [ ] User Stories — **SKIP**
-  - **Rationale**: Developer Tooling（テスト追加のみ）に該当。新規ユーザー向け機能・UX変更が一切なく、既存の画面仕様・API仕様に対する検証コードの追加に留まる
-- [x] Workflow Planning (IN PROGRESS)
+- [x] Workspace Detection（COMPLETED）
+- [x] Reverse Engineering（COMPLETED）
+- [x] Requirements Analysis（COMPLETED）
+- [x] User Stories（COMPLETED）
+- [x] Execution Plan（IN PROGRESS）
 - [ ] Application Design — **SKIP**
-  - **Rationale**: 新規コンポーネント・新規サービスは発生しない（テストファイル・フィクスチャの追加のみ）
+  - **Rationale**: 新規追加するのはリソース詳細画面という既存の画面境界内の1 Reactコンポーネントであり、新しいサービス・新しいAPI・新しいモジュール境界は発生しない。Application Designが対象とする「サービス層設計・コンポーネント間依存の整理」は不要
 - [ ] Units Generation — **SKIP**
-  - **Rationale**: Issue = 単一 units of work
+  - **Rationale**: Issue #27は単一のunits of work（縦切り1機能）であり、複数ユニットへの分解は不要
 
-### CONSTRUCTION PHASE
+### 🟢 CONSTRUCTION PHASE
 
-- [ ] Functional Design — **SKIP**
-  - **Rationale**: 新規データモデル・業務ロジックは発生しない（既存機能を検証するテストコードのみ）
+- [ ] Functional Design — **EXECUTE**
+  - **Rationale**: 占有スロット（`OccupiedSlot[]`）から週/月グリッドの各セルの「空き/予約済み」状態を導出するロジック、週/月それぞれのfrom-to算出ロジック、クリック位置から開始日時文字列を組み立てるロジックは、現在どこにも実装がなく新規に設計が必要な複雑度を持つ（`complex business logic` に該当）
 - [ ] NFR Requirements — **SKIP**
-  - **Rationale**: 性能・セキュリティ・スケーラビリティへの新規要求なし
+  - **Rationale**: requirements.mdのとおりSecurity/Resiliency/PBT拡張はいずれも不採用。新たな性能・セキュリティ要求はない
 - [ ] NFR Design — **SKIP**
-  - **Rationale**: NFR Requirements が SKIP のため連動
+  - **Rationale**: NFR Requirementsに連動してSKIP
 - [ ] Infrastructure Design — **SKIP**
-  - **Rationale**: CI インフラ整備は Requirements Analysis の決定によりスコープ外
+  - **Rationale**: インフラ変更は発生しない
 - [ ] Code Generation — **EXECUTE (ALWAYS)**
-  - **Rationale**: テストシナリオ・フィクスチャの実装が必要
+  - **Rationale**: 実装計画の作成とコード生成が必要
 - [ ] Build and Test — **EXECUTE (ALWAYS)**
-  - **Rationale**: `pnpm test:e2e` の実行・検証が必要
+  - **Rationale**: ビルド・テストの実行と検証が必要
 
-### OPERATIONS PHASE
+### 🟡 OPERATIONS PHASE
 
 - [ ] Operations — **PLACEHOLDER**
-  - **Rationale**: BookFlow では CI 品質ゲート（`CI Frontend`/`CI Backend`）として運用。学習者は `/commit-push`・`/create-pr` で引き継ぐ
+  - **Rationale**: BookFlowではCI品質ゲート（`CI Frontend`）として運用。PR作成・push後に自動実行
 
 ## Estimated Timeline
 
-- **Total Phases**: 6 Execute（Workspace Detection・Reverse Engineering・Requirements Analysis・Workflow Planning・Code Generation・Build and Test）、6 Skip（User Stories・Application Design・Units Generation・Functional Design・NFR系・Infrastructure Design）
-- **Estimated Duration**: ビジネス要求シート記載どおり 3〜5時間
+- **Total Phases**: 3（Functional Design・Code Generation・Build and Test）
+- **Estimated Duration**: ビジネス要求シートの見積り（半日〜1日）に準拠
 
 ## Success Criteria
 
-- **Primary Goal**: サインイン/サインアウト・リソース閲覧・予約申請・承認操作の4シナリオを Playwright でカバーし、`pnpm test:e2e` で全件 pass すること
-- **Key Deliverables**: 新規 E2E テストファイル（4シナリオ分）、`global-setup`/`storageState` によるロール別認証状態の共有フィクスチャ
-- **Quality Gates**: 既存の `example.spec.ts` を含め `pnpm test:e2e` が全件 pass すること。各テストが再実行可能であること
+- **Primary Goal**: リソース詳細画面にカレンダー形式の空き状況ビューを追加し、週/月切り替え・期間移動・空き枠クリックでの予約申請フォーム連携を実現する
+- **Key Deliverables**: `AvailabilityCalendar.tsx`（新規）、`resources/[id]/page.tsx`（改修）、`reservations/new/` 配下（日時引き継ぎ改修）、関連ユニットテスト
+- **Quality Gates**: `pnpm lint`・`pnpm format:check`・`pnpm test`・`pnpm build` すべて成功。requirements.mdの受入条件6項目をすべて満たす

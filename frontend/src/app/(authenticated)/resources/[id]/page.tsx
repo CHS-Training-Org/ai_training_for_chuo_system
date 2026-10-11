@@ -1,33 +1,20 @@
 import Link from "next/link";
-import { getResourceAction, getAvailabilityAction } from "@/server/actions/resources";
+import { getResourceAction } from "@/server/actions/resources";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
+import { AvailabilityCalendar } from "./AvailabilityCalendar";
 
 /**
  * リソース詳細画面（screen-spec.md §リソース /resources/{id} 準拠）。
  *
- * リソース情報・空き状況（OccupiedSlot[]）を表示し、「このリソースを予約する」ボタンで
- * /reservations/new へ遷移する（カテゴリ 5 で実装予定）。
- * 空き照会は当日〜7日後の範囲をデフォルト表示する。
+ * リソース情報・空き状況カレンダーを表示し、「このリソースを予約する」ボタンまたは
+ * カレンダーの空き枠クリックで /reservations/new へ遷移する。
  */
 export default async function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const resource = await getResourceAction(id);
-
-  // デフォルトの空き照会範囲: 今日〜7日後
-  const now = new Date();
-  const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const fromStr = now.toISOString().slice(0, 19);
-  const toStr = weekLater.toISOString().slice(0, 19);
-
-  let slots: Awaited<ReturnType<typeof getAvailabilityAction>> = [];
-  try {
-    slots = await getAvailabilityAction(id, fromStr, toStr);
-  } catch {
-    // 空き照会エラーは無視してリソース詳細は表示する
-  }
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -95,38 +82,8 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
         </Button>
       )}
 
-      {/* 空き状況 */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">
-          空き状況（{now.toLocaleDateString("ja-JP")} 〜 {weekLater.toLocaleDateString("ja-JP")}）
-        </h2>
-
-        {slots.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            指定期間に予約はありません（空き状況良好）。
-          </p>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              以下の時間帯は予約済みです（全 {slots.length} 件）：
-            </p>
-            <ul className="space-y-1">
-              {slots.map((slot) => (
-                <li
-                  key={slot.reservationId}
-                  className="flex items-center gap-2 rounded border bg-muted/40 px-3 py-2 text-sm"
-                >
-                  <span className="text-red-500">●</span>
-                  <span>
-                    {new Date(slot.startAt).toLocaleString("ja-JP")} 〜{" "}
-                    {new Date(slot.endAt).toLocaleString("ja-JP")}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
+      {/* 空き状況カレンダー */}
+      <AvailabilityCalendar resourceId={resource.id} isActive={resource.isActive} />
     </div>
   );
 }
