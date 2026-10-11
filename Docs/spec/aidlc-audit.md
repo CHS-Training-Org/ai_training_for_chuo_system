@@ -220,3 +220,11 @@ timestamp: 2026-08-29
 **Context**: OPERATIONS 完了（マージは学習者がセルフレビュー後に実施）
 
 ---
+
+## Code Generation（追加修正）— AI レビュー ラウンド1 NG（観点2）への対応
+**Timestamp**: 2026-10-11T01:00:00+00:00
+**User Input**: "案Bで実装してください。"（AI レビュー観点2「実装と非機能部分の整合性」NG への対処。MSW ハンドラは案B＝送信ボディを直接検証する方式を選択）
+**AI Response**: "FE テストを追加: `tests/unit/lib/resource-schema.test.ts`（スキーマ）、`tests/unit/app/resource-detail-page.test.tsx`（表示分岐・未登録時非表示）、`tests/unit/app/resource-management-client.test.tsx`（送信ペイロード・空欄→null・編集時初期値）、`tests/unit/server/actions/resources.test.ts`（`server.use` で送信ボディを捕捉し equipment/notes を検証。MSW 共通ハンドラは変更せず）。BE: `ResourceControllerTest` の GET 未登録ケースを `hasJsonPath()` + `nullValue()` に変更。変異検証（表示分岐の撤去・`|| null` 撤去・初期値撤去・`@JsonInclude(NON_NULL)` 付与）で対応テストが失敗することを確認後、元に戻した。`pnpm lint`/`format:check`/`test`（93件）、`./gradlew test spotlessCheck checkstyleMain` すべて成功。"
+**Context**: OPERATIONS 中の追加修正（Build and Test 再確認済み）。次: コミット・push → AI レビュー ラウンド2
+
+---
