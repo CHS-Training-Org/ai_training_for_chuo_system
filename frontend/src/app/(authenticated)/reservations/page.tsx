@@ -59,9 +59,13 @@ export default async function ReservationsPage({
   const from = typeof sp.from === "string" ? sp.from : undefined;
   const to = typeof sp.to === "string" ? sp.to : undefined;
 
+  // ステータス未指定（「すべて」タブ・既定表示）では DRAFT を含めない。
+  // DRAFT は専用の「下書き」タブ（?status=DRAFT）でのみ表示する。
+  const statusFilter = selectedStatuses.length > 0 ? selectedStatuses : ALL_STATUSES;
+
   const [reservations, profile] = await Promise.all([
     listReservationsAction({
-      ...(selectedStatuses.length > 0 ? { status: selectedStatuses } : {}),
+      status: statusFilter,
       resourceName,
       from,
       to,
@@ -109,6 +113,17 @@ export default async function ReservationsPage({
             {STATUS_LABELS[s] ?? s}
           </Link>
         ))}
+        <Link
+          href="/reservations?status=DRAFT"
+          data-testid="reservations-draft-tab"
+          className={`rounded-full px-3 py-1 text-sm border transition-colors ${
+            selectedStatuses.length === 1 && selectedStatuses[0] === "DRAFT"
+              ? "bg-primary text-primary-foreground border-primary"
+              : "border-border hover:bg-muted"
+          }`}
+        >
+          {STATUS_LABELS.DRAFT ?? "下書き"}
+        </Link>
       </div>
 
       {/* リソース名・期間フィルタフォーム */}

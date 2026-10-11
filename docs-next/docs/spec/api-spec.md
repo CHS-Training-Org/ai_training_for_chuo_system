@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-10-06T10:00:00+09:00'
+last_updated: '2026-10-11T15:00:00+09:00'
 ---
 
 # REST API 仕様書
@@ -554,7 +554,7 @@ Authorization: Bearer <JWT>
 | `endAt` | TIMESTAMP | 利用終了日時 |
 | `purpose` | string | 利用目的 |
 | `attendeesCount` | integer / null | 参加人数 |
-| `status` | string | `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`（DB の CHECK 制約には `DRAFT` も定義されているがベース実装では未使用。[er-diagram.md](./er-diagram.md) 参照） |
+| `status` | string | `DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`（[er-diagram.md](./er-diagram.md) 参照） |
 | `createdAt` | TIMESTAMP | 申請日時 |
 | `updatedAt` | TIMESTAMP | 最終更新日時 |
 
@@ -574,7 +574,8 @@ Content-Type: application/json
   "startAt": "2025-06-02T10:00:00",
   "endAt": "2025-06-02T12:00:00",
   "purpose": "週次ミーティング",
-  "attendeesCount": 5
+  "attendeesCount": 5,
+  "draft": false
 }
 ```
 
@@ -587,11 +588,14 @@ Content-Type: application/json
 | `endAt` | TIMESTAMP | ✅ | `endAt > startAt`（違反時は `422`・`code: VALIDATION_ERROR`） |
 | `purpose` | string | ✅ | 255 文字以内 |
 | `attendeesCount` | integer / null | ❌ | 1 以上 |
+| `draft` | boolean | ❌ | 省略時は `false` として扱う |
 
 #### レスポンス（201 Created）
 
-- `requires_approval = false` の場合：`status = "APPROVED"`（即時確定）
-- `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`・`step_order = 1`）を 1 件生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](./requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
+- `draft = true` の場合：`status = "DRAFT"`（下書き保存。`requires_approval` の値に関わらず承認ステップは生成しない）
+- `draft = false`（省略時含む）の場合：
+  - `requires_approval = false` の場合：`status = "APPROVED"`（即時確定）
+  - `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`・`step_order = 1`）を 1 件生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](./requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
 
 ```json
 {
@@ -627,7 +631,7 @@ Authorization: Bearer <JWT>
 
 ReservationResponse 型。
 
-**アクセス制御**：MEMBER は本人の予約のみ取得可。他人の予約へのアクセスは `403 Forbidden`。
+**アクセス制御**：MEMBER は本人の予約のみ取得可。他人の予約へのアクセスは `403 Forbidden`。`status = 'DRAFT'` の予約は、申請者本人または ADMIN 以外（APPROVER を含む）は `403 Forbidden`（他のステータスでは APPROVER/ADMIN は本人以外も取得可）。
 
 ---
 
@@ -644,12 +648,20 @@ Content-Type: application/json
   "startAt": "2025-06-02T13:00:00",
   "endAt": "2025-06-02T15:00:00",
   "purpose": "週次ミーティング（時間変更）",
-  "attendeesCount": 6
+  "attendeesCount": 6,
+  "submit": false
 }
 ```
 
-**制約**：`status = 'PENDING'` の予約のみ更新可（`APPROVED` への更新は不可）。申請者本人のみ操作可能。日時変更時は重複予約チェックを再実行する（自分自身を除外）。  
-リクエストフィールド、バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可）。
+**制約**：`status = 'PENDING'` または `status = 'DRAFT'` の予約のみ更新可（`APPROVED` 等への更新は不可）。申請者本人のみ操作可能。日時変更時は重複予約チェックを再実行する（自分自身を除外）。  
+リクエストフィールド、バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可。代わりに `submit` を持つ）。
+
+**`submit` フィールド（正式申請）**：対象予約が `status = 'DRAFT'` のときのみ意味を持つ。
+
+- `submit = true` の場合：内容更新に加えて、`POST /api/reservations` と同じ判定（`requires_approval`）でステータスを `PENDING`（承認ステップ生成）または `APPROVED` に遷移させる
+- `submit = false`（省略時含む）の場合：内容のみ更新し、`status` は `DRAFT` のまま変更しない
+
+対象予約が `status = 'PENDING'` の場合、`submit` の値は無視される（常に内容更新のみ）。
 
 #### レスポンス（200 OK）
 
@@ -659,7 +671,7 @@ Content-Type: application/json
 |------|--------|------|
 | 403 | `FORBIDDEN` | 申請者本人以外が操作 |
 | 409 | `RESERVATION_CONFLICT` | 変更後の時間帯に重複予約あり |
-| 422 | `VALIDATION_ERROR` | `PENDING` 以外の予約を更新、または `endAt ≦ startAt` |
+| 422 | `VALIDATION_ERROR` | `PENDING`/`DRAFT` 以外の予約を更新、または `endAt ≦ startAt` |
 
 ---
 
@@ -673,7 +685,7 @@ Authorization: Bearer <JWT>
 ```
 
 **制約**：申請者本人または ADMIN のみ操作可（それ以外は `403 Forbidden`）。  
-`PENDING` / `APPROVED` の予約のみキャンセル可（それ以外のステータスは `422`、`code: VALIDATION_ERROR`）。
+`DRAFT` / `PENDING` / `APPROVED` の予約のみキャンセル可（それ以外のステータスは `422`、`code: VALIDATION_ERROR`）。`DRAFT` のキャンセルは下書きの削除に相当する（物理削除ではなく `CANCELLED` への状態遷移）。
 
 #### レスポンス（200 OK）
 

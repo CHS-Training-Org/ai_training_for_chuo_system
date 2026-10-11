@@ -45,20 +45,24 @@ interface ReservationEditFormProps {
   };
   /** 読み取り専用表示するリソース名（リソースの変更は不可: api-spec.md L654） */
   resourceName: string;
+  /** 対象予約が DRAFT の場合 true。「正式申請」ボタンを追加表示する（reservation-draft ユニット）。 */
+  isDraft?: boolean;
 }
 
 /**
  * 予約編集フォーム（screen-spec.md §予約編集 /reservations/{id}/edit 準拠）。
  *
  * - リソースは変更不可。現在のリソース名を読み取り専用で表示する。
- * - 対象は PENDING の予約のみ。PENDING 以外は BE が 422 で弾く。
+ * - 対象は PENDING または DRAFT の予約のみ。それ以外は BE が 422 で弾く。
+ * - DRAFT の場合は「正式申請」ボタンを追加表示し、クリックで DRAFT→PENDING/APPROVED 遷移を行う。
  * - 重複時は 409 Conflict → エラーメッセージを表示する。
- * - 更新成功後は予約詳細（/reservations/{id}）へリダイレクトする。
+ * - 更新・正式申請成功後は予約詳細（/reservations/{id}）へリダイレクトする。
  */
 export function ReservationEditForm({
   reservationId,
   defaultValues,
   resourceName,
+  isDraft = false,
 }: ReservationEditFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -74,11 +78,11 @@ export function ReservationEditForm({
     },
   });
 
-  const handleSubmit = (values: FormValues) => {
+  const submitForm = (submit: boolean) => (values: FormValues) => {
     setConflictError(null);
     startTransition(async () => {
       try {
-        await updateReservationAction(reservationId, values);
+        await updateReservationAction(reservationId, { ...values, submit });
         router.push(`/reservations/${reservationId}`);
       } catch (err) {
         if (err instanceof ApiClientError && err.code === "RESERVATION_CONFLICT") {
@@ -94,7 +98,7 @@ export function ReservationEditForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(submitForm(false))} className="space-y-4">
         {/* リソース（読み取り専用） */}
         <div className="space-y-1">
           <p className="text-sm font-medium leading-none">リソース</p>
@@ -176,9 +180,23 @@ export function ReservationEditForm({
         {conflictError && <p className="text-sm font-medium text-destructive">{conflictError}</p>}
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={isPending}>
+          <Button
+            type="submit"
+            disabled={isPending}
+            data-testid="reservation-edit-form-update-button"
+          >
             {isPending ? "更新中..." : "更新する"}
           </Button>
+          {isDraft && (
+            <Button
+              type="button"
+              disabled={isPending}
+              onClick={form.handleSubmit(submitForm(true))}
+              data-testid="reservation-edit-form-submit-button"
+            >
+              {isPending ? "申請中..." : "正式申請する"}
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"

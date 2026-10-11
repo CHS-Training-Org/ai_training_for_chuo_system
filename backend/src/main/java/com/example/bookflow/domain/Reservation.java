@@ -113,10 +113,24 @@ public class Reservation {
   }
 
   /**
+   * 下書き（{@link ReservationStatus#DRAFT}）を正式申請する（reservation-draft ユニット）。
+   *
+   * <p>呼び出し前に Service 層で {@code status == DRAFT} であることを確認すること（{@link #cancel()}・{@link
+   * #markApproved()} 等と同様、ステータスガードは Service 層の責務）。
+   *
+   * @param newStatus 遷移先ステータス（{@code resource.requires_approval} に応じて Service が決定した {@code PENDING}
+   *     または {@code APPROVED}）
+   */
+  public void submit(ReservationStatus newStatus) {
+    this.status = newStatus;
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  /**
    * 予約をキャンセルする。
    *
    * <p>ステータスを {@link ReservationStatus#CANCELLED} に変更する。 呼び出し前に Service 層でキャンセル可否（{@code
-   * PENDING}/{@code APPROVED}）を確認すること。
+   * DRAFT}/{@code PENDING}/{@code APPROVED}）を確認すること。
    */
   public void cancel() {
     this.status = ReservationStatus.CANCELLED;

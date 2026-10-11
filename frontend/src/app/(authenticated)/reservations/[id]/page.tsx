@@ -10,9 +10,12 @@ import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
 /**
  * 予約詳細画面（screen-spec.md §予約詳細 /reservations/{id} 準拠）。
  *
- * MEMBER は本人の予約のみ閲覧可（他人の予約は BE が 403 → エラー画面）。
- * PENDING のみ編集ボタンを表示（本人のみ、ADMIN は不可）。
- * PENDING/APPROVED 状態のみキャンセルボタンを表示（本人 or ADMIN）。
+ * MEMBER は本人の予約のみ閲覧可（他人の予約は BE が 403 → エラー画面）。DRAFT は APPROVER でも
+ * 本人以外は閲覧不可（BE が 403）。
+ * PENDING/DRAFT のみ編集ボタンを表示（本人のみ、ADMIN は不可）。DRAFT の場合は編集画面で
+ * 正式申請も行える（reservation-draft ユニット）。
+ * DRAFT/PENDING/APPROVED 状態のみキャンセルボタンを表示（本人 or ADMIN）。DRAFT のキャンセルは
+ * 下書きの削除に相当する。
  * 承認ステップの表示はカテゴリ 6（ApprovalStepResponse）で実装。
  */
 
@@ -29,7 +32,7 @@ function statusBadgeClass(status: string): string {
   return map[status] ?? "";
 }
 
-const CANCELLABLE_STATUSES = ["PENDING", "APPROVED"];
+const CANCELLABLE_STATUSES = ["DRAFT", "PENDING", "APPROVED"];
 
 export default async function ReservationDetailPage({
   params,
@@ -44,8 +47,9 @@ export default async function ReservationDetailPage({
 
   const isAdmin = profile?.role === "ADMIN";
   const isOwner = profile?.id === reservation.requesterId;
-  // 編集可能条件: PENDING かつ本人（ADMIN は PUT 権限なし: api-spec.md §権限マトリクス L108）
-  const canEdit = reservation.status === "PENDING" && isOwner && !isAdmin;
+  // 編集可能条件: PENDING または DRAFT かつ本人（ADMIN は PUT 権限なし: api-spec.md §権限マトリクス L108）
+  const canEdit =
+    (reservation.status === "PENDING" || reservation.status === "DRAFT") && isOwner && !isAdmin;
   const canCancel = CANCELLABLE_STATUSES.includes(reservation.status) && (isOwner || isAdmin);
 
   return (
@@ -96,14 +100,14 @@ export default async function ReservationDetailPage({
         </CardContent>
       </Card>
 
-      {/* 編集ボタン（PENDING・本人のみ） */}
+      {/* 編集ボタン（PENDING/DRAFT・本人のみ。DRAFT の場合は編集画面で正式申請も行える） */}
       {canEdit && (
         <Button asChild variant="outline">
           <Link href={`/reservations/${reservation.id}/edit`}>予約内容を編集する</Link>
         </Button>
       )}
 
-      {/* キャンセルボタン（PENDING/APPROVED・本人 or ADMIN のみ） */}
+      {/* キャンセルボタン（DRAFT/PENDING/APPROVED・本人 or ADMIN のみ。DRAFT は下書きの削除に相当） */}
       {canCancel && <CancelButton reservationId={reservation.id} />}
 
       {/* カテゴリ 6 TODO: 承認ステップ表示（ApprovalStepResponse） */}

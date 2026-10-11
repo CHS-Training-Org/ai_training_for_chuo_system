@@ -8,9 +8,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * 予約申請リクエスト DTO（{@code api-spec.md §予約 POST} L518-524 準拠）。
+ * 予約申請リクエスト DTO（{@code api-spec.md §予約 POST} 準拠）。
  *
  * <p>{@code resourceId} を含む（{@link UpdateReservationRequest} は含まない点に注意）。
+ *
+ * <p>{@code draft} は下書き保存オプション（reservation-draft ユニット）。{@code null}/未指定は {@code false}
+ * （下書きではない＝通常の申請）として扱う。
  */
 public record CreateReservationRequest(
     @NotNull(message = "リソース ID は必須です。") UUID resourceId,
@@ -18,4 +21,11 @@ public record CreateReservationRequest(
     @NotNull(message = "終了日時は必須です。") LocalDateTime endAt,
     @NotBlank(message = "利用目的は必須です。") @Size(max = 255, message = "利用目的は 255 文字以内で入力してください。")
         String purpose,
-    @Positive(message = "参加人数は 1 以上で入力してください。") Integer attendeesCount) {}
+    @Positive(message = "参加人数は 1 以上で入力してください。") Integer attendeesCount,
+    Boolean draft) {
+
+  /** {@code draft} を null 安全に判定する（{@code null} は {@code false} 扱い）。 */
+  public boolean isDraft() {
+    return Boolean.TRUE.equals(draft);
+  }
+}

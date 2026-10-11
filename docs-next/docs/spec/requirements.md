@@ -11,7 +11,7 @@ references:
   - ./er-diagram.md
   - ./api-spec.md
   - ../learn/glossary.md
-last_updated: '2026-10-06T10:00:00+09:00'
+last_updated: '2026-10-11T15:00:00+09:00'
 ---
 
 # 要件定義
@@ -139,7 +139,7 @@ BookFlow は 3 種のロールで操作権限を制御する。
 
 ![予約ステータス遷移図](/diagrams/spec/requirements-reservation-status.drawio.svg)
 
-> **注意**：`reservations.status` に DB DEFAULT はない。アプリ層（Service）が申請時に `PENDING`（requires_approval=true）または `APPROVED`（requires_approval=false）を設定する。`DRAFT` はベース実装では未使用（下書き保存は拡張課題用の予約値）。
+> **注意**：`reservations.status` に DB DEFAULT はない。アプリ層（Service）が申請時に `draft=true` が指定されていれば `DRAFT`、それ以外は `PENDING`（requires_approval=true）または `APPROVED`（requires_approval=false）を設定する。`DRAFT` の予約は `PUT /api/reservations/{id}`（`submit=true`）で正式申請すると、新規作成時と同じ判定で `PENDING`/`APPROVED` に遷移する（この遷移時のみ `approval_steps` を生成する）。`DRAFT` のキャンセルは下書きの削除に相当する（既存のキャンセル機構を転用。物理削除ではない）。
 
 ### 承認ステップ ステータス遷移図
 
@@ -220,15 +220,17 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `purpose` | VARCHAR(255) | ✅ | 利用目的 |
 | `attendeesCount` | INTEGER | ❌ | 参加人数 |
 
-#### ステータス初期値（ワンステップ申請）
+#### ステータス初期値（ワンステップ申請・下書き保存）
 
-`POST /api/reservations` を呼び出すと、対象リソースの `requires_approval` 値に基づいてステータスが即時決定される。  
-下書き保存（DRAFT 生成）はベース実装の対象外。
+`POST /api/reservations` を呼び出すと、`draft` フィールドと対象リソースの `requires_approval` 値に基づいてステータスが決定される。
 
-| `requires_approval` | 申請後ステータス | `approval_steps` 生成 |
-|--------------------|---------------|----------------------|
-| `false` | `APPROVED`（即時確定） | 生成しない |
-| `true` | `PENDING`（承認待ち） | 生成する（→ §承認 参照） |
+| `draft` | `requires_approval` | 申請後ステータス | `approval_steps` 生成 |
+|---|--------------------|---------------|----------------------|
+| `true` | （不問） | `DRAFT`（下書き） | 生成しない |
+| `false`（省略時含む） | `false` | `APPROVED`（即時確定） | 生成しない |
+| `false`（省略時含む） | `true` | `PENDING`（承認待ち） | 生成する（→ §承認 参照） |
+
+`DRAFT` の予約は、`PUT /api/reservations/{id}`（`submit=true`）で正式申請すると、上記の `requires_approval` 判定を再実行して `PENDING`/`APPROVED` に遷移する（このときのみ `approval_steps` を生成する）。申請者本人・`ADMIN` 以外（`APPROVER` を含む）は `DRAFT` の予約を閲覧できない。
 
 ### UC-04：承認不要リソースの予約が即時確定される {#uc-04}
 `requires_approval = false` のリソースを予約申請した場合、`approval_steps` を生成せず即座に `status = APPROVED` で確定する（UC-03 の即時確定パスと同一）。

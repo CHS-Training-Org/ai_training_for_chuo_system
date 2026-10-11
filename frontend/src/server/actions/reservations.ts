@@ -66,7 +66,8 @@ export async function getReservationAction(id: string): Promise<ReservationRespo
 /**
  * 予約を申請する（201 Created）。
  *
- * {@code requires_approval=false} → 即 APPROVED、{@code true} → PENDING。
+ * {@code draft: true} → 下書き保存（DRAFT、承認フローに流れない）。
+ * {@code draft} 省略/false の場合：{@code requires_approval=false} → 即 APPROVED、{@code true} → PENDING。
  * 重複時は ApiClientError(code='RESERVATION_CONFLICT', status=409) をスロー。
  */
 export async function createReservationAction(
@@ -82,8 +83,9 @@ export async function createReservationAction(
 }
 
 /**
- * 予約内容を更新する（PENDING のみ・申請者本人）。
+ * 予約内容を更新する（PENDING/DRAFT のみ・申請者本人）。
  *
+ * DRAFT の予約に {@code submit: true} を指定すると、内容更新に加えて正式申請（PENDING/APPROVED への遷移）を行う。
  * 日時変更時に重複が発生した場合は ApiClientError(409) をスロー。
  */
 export async function updateReservationAction(
