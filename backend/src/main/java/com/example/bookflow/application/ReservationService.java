@@ -49,9 +49,9 @@ public class ReservationService {
   private static final List<ReservationStatus> OCCUPIED_STATUSES =
       List.of(ReservationStatus.PENDING, ReservationStatus.APPROVED);
 
-  /** キャンセル可能なステータス。 */
+  /** キャンセル可能なステータス（{@code DRAFT} のキャンセルは下書きの削除に相当する）。 */
   private static final List<ReservationStatus> CANCELLABLE_STATUSES =
-      List.of(ReservationStatus.PENDING, ReservationStatus.APPROVED);
+      List.of(ReservationStatus.DRAFT, ReservationStatus.PENDING, ReservationStatus.APPROVED);
 
   private final ReservationRepository reservationRepository;
   private final ResourceRepository resourceRepository;
@@ -198,7 +198,7 @@ public class ReservationService {
   // ---------------------------------------------------------------------------
 
   /**
-   * 予約を申請する。
+   * 予約を申請する（下書き保存を含む）。
    *
    * <p>業務ロジック：
    *
@@ -206,11 +206,11 @@ public class ReservationService {
    *   <li>リソース存在確認（404）
    *   <li>日時整合性チェック（endAt &gt; startAt）
    *   <li>重複予約チェック（409 {@code RESERVATION_CONFLICT}）
-   *   <li>{@code requires_approval} に応じてステータスを決定（false → {@code APPROVED}、true → {@code PENDING}）
+   *   <li>{@code draft} と {@code requires_approval} に応じてステータスを決定（{@code draft=true} → {@code
+   *       DRAFT}、 {@code false} → {@code APPROVED}、{@code true} → {@code PENDING}）
    *   <li>予約を保存
+   *   <li>ステータスが {@code PENDING} になる場合のみ、{@code approval_steps} を生成し承認者を割り当てる
    * </ol>
-   *
-   * <p>【カテゴリ 6 TODO】{@code requires_approval=true} の場合、{@code approval_steps} を生成し承認者を割り当てる。
    *
    * @param req 予約申請リクエスト
    * @param requester 申請ユーザー
@@ -228,12 +228,20 @@ public class ReservationService {
       throw new BusinessException(ErrorCode.VALIDATION_ERROR, "終了日時は開始日時より後に設定してください。");
     }
 
-    // 3. 重複予約チェック（自分含む全 PENDING/APPROVED を検索）
+    // 3. 重複予約チェック（自分含む全 PENDING/APPROVED を検索。下書きも対象時間帯の確認は行う）
     checkConflict(resource.getId(), null, req.startAt(), req.endAt());
 
-    // 4. ステータス決定（requires_approval=false → APPROVED、true → PENDING）
-    ReservationStatus status =
-        resource.isRequiresApproval() ? ReservationStatus.PENDING : ReservationStatus.APPROVED;
+    // 4. ステータス決定（draft=true → DRAFT、false → requires_approval に応じて PENDING/APPROVED）
+    ReservationStatus status;
+    boolean createsApprovalStep;
+    if (req.isDraft()) {
+      status = ReservationStatus.DRAFT;
+      createsApprovalStep = false;
+    } else {
+      status =
+          resource.isRequiresApproval() ? ReservationStatus.PENDING : ReservationStatus.APPROVED;
+      createsApprovalStep = resource.isRequiresApproval();
+    }
 
     // 5. 予約保存
     Reservation reservation =
@@ -247,8 +255,8 @@ public class ReservationService {
             status);
     Reservation saved = reservationRepository.save(reservation);
 
-    // 6. 【カテゴリ 6 シーム解消】requires_approval=true の場合、承認ステップを生成する
-    if (resource.isRequiresApproval()) {
+    // 6. ステータスが PENDING になる場合のみ、承認ステップを生成する
+    if (createsApprovalStep) {
       approvalService.createInitialStep(saved);
     }
 
@@ -260,17 +268,19 @@ public class ReservationService {
   // ---------------------------------------------------------------------------
 
   /**
-   * 予約内容を更新する（{@code PENDING} 状態のみ可）。
+   * 予約内容を更新する（{@code PENDING} または {@code DRAFT} 状態のみ可）。
    *
    * <p>業務ロジック：
    *
    * <ol>
    *   <li>予約存在確認（404）
    *   <li>所有権チェック（本人のみ・403）
-   *   <li>ステータスガード（PENDING のみ・422）
+   *   <li>ステータスガード（PENDING/DRAFT のみ・422）
    *   <li>日時整合性チェック
    *   <li>重複予約チェック（自己除外）
    *   <li>更新保存
+   *   <li>{@code status == DRAFT} かつ {@code submit == true} の場合、正式申請として {@code PENDING}/{@code
+   *       APPROVED} へ遷移し、{@code PENDING} になる場合のみ {@code approval_steps} を生成する
    * </ol>
    *
    * @param id 予約 ID
@@ -286,10 +296,12 @@ public class ReservationService {
       throw new AccessDeniedException("この予約を更新する権限がありません。");
     }
 
-    // ステータスガード（PENDING のみ）
-    if (reservation.getStatus() != ReservationStatus.PENDING) {
+    // ステータスガード（PENDING または DRAFT のみ）
+    boolean wasDraft = reservation.getStatus() == ReservationStatus.DRAFT;
+    if (reservation.getStatus() != ReservationStatus.PENDING && !wasDraft) {
       throw new BusinessException(
-          ErrorCode.VALIDATION_ERROR, "PENDING 状態の予約のみ更新できます。現在のステータス: " + reservation.getStatus());
+          ErrorCode.VALIDATION_ERROR,
+          "PENDING または DRAFT 状態の予約のみ更新できます。現在のステータス: " + reservation.getStatus());
     }
 
     // 日時整合性チェック
@@ -298,14 +310,27 @@ public class ReservationService {
     }
 
     // 重複予約チェック（悲観ロックでリソース行を先取得し、並行操作を直列化してから自己除外チェック）
-    resourceRepository
-        .findByIdForUpdate(reservation.getResource().getId())
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException("リソースが存在しません: " + reservation.getResource().getId()));
+    Resource resource =
+        resourceRepository
+            .findByIdForUpdate(reservation.getResource().getId())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "リソースが存在しません: " + reservation.getResource().getId()));
     checkConflict(reservation.getResource().getId(), id, req.startAt(), req.endAt());
 
     reservation.update(req.startAt(), req.endAt(), req.purpose(), req.attendeesCount());
+
+    // 下書きの正式申請（DRAFT → PENDING/APPROVED）
+    if (wasDraft && req.isSubmit()) {
+      ReservationStatus newStatus =
+          resource.isRequiresApproval() ? ReservationStatus.PENDING : ReservationStatus.APPROVED;
+      reservation.submit(newStatus);
+      if (resource.isRequiresApproval()) {
+        approvalService.createInitialStep(reservation);
+      }
+    }
+
     return ReservationResponse.from(reservationRepository.save(reservation));
   }
 
@@ -335,7 +360,7 @@ public class ReservationService {
     if (!CANCELLABLE_STATUSES.contains(reservation.getStatus())) {
       throw new BusinessException(
           ErrorCode.VALIDATION_ERROR,
-          "PENDING または APPROVED 状態の予約のみキャンセルできます。現在のステータス: " + reservation.getStatus());
+          "DRAFT、PENDING または APPROVED 状態の予約のみキャンセルできます。現在のステータス: " + reservation.getStatus());
     }
 
     reservation.cancel();
@@ -355,11 +380,17 @@ public class ReservationService {
   /**
    * 読み取りアクセスの所有権チェック。
    *
-   * <p>MEMBER は本人の予約のみ参照可。ADMIN / APPROVER は全件可。
+   * <p>MEMBER は本人の予約のみ参照可。ADMIN / APPROVER は全件可。ただし {@code status == DRAFT} の予約は、 申請者本人または ADMIN
+   * 以外（APPROVER を含む）は参照不可（reservation-draft ユニット、RSV-02）。
    */
   private void checkReadAccess(Reservation reservation, User currentUser) {
-    if (currentUser.getRole() == Role.MEMBER
-        && !reservation.getRequester().getId().equals(currentUser.getId())) {
+    boolean isOwner = reservation.getRequester().getId().equals(currentUser.getId());
+    if (currentUser.getRole() == Role.MEMBER && !isOwner) {
+      throw new AccessDeniedException("この予約を参照する権限がありません。");
+    }
+    if (reservation.getStatus() == ReservationStatus.DRAFT
+        && currentUser.getRole() == Role.APPROVER
+        && !isOwner) {
       throw new AccessDeniedException("この予約を参照する権限がありません。");
     }
   }

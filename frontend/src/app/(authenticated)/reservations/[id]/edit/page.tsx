@@ -9,10 +9,12 @@ import { ReservationEditForm } from "./ReservationEditForm";
  *
  * アクセス制御:
  * - 申請者本人（MEMBER / APPROVER）のみ閲覧可（ADMIN は PUT 権限なし）。
- * - PENDING 以外の予約は編集対象外（notFound で弾く、BE も 422 を返す）。
+ * - PENDING/DRAFT 以外の予約は編集対象外（notFound で弾く、BE も 422 を返す）。
  * - 他人の予約は BE が 403 → エラー画面。
  *
- * リソースの変更は不可（api-spec.md PUT /api/reservations/{id} L654 準拠）。
+ * DRAFT の場合は内容編集に加えて「正式申請」（DRAFT→PENDING/APPROVED 遷移）も行える
+ * （reservation-draft ユニット）。
+ * リソースの変更は不可（api-spec.md PUT /api/reservations/{id} 準拠）。
  */
 export default async function ReservationEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,9 +25,10 @@ export default async function ReservationEditPage({ params }: { params: Promise<
 
   const isAdmin = profile?.role === "ADMIN";
   const isOwner = profile?.id === reservation.requesterId;
+  const isDraft = reservation.status === "DRAFT";
 
-  // ADMIN は PUT 権限なし（権限マトリクス L108）、他人の予約・PENDING 以外は対象外
-  if (isAdmin || !isOwner || reservation.status !== "PENDING") {
+  // ADMIN は PUT 権限なし（権限マトリクス L108）、他人の予約・PENDING/DRAFT 以外は対象外
+  if (isAdmin || !isOwner || (reservation.status !== "PENDING" && !isDraft)) {
     notFound();
   }
 
@@ -41,7 +44,9 @@ export default async function ReservationEditPage({ params }: { params: Promise<
       <div>
         <h1 className="text-2xl font-bold">予約内容を編集する</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          承認待ち（PENDING）の予約の日時・目的・参加人数を変更できます。
+          {isDraft
+            ? "下書きの日時・目的・参加人数を変更できます。準備ができたら正式申請してください。"
+            : "承認待ち（PENDING）の予約の日時・目的・参加人数を変更できます。"}
         </p>
       </div>
 
@@ -54,6 +59,7 @@ export default async function ReservationEditPage({ params }: { params: Promise<
           attendeesCount: reservation.attendeesCount,
         }}
         resourceName={reservation.resourceName}
+        isDraft={isDraft}
       />
     </div>
   );

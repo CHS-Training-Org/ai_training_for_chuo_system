@@ -251,6 +251,45 @@ describe("createReservationAction", () => {
       }),
     ).rejects.toThrow();
   });
+
+  it("draft: true 指定時: リクエストボディに draft をそのまま渡す", async () => {
+    let capturedBody: Record<string, unknown> | undefined;
+    server.use(
+      http.post("/api/backend/reservations", async ({ request }) => {
+        capturedBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(MOCK_RESERVATION_RESPONSE, { status: 201 });
+      }),
+    );
+
+    await createReservationAction({
+      resourceId: MOCK_RESERVATION_RESPONSE.resourceId,
+      startAt: "2025-07-01T10:00:00",
+      endAt: "2025-07-01T12:00:00",
+      purpose: "下書きテスト",
+      draft: true,
+    });
+
+    expect(capturedBody?.draft).toBe(true);
+  });
+
+  it("draft 未指定時: リクエストボディに draft を含めない", async () => {
+    let capturedBody: Record<string, unknown> | undefined;
+    server.use(
+      http.post("/api/backend/reservations", async ({ request }) => {
+        capturedBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(MOCK_RESERVATION_RESPONSE, { status: 201 });
+      }),
+    );
+
+    await createReservationAction({
+      resourceId: MOCK_RESERVATION_RESPONSE.resourceId,
+      startAt: "2025-07-01T10:00:00",
+      endAt: "2025-07-01T12:00:00",
+      purpose: "通常申請テスト",
+    });
+
+    expect(capturedBody?.draft).toBeUndefined();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -285,6 +324,25 @@ describe("updateReservationAction", () => {
         purpose: "テスト",
       }),
     ).rejects.toThrow();
+  });
+
+  it("submit: true 指定時: リクエストボディに submit をそのまま渡す", async () => {
+    let capturedBody: Record<string, unknown> | undefined;
+    server.use(
+      http.put("/api/backend/reservations/:id", async ({ request }) => {
+        capturedBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(MOCK_RESERVATION_RESPONSE, { status: 200 });
+      }),
+    );
+
+    await updateReservationAction(MOCK_RESERVATION_RESPONSE.id, {
+      startAt: "2025-07-01T10:00:00",
+      endAt: "2025-07-01T12:00:00",
+      purpose: "正式申請テスト",
+      submit: true,
+    });
+
+    expect(capturedBody?.submit).toBe(true);
   });
 });
 

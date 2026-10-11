@@ -31,10 +31,10 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <ul>
  *   <li>{@code GET /api/reservations} — 予約一覧（本人分 or ADMIN は全件、status フィルタ対応）
- *   <li>{@code POST /api/reservations} — 予約申請（全ロール・認証必須）
- *   <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN）
- *   <li>{@code PUT /api/reservations/{id}} — 予約更新（申請者本人・PENDING のみ）
- *   <li>{@code POST /api/reservations/{id}/cancel} — キャンセル（本人 or ADMIN）
+ *   <li>{@code POST /api/reservations} — 予約申請・下書き保存（全ロール・認証必須）
+ *   <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN。ただし DRAFT は本人 or ADMIN のみ）
+ *   <li>{@code PUT /api/reservations/{id}} — 予約更新・下書きの正式申請（申請者本人・PENDING/DRAFT のみ）
+ *   <li>{@code POST /api/reservations/{id}/cancel} — キャンセル（本人 or ADMIN。DRAFT の削除にも流用）
  * </ul>
  *
  * <p>行レベルの所有権チェック（本人 or ADMIN）は {@link ReservationService} が担当する（{@code @PreAuthorize} 不使用）。
@@ -73,7 +73,8 @@ public class ReservationController {
   /**
    * 予約を申請する（201 Created）。
    *
-   * <p>{@code requires_approval=false} → 即 {@code APPROVED}、{@code true} → {@code PENDING}。
+   * <p>{@code draft=true} → {@code DRAFT}（下書き保存、承認ステップは作成しない）。{@code draft=false}（省略時含む）の場合は {@code
+   * requires_approval=false} → 即 {@code APPROVED}、{@code true} → {@code PENDING}。
    */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
@@ -82,13 +83,18 @@ public class ReservationController {
     return reservationService.create(req, currentUser);
   }
 
-  /** 予約詳細を返す。MEMBER は本人の予約のみ。 */
+  /** 予約詳細を返す。MEMBER は本人の予約のみ。DRAFT は APPROVER でも本人以外は閲覧不可。 */
   @GetMapping("/{id}")
   public ReservationResponse get(@PathVariable UUID id, @CurrentUser User currentUser) {
     return reservationService.get(id, currentUser);
   }
 
-  /** 予約内容を更新する（{@code PENDING} のみ・申請者本人）。 */
+  /**
+   * 予約内容を更新する（{@code PENDING}/{@code DRAFT} のみ・申請者本人）。
+   *
+   * <p>{@code DRAFT} の予約に {@code submit=true} を指定すると、内容更新に加えて正式申請（{@code PENDING}/{@code APPROVED}
+   * への遷移）を行う。
+   */
   @PutMapping("/{id}")
   public ReservationResponse update(
       @PathVariable UUID id,
@@ -97,7 +103,7 @@ public class ReservationController {
     return reservationService.update(id, req, currentUser);
   }
 
-  /** 予約をキャンセルする（{@code PENDING}/{@code APPROVED} のみ・本人 or ADMIN）。 */
+  /** 予約をキャンセルする（{@code DRAFT}/{@code PENDING}/{@code APPROVED} のみ・本人 or ADMIN）。 */
   @PostMapping("/{id}/cancel")
   public ReservationResponse cancel(@PathVariable UUID id, @CurrentUser User currentUser) {
     return reservationService.cancel(id, currentUser);
