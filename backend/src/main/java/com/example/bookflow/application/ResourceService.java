@@ -7,11 +7,13 @@ import com.example.bookflow.domain.ReservationStatus;
 import com.example.bookflow.domain.Resource;
 import com.example.bookflow.domain.ResourceCategory;
 import com.example.bookflow.domain.ResourceRepository;
+import com.example.bookflow.domain.ResourceSpecifications;
 import com.example.bookflow.presentation.dto.CreateResourceRequest;
 import com.example.bookflow.presentation.dto.OccupiedSlot;
 import com.example.bookflow.presentation.dto.ResourceResponse;
 import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>カテゴリ 4 で導入する初の Service 層。業務ルールを集約し、Controller は薄く保つ。
  *
  * <ul>
- *   <li>ロール別一覧（ADMIN は inactive 含む、それ以外は active のみ）
+ *   <li>ロール別一覧（ADMIN は inactive 含む、それ以外は active のみ）とカテゴリ・キーワードでの絞り込み
  *   <li>空き照会の重複判定（半開区間 {@code [start, end)}・隣接は非重複）
  *   <li>CRUD・ステータス切替
  * </ul>
@@ -59,10 +62,13 @@ public class ResourceService {
   /**
    * リソース一覧を返す。
    *
-   * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を指定した場合は、当該時間帯に {@code
-   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
+   * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code keyword} は {@code name} または {@code
+   * description} への部分一致（大文字小文字を区別しない）で、{@code category}・{@code from}/{@code to} とは AND で組み合わさる。
+   * {@code from} / {@code to} を指定した場合は、当該時間帯に {@code PENDING} / {@code APPROVED}
+   * の予約が存在するリソースを除外する（Java 側で重複判定）。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param keyword キーワード（null・空・空白のみの場合は条件なし。前後の空白は除いて検索する）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
@@ -72,47 +78,67 @@ public class ResourceService {
   @Transactional(readOnly = true)
   public Page<ResourceResponse> list(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
+    Specification<Resource> spec = buildSpec(category, normalizeKeyword(keyword), isAdmin);
     if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+      return listWithAvailabilityFilter(spec, from, to, pageable);
     }
-    return listPaginated(category, isAdmin, pageable);
+    return listPaginated(spec, pageable);
+  }
+
+  /**
+   * 一覧の検索条件を組み立てる。
+   *
+   * <p>条件のリストを {@link Specification#allOf} で AND 結合する。条件が 1 つもない場合（ADMIN・カテゴリなし・キーワードなし）は、 {@code
+   * allOf} が条件なし（WHERE なし）の Specification を返す。戻り値は常に非 null。
+   *
+   * @param category カテゴリ（null の場合は条件に加えない）
+   * @param keyword 正規化済みのキーワード（null の場合は条件に加えない）
+   * @param isAdmin false の場合のみ有効リソースに限定する
+   * @return 検索条件
+   */
+  private Specification<Resource> buildSpec(
+      ResourceCategory category, String keyword, boolean isAdmin) {
+    List<Specification<Resource>> conditions = new ArrayList<>();
+    if (!isAdmin) {
+      conditions.add(ResourceSpecifications.isActiveTrue());
+    }
+    if (category != null) {
+      conditions.add(ResourceSpecifications.hasCategory(category));
+    }
+    if (keyword != null) {
+      conditions.add(ResourceSpecifications.keywordContains(keyword));
+    }
+    return Specification.allOf(conditions);
+  }
+
+  /** キーワードの前後の空白を除く。null・空・空白のみは「条件なし」として null を返す。 */
+  private static String normalizeKeyword(String keyword) {
+    if (keyword == null) {
+      return null;
+    }
+    String trimmed = keyword.trim();
+    return trimmed.isEmpty() ? null : trimmed;
   }
 
   /** from/to 指定なし：通常ページネーション。 */
-  private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
-    Page<Resource> page;
-    if (isAdmin) {
-      page =
-          category != null
-              ? resourceRepository.findByCategory(category, pageable)
-              : resourceRepository.findAll(pageable);
-    } else {
-      page =
-          category != null
-              ? resourceRepository.findByCategoryAndIsActiveTrue(category, pageable)
-              : resourceRepository.findByIsActiveTrue(pageable);
-    }
-    return page.map(ResourceResponse::from);
+  private Page<ResourceResponse> listPaginated(Specification<Resource> spec, Pageable pageable) {
+    return resourceRepository.findAll(spec, pageable).map(ResourceResponse::from);
   }
 
   /**
    * from/to 指定あり：全候補を取得し Java で重複判定してから手動ページネーション。
    *
-   * <p>重複するリソース ID を一括取得（1 クエリ）し、候補リストから除外する。
+   * <p>重複するリソース ID を一括取得（1 クエリ）し、候補リストから除外する。 キーワードは候補の取得段階（{@code spec}）で適用済み。
    */
   private Page<ResourceResponse> listWithAvailabilityFilter(
-      ResourceCategory category,
-      LocalDateTime from,
-      LocalDateTime to,
-      boolean isAdmin,
-      Pageable pageable) {
+      Specification<Resource> spec, LocalDateTime from, LocalDateTime to, Pageable pageable) {
     // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    List<Resource> candidates = resourceRepository.findAll(spec);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -136,18 +162,6 @@ public class ResourceService {
             ? List.of()
             : candidates.subList(start, end).stream().map(ResourceResponse::from).toList();
     return new PageImpl<>(content, pageable, total);
-  }
-
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
-    if (isAdmin) {
-      return category != null
-          ? resourceRepository.findByCategory(category)
-          : resourceRepository.findAll();
-    } else {
-      return category != null
-          ? resourceRepository.findByCategoryAndIsActiveTrue(category)
-          : resourceRepository.findByIsActiveTrue();
-    }
   }
 
   // ---------------------------------------------------------------------------
