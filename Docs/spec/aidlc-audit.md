@@ -212,3 +212,11 @@ timestamp: 2026-08-29
 **Context**: OPERATIONS（コミット・push）
 
 ---
+
+## Operations — PR 作成と CI 確認
+**Timestamp**: 2026-10-11T00:30:00+00:00
+**User Input**: "learner/CHS-YOSHIKAWA-KENTO/main" / "gh pr create で作成してください。"
+**AI Response**: "PR #145（head: feature/CHS-YOSHIKAWA-KENTO/25-resource-detail-info-aidlc → base: learner/CHS-YOSHIKAWA-KENTO/main）を作成。CI Frontend / CI Backend / build がすべて pass。動作確認結果・セルフレビューは学習者が記入する。"
+**Context**: OPERATIONS 完了（マージは学習者がセルフレビュー後に実施）
+
+---
