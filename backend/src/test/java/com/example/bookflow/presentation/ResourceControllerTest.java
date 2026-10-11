@@ -228,6 +228,31 @@ class ResourceControllerTest extends BaseControllerTest {
   }
 
   @Test
+  @WithMockAdmin
+  void create_adminWithEquipmentAndNotes_returns201WithFieldsPopulated() throws Exception {
+    String body =
+        """
+        {
+          "name": "プロジェクター A",
+          "category": "EQUIPMENT",
+          "capacity": null,
+          "location": "3F 備品棚",
+          "requiresApproval": true,
+          "isActive": true,
+          "description": "4K 対応プロジェクター",
+          "equipment": "本体、リモコン、HDMI ケーブル 2m",
+          "notes": "貸出時に動作確認を行ってください"
+        }
+        """;
+
+    mockMvc
+        .perform(post("/api/resources").contentType(MediaType.APPLICATION_JSON).content(body))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.equipment").value("本体、リモコン、HDMI ケーブル 2m"))
+        .andExpect(jsonPath("$.notes").value("貸出時に動作確認を行ってください"));
+  }
+
+  @Test
   @WithMockMember
   void create_memberRequest_returns403Forbidden() throws Exception {
     String body =
@@ -275,6 +300,17 @@ class ResourceControllerTest extends BaseControllerTest {
 
   @Test
   @WithMockMember
+  void get_existingIdWithoutEquipmentAndNotes_returnsNullFields() throws Exception {
+    // シードデータでは equipment/notes を未設定（null）のまま登録している
+    mockMvc
+        .perform(get("/api/resources/" + ACTIVE_RESOURCE_ID).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.equipment").doesNotExist())
+        .andExpect(jsonPath("$.notes").doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
   void get_nonExistentId_returns404NotFound() throws Exception {
     mockMvc
         .perform(get("/api/resources/" + UUID.randomUUID()).accept(MediaType.APPLICATION_JSON))
@@ -310,6 +346,34 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("第1会議室（改装後）"))
         .andExpect(jsonPath("$.capacity").value(12));
+  }
+
+  @Test
+  @WithMockAdmin
+  void update_adminWithEquipmentAndNotes_returns200WithUpdatedFields() throws Exception {
+    String body =
+        """
+        {
+          "name": "第1会議室（改装後）",
+          "category": "ROOM",
+          "capacity": 12,
+          "location": "3F",
+          "requiresApproval": false,
+          "isActive": true,
+          "description": "改装済み",
+          "equipment": "プロジェクター1台、ホワイトボード2台",
+          "notes": "利用後はホワイトボードを消してください"
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/resources/" + ACTIVE_RESOURCE_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.equipment").value("プロジェクター1台、ホワイトボード2台"))
+        .andExpect(jsonPath("$.notes").value("利用後はホワイトボードを消してください"));
   }
 
   @Test
