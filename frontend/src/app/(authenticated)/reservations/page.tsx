@@ -14,6 +14,7 @@ import {
 import { PaginationNav } from "@/components/ui/pagination-nav";
 import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
 import { ReservationFilterForm } from "./ReservationFilterForm";
+import { CsvDownloadButton } from "./CsvDownloadButton";
 
 /**
  * マイ予約一覧画面（screen-spec.md §マイ予約 /reservations 準拠）。
@@ -21,6 +22,7 @@ import { ReservationFilterForm } from "./ReservationFilterForm";
  * MEMBER は本人の予約のみ、ADMIN は全件表示（BE 側でロール判定）。
  * URL searchParams の status でフィルタ可能（複数値 ?status=PENDING&status=APPROVED）。
  * page でページ遷移（0 始まり）。status フィルタは引き継ぐ。
+ * ADMIN には「CSV ダウンロード」ボタンを表示する（現在の status・from・to を引き継ぐ）。
  */
 
 const STATUS_LABELS = RESERVATION_STATUS_LABELS;
@@ -83,9 +85,12 @@ export default async function ReservationsPage({
           <h1 className="text-2xl font-bold">{isAdmin ? "全予約一覧" : "マイ予約"}</h1>
           <p className="text-sm text-muted-foreground">全 {reservations.totalElements} 件</p>
         </div>
-        <Button asChild>
-          <Link href="/resources">リソースを探す</Link>
-        </Button>
+        <div className="flex gap-2">
+          {isAdmin && <CsvDownloadButton status={selectedStatuses} from={from} to={to} />}
+          <Button asChild>
+            <Link href="/resources">リソースを探す</Link>
+          </Button>
+        </div>
       </div>
 
       {/* ステータスフィルタタブ */}

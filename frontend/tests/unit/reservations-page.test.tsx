@@ -5,6 +5,7 @@
  * 「下書き」タブ（?status=DRAFT）がDRAFTのみを要求して呼び出すこと、
  * 下書きタブのリンク自体が描画されることを検証する（PR #147 CIレビュー指摘：
  * page.tsx のこの配線を直接検証するテストが存在しなかった）。
+ * 「CSV ダウンロード」ボタンが ADMIN にだけ表示され、現在の絞り込みを引き継ぐことも検証する。
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -37,9 +38,12 @@ const EMPTY_PAGE: Paginated<ReservationResponse> = {
   last: true,
 };
 
-async function renderPage(searchParams: Record<string, string | string[] | undefined>) {
+async function renderPage(
+  searchParams: Record<string, string | string[] | undefined>,
+  role: "ADMIN" | "APPROVER" | "MEMBER" | null = null,
+) {
   listReservationsActionMock.mockResolvedValue(EMPTY_PAGE);
-  getProfileActionMock.mockResolvedValue(null);
+  getProfileActionMock.mockResolvedValue(role ? { role } : null);
   const jsx = await ReservationsPage({ searchParams: Promise.resolve(searchParams) });
   render(jsx);
 }
@@ -72,5 +76,53 @@ describe("ReservationsPage", () => {
     const draftTab = screen.getByTestId("reservations-draft-tab");
     expect(draftTab).toHaveTextContent("下書き");
     expect(draftTab).toHaveAttribute("href", "/reservations?status=DRAFT");
+  });
+
+  describe("CSV ダウンロードボタン", () => {
+    it("ADMIN にはボタンが表示される", async () => {
+      await renderPage({}, "ADMIN");
+
+      const button = screen.getByTestId("reservations-csv-download");
+      expect(button).toHaveTextContent("CSV ダウンロード");
+      expect(button).toHaveAttribute("href", "/api/reports/reservations/csv");
+    });
+
+    it("ADMIN のボタンは現在の status・from・to を引き継ぎ、resourceName・page は引き継がない", async () => {
+      await renderPage(
+        {
+          status: "APPROVED",
+          from: "2030-06-01T00:00",
+          to: "2030-06-30T00:00",
+          resourceName: "会議",
+          page: "2",
+        },
+        "ADMIN",
+      );
+
+      const href = screen.getByTestId("reservations-csv-download").getAttribute("href") ?? "";
+      const url = new URL(href, "http://localhost");
+      expect(url.pathname).toBe("/api/reports/reservations/csv");
+      expect(url.searchParams.getAll("status")).toEqual(["APPROVED"]);
+      expect(url.searchParams.get("from")).toBe("2030-06-01T00:00");
+      expect(url.searchParams.get("to")).toBe("2030-06-30T00:00");
+      expect(url.searchParams.has("resourceName")).toBe(false);
+      expect(url.searchParams.has("page")).toBe(false);
+    });
+
+    it("「すべて」タブ（status 未指定）では status をクエリに含めない", async () => {
+      await renderPage({}, "ADMIN");
+
+      const href = screen.getByTestId("reservations-csv-download").getAttribute("href") ?? "";
+      expect(new URL(href, "http://localhost").searchParams.has("status")).toBe(false);
+    });
+
+    it.each([["MEMBER" as const], ["APPROVER" as const], [null]])(
+      "ロールが %s のときはボタンを表示しない",
+      async (role) => {
+        await renderPage({}, role);
+
+        expect(screen.queryByTestId("reservations-csv-download")).not.toBeInTheDocument();
+      },
+    );
   });
 });

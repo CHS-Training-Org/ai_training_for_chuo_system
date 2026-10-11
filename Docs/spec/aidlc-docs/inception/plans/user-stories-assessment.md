@@ -1,24 +1,24 @@
-# User Stories Assessment — reservation-draft
+# User Stories Assessment — csv-report
 
 ## Request Analysis
 
-- **Original Request**: 既存の到達不能コードパスだった `DRAFT` ステータスを実際に機能させ、下書き保存・再編集・正式申請・一覧表示・アクセス制御を実現する
-- **User Impact**: Direct（利用者が直接操作する新しい機能：下書き保存ボタン、正式申請ボタン、下書きタブ）
-- **Complexity Level**: Complex（複数ロール（MEMBER/APPROVER/ADMIN）でDRAFTへの可視性が異なる、状態遷移ロジックが複数絡む）
-- **Stakeholders**: MEMBER（下書きの作成者）、APPROVER（他人の下書きを見てはいけない立場）、ADMIN（全件閲覧できる立場）
+- **Original Request**: ADMIN が予約一覧を CSV でダウンロードできる機能（`GET /api/reports/reservations/csv` と `/reservations` の「CSV ダウンロード」ボタン）を追加する
+- **User Impact**: Direct（ADMIN が画面のボタンを直接操作し、ファイルを受け取る）
+- **Complexity Level**: Medium（frontend と backend にまたがるが、ロジックは小さい。期間・ステータスの絞り込みとロール別の拒否に複数シナリオがある）
+- **Stakeholders**: ADMIN（CSV をダウンロードする立場）、MEMBER・APPROVER（ダウンロード不可を保証される立場）
 
 ## Assessment Criteria Met
 
-- [x] High Priority: **New User Features**（下書き保存・正式申請はユーザーが直接操作する新規機能）、**Multi-Persona Systems**（MEMBER/APPROVER/ADMINでDRAFTへの可視性・操作可否が異なる）
-- [ ] Medium Priority: （High Priorityに該当するため評価不要）
-- [x] Benefits: ロールごとに異なるアクセス制御要件（RSV-02・受入条件）を、ロール別のストーリーとして明確に書き分けることで、Code Generation段階での権限チェック漏れを防ぐ
+- [x] High Priority: **New User Features**（ボタンから CSV を受け取る新規機能）、**Multi-Persona Systems**（ADMIN は可、MEMBER・APPROVER は 403 とロールで挙動が分かれる）
+- [ ] Medium Priority: （High Priority に該当するため評価不要）
+- [x] Benefits: 受入条件の 5 項目（ダウンロード・日本語ヘッダと BOM・絞り込み・403・ユニットテスト）をストーリー単位の独立した受入条件に分け、Code Generation でのテスト漏れ（特に 403 と期間・ステータスの境界）を防ぐ
 
 ## Decision
 
 **Execute User Stories**: Yes
-**Reasoning**: 下書き保存・正式申請はユーザーが直接触れる新規機能であり、かつMEMBER/APPROVER/ADMINの3ロールでDRAFTへの可視性・操作可否が異なる（Multi-Persona Systems）。SKIP条件（純粋なリファクタリング・単純なバグ修正・インフラのみ・ドキュメントのみ）はいずれも該当しない。
+**Reasoning**: ボタン操作で CSV を受け取る新規機能であり、ロールによって結果が異なる。SKIP 条件（純粋なリファクタリング・単純なバグ修正・インフラのみ・ドキュメントのみ）はいずれも該当しない。ただし規模は小さいため、ストーリーは 5 件程度に抑える。
 
 ## Expected Outcomes
 
-- ロール別のアクセス制御要件（本人のみ閲覧・APPROVER除外・ADMIN許可）を、ペルソナごとのストーリーとして明確化できる
-- 下書き保存・再編集・正式申請という一連のライフサイクルを、独立した受入条件を持つストーリーに分解できる
+- ADMIN の操作（ダウンロード・絞り込み）と、MEMBER・APPROVER の拒否を、独立した受入条件として書き分けられる
+- CSV の中身（ヘッダ・BOM・エスケープ）の受入条件が、`CsvWriter` のユニットテスト項目にそのまま対応する

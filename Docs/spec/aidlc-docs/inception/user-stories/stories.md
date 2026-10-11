@@ -1,118 +1,157 @@
-# User Stories — reservation-draft
+# User Stories — csv-report
 
-## US-01: 下書き保存
+## US-01: CSV ダウンロード
 
-**MEMBER として**、予約申請フォームで入力中の内容を下書きとして保存したい。**それによって** 複雑な予約をゆっくり準備できる。
-
-### 受入条件
-
-```gherkin
-Scenario: 下書き保存ボタンをクリックすると DRAFT ステータスで保存される
-  Given MEMBER が予約申請フォーム（/reservations/new）で必要項目を入力している
-  When 「下書き保存」ボタンをクリックする
-  Then 予約がステータス DRAFT で保存される
-  And 承認フローには流れない（approval_steps が作成されない）
-```
-
-## US-02: 下書きの再編集
-
-**MEMBER として**、保存した下書きの内容を後から編集したい。**それによって** 必要な情報が揃うまで申請を確定させずに準備を続けられる。
+**ADMIN として**、予約一覧画面のボタンから予約を CSV ファイルでダウンロードしたい。**それによって** 画面で見ている条件のまま、予約データを外部ツールに持ち出せる。
 
 ### 受入条件
 
 ```gherkin
-Scenario: 下書きの内容を編集して DRAFT のまま保存する
-  Given MEMBER が自分の DRAFT 状態の予約の詳細ページを開いている
-  When 内容（開始日時・終了日時・利用目的・参加人数）を編集して保存する（正式申請はしない）
-  Then 予約の内容が更新され、ステータスは DRAFT のまま変わらない
+Scenario: ボタンをクリックすると CSV ファイルがダウンロードされる
+  Given ADMIN が予約一覧（/reservations）を開いている
+  When 「CSV ダウンロード」ボタンをクリックする
+  Then ブラウザが CSV ファイルをダウンロードする
+  And ファイル名は reservations_yyyyMMdd.csv（出力日）になる
+  And レスポンスの Content-Type は text/csv; charset=UTF-8 で、Content-Disposition は attachment である
+
+Scenario: 現在の絞り込み条件が CSV に引き継がれる
+  Given ADMIN が予約一覧で status と期間（from / to）を指定している
+  When 「CSV ダウンロード」ボタンをクリックする
+  Then 画面の status・from・to と同じ条件の CSV がダウンロードされる
+  And 画面の resourceName 絞り込みは CSV に引き継がれない
 ```
 
-## US-03: 正式申請（DRAFT → PENDING/APPROVED）
+## US-02: CSV の内容
 
-**MEMBER として**、準備が整った下書きを正式に申請したい。**それによって** リソースの予約が確定または承認待ちになる。
+**ADMIN として**、Excel で開いて文字化けせず、一目で意味が分かる CSV を受け取りたい。**それによって** 受け取った後の加工や報告にそのまま使える。
 
 ### 受入条件
 
 ```gherkin
-Scenario: 承認不要リソースの下書きを正式申請すると即座に確定する
-  Given MEMBER が自分の DRAFT 状態の予約（承認不要リソース）の詳細ページを開いている
-  When 「正式申請」を行う
-  Then 予約のステータスが APPROVED になる
-  And approval_steps は作成されない
+Scenario: 日本語ヘッダ行と 7 列で出力される
+  Given 条件に合う予約が 1 件以上ある
+  When CSV をダウンロードする
+  Then 1 行目に日本語のヘッダ行（予約 ID・リソース名・申請者名・開始日時・終了日時・目的・承認状態）がある
+  And 2 行目以降に予約が開始日時の昇順（同値は予約 ID の昇順）で 1 行ずつ出力される
 
-Scenario: 要承認リソースの下書きを正式申請すると承認待ちになる
-  Given MEMBER が自分の DRAFT 状態の予約（要承認リソース）の詳細ページを開いている
-  When 「正式申請」を行う
-  Then 予約のステータスが PENDING になる
-  And approval_steps が作成され、承認一覧（/approvals）に表示される
+Scenario: 承認状態は画面と同じ日本語ラベルで出力される
+  Given PENDING・APPROVED・REJECTED・CANCELLED の予約が存在する
+  When CSV をダウンロードする
+  Then 承認状態の列は 承認待ち・承認済み・却下・キャンセル済み と出力される
+
+Scenario: 日時は yyyy-MM-dd HH:mm 形式で出力される
+  Given 開始日時が 2026-10-12 09:30 の予約がある
+  When CSV をダウンロードする
+  Then 開始日時の列は 2026-10-12 09:30 と出力される
+
+Scenario: Excel で文字化けしない
+  When CSV をダウンロードする
+  Then 本文の先頭 3 バイトが EF BB BF（UTF-8 BOM）である
+  And 本文は UTF-8、改行は CRLF である
+
+Scenario: 条件に合う予約が 0 件のときはヘッダ行のみ返す
+  Given 条件に合う予約が存在しない
+  When CSV をダウンロードする
+  Then ヘッダ行のみの CSV が 200 で返る
 ```
 
-## US-04: 下書きの削除
+## US-03: 期間とステータスでの絞り込み
 
-**MEMBER として**、不要になった下書きを削除したい。**それによって** 使わない下書きを一覧に残さずに済む。
+**ADMIN として**、期間とステータスを指定して対象を限定した CSV を取得したい。**それによって** 月次報告などに必要な範囲だけを出力できる。
 
 ### 受入条件
 
 ```gherkin
-Scenario: 下書きをキャンセル操作で削除する
-  Given MEMBER が自分の DRAFT 状態の予約の詳細ページを開いている
-  When 既存のキャンセル操作を行う
-  Then 予約のステータスが CANCELLED になる（物理削除ではなく既存のキャンセル機構を転用する）
+Scenario: 期間を指定すると期間重複する予約だけが出力される
+  Given 2026-10-10 から 2026-10-20 の間に重なる予約と、重ならない予約がある
+  When from=2026-10-10T00:00:00 と to=2026-10-20T00:00:00 を指定して CSV をダウンロードする
+  Then 期間が重なる予約だけが出力される（r.startAt < to かつ r.endAt > from）
+  And 境界が一致しているだけの隣接する予約は含まれない
+
+Scenario: from と to の片方だけを指定すると 400 になる
+  When from だけ、または to だけを指定してリクエストする
+  Then 400（code: VALIDATION_ERROR）が返る
+
+Scenario: from と to を両方とも指定しないと全期間が対象になる
+  When from と to を指定せずに CSV をダウンロードする
+  Then 期間条件なしで予約が出力される
+
+Scenario: status を指定しない場合は DRAFT を含めない
+  Given PENDING と DRAFT の予約が存在する
+  When status を指定せずに CSV をダウンロードする
+  Then PENDING の予約は出力され、DRAFT の予約は出力されない
+
+Scenario: status を明示すると指定したステータスだけが出力される
+  When status=DRAFT を指定して CSV をダウンロードする
+  Then DRAFT の予約だけが出力される
+  And status を複数指定した場合はそのいずれかに一致する予約が出力される
+
+Scenario: 不正な status は 400 になる
+  When status に定義にない値を指定してリクエストする
+  Then 400 が返る
 ```
 
-## US-05: 下書き一覧の表示
+## US-04: 権限のないロールの拒否
 
-**MEMBER として**、自分の下書きを一覧で確認したい。**それによって** 保存した下書きを見失わずに管理できる。
+**MEMBER・APPROVER として**、自分の権限では全予約の CSV を取得できないことを保証してほしい。**それによって** 他人の予約情報が権限のない人に持ち出されない。
 
 ### 受入条件
 
 ```gherkin
-Scenario: 「下書き」タブで DRAFT 予約を確認できる
-  Given MEMBER が DRAFT 状態の予約を持っている
-  When 予約一覧（/reservations）の「下書き」タブを開く
-  Then その DRAFT 予約が一覧に表示される
+Scenario: MEMBER が API を呼ぶと 403 になる
+  Given MEMBER としてログインしている
+  When GET /api/reports/reservations/csv を呼ぶ
+  Then 403（code: FORBIDDEN）が返る
 
-Scenario: デフォルト表示（「すべて」タブ）には下書きが含まれない
-  Given MEMBER が DRAFT 状態の予約を持っている
-  When 予約一覧の「すべて」タブ（既定表示）を開く
-  Then その DRAFT 予約は一覧に表示されない
+Scenario: APPROVER が API を呼ぶと 403 になる
+  Given APPROVER としてログインしている
+  When GET /api/reports/reservations/csv を呼ぶ
+  Then 403（code: FORBIDDEN）が返る
+
+Scenario: 未認証だと 401 になる
+  Given 認証トークンがない
+  When GET /api/reports/reservations/csv を呼ぶ
+  Then 401 が返る
+
+Scenario: ボタンは ADMIN にだけ表示される
+  Given MEMBER または APPROVER が予約一覧（/reservations）を開いている
+  Then 「CSV ダウンロード」ボタンは表示されない
+
+Scenario: 画面経由でもバックエンドの拒否がそのまま返る
+  Given ADMIN ではないロールが CSV の Route Handler を直接開く
+  Then バックエンドの 401 または 403 がそのまま返り、CSV は返らない
 ```
 
-## US-06: 他人の下書きへのアクセス拒否
+## US-05: 特殊文字と数式の安全な出力
 
-**APPROVER として**、他人がまだ正式申請していない下書きの内容を見たくない。**それによって** 承認判断に関係ない情報に惑わされずに済む。
+**ADMIN として**、利用目的などに記号や改行が含まれていても、CSV が壊れず安全に開ける状態で受け取りたい。**それによって** Excel で開いたときに列がずれたり、数式が実行されたりしない。
 
 ### 受入条件
 
 ```gherkin
-Scenario: APPROVER が他人の下書きの詳細にアクセスすると403になる
-  Given ある MEMBER が DRAFT 状態の予約を持っている
-  When 別の APPROVER がその予約の詳細（GET /api/reservations/{id}）にアクセスする
-  Then 403 が返る
+Scenario: カンマ・二重引用符・改行を含むフィールドは引用符で囲んでエスケープする
+  Given 利用目的が 会議, 来客 "A社" と 2 行目 のように、カンマ・二重引用符・改行を含む予約がある
+  When CSV をダウンロードする
+  Then そのフィールドは二重引用符で囲まれ、内部の二重引用符は 2 つ重ねて出力される（RFC 4180）
+  And 列数が他の行とずれない
 
-Scenario: 他の MEMBER が他人の下書きの詳細にアクセスすると403になる
-  Given ある MEMBER が DRAFT 状態の予約を持っている
-  When 別の MEMBER がその予約の詳細にアクセスする
-  Then 403 が返る
+Scenario: 先頭が数式を開始する文字のフィールドは無害化される
+  Given 利用目的が =SUM(A1:A9) のように、先頭が =、+、-、@、タブ、復帰のいずれかの予約がある
+  When CSV をダウンロードする
+  Then そのフィールドの先頭に ' が付き、Excel で数式として実行されない
 
-Scenario: ADMIN は他人の下書きの詳細にアクセスできる
-  Given ある MEMBER が DRAFT 状態の予約を持っている
-  When ADMIN がその予約の詳細にアクセスする
-  Then 200 で予約内容が返る
-
-Scenario: 下書きは承認一覧に表示されない
-  Given ある MEMBER が DRAFT 状態の予約を持っている
-  When APPROVER が承認一覧（/approvals）を開く
-  Then その DRAFT 予約は表示されない（approval_steps が存在しないため）
+Scenario: 通常の文字列は変更されない
+  Given 利用目的が 定例会議 の予約がある
+  When CSV をダウンロードする
+  Then 利用目的の列は 定例会議 のまま出力される
 ```
 
-## 受入条件カバレッジ（requirements.md との対応）
+## 受入条件との対応
 
-| requirements.md の受入条件 | 対応ストーリー |
+| requirements.md の受入条件 | 対応するストーリー |
 |---|---|
-| 「下書き保存」ボタンをクリックすると、DRAFT ステータスで予約が保存される | US-01 |
-| 下書きは予約一覧の DRAFT フィルタで表示される | US-05 |
-| 下書き詳細ページから再編集・正式申請ができる | US-02, US-03 |
-| 下書き予約は承認一覧に表示されない | US-06 |
-| 申請者本人以外が DRAFT 予約の詳細にアクセスすると 403 が返る（ADMIN は除く） | US-06 |
-| バックエンドのステータス遷移テストに DRAFT → PENDING のケースを追加する | US-03（Code Generation段階でテストとして具体化） |
+| ボタンで予約一覧が CSV ダウンロードされる | US-01 |
+| 日本語ヘッダ行、UTF-8（BOM 付き） | US-02 |
+| 期間・ステータスで絞り込める | US-03 |
+| MEMBER / APPROVER は 403 | US-04 |
+| CSV 生成ロジックのユニットテスト | US-02（形式）と US-05（エスケープ・数式対策）の各 Scenario を `CsvWriterTest` と `ReservationReportServiceTest` のテスト項目に対応付ける |
