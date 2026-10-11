@@ -1,5 +1,6 @@
 package com.example.bookflow.presentation;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -305,8 +306,10 @@ class ResourceControllerTest extends BaseControllerTest {
     mockMvc
         .perform(get("/api/resources/" + ACTIVE_RESOURCE_ID).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.equipment").doesNotExist())
-        .andExpect(jsonPath("$.notes").doesNotExist());
+        .andExpect(jsonPath("$.equipment").hasJsonPath())
+        .andExpect(jsonPath("$.equipment").value(nullValue()))
+        .andExpect(jsonPath("$.notes").hasJsonPath())
+        .andExpect(jsonPath("$.notes").value(nullValue()));
   }
 
   @Test
