@@ -70,7 +70,7 @@ describe("ReservationsPage", () => {
     await renderPage({});
 
     const draftTab = screen.getByTestId("reservations-draft-tab");
-    expect(draftTab).toBeInTheDocument();
+    expect(draftTab).toHaveTextContent("下書き");
     expect(draftTab).toHaveAttribute("href", "/reservations?status=DRAFT");
   });
 });

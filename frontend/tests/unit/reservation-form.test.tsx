@@ -88,5 +88,6 @@ describe("ReservationForm", () => {
 
     expect(createReservationActionMock).toHaveBeenCalledTimes(1);
     expect(createReservationActionMock.mock.calls[0][0]).toMatchObject({ draft: false });
+    expect(pushMock).toHaveBeenCalledWith("/reservations");
   });
 });
