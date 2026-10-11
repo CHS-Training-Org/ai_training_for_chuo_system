@@ -1,72 +1,28 @@
-# Unit Test Execution — reservation-draft
+# Unit Test Execution
 
-> 本リポジトリは `backend`/`frontend` 共通の独立した Integration Test 層を持たない。backend の `*ControllerTest` は H2 実データに対する MockMvc 結合テストだが、既存の `./gradlew test` 単一コマンドで実行される（カテゴリ分割なし）ため、本ユニットテスト実行手順にまとめて記載する。
+## Run Unit Tests
 
-## Backend
-
-### 1. 全テスト実行
+### 1. Execute All Unit Tests
 
 ```bash
-cd backend
-./gradlew test
+# Backend（ReservationServiceTest 等）
+cd backend && ./gradlew test
+
+# Frontend（Vitest）
+cd frontend && pnpm test
 ```
 
-### 2. 個別クラスのみ実行する場合（本ユニットの変更分）
+### 2. Review Test Results
 
-```bash
-./gradlew test --tests "*ReservationServiceTest" --tests "*ReservationControllerTest"
-```
+- **Backend**: 208 tests, 0 failures, 0 errors（`backend/build/test-results/test/*.xml`）
+- **Frontend**: 150 tests passed（20 test files）（`vitest run` 標準出力）
+- **Test Report Location**: `backend/build/reports/tests/test/index.html`、フロントエンドは標準出力のみ（HTML レポートは未設定）
 
-### 3. テスト結果
+### 3. Fix Failing Tests
 
-- **期待値**: 全テスト成功、0 failure / 0 error
-- **実測値（本セッション）**: 全 208 テスト成功（既存188件 + 本ユニットの新規追加分：`ReservationServiceTest` 11件・`ReservationControllerTest` 9件）
-- **自己検証（break-and-verify）**: `create()`のapproval_steps生成条件・`checkReadAccess()`のDRAFT/APPROVER除外条件・`update()`のsubmit分岐条件を一時的に無効化し、対象テストのみが red になることを確認済み（詳細は `construction/reservation-draft/code/backend-summary.md` 参照）
+失敗した場合:
 
-## Frontend（ユニット・コンポーネントテスト）
-
-### 1. 全テスト実行
-
-```bash
-cd frontend
-pnpm test
-```
-
-### 2. 個別ファイルのみ実行する場合（本ユニットの新規追加分）
-
-```bash
-pnpm vitest run tests/unit/reservation-form.test.tsx
-pnpm vitest run tests/unit/server/actions/reservations.test.ts
-pnpm vitest run tests/unit/reservation-edit-form.test.tsx
-pnpm vitest run tests/unit/reservation-detail-page.test.tsx
-```
-
-### 3. テスト結果
-
-- **期待値**: 全テスト成功
-- **実測値（本セッション）**: 20 ファイル・全 150 テスト成功（既存137件 + 本ユニットの新規追加分：`reservation-form.test.tsx` 2件・`server/actions/reservations.test.ts` 3件・`reservation-edit-form.test.tsx`〔新規ファイル〕4件・`reservation-detail-page.test.tsx`〔新規ファイル〕4件）
-- **自己検証（break-and-verify）**: 下書き保存ボタンの`draft`値・正式申請ボタンの表示条件・`canEdit`のDRAFT条件を一時的に無効化し、対象テストのみが red になることを確認済み（詳細は `construction/reservation-draft/code/frontend-summary.md` 参照）
-
-## Frontend（E2E テスト、回帰確認）
-
-本ユニットは `reservations/new/`・`reservations/page.tsx`・`reservations/[id]/page.tsx`・`reservations/[id]/edit/` 配下を改修しているため、既存の E2E スイート（e2e-test-coverage ユニットで追加）への回帰がないことを確認する。本ユニットのスコープとして下書きシナリオの新規 E2E 追加は行わない。
-
-```bash
-cd frontend
-pnpm test:e2e
-```
-
-- **期待値**: 全8テスト成功
-- **実測値（本セッション）**: `workers: 1` 固定のもとで 8/8 pass（回帰なし）
-
-## Lint・フォーマット
-
-```bash
-# backend
-cd backend && ./gradlew spotlessApply checkstyleMain
-
-# frontend
-cd frontend && pnpm lint && pnpm format:check
-```
-
-- **実測値（本セッション）**: いずれも差分なし。Checkstyle は警告214件検出（すべて本ユニットより前から存在する `MethodName` パターン既知 WARN。severity=warning のためビルド非失敗）
+1. バックエンドは `backend/build/reports/tests/test/index.html` でスタックトレースを確認する
+2. フロントエンドは `vitest run` の標準出力でテスト名と `expect` 失敗箇所を確認する
+3. 本ユニット（reservation-draft）関連の失敗であれば `Docs/spec/aidlc-docs/construction/reservation-draft/functional-design/business-rules.md`（BR-01〜10）の期待仕様と実装の差分を確認する
+4. 修正後に該当コマンドを再実行し、全件成功を確認する

@@ -1595,3 +1595,11 @@ timestamp: 2026-08-29
 **User Input**: "Continue to Next Stage"
 **AI Response**: "承認を記録。reservation-draft ユニットの CONSTRUCTION フェーズ（Functional Design・Code Generation・Build and Test）を完了。BookFlow では OPERATIONS フェーズは CI 品質ゲート（`CI Frontend` / `CI Backend`）として運用され、PR 作成・push 時に自動実行されるため、`/aidlc` 自体がこの場で追加生成するステージはない旨をユーザーに説明し、次のアクション（`/commit-push`・`/create-pr`）を案内する。"
 **Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。`/aidlc` ワークフロー本体はここで完了
+
+---
+
+## Post-Build Refinement（reservation-draft）
+**Timestamp**: 2026-10-11T16:20:00Z
+**User Input**: "未コミット変更を確認し、適切な単位でコミットを作成してください。監査ログも必要なら更新してください。その後 push まで実施してください。"
+**AI Response**: "Build and Test 承認後に加えられた未コミット変更を確認しコミット・push する。内容: (1) `RESERVATION_STATUS_LABELS.DRAFT` を「ドラフト」から「下書き」へ変更（screen-spec の表記に統一）、(2) `ReservationForm` の下書き保存後の遷移先を `/reservations?status=DRAFT` に変更、(3) `reservation-edit-page.test.tsx`・`reservations-page.test.tsx` を新規追加し既存テスト2件を更新（frontend unit 150→158件）、(4) Build and Test 文書の更新と `e2e-test-instructions.md`・`integration-test-instructions.md` の新規追加。`pnpm lint`・`pnpm format:check`・`pnpm test`（158件）の成功を確認済み。backend は変更なしのため再実行していない。"
+**Context**: Build and Test 承認後の追加改善。`/commit-push` によるコミット分割・push
