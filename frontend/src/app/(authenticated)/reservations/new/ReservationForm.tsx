@@ -66,7 +66,7 @@ export function ReservationForm({
     startTransition(async () => {
       try {
         await createReservationAction({ ...values, draft });
-        router.push("/reservations");
+        router.push(draft ? "/reservations?status=DRAFT" : "/reservations");
       } catch (err) {
         if (err instanceof ApiClientError && err.code === "RESERVATION_CONFLICT") {
           setConflictError(

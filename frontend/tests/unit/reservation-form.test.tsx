@@ -73,7 +73,7 @@ describe("ReservationForm", () => {
 
     expect(createReservationActionMock).toHaveBeenCalledTimes(1);
     expect(createReservationActionMock.mock.calls[0][0]).toMatchObject({ draft: true });
-    expect(pushMock).toHaveBeenCalledWith("/reservations");
+    expect(pushMock).toHaveBeenCalledWith("/reservations?status=DRAFT");
   });
 
   it("「予約を申請する」ボタンをクリックすると、draft: false を付与して送信する", async () => {

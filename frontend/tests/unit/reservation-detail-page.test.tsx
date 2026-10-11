@@ -75,7 +75,7 @@ describe("ReservationDetailPage", () => {
   it("DRAFT のステータスバッジが表示される", async () => {
     await renderPage(BASE_RESERVATION, OWNER_PROFILE);
 
-    expect(screen.getByText("ドラフト")).toBeInTheDocument();
+    expect(screen.getByText("下書き")).toBeInTheDocument();
   });
 
   it("ADMIN が DRAFT の予約を閲覧すると、編集ボタンは表示されない（ADMIN は PUT 権限なし）", async () => {
