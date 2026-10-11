@@ -1,22 +1,24 @@
-# Story Generation Plan — calendar-view
+# Story Generation Plan — reservation-draft
 
 ## 方針
 
-- **Breakdown Approach**: Feature-Based（カレンダーの各操作単位でストーリーを分割する。週表示/月表示は単一の画面機能の表示モードであり別ペルソナを要しないため、User Journey-Based や Persona-Based は採らない）
-- **ペルソナ**: 単一の主ペルソナ（BookFlow 認証済みユーザー。MEMBER/APPROVER/ADMIN 共通、権限による表示差分なし）とする。requirements.md のとおり本課題に権限分岐はないため、複数ペルソナを立てない
-- **粒度**: 受入条件（requirements.md 記載の6項目）に1対1〜1対2で対応する4ストーリー程度に分解する
+- **Breakdown Approach**: Feature-Based を基本としつつ、アクセス制御（RSV-02）はロール別の視点が不可欠なため Persona-Based の要素を取り入れたハイブリッドとする
+- **ペルソナ**: 3ペルソナ（MEMBER：下書きの作成者・編集者、APPROVER：他人の下書きを見てはいけない立場、ADMIN：全件閲覧できる立場）
+- **粒度**: 受入条件（requirements.md 記載の6項目）に対応する6ストーリー程度に分解する
 - **フォーマット**: 「〜として、〜したい。それによって〜できる」形式 + Gherkin 形式の受入条件（既存ユニットの stories.md と同じ形式を踏襲）
 
 ## 実行チェックリスト
 
-- [x] Step A: `personas.md` を生成する（主ペルソナ1件：BookFlow 認証済みユーザー）
-- [x] Step B: `stories.md` を生成する。以下の4ストーリー候補を INVEST 基準で検証しながら作成する
-  - カレンダー形式での空き状況閲覧（週表示・月表示切り替えを含む）
-  - 表示期間の移動（前週/次週・前月/次月）
-  - 空き枠クリックによる予約申請フォームへの日時引き継ぎ（週表示の時刻クリック・月表示の日クリックの両方）
-  - 予約済み枠の視覚的区別（グレーアウト表示）
+- [x] Step A: `personas.md` を生成する（MEMBER・APPROVER・ADMIN の3ペルソナ）
+- [x] Step B: `stories.md` を生成する。以下の6ストーリー候補を INVEST 基準で検証しながら作成する
+  - 下書き保存（新規作成時に `draft=true` で保存、承認フローに流れない）
+  - 下書きの再編集（DRAFTのまま内容を更新）
+  - 正式申請（DRAFT→PENDING/APPROVED遷移、承認不要リソースと要承認リソースで結果が異なる）
+  - 下書きの削除（既存キャンセル機構の転用）
+  - 下書き一覧の表示（下書きタブ、デフォルト「すべて」タブからの除外）
+  - 他人の下書きへのアクセス拒否（APPROVER・他MEMBER→403、ADMINは許可、承認一覧にも表示されない）
 - [x] Step C: 各ストーリーに受入条件（Gherkin形式）を記載し、requirements.md の受入条件6項目をすべてカバーしていることを確認する
 
 ## 確認事項
 
-requirements.md と本セッションの追加確認（週表示1時間グリッド・月表示日クリック＋既定時刻9:00）により、ストーリー作成に必要な曖昧点はすべて解消済みと判断する。追加の確認質問はない。
+requirements.md の決定事項（5件）により、ストーリー作成に必要な曖昧点はすべて解消済みと判断する。追加の確認質問はない。

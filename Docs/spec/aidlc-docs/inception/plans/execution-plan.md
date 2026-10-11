@@ -1,33 +1,32 @@
-# Execution Plan — calendar-view
+# Execution Plan — reservation-draft
 
 ## Detailed Analysis Summary
 
 ### Transformation Scope（Brownfield）
 
-- **Transformation Type**: Single component change（リソース詳細画面1画面内の表示拡張）
-- **Primary Changes**: 既存の空き状況リスト表示をカレンダー形式のUIに置き換える。新規Client Component（カレンダー本体）を追加し、既存のBFF関数（`getAvailabilityAction`）をそのまま流用する
-- **Related Components**: `resources/[id]/page.tsx`（改修）、新規 `AvailabilityCalendar.tsx`、`reservations/new/page.tsx`・`ReservationForm.tsx`（日時引き継ぎクエリパラメータ追加）
+- **Transformation Type**: Single component change（予約ドメインの状態遷移ロジック拡張。新しいサービス・新しい画面ルートは追加しない）
+- **Primary Changes**: `DRAFT` ステータスを実際に機能させるための、作成時の分岐・更新時の遷移ロジック・アクセス制御・一覧表示の拡張
+- **Related Components**: `ReservationService`（create/update/checkReadAccess/list）、予約申請フォーム・予約一覧・予約詳細・予約編集の各画面
 
 ### Change Impact Assessment
 
-- **User-facing changes**: Yes（カレンダー表示・週/月切り替え・期間移動・空き枠クリックという新しい操作体験）
-- **Structural changes**: No（新しいAPI・新しいルートは追加しない。既存画面内に閉じる）
-- **Data model changes**: No（DBスキーマ変更なし、既存の`AvailabilitySlotSchema`をそのまま使う）
-- **API changes**: No（`GET /api/resources/{id}/availability`をそのまま利用、バックエンド変更なし）
-- **NFR impact**: No（requirements.mdのとおりSecurity/Resiliency/PBT拡張はいずれも不採用）
+- **User-facing changes**: Yes（下書き保存ボタン・正式申請ボタン・下書きタブという新しい操作）
+- **Structural changes**: No（新しいテーブル・新しいAPIエンドポイントは追加しない。既存の`POST`/`PUT /api/reservations`を拡張する）
+- **Data model changes**: No（`DRAFT`は既存のDB CHECK制約に定義済み。スキーマ変更なし）
+- **API changes**: Yes（`CreateReservationRequest`に`draft`、`UpdateReservationRequest`に`submit`を追加。既存フィールドの破壊的変更はない）
+- **NFR impact**: Yes（アクセス制御の強化：DRAFTはAPPROVERの閲覧対象から除外する）。ただし新たな認証基盤・暗号化等の変更ではなく、既存の所有者チェックパターンの拡張であるため、拡張（Security Baseline）としては不採用
 
 ### Component Relationships（Brownfield）
 
-- **Primary Component**: `frontend/src/app/(authenticated)/resources/[id]/`
-- **Shared Components**: `server/actions/resources.ts`（`getAvailabilityAction`、変更なし）、`lib/types/api.ts`（`AvailabilitySlotSchema`、変更なし）
-- **Dependent Components**: `reservations/new/`（日時引き継ぎクエリパラメータの受け取り側として改修）
-- **Supporting Components**: `frontend/tests/unit/resource-detail-page.test.tsx`（既存リスト表示の置き換えに伴い更新が必要）
+- **Primary Component**: `backend/.../application/ReservationService.java`（状態遷移・承認ステップ作成条件・アクセス制御の中心）
+- **Dependent Components**: `ApprovalService`（`createInitialStep`の呼び出し条件は変わらないが、呼び出しタイミングがcreate以外にupdateからも発生するようになる）、予約一覧・詳細・編集画面（frontend）
+- **Supporting Components**: `ReservationServiceTest`・`ReservationControllerTest`（既存のステータス遷移テストと整合させる必要がある）
 
 ### Risk Assessment
 
-- **Risk Level**: Low（単一画面・frontendのみ・既存APIをそのまま利用する孤立した変更。ロールバックは当該ファイル群の変更を戻すだけで完結する）
-- **Rollback Complexity**: Easy
-- **Testing Complexity**: Moderate（週/月の境界計算・時刻グリッドのクリック判定など、ユニットテストで検証すべきロジックが複数ある）
+- **Risk Level**: Medium（既存の予約作成・更新フローという広く使われているロジックに手を入れるため、既存テスト（`update_approvedReservation_throwsBusinessException`等）を壊さないよう慎重な変更が必要）
+- **Rollback Complexity**: Moderate（複数ファイルにまたがるが、新しいテーブル・マイグレーションは発生しないため当該コミットの取り消しで対応可能）
+- **Testing Complexity**: Complex（状態遷移の組み合わせ（DRAFT作成/編集/正式申請×承認要否）とロール別アクセス制御の両方を検証する必要がある）
 
 ## Workflow Visualization
 
@@ -103,16 +102,16 @@ flowchart TD
 - [x] User Stories（COMPLETED）
 - [x] Execution Plan（IN PROGRESS）
 - [ ] Application Design — **SKIP**
-  - **Rationale**: 新規追加するのはリソース詳細画面という既存の画面境界内の1 Reactコンポーネントであり、新しいサービス・新しいAPI・新しいモジュール境界は発生しない。Application Designが対象とする「サービス層設計・コンポーネント間依存の整理」は不要
+  - **Rationale**: 既存の`ReservationService`・既存画面という境界内の拡張であり、新しいサービス・新しいモジュール境界は発生しない
 - [ ] Units Generation — **SKIP**
-  - **Rationale**: Issue #27は単一のunits of work（縦切り1機能）であり、複数ユニットへの分解は不要
+  - **Rationale**: Issue #30は単一のunits of work（縦切り1機能）であり、複数ユニットへの分解は不要
 
 ### 🟢 CONSTRUCTION PHASE
 
 - [ ] Functional Design — **EXECUTE**
-  - **Rationale**: 占有スロット（`OccupiedSlot[]`）から週/月グリッドの各セルの「空き/予約済み」状態を導出するロジック、週/月それぞれのfrom-to算出ロジック、クリック位置から開始日時文字列を組み立てるロジックは、現在どこにも実装がなく新規に設計が必要な複雑度を持つ（`complex business logic` に該当）
+  - **Rationale**: 状態遷移ルール（新規作成時・DRAFT→PENDING/APPROVED遷移）、`approval_steps`の統一作成条件、ロール別アクセス制御（DRAFTはAPPROVER除外）という複数の業務ルールが絡み合うため、Code Generation前に明文化が必要
 - [ ] NFR Requirements — **SKIP**
-  - **Rationale**: requirements.mdのとおりSecurity/Resiliency/PBT拡張はいずれも不採用。新たな性能・セキュリティ要求はない
+  - **Rationale**: アクセス制御の強化は本課題の中心的な機能要件（Functional Designの業務ルールとして扱う）であり、新たな認証基盤・暗号化等のNFR横断的要求ではない。requirements.mdのとおりSecurity/Resiliency/PBT拡張はいずれも不採用
 - [ ] NFR Design — **SKIP**
   - **Rationale**: NFR Requirementsに連動してSKIP
 - [ ] Infrastructure Design — **SKIP**
@@ -125,7 +124,7 @@ flowchart TD
 ### 🟡 OPERATIONS PHASE
 
 - [ ] Operations — **PLACEHOLDER**
-  - **Rationale**: BookFlowではCI品質ゲート（`CI Frontend`）として運用。PR作成・push後に自動実行
+  - **Rationale**: BookFlowではCI品質ゲート（`CI Frontend`/`CI Backend`）として運用。PR作成・push後に自動実行
 
 ## Estimated Timeline
 
@@ -134,6 +133,8 @@ flowchart TD
 
 ## Success Criteria
 
-- **Primary Goal**: リソース詳細画面にカレンダー形式の空き状況ビューを追加し、週/月切り替え・期間移動・空き枠クリックでの予約申請フォーム連携を実現する
-- **Key Deliverables**: `AvailabilityCalendar.tsx`（新規）、`resources/[id]/page.tsx`（改修）、`reservations/new/` 配下（日時引き継ぎ改修）、関連ユニットテスト
-- **Quality Gates**: `pnpm lint`・`pnpm format:check`・`pnpm test`・`pnpm build` すべて成功。requirements.mdの受入条件6項目をすべて満たす
+- **Primary Goal**: `DRAFT`ステータスを実際に機能させ、下書き保存・再編集・正式申請・一覧表示・アクセス制御を実現する
+- **Key Deliverables**: backend（`CreateReservationRequest`/`UpdateReservationRequest`/`ReservationService`の拡張）、frontend（下書き保存ボタン・正式申請ボタン・下書きタブ）、関連テスト一式
+- **Quality Gates**: `./gradlew test`・`pnpm lint`・`pnpm format:check`・`pnpm test`・`pnpm build`すべて成功。requirements.mdの受入条件6項目をすべて満たす。既存のステータス遷移テストが壊れていないこと
+
+- **Integration Testing**: 既存の予約作成・承認フロー（PENDING/APPROVED系）が回帰していないことを確認する

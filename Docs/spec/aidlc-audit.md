@@ -1380,3 +1380,218 @@ timestamp: 2026-08-29
 **User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド1でNGになりました。対応方法をおしえてください。"（レビュー画面のスクリーンショット3枚添付。指摘内容：(1) `reservations/new/page.tsx` の `startAt` クエリパラメータを `ReservationForm` に中継する処理（page.tsx:21・:40）が未検証。追加テストはカレンダー側（クリックでstartAtを含むURLにpush）とフォーム側（defaultStartAtを直接渡した時の反映）の両端のみを検証しており、中継処理自体を検証するテストがないため、該当2行を削除してもテストがpassしてしまう。(2) 月表示の期間移動と「前へ」方向の移動が未検証。期間移動のテストは週表示「次週」のみで、週表示「前週」・月表示「次月」「前月」はどの経路も通らない。月表示側のaddMonthsの符号を反転させてもテストがpassしてしまう。補足（NGの根拠ではない）：isFullyCoveredの隙間検出ロジック（複数予約をつないで営業時間を覆うかの判定）が「1件で全体を覆う日」「1件で一部だけ覆う日」の2ケースのみで検証されており、隙間がある場合の早期returnが一度も実行されていない。参考（判定に影響しない）：toQueryDateTimeがtoISOString()でUTC変換する一方、バックエンドのLocalDateTimeはタイムゾーンなし文字列としてブラウザのローカル時刻と解釈されるため、UTC以外のタイムゾーンでは照会範囲がずれる可能性があるが、既存page.tsxから引き継いだパターンであり本レビューの担当外として記録のみ。"
 **AI Response**: "指摘(1)：`reservation-new-page.test.tsx` を新規作成し、`ReservationNewPage`（Server Component）を直接呼び出して`searchParams`に`startAt`を含めた場合に`ReservationForm`の開始日時入力欄へ実際に反映されることを検証するテストを追加。`defaultStartAt={defaultStartAt}`を一時的に`defaultStartAt={undefined}`に変更する自己検証でテストがredになることを確認し復元。指摘(2)：`availability-calendar.test.tsx`に「前週」「月表示・次月」「月表示・前月」の3テストを追加。`handlePrev`の月表示分岐の符号を一時的に反転（`addMonths(current, -1)`→`addMonths(current, 1)`）する自己検証で新規テストのみがredになることを確認し復元。補足のisFullyCoveredについても対応し、複数予約の間に隙間がある日（8:00-10:00・14:00-20:00、10:00-14:00が空き）が正しくクリック可能と判定されるケースを既存テストに追加、隙間検出の早期return（`if (start > coveredUntil) return false;`）を一時的に無効化する自己検証でredになることを確認し復元。タイムゾーンの参考コメントは既存page.tsxから引き継いだパターンであり本PRのスコープ外として対応を見送った。`pnpm lint && pnpm format:check && pnpm test`（137件全成功）・`pnpm build`成功、`./gradlew spotlessApply checkstyleMain test`（188件、backend変更なしの回帰確認）成功を確認し、コミット `de0879a5`（test(calendar-view): PRレビュー指摘に対応する）として push した。"
 **Context**: resource-search・resource-sort・e2e-test-coverage ユニットに続く CI/レビュー指摘対応パターンの踏襲（`/aidlc` エンジンのステージ外、PR #144 への追加コミットとして対応）
+
+
+---
+
+## Workflow Start（新規ユニット: reservation-draft）
+**Timestamp**: 2026-10-11T13:30:00Z
+**User Input**: "/aidlc\nIssue #30「予約の下書き保存」の実装を行います。\n\nまず実装は行わず調査してください。\n\n以下を整理してください。\n\n- ReservationStatus の定義\n- POST /api/reservations の処理フロー\n- PUT /api/reservations/{id} の処理フロー\n- approval_steps の作成箇所\n- 予約申請画面 (/reservations/new)\n- 予約一覧 (/reservations)\n- DRAFT ステータスが現在どのように扱われているか\n- 要件 RSV-01 ～ RSV-05 を実現するための変更箇所\n\n変更案をファイル単位でまとめてください。\nコード修正はまだ行わないでください。"
+**AI Response**: "Pre-flight：`Docs/spec/aidlc-state.md` は前回ユニット（Issue #27・calendar-view、PR #144マージ済み）の完了状態を保持しているのみで、新規ワークフローと判断。現在ブランチ `feature/CHS-FUJITA-RIKA/28-reservation-draft-aidlc` は命名規約（`feature/<user>/<issue>-<desc>`）に既に合致するため、ブランチ操作は行わず short-desc `reservation-draft` を対象タスク識別子として採用（`docs-next/docs/spec/enhancements/intermediate/reservation-draft.md` を対象シートとして特定）。ただし `gh issue view` で確認したところ、Issue #28 は実際には「利用実績の集計・グラフ表示」であり、ユーザー発言・対象シートの内容と一致するのは Issue #30「予約の下書き保存」であることが判明（ブランチ名の issue 番号が誤っている可能性が高い）。Pre-flight の『ブランチ名が規約に合致していれば質問せず short-desc を採用する』方針に従いブランチ名はそのまま維持しつつ、監査ログ・今後の参照では正しい Issue #30 を使う旨をユーザーに透明性のため開示する。"
+**Context**: Pre-flight（対象タスク特定）完了・ブランチ名のIssue番号不一致を開示 → エンジン起動（Workspace Detection）へ
+
+
+---
+
+## Workspace Detection（reservation-draft）
+**Timestamp**: 2026-10-11T13:31:00Z
+**User Input**: "(N/A — ワークスペーススキャンによる自動判定)"
+**AI Response**: "既存コードベースあり（Brownfield）と判定。`Docs/spec/aidlc-docs/inception/reverse-engineering/` には既存成果物（resource-search・resource-sort・resource-detail-info・e2e-test-coverage・calendar-view 各ユニット向けのスコープ限定ファイル）が存在するが、いずれも予約ステータス遷移・DRAFT・approval_steps作成ロジックはスコープ外であり本課題には転用不可と判断。次ステージを Reverse Engineering（本課題スコープに限定した追加調査）に設定。"
+**Context**: Workspace Detection — EXECUTE（必須ステージ）、Brownfield 判定、次ステージ = Reverse Engineering（スコープ限定）
+
+
+---
+
+## ブランチ名訂正（reservation-draft）
+**Timestamp**: 2026-10-11T13:35:00Z
+**User Input**: "ブランチを訂正しました。改めて以下をお願いします。\n\naidlc Issue #30「予約の下書き保存」の実装を行います。\n\n（以下、直前の調査依頼と同内容）"
+**AI Response**: "ブランチ名が `feature/CHS-FUJITA-RIKA/30-reservation-draft-aidlc` に訂正されたことを確認。Issue番号の不一致は解消。Reverse Engineeringの調査を再開する。"
+**Context**: Pre-flight 訂正の確認完了 → Reverse Engineering 再実行
+
+
+---
+
+## Reverse Engineering（reservation-draft）
+**Timestamp**: 2026-10-11T13:45:00Z
+**User Input**: "（ブランチ訂正後の再依頼。内容は直前と同一）aidlc Issue #30「予約の下書き保存」の実装を行います。まず実装は行わず調査してください。[...]変更案をファイル単位でまとめてください。コード修正はまだ行わないでください。"
+**AI Response**: "EXECUTE 判定（Brownfield かつ本課題スコープの既存RE成果物なし）。Explore subagentで ReservationStatus 定義・POST/PUT /api/reservations の処理フロー・approval_steps 作成箇所・予約申請/一覧/詳細/編集画面・DRAFT の現状の扱い・既存テストを調査。主要な発見：DRAFT は enum・DBスキーマ・表示ラベル（色・日本語名）には定義済みだが、DRAFT を生成する経路がコード上どこにも存在せず実質到達不能コードパス。`ReservationService.create`のステータス決定（`requiresApproval`のみで判定）と承認ステップ生成条件（`resource.isRequiresApproval()`のみで判定）はDRAFTケース未考慮。`update`のステータスガードは`!= PENDING`で一律422のためDRAFT編集・DRAFT→PENDING遷移は現状不可。フロントの予約一覧`ALL_STATUSES`にDRAFTタブなし（表示色定義のみ既存）、予約詳細の`canEdit`/`canCancel`・編集画面のアクセス制御もDRAFT未考慮。DRAFT関連テストはbackend/frontendともに0件。`code-structure-reservation-draft.md`を生成。承認待ち。"
+**Context**: Reverse Engineering — EXECUTE（スコープ限定）、成果物生成完了、承認待ち
+
+
+---
+
+## Reverse Engineering — Approval（reservation-draft）
+**Timestamp**: 2026-10-11T13:50:00Z
+**User Input**: "Approve & Continue\n\nRequirements Analysis を開始してください。\n\nRSV-01 ～ RSV-05 を満たすために必要な変更を整理してください。\n\n特に以下を明確にしてください。\n\n- 新規作成時の状態遷移\n- DRAFT → PENDING の状態遷移\n- approval_steps 作成条件\n- DRAFT 一覧の取得方法\n- 他人の DRAFT を見せない制御\n\nまだコード変更は行わず、仕様整理と設計のみ行ってください。"
+**AI Response**: "承認を記録。Requirements Analysis へ遷移。ユーザー指定の5論点を中心に要件を整理する。"
+**Context**: Reverse Engineering 承認 → 次ステージ Requirements Analysis
+
+
+---
+
+## Requirements Analysis — Intent Analysis（reservation-draft）
+**Timestamp**: 2026-10-11T13:55:00Z
+**User Input**: "(N/A — 前ステージからの自動遷移。分析対象はビジネス要求シート reservation-draft.md + ユーザー指定の5論点)"
+**AI Response**: "Request Clarity: Clear（要件は明示済みだが状態遷移・データ可視性の設計判断が複数残っている）。Request Type: Enhancement（既存のDRAFTという到達不能コードパスを実際に機能させる拡張）。Scope: Multiple Components（frontend + backend にまたがる）。Complexity: Moderate〜Complex（ステータス遷移ロジックの再利用設計、承認ステップ生成条件の分岐、アクセス制御の強化が絡む）。Depth: Standard に設定。"
+**Context**: Requirements Analysis Step 2-3（Intent Analysis・Depth 決定）
+
+---
+
+## Requirements Analysis — Clarifying Questions（reservation-draft）
+**Timestamp**: 2026-10-11T14:00:00Z
+**User Input**: "DRAFT→PENDING遷行時（正式申請）のステータスはどう確定させますか？\"=\"作成時と同じ判定を再実行（推奨）\", \"予約一覧のデフォルト表示（ステータス未指定の「すべて」タブ）でDRAFTを含めますか？\"=\"除外する（推奨）\", \"RSV-02の「削除」はどう実装しますか？\"=\"既存のキャンセル機構を転用（推奨）\", \"DRAFT作成時の入力必須項目は？\"=\"通常の予約と同じ必須項目を維持（推奨）\" ／ \"Security/Resiliency/PBT拡張を適用しますか？\"=すべて\"適用しない（推奨）\""
+**AI Response**: "AskUserQuestion（2回・計7問）で回答受領。DRAFT→PENDING遷行は作成時と同じ判定ロジック（requiresApproval）を再実行しPENDING/APPROVEDを再決定、予約一覧のデフォルト表示からDRAFTを除外（下書きタブ/フィルタでのみ表示）、「削除」は既存キャンセル機構（CANCELLED遷行）を転用、DRAFT作成時も通常予約と同じ必須項目を維持、に決定。Security/Resiliency/PBTの3拡張はいずれも不採用（Enabled=No）と `Docs/spec/aidlc-state.md` に記録。矛盾・曖昧な回答なし。"
+**Context**: Requirements Analysis Step 5〜6（曖昧点解消・拡張 opt-in）完了
+
+
+---
+
+## Requirements Analysis — Document Generated（reservation-draft）
+**Timestamp**: 2026-10-11T14:05:00Z
+**User Input**: "(N/A — 前ステップからの継続)"
+**AI Response**: "`Docs/spec/aidlc-docs/inception/requirements/requirements.md` を生成。機能要件RSV-01〜05、決定事項5件（新規作成時の状態遷移・DRAFT→PENDING遷移の判定再実行・approval_steps統一作成条件・一覧デフォルト表示からのDRAFT除外（フロントのすべてタブを4ステータス明示指定に変更）・DRAFTアクセス制御（APPROVER除外）、非機能要件NFR-01〜03（必須項目維持・既存キャンセル機構転用・既存遷移の非破壊）、拡張設定（すべて不採用）、影響ファイル一覧を記載。承認待ち。"
+**Context**: Requirements Analysis Step 7、承認ゲート提示
+
+
+---
+
+## Requirements Analysis — Approval（reservation-draft）
+**Timestamp**: 2026-10-11T14:08:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。User Stories へ遷移。"
+**Context**: Requirements Analysis 承認 → 次ステージ User Stories
+
+
+---
+
+## User Stories — Assessment & Plan（reservation-draft）
+**Timestamp**: 2026-10-11T14:10:00Z
+**User Input**: "(N/A — 前ステージからの自動遷移)"
+**AI Response**: "`user-stories-assessment.md` を生成し EXECUTE 判定（New User Features・Multi-Persona Systems該当）を記録。`story-generation-plan.md` を生成：Feature-Based＋Persona-Based のハイブリッド、3ペルソナ（MEMBER/APPROVER/ADMIN）、受入条件6項目に対応する6ストーリー構成。requirements.mdの決定事項により追加確認質問は不要と判断。承認待ち。"
+**Context**: User Stories Part 1 Step 1-6（Assessment・Plan 作成）、承認ゲート提示
+
+
+---
+
+## User Stories — Plan Approval（reservation-draft）
+**Timestamp**: 2026-10-11T14:12:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Part 2（生成）へ進み、personas.md・stories.md を生成する。"
+**Context**: User Stories Part 1 → Part 2 遷移
+
+
+---
+
+## User Stories — Generation Complete（reservation-draft）
+**Timestamp**: 2026-10-11T14:15:00Z
+**User Input**: "(N/A — 計画に基づく自動生成)"
+**AI Response**: "`personas.md`（MEMBER・APPROVER・ADMIN の3ペルソナ）と `stories.md`（US-01〜06、requirements.mdの受入条件6項目をすべてカバー、Gherkin形式）を生成。`story-generation-plan.md` のStep A〜Cを `[x]` に更新。承認待ち。"
+**Context**: User Stories Part 2 Step 15-20、承認ゲート提示
+
+
+---
+
+## User Stories — Approval（reservation-draft）
+**Timestamp**: 2026-10-11T14:18:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Workflow Planning へ遷移。"
+**Context**: User Stories 承認 → 次ステージ Workflow Planning
+
+
+---
+
+## Workflow Planning（reservation-draft）
+**Timestamp**: 2026-10-11T14:22:00Z
+**AI Prompt**: "Ready to proceed with this plan?"
+**User Response**: "(N/A — 計画提示前。以下は計画内容の記録)"
+**Status**: Plan Created
+**Context**: `execution-plan.md` を生成。Application Design/Units Generationは SKIP（新規サービス・モジュール境界不要、単一units of work）。Functional DesignはEXECUTE（状態遷移ルール・approval_steps統一作成条件・ロール別アクセス制御という複数の業務ルールの明文化が必要）。NFR Requirements/Designはアクセス制御を機能要件として扱うためSKIP、Infrastructure DesignもSKIP。Code Generation・Build and TestはALWAYS EXECUTE。Risk Level: Medium（既存の広く使われる予約作成・更新フローへの変更）。Mermaidワークフロー図を生成・構文検証済み。承認待ち。
+
+
+---
+
+## Workflow Planning — Approval（reservation-draft）
+**Timestamp**: 2026-10-11T14:25:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Construction フェーズ、ユニット「reservation-draft」の Functional Design へ遷移。"
+**Context**: Workflow Planning 承認 → 次ステージ Functional Design（Construction）
+
+
+---
+
+## Functional Design（reservation-draft）
+**Timestamp**: 2026-10-11T14:40:00Z
+**User Input**: "(N/A — 前ステージからの自動遷移)"
+**AI Response**: "Application Design/Units Generationを SKIP しているため requirements.md・stories.md を直接入力として使用。`reservation-draft-functional-design-plan.md` を作成。設計検証のため`ReservationService.checkReadAccess`・`list`の実コードを確認し、requirements.mdの決定事項5を修正：listメソッドはisAdminのみで分岐しAPPROVERは既にMEMBER同様requesterIdスコープのため変更不要と確定（checkReadAccessのみDRAFT時にAPPROVER除外を追加）。また`ReservationService.cancel`の`CANCELLABLE_STATUSES`定数（現状PENDING/APPROVEDのみ）の存在を発見し、これにDRAFTを追加するだけで新規削除APIなしに下書きの削除（RSV-02）を実現できることを確認。business-logic-model.md（作成時/更新時のステータス決定ロジック、approval_steps統一作成条件表、アクセス制御拡張、キャンセル転用）・business-rules.md（BR-01〜10）・domain-entities.md（DTO変更内容）・frontend-components.md（各画面の具体的な変更点、予約一覧「すべて」タブのデフォルトフィルタ適用設計を含む）を生成。承認待ち。"
+**Context**: Functional Design Step 1-7、承認ゲート提示
+
+
+---
+
+## Functional Design — Approval（reservation-draft）
+**Timestamp**: 2026-10-11T14:45:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "承認を記録。Code Generation へ遷移。"
+**Context**: Functional Design 承認 → 次ステージ Code Generation
+
+
+---
+
+## Code Generation Part 1 — Planning（reservation-draft）
+**Timestamp**: 2026-10-11T14:50:00Z
+**User Input**: "(N/A — 前ステージからの自動遷移)"
+**AI Response**: "`reservation-draft-code-generation-plan.md` を作成。Functional Designで確定済みのロジック・業務ルールを参照する形にし、本プラン内では再掲しない方針とした。11ステップ（仕様書更新→DTO変更→ドメイン/サービス層実装→backendユニットテスト→結合テスト/Controller整合→backendサマリ→frontendスキーマ/ServerAction→予約申請フォーム/一覧→予約詳細/編集画面→frontendユニットテスト→frontendサマリ）で構成。E2Eテストへの新規シナリオ追加はスコープ外とし回帰確認のみ行う方針を明記。承認待ち。"
+**Context**: Code Generation Part 1、承認ゲート提示
+
+
+---
+
+## Code Generation Part 1 — Approval（reservation-draft）
+**Timestamp**: 2026-10-11T14:52:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。Part 2（生成）へ進み、Step 1（仕様書更新）から実行する。"
+**Context**: Code Generation Part 1 承認 → Part 2 実行開始
+
+---
+
+## Code Generation Part 2 — Steps 1-6 Complete（reservation-draft、backend）
+**Timestamp**: 2026-10-11T15:00:00Z
+**User Input**: "(N/A — 承認済みプランに基づく自動実行)"
+**AI Response**: "Step 1: `api-spec.md`（`draft`/`submit`フィールド、DRAFT関連のアクセス制御・エラー表、cancel制約の拡張）・`screen-spec.md`（下書き保存/正式申請ボタン、下書きタブ、すべてタブの除外注記）・`requirements.md`（DRAFT注意書きの全面更新、ステータス初期値表のdraft対応表への置換）・`er-diagram.md`（status列の説明更新）を更新。`requirements-reservation-status.drawio`にDRAFT状態・4本の遷移エッジをXML手動編集で追加（pageWidthを827→900に拡張、ID重複・ダングリング参照なしをgrepで確認。対応する`.drawio.svg`は本サンドボックスにdrawio CLI・有効なpython3 xmlモジュールがないため未再生成——VSCodeのdrawio拡張での手動エクスポートが必要な既知のフォローアップ）。Step 2: `CreateReservationRequest`に`Boolean draft`+`isDraft()`、`UpdateReservationRequest`に`Boolean submit`+`isSubmit()`を追加。Step 3: `Reservation.submit(newStatus)`メソッドを追加、`ReservationService.create`のステータス決定分岐（draft時はDRAFT・approval_steps非生成）、`update`のステータスガード拡張（PENDING/DRAFT許可）と`submit`によるDRAFT→PENDING/APPROVED遷移、`checkReadAccess`のDRAFT時APPROVER除外、`CANCELLABLE_STATUSES`へのDRAFT追加を実装。Step 4: `ReservationServiceTest`の既存コンストラクタ呼び出し約10箇所をpython3正規表現スクリプトで`, false)`付与に一括修正し、新規11テストを追加。Step 5: `ReservationController`のJavadoc更新、`ReservationControllerTest`にDRAFT seed 1件・新規9テスト（201/200/403のステータスコード検証を含む）を追加。Step 6: `backend-summary.md`を生成。`./gradlew spotlessApply checkstyleMain test`で全208テスト成功（既存188件+新規20件）を確認。break-and-verify 3件（create時のapproval_steps非生成条件、checkReadAccessのDRAFT/APPROVER除外条件、updateのsubmit分岐条件）を実施し、いずれも対象テストのみがredになることを確認後に復元。"
+**Context**: Code Generation Part 2 Step 10-13（Step 1〜6 実行・チェックボックス更新）
+
+---
+
+## Code Generation Part 2 — Steps 7-11 Complete（reservation-draft、frontend）
+**Timestamp**: 2026-10-11T15:30:00Z
+**User Input**: "(N/A — 承認済みプランに基づく自動実行)"
+**AI Response**: "Step 7: `schemas/reservation.ts`の`CreateReservationSchema`に`draft`、`UpdateReservationSchema`に`submit`（いずれも任意boolean）を追加。`server/actions/reservations.ts`はJSDoc更新のみ（`{ ...input }`スプレッドのため本体変更不要）。Step 8: `ReservationForm.tsx`に`submitForm(draft: boolean)`ヘルパーを導入し「下書き保存」ボタンを追加、`reservations/page.tsx`にステータス未指定時の`ALL_STATUSES`（DRAFT以外4値）明示フィルタ・「下書き」タブを追加。Step 9: `reservations/[id]/page.tsx`の`CANCELLABLE_STATUSES`拡張・`canEdit`拡張、`[id]/edit/page.tsx`のアクセス制御拡張・`isDraft`伝播、`ReservationEditForm.tsx`に`isDraft`プロパティと「正式申請する」ボタンを追加。Step 10: `reservation-form.test.tsx`・`server/actions/reservations.test.ts`に既存ファイルへの追加、`reservation-edit-form.test.tsx`・`reservation-detail-page.test.tsx`を新規作成（計13テスト追加）。Radix UI SelectのjsdomクリックがhasPointerCapture未実装で例外になる既知の制約のため、新規テストは`defaultResourceId`等のpropでドロップダウン操作を回避する方式を採用。Step 11: `frontend-summary.md`を生成。`pnpm lint && pnpm format:check && pnpm test && pnpm build`で全150テスト成功・ビルド成功を確認。break-and-verify 3件（下書き保存ボタンのdraft値、正式申請ボタンの表示条件、canEditのDRAFT条件）を実施し、いずれも対象テストのみがredになることを確認後に復元。全11ステップ完了後、`pnpm test:e2e`で既存E2Eスイート8件が回帰なく全成功することを確認（本ユニットでは下書きシナリオの新規E2E追加はスコープ外、回帰確認のみ）。"
+**Context**: Code Generation Part 2 Step 10-13（Step 7〜11 実行・チェックボックス更新・全11ステップ完了・E2E回帰確認完了）
+
+---
+
+## Code Generation — Approval（reservation-draft）
+**Timestamp**: 2026-10-11T15:35:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "承認を記録。reservation-draft ユニットの Code Generation を完了とし、Build and Test ステージへ遷移。"
+**Context**: Code Generation 承認 → 次ステージ Build and Test（Construction フェーズ）
+
+---
+
+## Build and Test Stage（reservation-draft）
+**Timestamp**: 2026-10-11T16:05:00Z
+**Build Status**: Success（backend: `./gradlew build` BUILD SUCCESSFUL／frontend: `pnpm build` 成功。`pnpm dev` との同時実行による `.next` 破損が発生したため `pkill -f "next dev"` と `.next` 削除後に再実行し成功を確認）
+**Test Status**: Pass（backend 全208件成功〔既存188件 + reservation-draft新規20件〕／frontend unit 全150件成功〔既存137件 + reservation-draft新規13件〕／frontend E2E 全8件成功〔回帰確認、追加なし〕。Integration Test は `ReservationControllerTest`（H2）として Unit Test に統合実施。Performance/Contract/Security Test は Workflow Planning 時点の SKIP 判定を踏襲し対象外と判定）
+**Files Generated**:
+- `Docs/spec/aidlc-docs/construction/build-and-test/build-instructions.md`（reservation-draft 向けに更新）
+- `Docs/spec/aidlc-docs/construction/build-and-test/unit-test-instructions.md`（reservation-draft 向けに更新）
+- `Docs/spec/aidlc-docs/construction/build-and-test/build-and-test-summary.md`（reservation-draft 向けに更新）
+**Context**: Build and Test ステージ実行完了、承認待ち
+
+---
+
+## Build and Test — Approval（reservation-draft）
+**Timestamp**: 2026-10-11T16:10:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "承認を記録。reservation-draft ユニットの CONSTRUCTION フェーズ（Functional Design・Code Generation・Build and Test）を完了。BookFlow では OPERATIONS フェーズは CI 品質ゲート（`CI Frontend` / `CI Backend`）として運用され、PR 作成・push 時に自動実行されるため、`/aidlc` 自体がこの場で追加生成するステージはない旨をユーザーに説明し、次のアクション（`/commit-push`・`/create-pr`）を案内する。"
+**Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。`/aidlc` ワークフロー本体はここで完了
