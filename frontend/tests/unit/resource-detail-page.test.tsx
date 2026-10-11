@@ -3,10 +3,13 @@
  *
  * async 関数コンポーネントのため、Next.js のレンダリングパイプラインを介さず
  * 直接呼び出して解決済みの JSX を取得し、render() に渡す形式で検証する。
- * 設備一覧・利用上の注意（equipment/notes）の条件表示（未登録時は非表示）を確認する。
+ * 設備一覧・利用上の注意（equipment/notes）の条件表示（未登録時は非表示）、および
+ * 空き状況カレンダー（AvailabilityCalendar、"use client"）が描画されることを確認する。
+ * カレンダー自体の詳細なロジック（占有判定・期間移動・クリック連携等）は
+ * availability-calendar.test.tsx で検証する。
  */
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import ResourceDetailPage from "@/app/(authenticated)/resources/[id]/page";
 import type { ResourceResponse } from "@/lib/types/api";
 
@@ -16,6 +19,10 @@ const getAvailabilityActionMock = vi.fn();
 vi.mock("@/server/actions/resources", () => ({
   getResourceAction: (...args: unknown[]) => getResourceActionMock(...args),
   getAvailabilityAction: (...args: unknown[]) => getAvailabilityActionMock(...args),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 const BASE_RESOURCE: ResourceResponse = {
@@ -37,9 +44,20 @@ async function renderPage(resource: ResourceResponse) {
   getAvailabilityActionMock.mockResolvedValue([]);
   const jsx = await ResourceDetailPage({ params: Promise.resolve({ id: resource.id }) });
   render(jsx);
+  // AvailabilityCalendar（Client Component）の初回取得（useEffect）が
+  // act() 警告なく解決されるまで待つ。
+  await waitFor(() => expect(getAvailabilityActionMock).toHaveBeenCalled());
 }
 
 describe("ResourceDetailPage", () => {
+  it("空き状況カレンダーが表示される", async () => {
+    await renderPage(BASE_RESOURCE);
+
+    expect(screen.getByTestId("availability-calendar")).toBeInTheDocument();
+    expect(screen.getByTestId("availability-calendar-mode-week")).toBeInTheDocument();
+    expect(screen.getByTestId("availability-calendar-mode-month")).toBeInTheDocument();
+  });
+
   it("設備一覧・利用上の注意が登録されている場合、両方とも表示される", async () => {
     await renderPage(BASE_RESOURCE);
 
