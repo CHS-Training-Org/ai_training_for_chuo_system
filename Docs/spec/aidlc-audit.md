@@ -1603,3 +1603,11 @@ timestamp: 2026-08-29
 **User Input**: "未コミット変更を確認し、適切な単位でコミットを作成してください。監査ログも必要なら更新してください。その後 push まで実施してください。"
 **AI Response**: "Build and Test 承認後に加えられた未コミット変更を確認しコミット・push する。内容: (1) `RESERVATION_STATUS_LABELS.DRAFT` を「ドラフト」から「下書き」へ変更（screen-spec の表記に統一）、(2) `ReservationForm` の下書き保存後の遷移先を `/reservations?status=DRAFT` に変更、(3) `reservation-edit-page.test.tsx`・`reservations-page.test.tsx` を新規追加し既存テスト2件を更新（frontend unit 150→158件）、(4) Build and Test 文書の更新と `e2e-test-instructions.md`・`integration-test-instructions.md` の新規追加。`pnpm lint`・`pnpm format:check`・`pnpm test`（158件）の成功を確認済み。backend は変更なしのため再実行していない。"
 **Context**: Build and Test 承認後の追加改善。`/commit-push` によるコミット分割・push
+
+---
+
+## PR #147 レビュー指摘対応（観点2 実装と非機能部分の整合性・ラウンド1 NG、reservation-draft）
+**Timestamp**: 2026-10-11T16:35:00Z
+**User Input**: "AIレビュー観点2のNGを修正してください。（1. edit/page.tsx のページ単位テスト追加、2. reservations/page.tsx のテスト追加、3. 下書き保存後の遷移先を画面仕様に合わせる、4. 下書きタブの表示名を「下書き」に合わせる。修正後に frontend の lint・format:check・test・build を実行。バックエンド実装は変更しない）"
+**AI Response**: "指摘3点＋補足1点への対応は、先行コミット `7a3c7414`（遷移先・ラベル）と `037a460a`（ページ単位テスト2ファイル）で実装済みであることを確認し、不足していた検証を補強した。`reservation-form.test.tsx` に通常申請時の遷移先 `/reservations` の検証を、`reservations-page.test.tsx` に下書きタブの表示文言「下書き」の検証を追加。break-and-verify 6件を実施し、いずれも対象テストのみがredになることを確認後に復元: (1) edit/page.tsx の `isDraft={isDraft}` を `false` に、(2) 同 `&& !isDraft` を削除、(3) reservations/page.tsx の DRAFT 除外（ALL_STATUSES）を戻す、(4) 下書きタブの href を変更、(5) `DRAFT` ラベルを「ドラフト」に戻す、(6) ReservationForm の下書き保存後遷移先を `/reservations` に戻す。メモリ節約のためワーカー1・直列で `pnpm lint`・`pnpm format:check`・`pnpm test`（158件）・`pnpm build`（`--max-old-space-size=1536`）がすべて成功。backend は変更していない。"
+**Context**: CI レビュー指摘（観点2・ラウンド1）への対応完了。追加コミットを push しラウンド2を依頼する
