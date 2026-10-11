@@ -16,6 +16,7 @@ import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 interface ResourceFilterFormProps {
   defaultCategory?: string;
+  defaultKeyword?: string;
   defaultFrom?: string;
   defaultTo?: string;
 }
@@ -28,6 +29,7 @@ interface ResourceFilterFormProps {
  */
 export function ResourceFilterForm({
   defaultCategory,
+  defaultKeyword,
   defaultFrom,
   defaultTo,
 }: ResourceFilterFormProps) {
@@ -42,10 +44,12 @@ export function ResourceFilterForm({
       const params = new URLSearchParams();
 
       const category = data.get("category") as string;
+      const keyword = ((data.get("keyword") as string | null) ?? "").trim();
       const from = data.get("from") as string;
       const to = data.get("to") as string;
 
       if (category && category !== "ALL") params.set("category", category);
+      if (keyword) params.set("keyword", keyword);
       if (from) params.set("from", from);
       if (to) params.set("to", to);
 
@@ -61,6 +65,17 @@ export function ResourceFilterForm({
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-4 space-y-4">
       <h2 className="text-sm font-semibold">フィルタ・空き確認</h2>
+      {/* キーワード */}
+      <div className="space-y-1">
+        <Label htmlFor="keyword">キーワード</Label>
+        <Input
+          id="keyword"
+          name="keyword"
+          type="text"
+          placeholder="名称・説明で検索"
+          defaultValue={defaultKeyword}
+        />
+      </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* カテゴリ */}
         <div className="space-y-1">

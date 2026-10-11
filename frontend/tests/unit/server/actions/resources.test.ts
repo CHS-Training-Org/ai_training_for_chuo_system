@@ -5,7 +5,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "../../msw/server";
-import { MOCK_RESOURCE_RESPONSE, MOCK_AVAILABILITY_SLOTS } from "../../msw/handlers";
+import {
+  MOCK_RESOURCE_RESPONSE,
+  MOCK_RESOURCE_LIST_RESPONSE,
+  MOCK_AVAILABILITY_SLOTS,
+} from "../../msw/handlers";
 
 // Next.js サーバー専用モジュールをモック
 vi.mock("next/navigation", () => ({
@@ -63,6 +67,60 @@ describe("listResourcesAction", () => {
     );
 
     await expect(listResourcesAction()).rejects.toThrow();
+  });
+
+  describe("keyword パラメータ", () => {
+    /** API に送られたクエリを捕捉するハンドラに差し替える */
+    function captureQuery() {
+      const captured: { params: URLSearchParams | null } = { params: null };
+      server.use(
+        http.get("/api/backend/resources", ({ request }) => {
+          captured.params = new URL(request.url).searchParams;
+          return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+        }),
+      );
+      return captured;
+    }
+
+    it("指定時: keyword を API クエリに付与する", async () => {
+      const captured = captureQuery();
+
+      await listResourcesAction({ keyword: "プロジェクター" });
+
+      expect(captured.params?.get("keyword")).toBe("プロジェクター");
+    });
+
+    it("category・from・to と同時に指定した場合: すべて付与する", async () => {
+      const captured = captureQuery();
+
+      await listResourcesAction({
+        category: "ROOM",
+        keyword: "会議",
+        from: "2025-06-01T09:00:00",
+        to: "2025-06-01T18:00:00",
+      });
+
+      expect(captured.params?.get("category")).toBe("ROOM");
+      expect(captured.params?.get("keyword")).toBe("会議");
+      expect(captured.params?.get("from")).toBe("2025-06-01T09:00:00");
+      expect(captured.params?.get("to")).toBe("2025-06-01T18:00:00");
+    });
+
+    it("未指定時: keyword を付与しない", async () => {
+      const captured = captureQuery();
+
+      await listResourcesAction({ category: "ROOM" });
+
+      expect(captured.params?.has("keyword")).toBe(false);
+    });
+
+    it("空文字: keyword を付与しない", async () => {
+      const captured = captureQuery();
+
+      await listResourcesAction({ keyword: "" });
+
+      expect(captured.params?.has("keyword")).toBe(false);
+    });
   });
 });
 
