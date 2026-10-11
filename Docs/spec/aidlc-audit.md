@@ -1371,3 +1371,12 @@ timestamp: 2026-08-29
 **User Input**: "Continue to Next Stage"
 **AI Response**: "承認を記録。calendar-view ユニットの CONSTRUCTION フェーズ（Functional Design・Code Generation・Build and Test）を完了。BookFlow では OPERATIONS フェーズは CI 品質ゲート（`CI Frontend`）として運用され、PR 作成・push 時に自動実行されるため、`/aidlc` 自体がこの場で追加生成するステージはない旨をユーザーに説明し、次のアクション（`/commit-push`・`/create-pr`）を案内する。"
 **Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。`/aidlc` ワークフロー本体はここで完了
+
+
+---
+
+## PR #144 レビュー指摘対応（観点2 実装と非機能部分の整合性・ラウンド1 NG、calendar-view）
+**Timestamp**: 2026-10-11T11:40:00Z
+**User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド1でNGになりました。対応方法をおしえてください。"（レビュー画面のスクリーンショット3枚添付。指摘内容：(1) `reservations/new/page.tsx` の `startAt` クエリパラメータを `ReservationForm` に中継する処理（page.tsx:21・:40）が未検証。追加テストはカレンダー側（クリックでstartAtを含むURLにpush）とフォーム側（defaultStartAtを直接渡した時の反映）の両端のみを検証しており、中継処理自体を検証するテストがないため、該当2行を削除してもテストがpassしてしまう。(2) 月表示の期間移動と「前へ」方向の移動が未検証。期間移動のテストは週表示「次週」のみで、週表示「前週」・月表示「次月」「前月」はどの経路も通らない。月表示側のaddMonthsの符号を反転させてもテストがpassしてしまう。補足（NGの根拠ではない）：isFullyCoveredの隙間検出ロジック（複数予約をつないで営業時間を覆うかの判定）が「1件で全体を覆う日」「1件で一部だけ覆う日」の2ケースのみで検証されており、隙間がある場合の早期returnが一度も実行されていない。参考（判定に影響しない）：toQueryDateTimeがtoISOString()でUTC変換する一方、バックエンドのLocalDateTimeはタイムゾーンなし文字列としてブラウザのローカル時刻と解釈されるため、UTC以外のタイムゾーンでは照会範囲がずれる可能性があるが、既存page.tsxから引き継いだパターンであり本レビューの担当外として記録のみ。"
+**AI Response**: "指摘(1)：`reservation-new-page.test.tsx` を新規作成し、`ReservationNewPage`（Server Component）を直接呼び出して`searchParams`に`startAt`を含めた場合に`ReservationForm`の開始日時入力欄へ実際に反映されることを検証するテストを追加。`defaultStartAt={defaultStartAt}`を一時的に`defaultStartAt={undefined}`に変更する自己検証でテストがredになることを確認し復元。指摘(2)：`availability-calendar.test.tsx`に「前週」「月表示・次月」「月表示・前月」の3テストを追加。`handlePrev`の月表示分岐の符号を一時的に反転（`addMonths(current, -1)`→`addMonths(current, 1)`）する自己検証で新規テストのみがredになることを確認し復元。補足のisFullyCoveredについても対応し、複数予約の間に隙間がある日（8:00-10:00・14:00-20:00、10:00-14:00が空き）が正しくクリック可能と判定されるケースを既存テストに追加、隙間検出の早期return（`if (start > coveredUntil) return false;`）を一時的に無効化する自己検証でredになることを確認し復元。タイムゾーンの参考コメントは既存page.tsxから引き継いだパターンであり本PRのスコープ外として対応を見送った。`pnpm lint && pnpm format:check && pnpm test`（137件全成功）・`pnpm build`成功、`./gradlew spotlessApply checkstyleMain test`（188件、backend変更なしの回帰確認）成功を確認し、コミット `de0879a5`（test(calendar-view): PRレビュー指摘に対応する）として push した。"
+**Context**: resource-search・resource-sort・e2e-test-coverage ユニットに続く CI/レビュー指摘対応パターンの踏襲（`/aidlc` エンジンのステージ外、PR #144 への追加コミットとして対応）
