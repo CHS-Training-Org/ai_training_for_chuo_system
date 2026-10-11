@@ -96,6 +96,55 @@ describe("AvailabilityCalendar", () => {
     expect(to).toBe("2026-01-19T00:00:00");
   });
 
+  it("「前週」を押すと、前の週の期間で空き状況を再取得する", async () => {
+    render(<AvailabilityCalendar resourceId={RESOURCE_ID} isActive={true} />);
+
+    await waitFor(() => expect(getAvailabilityActionMock).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId("availability-calendar-prev")).not.toBeDisabled(),
+    );
+    fireEvent.click(screen.getByTestId("availability-calendar-prev"));
+
+    await waitFor(() => expect(getAvailabilityActionMock).toHaveBeenCalledTimes(2));
+    const [, from, to] = getAvailabilityActionMock.mock.calls[1];
+    expect(from).toBe("2025-12-29T00:00:00");
+    expect(to).toBe("2026-01-05T00:00:00");
+  });
+
+  it("月表示で「次月」を押すと、次の月の期間で空き状況を再取得する", async () => {
+    render(<AvailabilityCalendar resourceId={RESOURCE_ID} isActive={true} />);
+
+    await waitFor(() => expect(getAvailabilityActionMock).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByTestId("availability-calendar-mode-month"));
+    await waitFor(() => expect(getAvailabilityActionMock).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(screen.getByTestId("availability-calendar-next")).not.toBeDisabled(),
+    );
+    fireEvent.click(screen.getByTestId("availability-calendar-next"));
+
+    await waitFor(() => expect(getAvailabilityActionMock).toHaveBeenCalledTimes(3));
+    const [, from, to] = getAvailabilityActionMock.mock.calls[2];
+    expect(from).toBe("2026-02-01T00:00:00");
+    expect(to).toBe("2026-03-01T00:00:00");
+  });
+
+  it("月表示で「前月」を押すと、前の月の期間で空き状況を再取得する", async () => {
+    render(<AvailabilityCalendar resourceId={RESOURCE_ID} isActive={true} />);
+
+    await waitFor(() => expect(getAvailabilityActionMock).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByTestId("availability-calendar-mode-month"));
+    await waitFor(() => expect(getAvailabilityActionMock).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(screen.getByTestId("availability-calendar-prev")).not.toBeDisabled(),
+    );
+    fireEvent.click(screen.getByTestId("availability-calendar-prev"));
+
+    await waitFor(() => expect(getAvailabilityActionMock).toHaveBeenCalledTimes(3));
+    const [, from, to] = getAvailabilityActionMock.mock.calls[2];
+    expect(from).toBe("2025-12-01T00:00:00");
+    expect(to).toBe("2026-01-01T00:00:00");
+  });
+
   it("月表示に切り替えると、当月の期間で空き状況を再取得する", async () => {
     render(<AvailabilityCalendar resourceId={RESOURCE_ID} isActive={true} />);
 
@@ -114,6 +163,9 @@ describe("AvailabilityCalendar", () => {
       makeSlot("r1", "2026-01-10T08:00:00", "2026-01-10T20:00:00"),
       // 1/15: 一部のみ占有（8:00〜12:00）
       makeSlot("r2", "2026-01-15T08:00:00", "2026-01-15T12:00:00"),
+      // 1/20: 複数予約の間に隙間がある（8:00〜10:00・14:00〜20:00、10:00〜14:00が空き）
+      makeSlot("r3", "2026-01-20T08:00:00", "2026-01-20T10:00:00"),
+      makeSlot("r4", "2026-01-20T14:00:00", "2026-01-20T20:00:00"),
     ]);
     render(<AvailabilityCalendar resourceId={RESOURCE_ID} isActive={true} />);
 
@@ -123,6 +175,7 @@ describe("AvailabilityCalendar", () => {
 
     await waitFor(() => expect(screen.getByLabelText("1月10日")).toBeDisabled());
     expect(screen.getByLabelText("1月15日")).not.toBeDisabled();
+    expect(screen.getByLabelText("1月20日")).not.toBeDisabled();
   });
 
   it("月表示で一部空きの日セルをクリックすると、その日の既定時刻（9:00）を startAt として引き継ぐ", async () => {
