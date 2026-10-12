@@ -841,6 +841,45 @@ class ReservationControllerTest extends BaseControllerTest {
 
   @Test
   @WithMockMember
+  void create_recurrenceUntilOverTwoYears_returns400AndCreatesNothing() throws Exception {
+    // 開始日 2026-11-02 の 2 年後は 2028-11-02。その翌日は超過
+    String body =
+        reservationBody(
+            RESOURCE_NO_APPROVAL_ID,
+            "2026-11-02T10:00:00",
+            "2026-11-02T11:00:00",
+            weeklyFields("2028-11-03"));
+
+    mockMvc
+        .perform(post("/api/reservations").contentType(MediaType.APPLICATION_JSON).content(body))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+        .andExpect(jsonPath("$.message").value("繰り返し終了日は開始日から 2 年以内にしてください。"));
+
+    org.assertj.core.api.Assertions.assertThat(countRecurringTestReservations()).isZero();
+  }
+
+  @Test
+  @WithMockMember
+  void create_recurrenceUntilExactlyTwoYears_returns201WithAllOccurrences() throws Exception {
+    String body =
+        reservationBody(
+            RESOURCE_NO_APPROVAL_ID,
+            "2026-11-02T10:00:00",
+            "2026-11-02T11:00:00",
+            weeklyFields("2028-11-02"));
+
+    mockMvc
+        .perform(post("/api/reservations").contentType(MediaType.APPLICATION_JSON).content(body))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.length()").value(105))
+        .andExpect(jsonPath("$[104].startAt").value("2028-10-30T10:00:00"));
+
+    org.assertj.core.api.Assertions.assertThat(countRecurringTestReservations()).isEqualTo(105);
+  }
+
+  @Test
+  @WithMockMember
   void create_unknownRecurrenceType_returns400() throws Exception {
     String body =
         reservationBody(

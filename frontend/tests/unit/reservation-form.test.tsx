@@ -186,6 +186,23 @@ describe("ReservationForm", () => {
       expect(createReservationActionMock).not.toHaveBeenCalled();
     });
 
+    it("終了日が開始日から 2 年を超えると、エラーを表示して送信しない", async () => {
+      const user = userEvent.setup();
+      render(<ReservationForm resources={RESOURCES} defaultResourceId={RESOURCES[0].id} />);
+      await fillRequiredFields(user); // 開始日は 2026-01-15。2 年後は 2028-01-15
+      await selectRecurrence(user, "毎週");
+      fireEvent.change(screen.getByTestId("reservation-form-recurrence-until"), {
+        target: { value: "2028-01-16" },
+      });
+
+      await user.click(screen.getByTestId("reservation-form-submit-button"));
+
+      expect(
+        await screen.findByText("繰り返し終了日は開始日から 2 年以内にしてください"),
+      ).toBeInTheDocument();
+      expect(createReservationActionMock).not.toHaveBeenCalled();
+    });
+
     it("「毎週」と終了日を入力して送信すると、種別と終了日を付けて送信し、件数付きのトーストを出す", async () => {
       createReservationActionMock.mockResolvedValue([{}, {}, {}, {}]);
       const user = userEvent.setup();

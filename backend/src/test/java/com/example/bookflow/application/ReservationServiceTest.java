@@ -476,6 +476,81 @@ class ReservationServiceTest {
       verify(resourceRepository, never()).findByIdForUpdate(any(UUID.class));
     }
 
+    // ---- 終了日の上限（開始日から 2 年以内） ----
+
+    @Test
+    void create_untilExactlyTwoYearsAfterStart_isAccepted() {
+      // 2026-11-02 の 2 年後は 2028-11-02。終了日がちょうどその日なら有効（月曜は 105 回）
+      List<ReservationResponse> responses =
+          reservationService.create(weekly(LocalDate.of(2028, 11, 2)), requester);
+
+      assertThat(responses).hasSize(105);
+    }
+
+    @Test
+    void create_untilOneDayOverTwoYears_throwsValidationExceptionBeforeLocking() {
+      assertThatThrownBy(
+              () -> reservationService.create(weekly(LocalDate.of(2028, 11, 3)), requester))
+          .isInstanceOf(ValidationException.class)
+          .hasMessageContaining("2 年以内");
+      verify(resourceRepository, never()).findByIdForUpdate(any(UUID.class));
+      verify(reservationRepository, never()).save(any(Reservation.class));
+    }
+
+    @Test
+    void create_monthlyUntilOverTwoYears_throwsValidationException() {
+      CreateReservationRequest req =
+          request(start, end, false, RecurrenceType.MONTHLY, LocalDate.of(2029, 1, 1));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void create_draftUntilOverTwoYears_throwsValidationException() {
+      CreateReservationRequest req =
+          request(start, end, true, RecurrenceType.WEEKLY, LocalDate.of(2030, 1, 1));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void create_startOnLeapDay_limitIsFebruary28TwoYearsLater() {
+      // 2028-02-29 の 2 年後は 2030-02-28（2030 年は平年）。その日までは有効で、翌日は超過
+      LocalDateTime leapStart = LocalDateTime.of(2028, 2, 29, 10, 0);
+      LocalDateTime leapEnd = LocalDateTime.of(2028, 2, 29, 11, 0);
+
+      assertThat(
+              reservationService.create(
+                  request(
+                      leapStart, leapEnd, false, RecurrenceType.MONTHLY, LocalDate.of(2030, 2, 28)),
+                  requester))
+          .isNotEmpty();
+      assertThatThrownBy(
+              () ->
+                  reservationService.create(
+                      request(
+                          leapStart,
+                          leapEnd,
+                          false,
+                          RecurrenceType.MONTHLY,
+                          LocalDate.of(2030, 3, 1)),
+                      requester))
+          .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void create_noneIgnoresTwoYearLimit_becauseUntilIsNotAllowed() {
+      // NONE は終了日そのものが指定不可（上限の判定には到達しない）
+      CreateReservationRequest req =
+          request(start, end, false, RecurrenceType.NONE, LocalDate.of(2030, 1, 1));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ValidationException.class)
+          .hasMessageContaining("指定できません");
+    }
+
     // ---- 重複判定（全件ロールバック） ----
 
     @Test

@@ -56,6 +56,9 @@ public class ReservationService {
   private static final List<ReservationStatus> OCCUPIED_STATUSES =
       List.of(ReservationStatus.PENDING, ReservationStatus.APPROVED);
 
+  /** 繰り返し終了日の上限（開始日から何年以内か）。api-spec.md §予約申請 の繰り返し指定の検証と一致させる。 */
+  private static final int MAX_RECURRENCE_YEARS = 2;
+
   /** キャンセル可能なステータス（{@code DRAFT} のキャンセルは下書きの削除に相当する）。 */
   private static final List<ReservationStatus> CANCELLABLE_STATUSES =
       List.of(ReservationStatus.DRAFT, ReservationStatus.PENDING, ReservationStatus.APPROVED);
@@ -303,8 +306,9 @@ public class ReservationService {
   /**
    * 繰り返し指定の組み合わせを検証し、種別を返す（{@code null} は {@code NONE}）。
    *
-   * <p>違反はすべて 400 {@code VALIDATION_ERROR}（{@link ValidationException}）。{@code endAt > startAt}
-   * の検証（422）とは HTTP ステータスが異なる。
+   * <p>違反（{@code NONE} で終了日あり、終了日なし、終了日が開始日より前、終了日が開始日から 2 年超）はすべて 400 {@code
+   * VALIDATION_ERROR}（{@link ValidationException}）。{@code endAt > startAt} の検証（422）とは HTTP
+   * ステータスが異なる。
    */
   private static RecurrenceType validateRecurrence(CreateReservationRequest req) {
     RecurrenceType type = req.recurrence();
@@ -318,8 +322,14 @@ public class ReservationService {
     if (until == null) {
       throw new ValidationException("繰り返し終了日は必須です。");
     }
-    if (until.isBefore(req.startAt().toLocalDate())) {
+    LocalDate startDate = req.startAt().toLocalDate();
+    if (until.isBefore(startDate)) {
       throw new ValidationException("繰り返し終了日は開始日以降にしてください。");
+    }
+    // 終了日の上限（開始日から 2 年以内）。日程の数・ロックの保持時間・メモリが際限なく増えるのを防ぐ。
+    // 2 年後の同じ日（開始日が 2 月 29 日なら 2 月 28 日）までは有効
+    if (until.isAfter(startDate.plusYears(MAX_RECURRENCE_YEARS))) {
+      throw new ValidationException("繰り返し終了日は開始日から " + MAX_RECURRENCE_YEARS + " 年以内にしてください。");
     }
     return type;
   }

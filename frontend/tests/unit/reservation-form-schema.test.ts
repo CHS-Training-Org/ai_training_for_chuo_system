@@ -98,6 +98,55 @@ describe("CreateReservationFormSchema", () => {
       expect(messagesAt(result, "startAt")).toEqual(["開始日時は必須です"]);
     });
 
+    it("開始日のちょうど 2 年後: 通る（上限は 2 年後の同じ日まで）", () => {
+      const result = CreateReservationFormSchema.safeParse(
+        input({ recurrenceType: "WEEKLY", recurrenceUntil: "2028-11-02" }),
+      );
+      expect(result.success).toBe(true);
+    });
+
+    it("開始日の 2 年後の翌日: recurrenceUntil にエラー", () => {
+      const result = CreateReservationFormSchema.safeParse(
+        input({ recurrenceType: "WEEKLY", recurrenceUntil: "2028-11-03" }),
+      );
+      expect(messagesAt(result, "recurrenceUntil")).toEqual([
+        "繰り返し終了日は開始日から 2 年以内にしてください",
+      ]);
+    });
+
+    it("毎月でも 2 年を超えるとエラー", () => {
+      const result = CreateReservationFormSchema.safeParse(
+        input({ recurrenceType: "MONTHLY", recurrenceUntil: "2029-11-02" }),
+      );
+      expect(messagesAt(result, "recurrenceUntil")).toEqual([
+        "繰り返し終了日は開始日から 2 年以内にしてください",
+      ]);
+    });
+
+    it("開始日が 2 月 29 日: 上限は 2 年後の 2 月 28 日（平年）で、翌日はエラー", () => {
+      // 2028 年はうるう年、2030 年は平年。BE の LocalDate.plusYears と同じ丸め
+      const ok = CreateReservationFormSchema.safeParse(
+        input({
+          startAt: "2028-02-29T10:00",
+          endAt: "2028-02-29T11:00",
+          recurrenceType: "MONTHLY",
+          recurrenceUntil: "2030-02-28",
+        }),
+      );
+      const over = CreateReservationFormSchema.safeParse(
+        input({
+          startAt: "2028-02-29T10:00",
+          endAt: "2028-02-29T11:00",
+          recurrenceType: "MONTHLY",
+          recurrenceUntil: "2030-03-01",
+        }),
+      );
+      expect(ok.success).toBe(true);
+      expect(messagesAt(over, "recurrenceUntil")).toEqual([
+        "繰り返し終了日は開始日から 2 年以内にしてください",
+      ]);
+    });
+
     it("NONE では終了日の範囲を検証しない", () => {
       const result = CreateReservationFormSchema.safeParse(
         input({ recurrenceType: "NONE", recurrenceUntil: "2026-11-01" }),

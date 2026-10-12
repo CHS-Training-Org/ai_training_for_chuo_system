@@ -35,12 +35,30 @@ export const CreateReservationSchema = z.object({
   recurrenceUntil: z.string().nullable().optional(),
 });
 
+/** 繰り返し終了日の上限（開始日から何年以内か）。BE の `ReservationService.MAX_RECURRENCE_YEARS` と一致させる。 */
+export const MAX_RECURRENCE_YEARS = 2;
+
+/**
+ * yyyy-MM-dd の日付に年数を足して、yyyy-MM-dd で返す。
+ *
+ * 2 月 29 日に足した結果が平年なら 2 月 28 日にする（BE の `LocalDate.plusYears` と同じ丸め）。
+ * `Date` の月末オーバーフロー（2/29 → 3/1）を避けるため、月の末日を自前で求める。
+ */
+function addYears(date: string, years: number): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const targetYear = y + years;
+  const lastDay = new Date(Date.UTC(targetYear, m, 0)).getUTCDate();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${targetYear}-${pad(m)}-${pad(Math.min(d, lastDay))}`;
+}
+
 /**
  * 予約申請フォームの検証スキーマ（クライアント側。{@link CreateReservationSchema} に cross-field の検証を足したもの）。
  *
  * - 終了日時は開始日時より後
  * - 繰り返し（毎週・毎月）では終了日が必須
  * - 繰り返しの終了日は開始日時の日付以降（同じ日は有効で、1 件だけ登録される）
+ * - 繰り返しの終了日は開始日から 2 年以内（2 年後の同じ日までは有効）
  */
 export const CreateReservationFormSchema = CreateReservationSchema.refine(
   (data) => !data.startAt || !data.endAt || data.endAt > data.startAt,
@@ -58,6 +76,17 @@ export const CreateReservationFormSchema = CreateReservationSchema.refine(
       return data.recurrenceUntil >= data.startAt.slice(0, 10);
     },
     { message: "繰り返し終了日は開始日以降にしてください", path: ["recurrenceUntil"] },
+  )
+  .refine(
+    (data) => {
+      if (!data.recurrenceType || data.recurrenceType === "NONE") return true;
+      if (!data.recurrenceUntil || !data.startAt) return true;
+      return data.recurrenceUntil <= addYears(data.startAt.slice(0, 10), MAX_RECURRENCE_YEARS);
+    },
+    {
+      message: `繰り返し終了日は開始日から ${MAX_RECURRENCE_YEARS} 年以内にしてください`,
+      path: ["recurrenceUntil"],
+    },
   );
 
 /**
