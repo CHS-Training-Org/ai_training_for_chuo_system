@@ -1,85 +1,93 @@
-# Requirements — ユニット: csv-report（CSV 帳票出力）
+# Requirements — ユニット: usage-report（利用実績の集計・グラフ表示）
 
 ## Intent Analysis Summary
 
-- **User Request**: 管理者（ADMIN）が予約一覧を CSV でダウンロードできるようにする（GitHub Issue #29、ビジネス要求シート `docs-next/docs/spec/enhancements/intermediate/csv-export.md`、UC-07）
-- **Request Type**: New Feature（帳票出力エンドポイントと画面ボタンの新設）
+- **User Request**: 管理者（ADMIN）がリソース別の利用実績（承認済み予約の件数と合計利用時間）を、期間を指定して集計し、棒グラフで確認できるようにする（GitHub Issue #28、ビジネス要求シート `docs-next/docs/spec/enhancements/intermediate/usage-statistics.md`）
+- **Request Type**: New Feature（集計 API・統計ページ・グラフの新設）
 - **Scope Estimate**: Multiple Components（frontend + backend 両方）
-- **Complexity Estimate**: Moderate（再利用できる既存実装はなく新規コンポーネントが中心だが、規模は小さい）
+- **Complexity Estimate**: Moderate（H2 と PostgreSQL の両対応の集計、期間での切り詰め計算、新画面。DB・マイグレーションの変更はない）
 - **Requirements Depth**: Standard
 
 ## 機能要件
 
-| # | 要件 |
-|---|------|
-| RPT-01 | `GET /api/reports/reservations/csv` を新設し、`Content-Type: text/csv; charset=UTF-8` で予約一覧を CSV ダウンロードできる。`Content-Disposition: attachment` でファイル名を返す |
-| RPT-02 | CSV の列は予約 ID・リソース名・申請者名・開始日時・終了日時・目的・承認状態。1 行目に日本語ヘッダ行を持つ。承認状態は画面と同じ日本語ラベル（承認待ち・承認済み・却下・キャンセル済み・下書き）で出力する |
-| RPT-03 | クエリパラメータ `from`・`to`・`status` で絞り込める（下記「決定事項」参照） |
-| RPT-04 | ADMIN ロールのみアクセスできる（Spring Security の `@PreAuthorize("hasRole('ADMIN')")`）。MEMBER / APPROVER は 403 |
-| RPT-05 | `/reservations` に ADMIN の場合のみ「CSV ダウンロード」ボタンを表示し、クリックで現在の絞り込み条件を引き継いだ CSV をブラウザにダウンロードさせる |
+要件 ID は `USG-`、ユースケースは UC-10 を採番する。ビジネス要求シートの `DASH-01`〜`05` は requirements.md の既存 `DASH-01`/`02`（ダッシュボードの件数表示）と、シートの「UC-08」は既存 UC-08（リソース登録・編集）と衝突するため使わない。
+
+| # | 要件 | シートの要件 |
+|---|------|--------------|
+| USG-01 | `GET /api/statistics/resources` を新設し、リソースごとの承認済み（`APPROVED`）予約の件数と合計利用時間（分、整数）を返す | DASH-01 |
+| USG-02 | 集計期間をクエリパラメータ `from`・`to` で指定できる（下記「決定事項」参照） | DASH-02 |
+| USG-03 | ADMIN ロールのみアクセスできる（MEMBER / APPROVER は 403） | DASH-03 |
+| USG-04 | 管理者向けの統計ページ `/admin/reports` に、リソース別の棒グラフ（件数と合計利用時間）を表示する。期間を変更するとグラフが再取得・再描画される | DASH-04 |
+| USG-05 | グラフと併記の表に、リソース名・予約件数・合計利用時間（時間）を表示する | DASH-05 |
+| USG-06 | 利用実績が 0 件のリソースも表示する（件数 0・合計 0 分） | （ユーザー指定） |
 
 ## 決定事項（Requirements Analysis で確定）
 
 | # | 論点 | 決定 |
 |---|------|------|
-| 1 | `from`/`to` の意味 | 既存の予約一覧 API と同じ**期間重複判定**（`r.startAt < :to AND r.endAt > :from`、境界一致の隣接は含まない） |
-| 2 | `from`/`to` の指定ルール | 両方指定、または両方なしのみ有効。片方だけ指定すると 400 `VALIDATION_ERROR`（既存 API と同じ）。両方なしは期間条件なしの全期間 |
-| 3 | `status` 未指定時 | DRAFT を**含めない**（PENDING / APPROVED / REJECTED / CANCELLED のみ。画面一覧と同じ）。`status=DRAFT` を明示したときだけ DRAFT を出力する。`status` は複数指定可で、不正値は 400 |
-| 4 | ボタン配置 | `/reservations`（既存の全予約一覧）のヘッダ行に、`profile.role === "ADMIN"` のときだけ表示する。`/admin/reservations` は新設しない |
-| 5 | 件数上限 | 設けない（条件に合う全件を出力する） |
-| 6 | レスポンス方式 | `ResponseEntity<byte[]>` で一括生成する。`StreamingResponseBody` は採用しない（別スレッドで動くため `open-in-view: false` の下の LAZY 取得が失敗しやすく、途中例外を JSON エラーで返せず、MockMvc テストも非同期になる） |
-| 7 | CSV 生成方式 | 自前の小さな `CsvWriter` を実装する。OpenCSV・commons-csv は導入しない（7 列で足り、依存追加と ADR が不要） |
-| 8 | 文字コード | UTF-8 BOM 付き（本文の先頭に `EF BB BF` を付けた `byte[]`） |
-| 9 | フロントのダウンロード方式 | Route Handler がバックエンドから CSV を取得してバイト列のまま返し、ボタンは `<a download>` リンク（Bearer トークンが要るためブラウザから直接バックエンドを叩かない） |
+| 1 | 集計対象の予約 | `APPROVED` のみ。過去・未来は問わない（まだ始まっていない承認済み予約も含める） |
+| 2 | 集計単位と内容 | リソース別。件数と合計利用時間。利用率（稼働可能時間を分母にした割合）は今回のスコープ外 |
+| 3 | 対象予約の選び方 | 既存の予約一覧・CSV 帳票出力と同じ期間重複判定（`r.startAt < :to AND r.endAt > :from`、境界一致の隣接は含まない） |
+| 4 | `from`/`to` の指定 | 両方指定、または両方未指定。片方だけは 400 `VALIDATION_ERROR`（文言「from と to は同時に指定してください。」）。両方未指定は全期間。両方指定のときは `from` が `to` より前であること（`from >= to` は 400 `VALIDATION_ERROR`、文言「from は to より前にしてください。」）。`from >= to` だと重複判定に引っかかる予約の切り詰め時間が負になるため。既存の予約一覧・CSV にはない、統計 API だけの検証 |
+| 5 | 件数 | 期間と重複する `APPROVED` の予約の数。期間の境界をまたぐ予約も 1 件として数える |
+| 6 | 合計利用時間 | 期間を指定したときは、各予約の `[startAt, endAt)` を `[from, to)` で**切り詰めた時間**を分単位で合算する（`max(startAt, from)` から `min(endAt, to)` まで）。期間未指定のときは各予約の `startAt` から `endAt` までの全時間。API は分の整数（`totalMinutes`）で返し、画面が時間（小数第 1 位）に整形する |
+| 7 | 0 件のリソース | 有効（`is_active = true`）なリソースは実績が 0 件でも常に表示する。無効化済みのリソースは、期間内に実績が 1 件以上あるときだけ表示する |
+| 8 | 画面の配置 | `/admin/reports` を新設し、サイドナビの管理者メニューに追加する（`admin/layout.tsx` の ADMIN ガードを継承）。ダッシュボード `/` は変更しない |
+| 9 | グラフの描画 | 依存ライブラリは導入しない。既存の `--chart-N` トークンと Tailwind で、自前の棒グラフ（HTML / CSS または SVG）を描く |
+| 10 | 集計の実装方式 | 取得は JPQL（H2 と PostgreSQL の方言差を避けるためネイティブ SQL と DB の日時差関数は使わない）、切り詰めと合算は Java 側（`Duration`）で行う |
 
 ## 既定の前提（レビューで変更可）
 
 質問せず、次の既定値を置く。承認時に違和感があれば Request Changes で指定する。
 
-- **ソート順**：開始日時の昇順、同値は予約 ID の昇順（出力の再現性のため）
-- **日時書式**：`yyyy-MM-dd HH:mm`（タイムゾーン変換なし。既存どおり `LocalDateTime` をそのまま整形する）
-- **改行コード**：CRLF（Excel 互換）
-- **ファイル名**：`reservations_yyyyMMdd.csv`（出力日。日本語を含めない）
-- **件数 0 のとき**：ヘッダ行のみの CSV を返す（エラーにしない）
+- **並び順**：合計利用時間の降順、同値は件数の降順、さらに同値はリソース名の昇順（グラフの読みやすさのため）
+- **レスポンスの項目**：`resourceId`・`resourceName`・`reservationCount`・`totalMinutes` の 4 つ。ページネーションなしの配列
+- **グラフの構成**：「予約件数」と「合計利用時間（時間）」の 2 つの横棒グラフを並べ、その下に同じ値の表を置く。棒の長さは各グラフ内の最大値を 100% とする相対値。色は `--chart-1`・`--chart-2`
+- **期間入力**：`/reservations` の絞り込みと同じ `datetime-local` の `from`・`to`（URL の searchParams で保持し、「集計する」で更新、「リセット」で全期間に戻す）。ページを開いた直後は期間未指定（全期間）
+- **時間の表示**：分を 60 で割り、小数第 1 位に丸める（例 150 分は 2.5 時間）。丸めるのは表示だけで、API は分の整数を返す
+- **タイムゾーン**：変換せず `LocalDateTime` をそのまま使う（既存の API と同じ）
 
 ## 非機能要件
 
-- **セキュリティ（機能要件として扱う）**：Security Baseline 拡張は適用しない。ただし ADMIN 限定（RPT-04）に加え、CSV 数式インジェクション対策として、セルの先頭が `=` `+` `-` `@` タブ・復帰のいずれかの場合は先頭に `'` を付ける。フィールドにカンマ・二重引用符・改行を含む場合は RFC 4180 に従い二重引用符で囲み、内部の `"` は `""` にエスケープする
-- **アクセス制御の厚み**：未認証は 401、MEMBER / APPROVER は 403（`{code:"FORBIDDEN"}`）。フロントはボタンを出さないだけでなく、Route Handler もバックエンドの 401/403 をそのまま返す
-- **N+1 回避**：全件取得クエリは `JOIN FETCH r.resource JOIN FETCH r.requester` を付ける（`open-in-view: false` のため必須）
-- **コード品質**：Checkstyle（`ParameterNumber` 最大 7 など）・Spotless（googleJavaFormat）に適合させる。条件は record（例 `ReportCondition`）にまとめる
-- **性能**：上限なしのため大量データ時はメモリ使用量が増える（受け入れ済みのトレードオフ）。`start_at`/`end_at` にインデックスは無い（本課題では追加しない）
-- **テスト容易性**：`CsvWriter` と `ReservationReportService` はユニットテスト、`ReportController` は MockMvc で BOM・ヘッダ・403 を検証する。Property-Based Testing は適用しない
+- **セキュリティ（機能要件として扱う）**：Security Baseline 拡張は適用しない。ADMIN 限定（USG-03）は Controller メソッドの `@PreAuthorize("hasRole('ADMIN')")`（既存の `ReportController`・`UserController` と同じ方式）。未認証は 401、MEMBER / APPROVER は 403（`{code:"FORBIDDEN"}`）。フロントのページは `admin/layout.tsx` が非 ADMIN に 403 画面を出し、API の 403・401 はそのまま扱う
+- **N+1 回避**：予約取得は `JOIN FETCH` でリソースを同時に取得する（`open-in-view: false` と LAZY のため必須）。取得から集計までを `@Transactional(readOnly = true)` 内で行う
+- **性能**：件数上限・ページネーションなし（条件に合う `APPROVED` 予約を全件取得して Java で集計する）。データが大量になるとメモリ使用量が増える点は受け入れる。`start_at`/`end_at` にインデックスは無く、本課題では追加しない
+- **互換性**：テストは H2（PostgreSQL 互換モード）、本番は PostgreSQL。集計ロジックを DB に依存させない（決定事項 10）
+- **OpenAPI**：`GET /api/statistics/resources` が Springdoc の OpenAPI ドキュメントに反映される（Controller の追加で自動反映。受入条件のため、反映されることをテストまたは手動で確認する）
+- **コード品質**：Checkstyle（`ParameterNumber` 最大 7 など）・Spotless（googleJavaFormat）に適合させる。条件は record にまとめる。テストの UUID プレフィックスは `73` を使う
+- **テスト容易性**：切り詰め・合算は純粋関数に切り出してユニットテストする。フロントはグラフの値を表にも出すため、表で値を検証できる。Property-Based Testing は適用しない
+- **画面**：グラフは数値の表を併記し、色だけに頼らずラベルと数値でも読めるようにする（アクセシビリティ）
 
-## 受入条件（シートより）
+## 受入条件（シートと決定事項より）
 
-- [ ] ADMIN が `/reservations` で「CSV ダウンロード」を押すと、予約一覧が CSV ファイルとしてダウンロードされる
-- [ ] CSV に日本語ヘッダ行があり、文字コードは UTF-8（BOM 付き）
-- [ ] 期間・ステータスで絞り込んだ CSV をダウンロードできる
-- [ ] MEMBER / APPROVER が API にアクセスすると 403
-- [ ] バックエンドに CSV 生成ロジックのユニットテストがある
+- [ ] ADMIN で `/admin/reports` を開くと、リソース別の予約件数と合計利用時間の棒グラフと表が表示される
+- [ ] 期間（`from`・`to`）を変更して集計すると、グラフと表が再取得・再描画される
+- [ ] 集計対象は `APPROVED` のみで、他のステータスは件数にも時間にも含まれない
+- [ ] 期間を指定したとき、境界をまたぐ予約は件数に 1 件として数えられ、合計利用時間は期間で切り詰めた時間になる
+- [ ] `from` と `to` の片方だけを指定すると 400 になる。両方未指定のときは全期間が対象になる。`from` が `to` 以降（`from >= to`）でも 400 になる
+- [ ] 利用実績が 0 件の有効なリソースも、件数 0・合計 0 で表示される。無効化済みのリソースは期間内に実績があるときだけ表示される
+- [ ] MEMBER / APPROVER が API にアクセスすると 403、未認証は 401。サイドナビの「利用実績」は ADMIN にだけ表示される
+- [ ] `GET /api/statistics/resources` が OpenAPI ドキュメント（Springdoc）に反映される
+- [ ] バックエンドに集計ロジック（切り詰め・合算・0 件のリソース・ステータス絞り込み）のユニットテストがある
 
 ## 影響範囲（RE 成果物に基づく変更予定ファイル）
 
 仕様（Spec-first で先に更新）
-- `docs-next/docs/spec/api-spec.md`：「帳票出力」セクションを追記
-- `docs-next/docs/spec/screen-spec.md`：`/reservations` の ADMIN 用ボタンを追記
-- `docs-next/docs/spec/requirements.md`：RPT-01〜05 を反映
+- `docs-next/docs/spec/api-spec.md`：§統計（新セクション）と `GET /api/statistics/resources`
+- `docs-next/docs/spec/screen-spec.md`：`/admin/reports` と、サイドナビの管理者メニュー
+- `docs-next/docs/spec/requirements.md`：UC-10 と `USG-01`〜`06`、API 権限マトリクス、画面アクセス権限表
 
 バックエンド（`backend/src/main/java/com/example/bookflow/`）
-- `presentation/ReportController.java`（新規）
-- `application/ReservationReportService.java`（新規）
-- `application/csv/CsvWriter.java`（新規）
-- `presentation/dto/ReportCondition.java`（新規、record）
-- `domain/ReservationRepository.java`（ページングなし全件取得クエリを追加）
-- テスト（新規）：`CsvWriterTest`、`ReservationReportServiceTest`、`ReportControllerTest`
+- `presentation/StatisticsController.java`（新規）、`application/StatisticsService.java`（新規）
+- `presentation/dto/`：集計条件の record とレスポンス DTO（新規）
+- `domain/ReservationRepository.java`・`domain/ResourceRepository.java`：集計用の取得クエリの追加
+- テスト（新規）：`StatisticsServiceTest`、`StatisticsControllerTest`
 
 フロントエンド（`frontend/src/`）
-- `app/api/reports/reservations/csv/route.ts`（新規）
-- `app/(authenticated)/reservations/CsvDownloadButton.tsx`（新規。ページ専用コンポーネントはページと同じディレクトリに置く既存の運用に合わせる）
-- `app/(authenticated)/reservations/page.tsx`（ADMIN のときボタンを表示）
-- テスト（新規）：Route Handler、ボタン、ページの ADMIN / MEMBER 出し分け
+- `app/(authenticated)/admin/reports/page.tsx`（新規）、期間フィルタ（Client）、棒グラフのコンポーネント（新規）
+- `server/actions/statistics.ts`（新規）、`lib/types/api.ts`（スキーマ追加）、`components/layout/nav-items.ts`（ナビ追加）
+- テスト（新規・変更）：Server Action・ページ・棒グラフ・期間フィルタ、`nav-items.test.ts`、`tests/unit/msw/handlers.ts`
 
 ## スコープ外
 
-- PDF 帳票、利用実績（集計）の CSV、非同期ジョブ化、`/admin/reservations` の新設、`start_at` 系インデックスの追加、`resourceName` 絞り込みの CSV 対応（画面の `resourceName` は CSV に引き継がない）
+- 利用率（稼働可能時間を分母にした割合）、日別・月別などの時系列（期間別）集計、カテゴリ別の集計、統計の CSV・PDF 出力、ダッシュボードへのグラフ追加、グラフライブラリの導入、`start_at`/`end_at` へのインデックス追加

@@ -1810,3 +1810,190 @@ timestamp: 2026-08-29
 **Context**: Issue 番号の訂正。以降の記録・PR 本文では Issue #29 を使う
 
 ---
+
+
+## Workflow Start（新規ユニット: usage-report）
+**Timestamp**: 2026-10-12T08:00:00Z
+**User Input**: "/aidlc で進めてください。\n\n前提は以下です。\n\n- 集計対象は APPROVED のみ\n- 期間は既存の予約一覧・CSV帳票出力と同じ期間重複判定\n- from / to は両方指定または両方未指定\n- 集計単位はリソース別\n- 集計内容は件数と合計利用時間\n- 利用率の定義は今回のスコープ外\n- 利用実績0件のリソースも表示する\n\nRequirements Analysis を開始してください。"
+**AI Response**: "Pre-flight：`Docs/spec/aidlc-state.md` は前ユニット（#29）の完了状態のため新規ワークフローと判断。ブランチ `feature/CHS-FUJITA-RIKA/28-usage-report-aidlc` は命名規約に合致するためブランチ操作は行わず、short-desc `usage-report-aidlc` から対象シートを `docs-next/docs/spec/enhancements/intermediate/usage-statistics.md` と特定（`gh issue view 28` で Issue #28「利用実績の集計・グラフ表示」であることを確認済み）。前の会話で依頼された Issue #28 の調査（読み取りのみ）の結果を踏まえる。"
+**Context**: Pre-flight 完了 → エンジン起動（Workspace Detection）
+
+---
+
+## Workspace Detection（usage-report）
+**Timestamp**: 2026-10-12T08:01:00Z
+**User Input**: "(N/A — ワークスペーススキャンによる自動判定)"
+**AI Response**: "既存コードベースあり（Brownfield）と判定。既存の RE 成果物は他ユニット向けのスコープ限定ファイルで、集計・グラフ・統計は対象外のため転用不可。ただし本課題スコープの調査は直前の会話（Issue #28 の調査依頼）で実施・提示済み。"
+**Context**: Workspace Detection — EXECUTE、Brownfield
+
+---
+
+## Reverse Engineering（usage-report）
+**Timestamp**: 2026-10-12T08:05:00Z
+**User Input**: "(前の会話の調査依頼: 『Issue #28「利用実績の集計・グラフ表示」を実装します。まず実装は行わず、既存実装を調査してください。…変更対象ファイル一覧…まだコード変更は行わないでください。』／続けて『APPROVEDのみ』と回答。上記 Workflow Start の依頼で調査完了を前提に Requirements Analysis の開始を指示)"
+**AI Response**: "調査（Explore subagent 2 本、backend・frontend）は直前の会話で実施・報告済みのため再実行せず、その結果を `code-structure-usage-report.md` に記録して RE を完了扱いとした。ユーザーは調査結果を確認した上で前提を確定し Requirements Analysis の開始を明示的に指示したため、RE の承認ゲートはこの指示をもって通過とみなす。主要な発見：集計系クエリ・時間差の実装・グラフライブラリ・統計画面はいずれも存在しない／`DASH-01`/`02` と UC-08 の番号がシートと衝突／H2 と PostgreSQL の方言差のため Java 側合算が安全／UUID プレフィックス 73 以降が未使用。"
+**Context**: Reverse Engineering — EXECUTE（スコープ限定、調査済み）、ユーザー指示により承認済みとして Requirements Analysis へ
+
+---
+
+## Requirements Analysis — Intent Analysis（usage-report）
+**Timestamp**: 2026-10-12T08:10:00Z
+**User Input**: "(N/A — 前ステージからの遷移。分析対象はビジネス要求シート usage-statistics.md、ユーザー確定の前提 7 項目、RE 成果物)"
+**AI Response**: "Request Clarity: Mostly Clear（ユーザーが集計対象・期間・単位・内容・スコープ外・0 件の扱いを確定済み。時間の算出方法・0 件の範囲・画面配置・グラフ依存・API の時間単位・拡張機能が未決）。Request Type: New Feature（集計 API・統計ページ・グラフの新設）。Scope: Multiple Components（frontend + backend）。Complexity: Moderate（H2 と PostgreSQL の両対応の集計・新規依存の可能性・新画面）。Depth: Standard。"
+**Context**: Requirements Analysis Step 2-3
+
+---
+
+
+## Requirements Analysis — 確認質問と回答（usage-report）
+**Timestamp**: 2026-10-12T08:30:00Z
+**User Input**: "AskUserQuestion の回答: 時間の算出=「期間で切り詰めた時間」／0件のリソースの範囲=「有効なリソース＋実績がある無効リソース」／画面配置=「/admin/reports を新設」／グラフ依存=「依存なしで自前の SVG / CSS 棒グラフ」。追加確認: API の時間の単位=「分（整数）」／Security Baseline=「No（適用しない）」／Resiliency Baseline=「No（適用しない）」／Property-Based Testing=「No（適用しない）」"
+**AI Response**: "回答を分析。矛盾・曖昧なし（期間の選び方は既存と同じ重複判定、時間のみ切り詰める。0 件の範囲は 3 択から確定）。拡張機能 3 件はいずれも No のためフルルールは読み込まない。ユーザーが前の会話で確定した前提（APPROVED のみ・期間重複・from/to は両方指定か両方なし・リソース別・件数と合計時間・利用率はスコープ外・0 件も表示）と合わせて要件書 `Docs/spec/aidlc-docs/inception/requirements/requirements.md` を生成（前ユニットの内容を置換）。シートの DASH-01〜05・UC-08 が requirements.md の既存 ID と衝突するため、`USG-01`〜`06`・UC-10 を採番。並び順・レスポンス項目・グラフ構成・期間入力・時間の表示・タイムゾーンは影響が小さいため質問せず『既定の前提』として明記しレビューで変更可とした。切り詰めの実装は H2 と PostgreSQL の方言差を避けるため JPQL 取得＋Java 合算とする。"
+**Context**: Requirements Analysis Step 5.1・6・7（質問は AskUserQuestion で実施）
+
+---
+
+## Requirements Analysis — 完了・承認待ち（usage-report）
+**Timestamp**: 2026-10-12T08:35:00Z
+**User Input**: "(N/A)"
+**AI Response**: "要件書を提示し承認待ち。次ステージは User Stories（新規のユーザー向け機能で EXECUTE 判定の見込み）。"
+**Context**: Requirements Analysis 完了、承認待ち
+
+---
+
+
+## Requirements Analysis — Approval（usage-report）
+**Timestamp**: 2026-10-12T08:45:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "要件書の承認を記録（既定の前提への変更指示なし）。次ステージ User Stories へ遷移。"
+**Context**: Requirements Analysis 承認 → User Stories
+
+---
+
+## User Stories — Assessment と計画（usage-report）
+**Timestamp**: 2026-10-12T08:50:00Z
+**User Input**: "(N/A — 前ステージからの遷移)"
+**AI Response**: "アセスメントの結果 EXECUTE（New User Features・Multi-Persona Systems・Complex Business Logic。SKIP 条件は非該当）。`user-stories-assessment.md` と `story-generation-plan.md`（5 ストーリー、Feature-Based + Persona-Based ハイブリッド、Gherkin 受入条件）を生成。確認質問は、requirements.md の決定事項で曖昧点が解消済みのため設けなかった。計画の承認を求める。承認プロンプト: 『ストーリー作成計画を承認して Part 2（生成）に進むか、変更を依頼するか』"
+**Context**: User Stories Part 1（Planning）完了、計画承認待ち
+
+---
+
+
+## User Stories — Plan Approval と追加確認（usage-report）
+**Timestamp**: 2026-10-12T09:00:00Z
+**User Input**: "Approve & Continue"。続く追加確認（AskUserQuestion）の回答: 「400 を返す（from は to より前）」
+**AI Response**: "計画承認を記録。Part 2（生成）の検討中に、requirements.md に未定義の境界ケースを発見：`from >= to` だと、重複判定（`startAt < to AND endAt > from`）に引っかかる予約（例 from=12:00・to=10:00 に対し予約 09:00〜13:00）の切り詰め時間（`min(endAt,to) - max(startAt,from)`）が負になる。計画では追加質問なしとしていたが、挙動が変わる要件であるため追加で確認し、ユーザーが『400 を返す（from は to より前）』を選択。requirements.md の決定事項 4 と受入条件に反映（文言『from は to より前にしてください。』、from と to が同値でも 400、既存の予約一覧・CSV にはない統計 API だけの検証）。その上で `personas.md`（ADMIN・MEMBER・APPROVER）と `stories.md`（US-01〜05、Gherkin 受入条件、requirements.md の受入条件との対応表）を生成。計画のチェックリスト Step A〜C を [x] に更新。stories.md には、リソースが 0 件のときの空状態メッセージ（US-01）を既定の挙動として含めた。"
+**Context**: User Stories Part 1 承認 → Part 2 完了、成果物の承認待ち。承認プロンプト: 『ペルソナとストーリーを確認し、Request Changes か Approve & Continue（Workflow Planning へ）を選ぶ』
+
+---
+
+
+## User Stories — Approval（usage-report）
+**Timestamp**: 2026-10-12T09:10:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "ユーザーストーリーの承認を記録。Workflow Planning へ遷移。"
+**Context**: User Stories 承認 → Workflow Planning
+
+---
+
+## Workflow Planning — 計画提示（usage-report）
+**Timestamp**: 2026-10-12T09:15:00Z
+**User Input**: "(N/A — 前ステージからの遷移)"
+**AI Response**: "`execution-plan.md` を生成。リスク Low（読み取り専用の新規追加）。EXECUTE: Functional Design・Code Generation・Build and Test。SKIP: Application Design（新規クラスは要件書で列挙済み、署名と責務は Functional Design で定義）・Units Generation（単一 units of work）・NFR Requirements/Design（要件書で機能要件・受け入れ済みトレードオフとして扱う）・Infrastructure Design（変更なし、グラフライブラリの導入もなく ADR 追加なし）。Code Generation 前に `/update-spec` で spec を先に更新する旨と、Build and Test で OpenAPI（`/v3/api-docs`）への反映を確認する旨を計画に明記。Mermaid 構文は既存ユニットの計画に倣い、絵文字を含まない subgraph ラベルで検証済み。承認プロンプト: 『Ready to proceed with this plan?』"
+**Context**: Workflow Planning 完了、学習者のチャットでの承認待ち
+
+---
+
+
+## Workflow Planning — Approval（usage-report）
+**Timestamp**: 2026-10-12T09:30:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "実行計画の承認を記録（SKIP 提案はそのまま承認、ステージの追加指示なし）。CONSTRUCTION フェーズの Functional Design へ遷移。"
+**Context**: Workflow Planning 承認 → Functional Design
+
+---
+
+## Functional Design（usage-report）
+**Timestamp**: 2026-10-12T09:50:00Z
+**User Input**: "(N/A — 前ステージからの遷移)"
+**AI Response**: "既存コードを実読して設計を確定。確定した追加事実: (1) 取得は構築子射影 `ApprovedUsage(resourceId, startAt, endAt)` にして LAZY・JOIN FETCH・N+1 を避ける、(2) Repository は既存方針（null 許容パラメータを避ける）に従い期間なし／期間ありの 2 メソッド、`status` は `APPROVED` を引数で渡す、(3) 全リソースは `ResourceRepository.findAll()`（新クエリ不要）で取り Service で選別、(4) `StatisticsController` は `ReportController` と同じメソッド単位の `@PreAuthorize`、`from >= to` の 400 は Controller で検証、(5) 合算は秒で行い最後に分へ切り捨て、(6) frontend の既存ページは `ApiClientError` を catch していないため `VALIDATION_ERROR` のみページで捕捉してインライン表示、(7) ページ専用コンポーネントはページと同じディレクトリ、棒グラフは Server Component で足りる（`bg-chart-1`/`bg-chart-2`）、(8) `toIsoWithSeconds` は 3 か所目の複製を避けて `lib/datetime.ts` に共通化（既存 2 か所は範囲外のため変更しない）。成果物: `usage-report-functional-design-plan.md` と `construction/usage-report/functional-design/` の 4 ファイル（business-logic-model・business-rules BR-01〜19・domain-entities・frontend-components）。BR とストーリー・テストの対応表を作成。BR-11 の PostgreSQL での実行確認は H2 のみのため手動確認事項として記録。確認質問は、設計に必要な曖昧点が要件で解消済みのため設けなかった。承認プロンプト: 『Request Changes か Continue to Next Stage（Code Generation）』"
+**Context**: Functional Design 完了、承認待ち
+
+---
+
+
+## Functional Design — Approval（usage-report）
+**Timestamp**: 2026-10-12T10:00:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "Functional Design の承認を記録。Code Generation Part 1（計画）へ遷移。"
+**Context**: Functional Design 承認 → Code Generation
+
+---
+
+## Code Generation — Part 1 計画（usage-report）
+**Timestamp**: 2026-10-12T10:10:00Z
+**User Input**: "(N/A — 前ステージからの遷移)"
+**AI Response**: "`usage-report-code-generation-plan.md`（10 ステップ）を生成。順序: Step 1 spec 更新（Spec-first）→ 2 UsageCalculator → 3 射影・条件・応答・Repository・Service → 4 Controller と結合テスト（OpenAPI 反映の検証を含む）→ 5 backend 検証 → 6 共通ユーティリティ・型・Server Action → 7 整形・棒グラフ・期間フィルタ → 8 ページ・ナビ → 9 frontend 検証 → 10 ストーリー最終確認。省メモリ・直列実行の制約と、backend のテスト UUID は 73 を使い 72（PR #148 の `ReportControllerTest`）を避けることを計画に明記。依存追加なしのため ADR は追加しない。変更予定: 新規 backend 9 ファイル・modified 1、新規 frontend 約 12 ファイル・modified 3、spec 3 ファイル。承認プロンプト: 『計画全体（生成順序を含む）を承認して Part 2（生成）に進むか、変更を依頼するか』"
+**Context**: Code Generation Part 1（Planning）完了、計画の承認待ち
+
+---
+
+
+## Code Generation — 計画の事実訂正（usage-report）
+**Timestamp**: 2026-10-12T10:12:00Z
+**User Input**: "(N/A)"
+**AI Response**: "計画提示後の確認で、PR #148（CSV 帳票出力）がすでにマージされ、このブランチの履歴に取り込まれている（コミット `db5326b4`、`findAllForReportBy*` も存在）ことが分かった。計画と状態ファイルに『PR #148 はレビュー待ち』と書いていたのは古い記述だったため、『マージ済みで取り込み済み、機能としては依存しない』に訂正した。UUID プレフィックス `72` を避ける理由も、マージ済みの `ReportControllerTest` が使っているためと訂正。計画のステップ・順序・変更ファイルに影響はない。"
+**Context**: Code Generation 計画の記述訂正（承認前）
+
+---
+
+
+## Code Generation — Plan Approval（usage-report）
+**Timestamp**: 2026-10-12T10:20:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "Code Generation 計画（10 ステップ）の承認を記録。Part 2（生成）を Step 1（仕様書更新）から開始する。"
+**Context**: Code Generation Part 1 承認 → Part 2
+
+---
+
+
+## Code Generation — Part 2 実行（usage-report）
+**Timestamp**: 2026-10-12T12:00:00Z
+**User Input**: "(N/A — 承認済み計画の実行。直前のユーザー入力は『Continue to Next Stage』)"
+**AI Response**: "計画 Step 1〜10 を順に実行。Step 1: api-spec（§統計と `GET /api/statistics/resources`）・screen-spec（`/admin/reports`、画面一覧とナビ表、画面数の表記を全 12 画面に更新）・requirements（UC-10、`USG-01`〜`06`、権限マトリクス）・index.md の画面数を更新し `docs-next` の `npm run build` が成功。画面遷移図の drawio SVG は更新していない（screen-spec にその旨を注記）。Step 2〜5: backend に `UsageCalculator`・`ApprovedUsage`・`UsageCondition`・`ResourceUsageResponse`・`StatisticsService`・`StatisticsController` を新設し `ReservationRepository` に 2 クエリを追加。`./gradlew spotlessApply checkstyleMain test --max-workers=1` が成功（304 件、新規 43 件。本ユニットの本体コードからの Checkstyle 警告なし）。OpenAPI（`/v3/api-docs`）への反映をテストで確認。break-and-verify 7 種類で該当テストが失敗することを確認し復元。Step 6〜9: frontend に `lib/datetime.ts`・Server Action・型・`usage-format.ts`・`UsageBarChart`・`UsageFilterForm`・`/admin/reports` ページを新設しナビに『利用実績』を追加。`pnpm lint`・`format:check`・`test`（233 件、新規 53 件）・`build` が成功。break-and-verify 7 種類で該当テストが失敗することを確認し復元。Step 10: US-01〜05 の全シナリオがいずれかのテストで検証されていること、重複ファイルがなく差分が計画内に収まることを確認。計画との差異と訂正: (1) 設計文書 `business-rules.md` の BR-12 に『`admin/layout.tsx` の 403 画面は既存テストで確認済み』と書いていたが grep で既存テストがないことが判明したため誤りを訂正し、`admin-layout.test.tsx`（4 件）を追加した、(2) ナビ項目とそのテストの更新を Step 6 の確認時に同時実施。テストは H2 のみで、PostgreSQL 上での JPQL 構築子式の実行確認は手動確認事項。"
+**Context**: Code Generation Part 2 完了、成果物の承認待ち。承認プロンプト: 『Request Changes か Continue to Next Stage（Build and Test）』
+
+---
+
+
+## Code Generation — Approval（usage-report）
+**Timestamp**: 2026-10-12T12:30:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "Code Generation 成果物の承認を記録。Build and Test へ遷移。"
+**Context**: Code Generation 承認 → Build and Test
+
+---
+
+## Build and Test Stage（usage-report）
+**Timestamp**: 2026-10-12T12:45:00Z
+**Build Status**: Success（backend `./gradlew clean build --max-workers=1` 約26秒・jar 生成、frontend `pnpm lint`・`format:check`・`test`・`NODE_OPTIONS=--max-old-space-size=1536 pnpm build` 約76秒、docs-next `npm run build`）
+**Test Status**: Pass（backend 全304件〔既存261 + 新規43〕／frontend unit 全233件〔既存180 + 新規53〕、計537件、失敗0。Integration Test は `StatisticsControllerTest`（H2、OpenAPI への反映確認を含む）と `statistics.test.ts`・`admin-reports-page.test.tsx`（MSW・モック）として Unit Test に含めて実施。E2E は新規追加がスコープ外・既存 E2E にサイドナビや `/admin/*` の参照がなく壊れる経路がない（grep 確認）・PostgreSQL と cognito-local のコンテナ未稼働のため SKIP し、PostgreSQL での JPQL 構築子式の実行確認とブラウザでの確認の手順を記載（いずれも未実施）。Performance/Contract/Security は Workflow Planning 時点の SKIP 判定を踏襲し対象外）
+**Notes**: 本ユニットの本体コードからの Checkstyle 警告は 0 件（既存コード由来の警告のみ）。画面遷移図の drawio SVG は未更新（screen-spec に注記）。
+**Files Generated**:
+- `Docs/spec/aidlc-docs/construction/build-and-test/build-instructions.md`（usage-report 向けに更新）
+- `Docs/spec/aidlc-docs/construction/build-and-test/unit-test-instructions.md`（同）
+- `Docs/spec/aidlc-docs/construction/build-and-test/integration-test-instructions.md`（同）
+- `Docs/spec/aidlc-docs/construction/build-and-test/e2e-test-instructions.md`（同。SKIP 判定と手動確認手順）
+- `Docs/spec/aidlc-docs/construction/build-and-test/build-and-test-summary.md`（同）
+**Context**: Build and Test ステージ実行完了、承認待ち
+
+---
+
+
+## Build and Test — Approval（usage-report）
+**Timestamp**: 2026-10-12T13:00:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。usage-report ユニットの CONSTRUCTION フェーズ（Functional Design・Code Generation・Build and Test）を完了。BookFlow では OPERATIONS フェーズは CI 品質ゲート（`CI Frontend` / `CI Backend`）として運用され、PR 作成・push 時に自動実行されるため、`/aidlc` 自体がこの場で追加生成するステージはない旨をユーザーに説明し、次のアクション（`/commit-push`・`/create-pr`）を案内する。PR 前の確認事項として、PostgreSQL 上での JPQL 構築子式の実行確認とブラウザでの手動確認（いずれも未実施）、画面遷移図（drawio SVG）の未更新を再掲する。"
+**Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。`/aidlc` ワークフロー本体はここで完了
+
+---
