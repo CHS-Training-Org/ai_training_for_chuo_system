@@ -9,15 +9,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.hibernate.annotations.ColumnDefault;
 
 /**
  * 予約エンティティ（V001 {@code reservations} テーブルと完全一致）。
  *
  * <p>カテゴリ 5 で予約申請（{@link #create}）・内容更新（{@link #update}）・キャンセル（{@link #cancel}）を追加。
  *
- * <p>{@code ddl-auto: validate} のため、カラム名・型・制約は V001 と整合していなければならない。
+ * <p>繰り返し予約（recurring-reservation ユニット）で、V003 の {@code recurrence_type}・{@code
+ * recurrence_until}・{@code series_id} を追加（{@link #joinSeries}）。
+ *
+ * <p>{@code ddl-auto: validate} のため、カラム名・型・制約は V001・V003 と整合していなければならない。
  */
 @Entity
 @Table(name = "reservations")
@@ -57,6 +62,19 @@ public class Reservation {
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
+  // テストは H2 の create-drop（Flyway 無効）でテーブルを作る。生 SQL の INSERT が列を省略しても通るよう、
+  // V003 の DEFAULT 'NONE' と同じ既定値を持たせる（本番の validate は既定値を検証しない）。
+  @ColumnDefault("'NONE'")
+  @Enumerated(EnumType.STRING)
+  @Column(name = "recurrence_type", nullable = false, length = 10)
+  private RecurrenceType recurrenceType = RecurrenceType.NONE;
+
+  @Column(name = "recurrence_until")
+  private LocalDate recurrenceUntil;
+
+  @Column(name = "series_id")
+  private UUID seriesId;
+
   /** JPA 用デフォルトコンストラクタ。 */
   protected Reservation() {}
 
@@ -89,10 +107,27 @@ public class Reservation {
     r.purpose = purpose;
     r.attendeesCount = attendeesCount;
     r.status = status;
+    r.recurrenceType = RecurrenceType.NONE;
     LocalDateTime now = LocalDateTime.now();
     r.createdAt = now;
     r.updatedAt = now;
     return r;
+  }
+
+  /**
+   * 繰り返しの系列に所属させる（繰り返し予約の一括作成時のみ。{@link #create} の直後に 1 回だけ呼ぶ）。
+   *
+   * <p>{@link #create} の引数は Checkstyle の {@code ParameterNumber}（最大 7）に達しているため、系列の 3 項目は作成後に設定する。
+   * 種別が {@code NONE} 以外のとき、{@code seriesId}・{@code until} は必ず非 null（V003 の CHECK 制約と整合）。
+   *
+   * @param seriesId 系列 ID（1 回の作成で 1 つ採番し、系列内の全予約で共有する）
+   * @param type 繰り返しの種別（{@code WEEKLY} / {@code MONTHLY}）
+   * @param until 繰り返しの終了日
+   */
+  public void joinSeries(UUID seriesId, RecurrenceType type, LocalDate until) {
+    this.seriesId = seriesId;
+    this.recurrenceType = type;
+    this.recurrenceUntil = until;
   }
 
   /**
@@ -196,5 +231,17 @@ public class Reservation {
 
   public LocalDateTime getUpdatedAt() {
     return updatedAt;
+  }
+
+  public RecurrenceType getRecurrenceType() {
+    return recurrenceType;
+  }
+
+  public LocalDate getRecurrenceUntil() {
+    return recurrenceUntil;
+  }
+
+  public UUID getSeriesId() {
+    return seriesId;
   }
 }

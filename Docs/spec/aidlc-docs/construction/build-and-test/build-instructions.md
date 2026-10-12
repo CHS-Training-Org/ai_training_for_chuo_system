@@ -1,51 +1,55 @@
-# Build Instructions（usage-report）
+# Build Instructions（recurring-reservation）
 
 ## Prerequisites
 
-- **Build Tool**: Gradle 9.5.1（Kotlin DSL、wrapper 同梱）/ pnpm（Node.js）
-- **Dependencies**: `backend/build.gradle.kts`（Spring Boot 4.0.6 / Java 25）、`frontend/package.json`（Next.js 15 / React 19）。本ユニットで依存関係の追加はない（グラフライブラリは導入せず、自前の棒グラフ）
-- **Environment Variables**: `frontend/.env.local`（`cp frontend/.env.local.example frontend/.env.local` 済みであること）
-- **System Requirements**: ビルドとユニット・結合テストには PostgreSQL も cognito-local も不要（テストは H2）。画面と PostgreSQL での動作確認（`e2e-test-instructions.md`）には DevContainer の稼働が必要
+- **Build Tool**: Gradle wrapper 9.5.1（backend）、pnpm（frontend）、npm（docs-next）
+- **Runtime**: Java 25、Node.js 24
+- **Dependencies**: 本ユニットで新しい依存は追加していない（`org.hibernate.annotations.ColumnDefault` は Spring Data JPA が推移的に持つ Hibernate のクラス）
+- **Environment Variables**: ビルドとテストには不要。起動時は `DB_URL`・`DB_USERNAME`・`DB_PASSWORD`（既定は `localhost:5432` の `bookflow`）
+- **System Requirements**: ビルドとテストは省メモリ・直列で実行する（メモリ枯渇の再発防止）。複数のビルド・テストを同時に走らせない
 
 ## Build Steps
 
-### 1. Install Dependencies
+### 1. backend
 
 ```bash
-cd frontend && pnpm install
+cd backend
+./gradlew clean build --max-workers=1
 ```
 
-### 2. Build All Units（省メモリ・直列で実行する）
+`spotlessCheck`、`checkstyleMain`、`test` を含む。
+
+### 2. frontend
 
 ```bash
-cd backend && ./gradlew clean build --max-workers=1
-cd frontend && pnpm lint && pnpm format:check && pnpm test && NODE_OPTIONS=--max-old-space-size=1536 pnpm build
+cd frontend
+pnpm lint && pnpm format:check && pnpm test
+NODE_OPTIONS=--max-old-space-size=1536 pnpm build
 ```
 
-`./gradlew build` は `spotlessCheck`・`checkstyleMain`・`test` を含む。整形が必要なときは `./gradlew spotlessApply`、frontend は `pnpm format` を先に実行する。複数のビルド・テストを同時に起動しない。
-
-### 3. Build the Docs Site（spec を更新した場合）
+### 3. docs-next
 
 ```bash
-cd docs-next && NODE_OPTIONS=--max-old-space-size=2048 npm run build
+cd docs-next
+NODE_OPTIONS=--max-old-space-size=2048 npm run build
 ```
 
-リンク・アンカーの破損があれば失敗する。`static/diagrams/**/*.drawio.svg` の「can't be read correctly」警告は既存の画像に対するもので、本ユニットとは無関係。
+リンクとアンカーが壊れていると失敗する（`onBrokenLinks` / `onBrokenAnchors` が `throw`）。
 
 ### 4. Verify Build Success
 
-- **Expected Output**: backend は `BUILD SUCCESSFUL`、frontend は `Compiled successfully` と、ルート一覧に `ƒ /admin/reports` が表示される
-- **Build Artifacts**: `backend/build/libs/bookflow-0.0.1-SNAPSHOT.jar`、`frontend/.next/`、`docs-next/build/`
-- **Common Warnings**: Checkstyle の警告（`Resource.java` の `ParameterNumber`、`ReservationRepository` の既存メソッド名、テストメソッド名のアンダースコア）は既存コード由来で許容する。本ユニットで追加した本体コードからの警告はない
+- **backend**：`BUILD SUCCESSFUL`。成果物は `backend/build/libs/bookflow-0.0.1-SNAPSHOT.jar`。Checkstyle の警告は `checkstyleMain` が 4 件（既存のコード由来）、`checkstyleTest` は `MethodName`（ADR-018 の命名規約が下線を含むため）で、どちらも失敗にはならない
+- **frontend**：`Compiled successfully`。`/reservations/new` と `/reservations/[id]` が動的ルートとして出る。成果物は `frontend/.next/`
+- **docs-next**：`[SUCCESS] Generated static files`。drawio の SVG について `image-size` の警告が出るが、既存で、ビルドは成功する
 
 ## Troubleshooting
 
-### Build Fails with Compilation Errors（backend）
+### `INSERT INTO reservations` を生 SQL で実行するテストが NOT NULL 違反で落ちる
 
-- **Cause**: `ReservationRepository` の追加メソッドが `PERIOD_MATCH` 定数の宣言より前にある、`ApprovedUsage` の FQN（`com.example.bookflow.domain.ApprovedUsage`）と JPQL の構築子式の不一致、`UsageCondition` と `StatisticsService` の参照の不一致
-- **Solution**: `Docs/spec/aidlc-docs/construction/usage-report/code/backend-summary.md` と `functional-design/domain-entities.md` の署名を確認する
+- **Cause**: `reservations.recurrence_type` は NOT NULL。H2 の `create-drop` はエンティティからテーブルを作るため、既定値を持たせないと、列を省略した INSERT が通らない
+- **Solution**: `Reservation.recurrenceType` の `@ColumnDefault("'NONE'")` を外さない。生 SQL の INSERT を足すときも、繰り返しの列は省略してよい
 
-### Frontend Build Fails on the Report Page
+### `ddl-auto: validate` で起動に失敗する
 
-- **Cause**: `admin/reports/` 配下の Server Component から Client Component の境界の誤り（`UsageFilterForm` は `"use client"`、`UsageBarChart` とページは Server）、または `lib/types/api.ts` のスキーマと Server Action の不一致
-- **Solution**: `Docs/spec/aidlc-docs/construction/usage-report/code/frontend-summary.md` を確認し、`pnpm build` の型エラー出力に従う
+- **Cause**: `Reservation` の `@Column` と V003 の列の名前・型・nullable が食い違っている
+- **Solution**: `V003__add_reservation_recurrence.sql` と `Reservation.java` の 3 列（`recurrence_type` VARCHAR(10)、`recurrence_until` DATE、`series_id` UUID）を突き合わせる

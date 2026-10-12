@@ -27,6 +27,18 @@ export const RESERVATION_STATUS_LABELS: Record<string, string> = {
 };
 
 /**
+ * 繰り返し種別の表示名（screen-spec.md §予約申請フォーム・§予約詳細 準拠）。
+ *
+ * 予約申請フォームの Select と、予約詳細のシリーズ情報で共用する。
+ * DB 値・API パラメータ・Zod enum は英語（NONE / WEEKLY / MONTHLY）のまま維持する。
+ */
+export const RECURRENCE_TYPE_LABELS: Record<string, string> = {
+  NONE: "繰り返さない",
+  WEEKLY: "毎週",
+  MONTHLY: "毎月",
+};
+
+/**
  * リソースカテゴリの表示名（requirements.md §カテゴリ定義 / screen-spec.md §リソース 準拠）。
  *
  * 画面表示（Badge・選択UI）で使用する純日本語ラベル。

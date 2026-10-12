@@ -5,12 +5,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.bookflow.application.exception.BusinessException;
+import com.example.bookflow.application.exception.ErrorCode;
 import com.example.bookflow.application.exception.ReservationConflictException;
 import com.example.bookflow.application.exception.ResourceNotFoundException;
+import com.example.bookflow.application.exception.ValidationException;
+import com.example.bookflow.domain.RecurrenceType;
 import com.example.bookflow.domain.Reservation;
 import com.example.bookflow.domain.ReservationRepository;
 import com.example.bookflow.domain.ReservationStatus;
@@ -23,6 +30,7 @@ import com.example.bookflow.presentation.dto.CreateReservationRequest;
 import com.example.bookflow.presentation.dto.ReservationResponse;
 import com.example.bookflow.presentation.dto.UpdateReservationRequest;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -164,9 +172,9 @@ class ReservationServiceTest {
     @Test
     void create_noConflictRequiresApprovalFalse_returnsApproved() {
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "週次ミーティング", 5, false);
+          new CreateReservationRequest(resourceId, start, end, "週次ミーティング", 5, false, null, null);
 
-      ReservationResponse response = reservationService.create(req, requester);
+      ReservationResponse response = reservationService.create(req, requester).get(0);
 
       assertThat(response.status()).isEqualTo("APPROVED");
       assertThat(response.resourceId()).isEqualTo(resourceId);
@@ -176,9 +184,9 @@ class ReservationServiceTest {
     void create_noConflictRequiresApprovalTrue_returnsPending() throws Exception {
       setField(resource, "requiresApproval", true);
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "承認が必要な会議", null, false);
+          new CreateReservationRequest(resourceId, start, end, "承認が必要な会議", null, false, null, null);
 
-      ReservationResponse response = reservationService.create(req, requester);
+      ReservationResponse response = reservationService.create(req, requester).get(0);
 
       assertThat(response.status()).isEqualTo("PENDING");
     }
@@ -198,7 +206,7 @@ class ReservationServiceTest {
           .thenReturn(List.of(existing));
 
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "テスト", null, false);
+          new CreateReservationRequest(resourceId, start, end, "テスト", null, false, null, null);
 
       assertThatThrownBy(() -> reservationService.create(req, requester))
           .isInstanceOf(ReservationConflictException.class);
@@ -219,9 +227,9 @@ class ReservationServiceTest {
           .thenReturn(List.of(existing));
 
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "テスト", null, false);
+          new CreateReservationRequest(resourceId, start, end, "テスト", null, false, null, null);
 
-      ReservationResponse response = reservationService.create(req, requester);
+      ReservationResponse response = reservationService.create(req, requester).get(0);
 
       assertThat(response.status()).isEqualTo("APPROVED");
     }
@@ -230,7 +238,7 @@ class ReservationServiceTest {
     void create_endBeforeStart_throwsBusinessException() {
       CreateReservationRequest req =
           new CreateReservationRequest(
-              resourceId, end, start, "テスト", null, false); // endAt < startAt
+              resourceId, end, start, "テスト", null, false, null, null); // endAt < startAt
 
       assertThatThrownBy(() -> reservationService.create(req, requester))
           .isInstanceOf(BusinessException.class);
@@ -242,7 +250,7 @@ class ReservationServiceTest {
       when(resourceRepository.findByIdForUpdate(unknownId)).thenReturn(Optional.empty());
 
       CreateReservationRequest req =
-          new CreateReservationRequest(unknownId, start, end, "テスト", null, false);
+          new CreateReservationRequest(unknownId, start, end, "テスト", null, false, null, null);
 
       assertThatThrownBy(() -> reservationService.create(req, requester))
           .isInstanceOf(ResourceNotFoundException.class);
@@ -253,9 +261,9 @@ class ReservationServiceTest {
       // requires_approval=true のリソースでも draft=true なら承認ステップは作成されない
       setField(resource, "requiresApproval", true);
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "下書き", null, true);
+          new CreateReservationRequest(resourceId, start, end, "下書き", null, true, null, null);
 
-      ReservationResponse response = reservationService.create(req, requester);
+      ReservationResponse response = reservationService.create(req, requester).get(0);
 
       assertThat(response.status()).isEqualTo("DRAFT");
       org.mockito.Mockito.verify(approvalService, org.mockito.Mockito.never())
@@ -266,11 +274,539 @@ class ReservationServiceTest {
     void create_draftTrueRequiresApprovalFalse_returnsDraft() {
       // requires_approval=false のリソースでも draft=true なら APPROVED ではなく DRAFT
       CreateReservationRequest req =
-          new CreateReservationRequest(resourceId, start, end, "下書き", null, true);
+          new CreateReservationRequest(resourceId, start, end, "下書き", null, true, null, null);
 
-      ReservationResponse response = reservationService.create(req, requester);
+      ReservationResponse response = reservationService.create(req, requester).get(0);
 
       assertThat(response.status()).isEqualTo("DRAFT");
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // create — 繰り返し予約（recurring-reservation ユニット）
+  // ---------------------------------------------------------------------------
+
+  @Nested
+  class CreateRecurring {
+
+    private final UUID resourceId = UUID.fromString("40000000-0000-0000-0000-000000000001");
+    private final UUID userId = UUID.fromString("40000000-0000-0000-0000-000000000002");
+    // 2026-11-02 は月曜
+    private final LocalDateTime start = LocalDateTime.of(2026, 11, 2, 10, 0);
+    private final LocalDateTime end = LocalDateTime.of(2026, 11, 2, 11, 0);
+
+    private Resource resource;
+    private User requester;
+
+    @BeforeEach
+    void setUp() {
+      resource = makeResource(resourceId, false);
+      requester = makeUser(userId, Role.MEMBER);
+      lenient()
+          .when(resourceRepository.findByIdForUpdate(resourceId))
+          .thenReturn(Optional.of(resource));
+      lenient()
+          .when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
+          .thenReturn(List.of());
+      lenient()
+          .when(reservationRepository.save(any(Reservation.class)))
+          .thenAnswer(inv -> inv.getArgument(0));
+      lenient().doNothing().when(approvalService).createInitialStep(any(Reservation.class));
+    }
+
+    private CreateReservationRequest request(
+        LocalDateTime startAt,
+        LocalDateTime endAt,
+        boolean draft,
+        RecurrenceType type,
+        LocalDate until) {
+      return new CreateReservationRequest(
+          resourceId, startAt, endAt, "定例会議", null, draft, type, until);
+    }
+
+    private CreateReservationRequest weekly(LocalDate until) {
+      return request(start, end, false, RecurrenceType.WEEKLY, until);
+    }
+
+    // ---- 日程の生成 ----
+
+    @Test
+    void create_weekly_createsOneReservationPerWeekIncludingUntilDay() {
+      List<ReservationResponse> responses =
+          reservationService.create(weekly(LocalDate.of(2026, 11, 23)), requester);
+
+      assertThat(responses)
+          .extracting(ReservationResponse::startAt)
+          .containsExactly(
+              LocalDateTime.of(2026, 11, 2, 10, 0),
+              LocalDateTime.of(2026, 11, 9, 10, 0),
+              LocalDateTime.of(2026, 11, 16, 10, 0),
+              LocalDateTime.of(2026, 11, 23, 10, 0));
+      assertThat(responses)
+          .extracting(ReservationResponse::endAt)
+          .containsExactly(
+              LocalDateTime.of(2026, 11, 2, 11, 0),
+              LocalDateTime.of(2026, 11, 9, 11, 0),
+              LocalDateTime.of(2026, 11, 16, 11, 0),
+              LocalDateTime.of(2026, 11, 23, 11, 0));
+      verify(reservationRepository, times(4)).save(any(Reservation.class));
+    }
+
+    @Test
+    void create_weekly_sharesOneSeriesIdAndRecurrenceSettings() {
+      List<ReservationResponse> responses =
+          reservationService.create(weekly(LocalDate.of(2026, 11, 23)), requester);
+
+      UUID seriesId = responses.get(0).seriesId();
+      assertThat(seriesId).isNotNull();
+      assertThat(responses).extracting(ReservationResponse::seriesId).containsOnly(seriesId);
+      assertThat(responses).extracting(ReservationResponse::recurrenceType).containsOnly("WEEKLY");
+      assertThat(responses)
+          .extracting(ReservationResponse::recurrenceUntil)
+          .containsOnly(LocalDate.of(2026, 11, 23));
+      // 申請のレスポンスでは件数を数えない
+      assertThat(responses).extracting(ReservationResponse::seriesCount).containsOnlyNulls();
+      assertThat(responses).extracting(ReservationResponse::remainingCount).containsOnlyNulls();
+    }
+
+    @Test
+    void create_monthlyDay31_skipsMonthsWithoutThatDay() {
+      CreateReservationRequest req =
+          request(
+              LocalDateTime.of(2026, 1, 31, 10, 0),
+              LocalDateTime.of(2026, 1, 31, 11, 0),
+              false,
+              RecurrenceType.MONTHLY,
+              LocalDate.of(2026, 5, 31));
+
+      List<ReservationResponse> responses = reservationService.create(req, requester);
+
+      assertThat(responses)
+          .extracting(ReservationResponse::startAt)
+          .containsExactly(
+              LocalDateTime.of(2026, 1, 31, 10, 0),
+              LocalDateTime.of(2026, 3, 31, 10, 0),
+              LocalDateTime.of(2026, 5, 31, 10, 0));
+    }
+
+    @Test
+    void create_overnightWeekly_keepsTheSameLengthForEachOccurrence() {
+      CreateReservationRequest req =
+          request(
+              LocalDateTime.of(2026, 11, 2, 23, 0),
+              LocalDateTime.of(2026, 11, 3, 2, 0),
+              false,
+              RecurrenceType.WEEKLY,
+              LocalDate.of(2026, 11, 9));
+
+      List<ReservationResponse> responses = reservationService.create(req, requester);
+
+      assertThat(responses).hasSize(2);
+      assertThat(responses.get(1).startAt()).isEqualTo(LocalDateTime.of(2026, 11, 9, 23, 0));
+      assertThat(responses.get(1).endAt()).isEqualTo(LocalDateTime.of(2026, 11, 10, 2, 0));
+    }
+
+    @Test
+    void create_untilSameDayAsStart_createsOneReservationWithSeriesId() {
+      List<ReservationResponse> responses =
+          reservationService.create(weekly(LocalDate.of(2026, 11, 2)), requester);
+
+      assertThat(responses).hasSize(1);
+      assertThat(responses.get(0).seriesId()).isNotNull();
+      assertThat(responses.get(0).recurrenceType()).isEqualTo("WEEKLY");
+    }
+
+    @Test
+    void create_none_hasNoSeriesAndKeepsNoneType() {
+      CreateReservationRequest req = request(start, end, false, RecurrenceType.NONE, null);
+
+      List<ReservationResponse> responses = reservationService.create(req, requester);
+
+      assertThat(responses).hasSize(1);
+      assertThat(responses.get(0).seriesId()).isNull();
+      assertThat(responses.get(0).recurrenceType()).isEqualTo("NONE");
+      assertThat(responses.get(0).recurrenceUntil()).isNull();
+    }
+
+    @Test
+    void create_recurrenceTypeOmitted_treatedAsNone() {
+      CreateReservationRequest req = request(start, end, false, null, null);
+
+      List<ReservationResponse> responses = reservationService.create(req, requester);
+
+      assertThat(responses).hasSize(1);
+      assertThat(responses.get(0).recurrenceType()).isEqualTo("NONE");
+    }
+
+    // ---- 繰り返し指定の検証（400） ----
+
+    @Test
+    void create_noneWithUntil_throwsValidationExceptionBeforeLocking() {
+      CreateReservationRequest req =
+          request(start, end, false, RecurrenceType.NONE, LocalDate.of(2026, 11, 30));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ValidationException.class);
+      verify(resourceRepository, never()).findByIdForUpdate(any(UUID.class));
+      verify(reservationRepository, never()).save(any(Reservation.class));
+    }
+
+    @Test
+    void create_weeklyWithoutUntil_throwsValidationException() {
+      CreateReservationRequest req = request(start, end, false, RecurrenceType.WEEKLY, null);
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ValidationException.class);
+      verify(resourceRepository, never()).findByIdForUpdate(any(UUID.class));
+    }
+
+    @Test
+    void create_monthlyWithoutUntil_throwsValidationException() {
+      CreateReservationRequest req = request(start, end, false, RecurrenceType.MONTHLY, null);
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void create_untilBeforeStartDate_throwsValidationException() {
+      assertThatThrownBy(
+              () -> reservationService.create(weekly(LocalDate.of(2026, 11, 1)), requester))
+          .isInstanceOf(ValidationException.class);
+      verify(resourceRepository, never()).findByIdForUpdate(any(UUID.class));
+    }
+
+    // ---- 終了日の上限（開始日から 2 年以内） ----
+
+    @Test
+    void create_untilExactlyTwoYearsAfterStart_isAccepted() {
+      // 2026-11-02 の 2 年後は 2028-11-02。終了日がちょうどその日なら有効（月曜は 105 回）
+      List<ReservationResponse> responses =
+          reservationService.create(weekly(LocalDate.of(2028, 11, 2)), requester);
+
+      assertThat(responses).hasSize(105);
+    }
+
+    @Test
+    void create_untilOneDayOverTwoYears_throwsValidationExceptionBeforeLocking() {
+      assertThatThrownBy(
+              () -> reservationService.create(weekly(LocalDate.of(2028, 11, 3)), requester))
+          .isInstanceOf(ValidationException.class)
+          .hasMessageContaining("2 年以内");
+      verify(resourceRepository, never()).findByIdForUpdate(any(UUID.class));
+      verify(reservationRepository, never()).save(any(Reservation.class));
+    }
+
+    @Test
+    void create_monthlyUntilOverTwoYears_throwsValidationException() {
+      CreateReservationRequest req =
+          request(start, end, false, RecurrenceType.MONTHLY, LocalDate.of(2029, 1, 1));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void create_draftUntilOverTwoYears_throwsValidationException() {
+      CreateReservationRequest req =
+          request(start, end, true, RecurrenceType.WEEKLY, LocalDate.of(2030, 1, 1));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void create_startOnLeapDay_limitIsFebruary28TwoYearsLater() {
+      // 2028-02-29 の 2 年後は 2030-02-28（2030 年は平年）。その日までは有効で、翌日は超過
+      LocalDateTime leapStart = LocalDateTime.of(2028, 2, 29, 10, 0);
+      LocalDateTime leapEnd = LocalDateTime.of(2028, 2, 29, 11, 0);
+
+      assertThat(
+              reservationService.create(
+                  request(
+                      leapStart, leapEnd, false, RecurrenceType.MONTHLY, LocalDate.of(2030, 2, 28)),
+                  requester))
+          .isNotEmpty();
+      assertThatThrownBy(
+              () ->
+                  reservationService.create(
+                      request(
+                          leapStart,
+                          leapEnd,
+                          false,
+                          RecurrenceType.MONTHLY,
+                          LocalDate.of(2030, 3, 1)),
+                      requester))
+          .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void create_noneIgnoresTwoYearLimit_becauseUntilIsNotAllowed() {
+      // NONE は終了日そのものが指定不可（上限の判定には到達しない）
+      CreateReservationRequest req =
+          request(start, end, false, RecurrenceType.NONE, LocalDate.of(2030, 1, 1));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ValidationException.class)
+          .hasMessageContaining("指定できません");
+    }
+
+    // ---- 重複判定（全件ロールバック） ----
+
+    @Test
+    void create_oneOccurrenceConflictsWithExisting_throwsAndSavesNothing() {
+      // 3 回目（11/16 10:00-11:00）だけが既存の承認済み予約と重なる
+      Reservation existing =
+          makeReservation(
+              UUID.randomUUID(),
+              resource,
+              requester,
+              LocalDateTime.of(2026, 11, 16, 10, 30),
+              LocalDateTime.of(2026, 11, 16, 11, 30),
+              ReservationStatus.APPROVED);
+      when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
+          .thenReturn(List.of(existing));
+
+      assertThatThrownBy(
+              () -> reservationService.create(weekly(LocalDate.of(2026, 11, 23)), requester))
+          .isInstanceOf(ReservationConflictException.class);
+      verify(reservationRepository, never()).save(any(Reservation.class));
+      verify(approvalService, never()).createInitialStep(any(Reservation.class));
+    }
+
+    @Test
+    void create_existingAdjacentToEachOccurrence_isNotConflict() {
+      // 各回 10:00-11:00 に対し、既存の予約が 09:00-10:00 で境界が接するだけ
+      Reservation existing =
+          makeReservation(
+              UUID.randomUUID(),
+              resource,
+              requester,
+              LocalDateTime.of(2026, 11, 9, 9, 0),
+              LocalDateTime.of(2026, 11, 9, 10, 0),
+              ReservationStatus.APPROVED);
+      when(reservationRepository.findByResource_IdAndStatusIn(eq(resourceId), anyCollection()))
+          .thenReturn(List.of(existing));
+
+      List<ReservationResponse> responses =
+          reservationService.create(weekly(LocalDate.of(2026, 11, 23)), requester);
+
+      assertThat(responses).hasSize(4);
+    }
+
+    @Test
+    void create_occurrencesOverlapEachOther_throwsAndSavesNothing() {
+      // 8 日間の予約の毎週の繰り返し。1 回目（11/02-11/10）と 2 回目（11/09-11/17）が重なる
+      CreateReservationRequest req =
+          request(
+              LocalDateTime.of(2026, 11, 2, 10, 0),
+              LocalDateTime.of(2026, 11, 10, 10, 0),
+              false,
+              RecurrenceType.WEEKLY,
+              LocalDate.of(2026, 11, 9));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ReservationConflictException.class);
+      verify(reservationRepository, never()).save(any(Reservation.class));
+    }
+
+    @Test
+    void create_draftOccurrencesOverlapEachOther_throwsAndSavesNothing() {
+      CreateReservationRequest req =
+          request(
+              LocalDateTime.of(2026, 11, 2, 10, 0),
+              LocalDateTime.of(2026, 11, 10, 10, 0),
+              true,
+              RecurrenceType.WEEKLY,
+              LocalDate.of(2026, 11, 9));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ReservationConflictException.class);
+      verify(reservationRepository, never()).save(any(Reservation.class));
+    }
+
+    @Test
+    void create_occurrencesExactlyAdjacent_isNotSelfConflict() {
+      // 7 日間の予約の毎週の繰り返し。前の回の終了と次の回の開始が一致するだけ（重複ではない）
+      CreateReservationRequest req =
+          request(
+              LocalDateTime.of(2026, 11, 2, 10, 0),
+              LocalDateTime.of(2026, 11, 9, 10, 0),
+              false,
+              RecurrenceType.WEEKLY,
+              LocalDate.of(2026, 11, 16));
+
+      List<ReservationResponse> responses = reservationService.create(req, requester);
+
+      assertThat(responses).hasSize(3);
+    }
+
+    @Test
+    void create_weekly_fetchesExistingReservationsOnlyOnce() {
+      reservationService.create(weekly(LocalDate.of(2026, 11, 23)), requester);
+
+      verify(reservationRepository, times(1))
+          .findByResource_IdAndStatusIn(eq(resourceId), anyCollection());
+    }
+
+    @Test
+    void create_resourceNotFound_throwsResourceNotFoundException() {
+      UUID unknownId = UUID.randomUUID();
+      when(resourceRepository.findByIdForUpdate(unknownId)).thenReturn(Optional.empty());
+      CreateReservationRequest req =
+          new CreateReservationRequest(
+              unknownId,
+              start,
+              end,
+              "定例会議",
+              null,
+              false,
+              RecurrenceType.WEEKLY,
+              LocalDate.of(2026, 11, 23));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void create_weeklyEndBeforeStart_throwsBusinessException() {
+      CreateReservationRequest req =
+          request(end, start, false, RecurrenceType.WEEKLY, LocalDate.of(2026, 11, 23));
+
+      assertThatThrownBy(() -> reservationService.create(req, requester))
+          .isInstanceOf(BusinessException.class);
+      verify(reservationRepository, never()).save(any(Reservation.class));
+    }
+
+    // ---- ステータスと承認ステップ ----
+
+    @Test
+    void create_weeklyDraft_createsAllAsDraftWithoutApprovalSteps() throws Exception {
+      setField(resource, "requiresApproval", true);
+      CreateReservationRequest req =
+          request(start, end, true, RecurrenceType.WEEKLY, LocalDate.of(2026, 11, 23));
+
+      List<ReservationResponse> responses = reservationService.create(req, requester);
+
+      assertThat(responses).extracting(ReservationResponse::status).containsOnly("DRAFT");
+      assertThat(responses.get(0).seriesId()).isNotNull();
+      verify(approvalService, never()).createInitialStep(any(Reservation.class));
+    }
+
+    @Test
+    void create_weeklyRequiresApproval_createsAllPendingWithOneStepEach() throws Exception {
+      setField(resource, "requiresApproval", true);
+
+      List<ReservationResponse> responses =
+          reservationService.create(weekly(LocalDate.of(2026, 11, 23)), requester);
+
+      assertThat(responses).extracting(ReservationResponse::status).containsOnly("PENDING");
+      verify(approvalService, times(4)).createInitialStep(any(Reservation.class));
+    }
+
+    @Test
+    void create_weeklyNoApprovalRequired_createsAllApprovedWithoutSteps() {
+      List<ReservationResponse> responses =
+          reservationService.create(weekly(LocalDate.of(2026, 11, 23)), requester);
+
+      assertThat(responses).extracting(ReservationResponse::status).containsOnly("APPROVED");
+      verify(approvalService, never()).createInitialStep(any(Reservation.class));
+    }
+
+    @Test
+    void create_weeklyApproverNotAvailable_throwsBusinessException() throws Exception {
+      setField(resource, "requiresApproval", true);
+      doThrow(new BusinessException(ErrorCode.APPROVER_NOT_AVAILABLE, "承認者が存在しません。"))
+          .when(approvalService)
+          .createInitialStep(any(Reservation.class));
+
+      assertThatThrownBy(
+              () -> reservationService.create(weekly(LocalDate.of(2026, 11, 23)), requester))
+          .isInstanceOf(BusinessException.class)
+          .hasMessageContaining("承認者");
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // get — 繰り返し予約のシリーズ情報（詳細のみ件数を数える）
+  // ---------------------------------------------------------------------------
+
+  @Nested
+  class GetSeries {
+
+    private final UUID reservationId = UUID.fromString("40000000-0000-0000-0000-000000000010");
+    private final UUID ownerId = UUID.fromString("40000000-0000-0000-0000-000000000011");
+    private final UUID seriesId = UUID.fromString("40000000-0000-0000-0000-000000000090");
+
+    private Reservation seriesReservation(User owner) throws Exception {
+      Reservation reservation =
+          makeReservation(
+              reservationId,
+              makeResource(UUID.randomUUID(), false),
+              owner,
+              LocalDateTime.of(2026, 11, 9, 10, 0),
+              LocalDateTime.of(2026, 11, 9, 11, 0),
+              ReservationStatus.APPROVED);
+      setField(reservation, "seriesId", seriesId);
+      setField(reservation, "recurrenceType", RecurrenceType.WEEKLY);
+      setField(reservation, "recurrenceUntil", LocalDate.of(2026, 11, 23));
+      return reservation;
+    }
+
+    @Test
+    void get_seriesReservation_returnsSeriesCountAndRemainingCount() throws Exception {
+      User owner = makeUser(ownerId, Role.MEMBER);
+      Reservation reservation = seriesReservation(owner);
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+      when(reservationRepository.countBySeriesId(seriesId)).thenReturn(4L);
+      when(reservationRepository.countBySeriesIdAndStartAtAfter(
+              seriesId, LocalDateTime.of(2026, 11, 9, 10, 0)))
+          .thenReturn(2L);
+
+      ReservationResponse response = reservationService.get(reservationId, owner);
+
+      assertThat(response.seriesId()).isEqualTo(seriesId);
+      assertThat(response.recurrenceType()).isEqualTo("WEEKLY");
+      assertThat(response.recurrenceUntil()).isEqualTo(LocalDate.of(2026, 11, 23));
+      assertThat(response.seriesCount()).isEqualTo(4);
+      assertThat(response.remainingCount()).isEqualTo(2);
+    }
+
+    @Test
+    void get_lastOccurrence_returnsZeroRemaining() throws Exception {
+      User owner = makeUser(ownerId, Role.MEMBER);
+      Reservation reservation = seriesReservation(owner);
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+      when(reservationRepository.countBySeriesId(seriesId)).thenReturn(4L);
+      when(reservationRepository.countBySeriesIdAndStartAtAfter(
+              seriesId, LocalDateTime.of(2026, 11, 9, 10, 0)))
+          .thenReturn(0L);
+
+      ReservationResponse response = reservationService.get(reservationId, owner);
+
+      assertThat(response.remainingCount()).isZero();
+    }
+
+    @Test
+    void get_noneReservation_returnsNullCountsAndSkipsCountQueries() {
+      User owner = makeUser(ownerId, Role.MEMBER);
+      Reservation reservation =
+          makeReservation(
+              reservationId,
+              makeResource(UUID.randomUUID(), false),
+              owner,
+              LocalDateTime.of(2026, 11, 9, 10, 0),
+              LocalDateTime.of(2026, 11, 9, 11, 0),
+              ReservationStatus.PENDING);
+      when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+
+      ReservationResponse response = reservationService.get(reservationId, owner);
+
+      assertThat(response.recurrenceType()).isEqualTo("NONE");
+      assertThat(response.seriesId()).isNull();
+      assertThat(response.seriesCount()).isNull();
+      assertThat(response.remainingCount()).isNull();
+      verify(reservationRepository, never()).countBySeriesId(any(UUID.class));
     }
   }
 

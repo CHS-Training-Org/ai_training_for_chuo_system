@@ -1,32 +1,33 @@
-# Execution Plan — usage-report
+# Execution Plan — recurring-reservation
 
 ## Detailed Analysis Summary
 
 ### Transformation Scope（Brownfield）
 
-- **Transformation Type**: Single component 追加が中心（予約・リソースの読み取り専用の集計 API と、新規の管理者向け統計ページ。既存の予約作成・更新・承認ロジックには触れない）
-- **Primary Changes**: backend に統計の Controller・Service・集計条件と応答の DTO・取得クエリを新設し、frontend に `/admin/reports` ページ・期間フィルタ・自前の棒グラフ・Server Action を追加してサイドナビに項目を足す
-- **Related Components**: `ReservationRepository`・`ResourceRepository`（取得クエリの追加）、`admin/layout.tsx` の ADMIN ガード、`nav-items.ts` とそのテスト、既存の `reservations/page.tsx` の searchParams と絞り込みフォームのパターン
+- **Transformation Type**: Single component の拡張（既存の予約作成の流れを、繰り返し日の生成と一括作成に広げる。新しいレイヤーや外部連携は追加しない）
+- **Primary Changes**: backend に V003 マイグレーション、`Reservation` の 3 列、繰り返し日を生成する純粋関数、`ReservationService.create` の一括作成（全件の重複判定とロールバック）、`CreateReservationRequest`・`ReservationResponse` の項目追加、`POST /api/reservations` のレスポンスの配列化、詳細 API のシリーズ件数・残り回数を加える。frontend に予約申請フォームの繰り返し入力、Server Action の配列対応、トースト、詳細画面のシリーズ情報を加える
+- **Related Components**: `ReservationRepository`（シリーズ件数・残り回数の取得）、`ApprovalService.createInitialStep`（N 回呼ぶ）、`ResourceService.overlaps`（共用）、`lib/schemas/reservation.ts`・`lib/types/api.ts`・`lib/labels.ts`、`tests/unit/msw/handlers.ts`、既存の予約フローの E2E
 
 ### Change Impact Assessment
 
-- **User-facing changes**: Yes（ADMIN 向けの新しい統計ページ、サイドナビの「利用実績」）
-- **Structural changes**: No（新しいレイヤーや外部連携は追加しない。既存の 4 層構成に沿って新規クラスを置く）
-- **Data model changes**: No（テーブル・マイグレーションの変更なし。読み取りのみ）
-- **API changes**: Yes（`GET /api/statistics/resources` の新設。既存 API の破壊的変更はない）
-- **NFR impact**: Yes（ADMIN 限定、件数上限なしの全件取得によるメモリ使用量、H2 と PostgreSQL の両対応）。ただし要件書で機能要件・受け入れ済みのトレードオフとして扱うため、拡張（Security / Resiliency / PBT）は不採用
+- **User-facing changes**: Yes（予約申請フォームに繰り返しの入力、登録成功のトースト、詳細画面にシリーズ情報）
+- **Structural changes**: No（既存の 4 層構成に沿って、新規クラスは日付生成の純粋関数だけ）
+- **Data model changes**: Yes（`reservations` に `recurrence_type`・`recurrence_until`・`series_id` を追加する V003。既存の行は `NONE` と NULL になる）
+- **API changes**: Yes（`POST /api/reservations` のレスポンスが単体から配列に変わる破壊的変更、リクエストに 2 項目、`GET /api/reservations/{id}` にシリーズ情報）
+- **NFR impact**: Yes（件数上限なしによるロック保持時間の増大。要件書で受け入れ済みのトレードオフ。拡張（Security / Resiliency / PBT）は不採用）
 
 ### Component Relationships（Brownfield）
 
-- **Primary Component**: `backend/.../presentation/StatisticsController`・`application/StatisticsService`（いずれも新規）、`frontend/.../admin/reports/page.tsx`（新規）
-- **Dependent Components**: `ReservationRepository`・`ResourceRepository`（クエリ追加）、`nav-items.ts`（項目追加）、`lib/types/api.ts`（スキーマ追加）
-- **Supporting Components**: `docs-next/docs/spec/`（api-spec・screen-spec・requirements）、`tests/unit/` と `backend/src/test/`
+- **Primary Component**: `backend/.../application/ReservationService`・`domain/Reservation`、`frontend/.../reservations/new/ReservationForm.tsx`
+- **Dependent Components**: `ReservationController`・`ReservationResponse`・`CreateReservationRequest`、`ApprovalService`（承認ステップの作成）、`server/actions/reservations.ts`、予約詳細画面
+- **Shared Components**: `ResourceService.overlaps`、`lib/datetime.ts`、`ResourceRepository.findByIdForUpdate`
+- **Supporting Components**: `docs-next/docs/spec/`（requirements・api-spec・er-diagram・screen-spec）、`tests/unit/` と `backend/src/test/`
 
 ### Risk Assessment
 
-- **Risk Level**: Low（読み取り専用の新規追加で既存ロジックを変更しない。ロールバックはコミットの取り消しで足りる）
-- **Rollback Complexity**: Easy
-- **Testing Complexity**: Moderate（期間での切り詰めと境界、0 件のリソースの含め方、ステータスの除外、ロール別の 401/403、棒グラフの相対値と整形を検証する）
+- **Risk Level**: Medium（既存の予約作成を変更し、レスポンスの形が破壊的に変わる。DB のスキーマ変更を伴い、V003 は H2 のテストで検証されない。リソース行の悲観ロックを取ったままの一括作成で、件数上限もない）
+- **Rollback Complexity**: Moderate（コードはコミットの取り消しで戻せるが、V003 を適用した DB から列を戻すには追加のマイグレーションが必要）
+- **Testing Complexity**: Complex（日付生成の境界、全件のロールバック、自己重複、下書き・承認との併用、400 と 409 の使い分け、フォームの条件付き入力を検証する。V003 の SQL と悲観ロックの並行性は、自動テストでは検証できず、PostgreSQL での手動確認が必要）
 
 ## Workflow Visualization
 
@@ -102,24 +103,24 @@ flowchart TD
 - [x] User Stories（COMPLETED）
 - [x] Execution Plan（IN PROGRESS）
 - [ ] Application Design — **SKIP**
-  - **Rationale**: 追加するクラス（`StatisticsController`・`StatisticsService`・集計条件と応答の DTO、統計ページ・期間フィルタ・棒グラフ・Server Action）は要件書の「影響範囲」で既に列挙済みで、境界は既存の 4 層構成に収まる。メソッド単位の署名と責務は Functional Design で定義する
+  - **Rationale**: 新しく追加するクラスは日付生成の純粋関数 1 つだけで、残りは既存の `ReservationService`・`Reservation`・DTO・フォームの拡張であり、境界は既存の 4 層構成に収まる。メソッド単位の署名と責務は Functional Design で定義する
 - [ ] Units Generation — **SKIP**
-  - **Rationale**: Issue #28 は単一の units of work（縦切り 1 機能）であり、複数ユニットへの分解は不要
+  - **Rationale**: Issue #31 は単一の units of work（縦切り 1 機能）であり、複数ユニットへの分解は不要
 
-### 🟢 CONSTRUCTION PHASE（ユニット: usage-report）
+### 🟢 CONSTRUCTION PHASE（ユニット: recurring-reservation）
 
 - [ ] Functional Design — **EXECUTE**
-  - **Rationale**: 期間での切り詰めと合算の計算（純粋関数）、有効・無効なリソースの含め方、取得クエリの設計（H2 と PostgreSQL の両対応）、並び順、棒グラフの相対値と時間の整形、Server Action の契約を Code Generation 前に明文化する
+  - **Rationale**: 次の設計を Code Generation の前に明文化する必要がある。(1) 繰り返し日の生成アルゴリズム（月末スキップ、基準日からの数え方、終了日当日、日またぎ）、(2) 全件の重複判定の方式（既存予約を 1 回取得してメモリ上で既存との重複と自己重複を判定する案を含む）、(3) V003 の列の型・既定値・制約・インデックス、(4) `Reservation.create` が上限の 7 引数に達していることへの対処、(5) 詳細 API のシリーズ件数・残り回数の取得、(6) 400 と 422 と 409 の振り分け、(7) フォームの条件付き入力と Server Action の配列対応
 - [ ] NFR Requirements — **SKIP**
-  - **Rationale**: ADMIN 限定と全件取得のトレードオフは要件書に記載済み。Security / Resiliency / PBT 拡張は不採用
+  - **Rationale**: 件数上限なしによるロック時間の増大は、要件書で受け入れ済みのトレードオフで、数値目標はない。重複判定を 1 回の取得にまとめる方針は Functional Design で扱う。Security / Resiliency / PBT 拡張は不採用
 - [ ] NFR Design — **SKIP**
   - **Rationale**: NFR Requirements に連動して SKIP
 - [ ] Infrastructure Design — **SKIP**
-  - **Rationale**: インフラ変更は発生しない。グラフライブラリの導入もなく、ADR も追加しない
+  - **Rationale**: インフラ変更は発生しない。V003 は DB のスキーマ変更であり、Functional Design で扱う
 - [ ] Code Generation — **EXECUTE (ALWAYS)**
-  - **Rationale**: 実装計画の作成とコード生成が必要。着手前に `/update-spec` で api-spec・screen-spec・requirements を更新する（Spec-first）
+  - **Rationale**: 実装計画の作成とコード生成が必要。着手前に `/update-spec` で requirements・api-spec・er-diagram・screen-spec を更新する（Spec-first）
 - [ ] Build and Test — **EXECUTE (ALWAYS)**
-  - **Rationale**: ビルド・テストの実行と検証が必要（OpenAPI への反映の確認を含む）
+  - **Rationale**: ビルド・テストの実行と検証が必要。V003 の PostgreSQL での確認と、悲観ロック下の一括作成の手動確認手順を含める
 
 ### 🟡 OPERATIONS PHASE
 
@@ -128,20 +129,19 @@ flowchart TD
 
 ## Package Change Sequence（Brownfield）
 
-1. `docs-next/docs/spec/`：api-spec・screen-spec・requirements を先に更新（Spec-first）
-2. backend：切り詰め・合算の純粋関数 → 集計条件と応答の DTO・Repository のクエリ → `StatisticsService` → `StatisticsController`（各層のテストを同時に書く）
-3. frontend：型とスキーマ・Server Action → 棒グラフ・期間フィルタ → `/admin/reports` ページ → ナビへの追加（`nav-items.ts` とテスト）
-   - **Reason**: frontend の Server Action は backend の API 契約（パス・パラメータ・応答の項目・エラー）に依存するため、backend を先に確定する
+1. `docs-next/docs/spec/`：requirements・api-spec・er-diagram・screen-spec を先に更新（Spec-first）
+2. backend：V003 と `Reservation` の 3 列 → 繰り返し日を生成する純粋関数 → `CreateReservationRequest`・`ReservationResponse` → `ReservationRepository` のクエリ → `ReservationService`（一括作成） → `ReservationController`（レスポンスの配列化）。各層のテストを同時に書く
+3. frontend：型・スキーマ・ラベル → Server Action の配列対応 → `ReservationForm` の繰り返し入力とトースト → 詳細画面のシリーズ情報。既存のテストと MSW を配列に追従させる
+   - **Reason**: frontend の Server Action は backend の API 契約（配列のレスポンス、パラメータ、エラー）に依存するため、backend を先に確定する
 
 ## Estimated Timeline
 
 - **Total Phases**: 3（Functional Design・Code Generation・Build and Test）
-- **Estimated Duration**: ビジネス要求シートの見積り（半日〜1日）に準拠
+- **Estimated Duration**: ビジネス要求シートの見積り（1〜2 日）に準拠
 
 ## Success Criteria
 
-- **Primary Goal**: ADMIN が `/admin/reports` で、期間を指定してリソース別の承認済み予約の件数と合計利用時間を棒グラフと表で確認できる
-- **Key Deliverables**: backend（`StatisticsController`・`StatisticsService`・DTO・Repository のクエリ）、frontend（統計ページ・期間フィルタ・棒グラフ・Server Action・ナビ項目）、spec 更新、関連テスト一式
-- **Quality Gates**: `./gradlew test`・`pnpm lint`・`pnpm format:check`・`pnpm test`・`pnpm build` がすべて成功。stories.md の受入条件（US-01〜05）と requirements.md の受入条件をすべて満たす。既存のテストが回帰していないこと
-
-- **Integration Testing**: ADMIN の 200 と集計値（切り詰め・0 件のリソース・ステータス除外）、MEMBER・APPROVER の 403・未認証の 401、`from`/`to` の 400 を `StatisticsControllerTest` で確認し、OpenAPI（`/v3/api-docs`）にエンドポイントが載ることを確認する
+- **Primary Goal**: 予約申請フォームで毎週・毎月の繰り返しと終了日を指定すると、複数の予約が 1 回の操作で登録され、1 件でも重複すれば全件が失敗する
+- **Key Deliverables**: backend（V003、`Reservation` の 3 列、日付生成の純粋関数、一括作成、DTO、配列のレスポンス、詳細 API のシリーズ情報）、frontend（繰り返し入力、トースト、Server Action の配列対応、詳細画面のシリーズ情報）、spec 更新、関連テスト一式
+- **Quality Gates**: `./gradlew test`・`./gradlew spotlessCheck`・`./gradlew checkstyleMain`・`pnpm lint`・`pnpm format:check`・`pnpm test`・`pnpm build` がすべて成功。stories.md の受入条件（US-01〜08）と requirements.md の受入条件をすべて満たす。既存のテストが（配列化への追従後に）回帰していない
+- **Integration Testing**: `ReservationControllerTest` で、繰り返しの生成件数、全件ロールバック（既存との重複・自己重複）、400 の 3 パターン、下書き・承認要リソースとの併用、詳細 API のシリーズ情報を確認する。V003 は PostgreSQL でのローカル起動で確認する

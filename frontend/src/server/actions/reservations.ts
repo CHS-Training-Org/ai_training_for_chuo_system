@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { createApiClient } from "@/lib/api-client";
 import { ReservationResponseSchema, type ReservationResponse } from "@/lib/types/api";
 import { getAccessToken } from "@/lib/session";
@@ -64,22 +65,25 @@ export async function getReservationAction(id: string): Promise<ReservationRespo
 }
 
 /**
- * 予約を申請する（201 Created）。
+ * 予約を申請する（201 Created）。レスポンスは常に配列（繰り返さない場合は 1 件）。
  *
  * {@code draft: true} → 下書き保存（DRAFT、承認フローに流れない）。
  * {@code draft} 省略/false の場合：{@code requires_approval=false} → 即 APPROVED、{@code true} → PENDING。
- * 重複時は ApiClientError(code='RESERVATION_CONFLICT', status=409) をスロー。
+ * {@code recurrenceType} が WEEKLY / MONTHLY のときは、{@code recurrenceUntil} まで繰り返す複数の予約を 1 回で作る
+ * （全件が同じステータス・同じ seriesId）。
+ * 重複時（既存の予約との重複、繰り返しの予約どうしの重複）は ApiClientError(code='RESERVATION_CONFLICT', status=409)
+ * をスローし、1 件も作られない。
  */
 export async function createReservationAction(
   input: CreateReservationInput,
-): Promise<ReservationResponse> {
+): Promise<ReservationResponse[]> {
   const client = createApiClient(getAccessToken);
   const body = {
     ...input,
     startAt: toIsoWithSeconds(input.startAt),
     endAt: toIsoWithSeconds(input.endAt),
   };
-  return client.post("/reservations", body, ReservationResponseSchema);
+  return client.post("/reservations", body, z.array(ReservationResponseSchema));
 }
 
 /**

@@ -59,6 +59,11 @@ export const MOCK_RESERVATION_RESPONSE = {
   status: "APPROVED",
   createdAt: "2025-06-01T09:00:00",
   updatedAt: "2025-06-01T09:00:00",
+  seriesId: null,
+  recurrenceType: "NONE",
+  recurrenceUntil: null,
+  seriesCount: null,
+  remainingCount: null,
 };
 
 export const MOCK_RESERVATION_LIST_RESPONSE = {
@@ -200,17 +205,19 @@ export const handlers = [
     return HttpResponse.json({ code: "NOT_FOUND", message: "予約が存在しません" }, { status: 404 });
   }),
 
-  // 予約申請
+  // 予約申請（レスポンスは常に配列。モックは繰り返し指定にかかわらず 1 件を返す）
   http.post("/api/backend/reservations", async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
-      {
-        ...MOCK_RESERVATION_RESPONSE,
-        id: "40000000-0000-0000-0000-000000000099",
-        purpose: body.purpose ?? MOCK_RESERVATION_RESPONSE.purpose,
-        startAt: body.startAt ?? MOCK_RESERVATION_RESPONSE.startAt,
-        endAt: body.endAt ?? MOCK_RESERVATION_RESPONSE.endAt,
-      },
+      [
+        {
+          ...MOCK_RESERVATION_RESPONSE,
+          id: "40000000-0000-0000-0000-000000000099",
+          purpose: body.purpose ?? MOCK_RESERVATION_RESPONSE.purpose,
+          startAt: body.startAt ?? MOCK_RESERVATION_RESPONSE.startAt,
+          endAt: body.endAt ?? MOCK_RESERVATION_RESPONSE.endAt,
+        },
+      ],
       { status: 201 },
     );
   }),

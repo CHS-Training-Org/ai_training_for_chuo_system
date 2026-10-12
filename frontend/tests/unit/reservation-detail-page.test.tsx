@@ -59,6 +59,19 @@ async function renderPage(reservation: ReservationResponse, profile: UserRespons
   render(jsx);
 }
 
+/** 繰り返しで作った予約（毎週・4 件のうち 2 回目）。 */
+const SERIES_RESERVATION: ReservationResponse = {
+  ...BASE_RESERVATION,
+  status: "APPROVED",
+  startAt: "2026-11-09T10:00:00",
+  endAt: "2026-11-09T11:00:00",
+  seriesId: "20000000-0000-0000-0000-000000000090",
+  recurrenceType: "WEEKLY",
+  recurrenceUntil: "2026-11-23",
+  seriesCount: 4,
+  remainingCount: 2,
+};
+
 describe("ReservationDetailPage", () => {
   it("DRAFT の予約を本人が閲覧すると、編集ボタンが表示される", async () => {
     await renderPage(BASE_RESERVATION, OWNER_PROFILE);
@@ -83,5 +96,66 @@ describe("ReservationDetailPage", () => {
     await renderPage(BASE_RESERVATION, admin);
 
     expect(screen.queryByRole("link", { name: "予約内容を編集する" })).not.toBeInTheDocument();
+  });
+
+  describe("シリーズ情報（繰り返し予約）", () => {
+    it("繰り返しで作った予約: 種別・終了日・シリーズ件数・残り回数が表示される", async () => {
+      await renderPage(SERIES_RESERVATION, OWNER_PROFILE);
+
+      expect(screen.getByTestId("reservation-detail-recurrence-type")).toHaveTextContent("毎週");
+      expect(screen.getByTestId("reservation-detail-recurrence-until")).toHaveTextContent(
+        "2026/11/23",
+      );
+      expect(screen.getByTestId("reservation-detail-series-count")).toHaveTextContent("4 件");
+      expect(screen.getByTestId("reservation-detail-remaining-count")).toHaveTextContent("2 回");
+    });
+
+    it("毎月の予約: 種別が「毎月」と表示される", async () => {
+      await renderPage({ ...SERIES_RESERVATION, recurrenceType: "MONTHLY" }, OWNER_PROFILE);
+
+      expect(screen.getByTestId("reservation-detail-recurrence-type")).toHaveTextContent("毎月");
+    });
+
+    it("最後の回: 残り回数が 0 回と表示される（行は消えない）", async () => {
+      await renderPage({ ...SERIES_RESERVATION, remainingCount: 0 }, OWNER_PROFILE);
+
+      expect(screen.getByTestId("reservation-detail-remaining-count")).toHaveTextContent("0 回");
+    });
+
+    it("繰り返さない予約（NONE）: シリーズに関する欄が表示されない", async () => {
+      await renderPage(
+        {
+          ...BASE_RESERVATION,
+          seriesId: null,
+          recurrenceType: "NONE",
+          recurrenceUntil: null,
+          seriesCount: null,
+          remainingCount: null,
+        },
+        OWNER_PROFILE,
+      );
+
+      expect(screen.queryByText("繰り返し")).not.toBeInTheDocument();
+      expect(screen.queryByText("シリーズ件数")).not.toBeInTheDocument();
+      expect(screen.queryByText("残り回数")).not.toBeInTheDocument();
+    });
+
+    it("旧形式のレスポンス（シリーズの項目なし）: シリーズに関する欄が表示されない", async () => {
+      await renderPage(BASE_RESERVATION, OWNER_PROFILE);
+
+      expect(screen.queryByText("繰り返し")).not.toBeInTheDocument();
+      expect(screen.queryByText("シリーズ件数")).not.toBeInTheDocument();
+    });
+
+    it("シリーズ件数が null のとき（件数を数えていないレスポンス）: 件数と残り回数の行を出さない", async () => {
+      await renderPage(
+        { ...SERIES_RESERVATION, seriesCount: null, remainingCount: null },
+        OWNER_PROFILE,
+      );
+
+      expect(screen.getByTestId("reservation-detail-recurrence-type")).toBeInTheDocument();
+      expect(screen.queryByText("シリーズ件数")).not.toBeInTheDocument();
+      expect(screen.queryByText("残り回数")).not.toBeInTheDocument();
+    });
   });
 });

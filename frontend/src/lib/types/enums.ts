@@ -18,6 +18,10 @@ export const ReservationStatusSchema = z.enum([
 ]);
 export type ReservationStatus = z.infer<typeof ReservationStatusSchema>;
 
+/** 繰り返しの種別（NONE = 繰り返さない） */
+export const RecurrenceTypeSchema = z.enum(["NONE", "WEEKLY", "MONTHLY"]);
+export type RecurrenceType = z.infer<typeof RecurrenceTypeSchema>;
+
 /** 承認ステップステータス */
 export const ApprovalStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED"]);
 export type ApprovalStatus = z.infer<typeof ApprovalStatusSchema>;

@@ -1,93 +1,115 @@
-# Requirements — ユニット: usage-report（利用実績の集計・グラフ表示）
+# Requirements — ユニット: recurring-reservation（繰り返し予約）
 
 ## Intent Analysis Summary
 
-- **User Request**: 管理者（ADMIN）がリソース別の利用実績（承認済み予約の件数と合計利用時間）を、期間を指定して集計し、棒グラフで確認できるようにする（GitHub Issue #28、ビジネス要求シート `docs-next/docs/spec/enhancements/intermediate/usage-statistics.md`）
-- **Request Type**: New Feature（集計 API・統計ページ・グラフの新設）
-- **Scope Estimate**: Multiple Components（frontend + backend 両方）
-- **Complexity Estimate**: Moderate（H2 と PostgreSQL の両対応の集計、期間での切り詰め計算、新画面。DB・マイグレーションの変更はない）
+- **User Request**: 毎週・毎月の繰り返しパターンを 1 回の操作で一括登録できるようにする（GitHub Issue #31、ビジネス要求シート `docs-next/docs/spec/enhancements/intermediate/recurring-reservation.md`）
+- **Request Type**: Enhancement（既存の予約作成 API・予約申請フォームの拡張。ユースケース UC-03「予約申請・管理」の拡張）
+- **Scope Estimate**: Multiple Components（frontend + backend 両方、DB マイグレーションあり）
+- **Complexity Estimate**: Moderate（日付生成、全件を 1 トランザクションで作る重複チェック、API のレスポンス形の破壊的変更、承認ステップ N 件）
 - **Requirements Depth**: Standard
 
 ## 機能要件
 
-要件 ID は `USG-`、ユースケースは UC-10 を採番する。ビジネス要求シートの `DASH-01`〜`05` は requirements.md の既存 `DASH-01`/`02`（ダッシュボードの件数表示）と、シートの「UC-08」は既存 UC-08（リソース登録・編集）と衝突するため使わない。
+要件 ID は `REC-` を採番する。ビジネス要求シートの `RSV-01`〜`05` は、`requirements.md` の既存 `RSV-01`〜`07`（一覧・詳細・キャンセル・編集）と衝突するため使わない。ユースケースはシートのとおり UC-03 の拡張とし、新しい UC は採番しない。
 
 | # | 要件 | シートの要件 |
 |---|------|--------------|
-| USG-01 | `GET /api/statistics/resources` を新設し、リソースごとの承認済み（`APPROVED`）予約の件数と合計利用時間（分、整数）を返す | DASH-01 |
-| USG-02 | 集計期間をクエリパラメータ `from`・`to` で指定できる（下記「決定事項」参照） | DASH-02 |
-| USG-03 | ADMIN ロールのみアクセスできる（MEMBER / APPROVER は 403） | DASH-03 |
-| USG-04 | 管理者向けの統計ページ `/admin/reports` に、リソース別の棒グラフ（件数と合計利用時間）を表示する。期間を変更するとグラフが再取得・再描画される | DASH-04 |
-| USG-05 | グラフと併記の表に、リソース名・予約件数・合計利用時間（時間）を表示する | DASH-05 |
-| USG-06 | 利用実績が 0 件のリソースも表示する（件数 0・合計 0 分） | （ユーザー指定） |
+| REC-01 | `reservations` に `recurrence_type`（`NONE` / `WEEKLY` / `MONTHLY`）・`recurrence_until`（終了日）・`series_id`（UUID、NULL 許容）を、Flyway の `V003` で追加する。既存の行は `recurrence_type = NONE`・他は NULL になり、影響を受けない | RSV-01（`series_id` は追加） |
+| REC-02 | `POST /api/reservations` が `recurrenceType`（省略時 `NONE`）と `recurrenceUntil`（`yyyy-MM-dd`）を受け付け、繰り返しパターンに従って複数の予約を一括作成する | RSV-02 |
+| REC-03 | 繰り返し日の生成規則に従う（下記「決定事項」の 6） | RSV-02 |
+| REC-04 | 一括作成した予約は、それぞれ独立した予約として管理する。個別にキャンセル・変更ができ、既存の API・画面の挙動は変えない | RSV-03 |
+| REC-05 | 一括作成では、1 件でも重複があれば全件を作らずに 409 `RESERVATION_CONFLICT` を返す。既存の予約との重複と、生成した予約どうしの重複（自己重複）の両方を対象とする | RSV-04 |
+| REC-06 | `POST /api/reservations` のレスポンスは、`recurrenceType` にかかわらず常に配列（201）で返す。`NONE` のときは 1 件の配列になる | RSV-02（レスポンスの複数件返却） |
+| REC-07 | 下書き保存（`draft: true`）と併用できる。全件を `DRAFT` で作り、同じ `series_id` を付ける | （ユーザー指定） |
+| REC-08 | 承認が必要なリソースでは、全件を `PENDING` で作り、N 件分の承認ステップを作る | （ユーザー指定） |
+| REC-09 | 繰り返し指定を検証する（下記「決定事項」の 7） | （ユーザー指定） |
+| REC-10 | 予約の詳細 API（`GET /api/reservations/{id}`）が、シリーズの情報（`seriesId`・`recurrenceType`・`recurrenceUntil`・シリーズ件数・残り回数）を返す | （ユーザー指定） |
+| REC-11 | 予約申請フォーム（`/reservations/new`）に繰り返しの入力 UI を追加する（「繰り返さない」「毎週」「毎月」と終了日）。登録に成功したら「N 件の予約を登録しました」とトーストで知らせる | RSV-05 |
+| REC-12 | 予約の詳細画面に、シリーズ件数と残り回数を表示する。予約の一覧画面には表示しない | （ユーザー指定） |
 
 ## 決定事項（Requirements Analysis で確定）
 
 | # | 論点 | 決定 |
 |---|------|------|
-| 1 | 集計対象の予約 | `APPROVED` のみ。過去・未来は問わない（まだ始まっていない承認済み予約も含める） |
-| 2 | 集計単位と内容 | リソース別。件数と合計利用時間。利用率（稼働可能時間を分母にした割合）は今回のスコープ外 |
-| 3 | 対象予約の選び方 | 既存の予約一覧・CSV 帳票出力と同じ期間重複判定（`r.startAt < :to AND r.endAt > :from`、境界一致の隣接は含まない） |
-| 4 | `from`/`to` の指定 | 両方指定、または両方未指定。片方だけは 400 `VALIDATION_ERROR`（文言「from と to は同時に指定してください。」）。両方未指定は全期間。両方指定のときは `from` が `to` より前であること（`from >= to` は 400 `VALIDATION_ERROR`、文言「from は to より前にしてください。」）。`from >= to` だと重複判定に引っかかる予約の切り詰め時間が負になるため。既存の予約一覧・CSV にはない、統計 API だけの検証 |
-| 5 | 件数 | 期間と重複する `APPROVED` の予約の数。期間の境界をまたぐ予約も 1 件として数える |
-| 6 | 合計利用時間 | 期間を指定したときは、各予約の `[startAt, endAt)` を `[from, to)` で**切り詰めた時間**を分単位で合算する（`max(startAt, from)` から `min(endAt, to)` まで）。期間未指定のときは各予約の `startAt` から `endAt` までの全時間。API は分の整数（`totalMinutes`）で返し、画面が時間（小数第 1 位）に整形する |
-| 7 | 0 件のリソース | 有効（`is_active = true`）なリソースは実績が 0 件でも常に表示する。無効化済みのリソースは、期間内に実績が 1 件以上あるときだけ表示する |
-| 8 | 画面の配置 | `/admin/reports` を新設し、サイドナビの管理者メニューに追加する（`admin/layout.tsx` の ADMIN ガードを継承）。ダッシュボード `/` は変更しない |
-| 9 | グラフの描画 | 依存ライブラリは導入しない。既存の `--chart-N` トークンと Tailwind で、自前の棒グラフ（HTML / CSS または SVG）を描く |
-| 10 | 集計の実装方式 | 取得は JPQL（H2 と PostgreSQL の方言差を避けるためネイティブ SQL と DB の日時差関数は使わない）、切り詰めと合算は Java 側（`Duration`）で行う |
+| 1 | 繰り返しの種別 | `NONE` / `WEEKLY` / `MONTHLY` の 3 値。日次・曜日の複数指定・間隔指定（N 週ごと）はスコープ外 |
+| 2 | 保存する列 | `series_id`・`recurrence_type`・`recurrence_until` の 3 列を、系列内のすべての予約に同じ値で保存する。`NONE` の予約は `series_id` と `recurrence_until` が NULL |
+| 3 | 生成のタイミング | 作成時に全件を同期生成する。バッチによる遅延生成はしない |
+| 4 | 件数と終了日の上限 | 件数の上限は設けない。ただし終了日は開始日から 2 年以内に限る（2 年後の同じ日までは有効。開始日が 2 月 29 日で 2 年後が平年なら 2 月 28 日まで）。超過は 400 `VALIDATION_ERROR`。当初は上限なしとしたが、PR #150 の AI レビュー（Should fix）で、極端に遠い終了日が大量の生成とロックの長時間保持を招くため、終了日の上限を追加した |
+| 5 | 重複時の扱い | 1 件でも重複すれば全件ロールバックし、409 `RESERVATION_CONFLICT` を返す。メッセージは既存の固定文言のままで、衝突した日付は含めない。自己重複は既存予約との重複と同じ 409 で返す。下書きの繰り返しでも、自己重複は同じく 409 とする |
+| 6 | 繰り返し日の生成規則 | 1 回目は入力の `startAt`・`endAt` そのもの。`WEEKLY` は 7 日ごと（同じ曜日・同じ時刻）。`MONTHLY` は 1 回目の日（day of month）を基準に毎月同じ日で、その月に存在しない日（31 日の 2 月など）はその月をスキップする。スキップした月の次は、直前の回からの積み上げではなく基準日から数える（1 月 31 日の次は 3 月 31 日）。`recurrenceUntil` の日付と同じ日に始まる回は含める（終了日当日を含む）。各回の長さは 1 回目の `endAt - startAt` と同じで、日をまたぐ予約も許可する |
+| 7 | 繰り返し指定の検証 | すべて 400 `VALIDATION_ERROR`。(a) `NONE` で `recurrenceUntil` が指定された、(b) `WEEKLY` / `MONTHLY` で `recurrenceUntil` が未指定、(c) `recurrenceUntil` が `startAt` の日付より前。`recurrenceUntil` が `startAt` の日付と同じなら有効で、1 件だけ生成する。(c) は既存の `endAt > startAt` の検証（422）と HTTP ステータスが異なる |
+| 8 | レスポンスの形 | 常に配列（`startAt` の昇順）。既存のフロント（`createReservationAction`）とテストは配列に追従させる |
+| 9 | シリーズ件数 | 同じ `series_id` の予約の件数。キャンセル済み・却下済みを含む、全ステータスを数える（生成した件数と一致する） |
+| 10 | 残り回数 | 表示中の予約より後（`startAt` がより遅い）の、同じ `series_id` の予約の件数。表示中の予約自身は含まず、閲覧する日で値は変わらない。件数の数え方は 9 と同じ（全ステータス） |
+| 11 | シリーズ情報の取得方法 | 詳細 API だけがシリーズ件数・残り回数を計算して返す。一覧 API では計算せず（N+1 の回避）、`seriesId` などの保存列だけを返す。`series_id` が NULL の予約では、件数・残り回数は null |
+| 12 | 一括操作 | シリーズの一括変更・一括キャンセルは、スコープ外 |
 
 ## 既定の前提（レビューで変更可）
 
 質問せず、次の既定値を置く。承認時に違和感があれば Request Changes で指定する。
 
-- **並び順**：合計利用時間の降順、同値は件数の降順、さらに同値はリソース名の昇順（グラフの読みやすさのため）
-- **レスポンスの項目**：`resourceId`・`resourceName`・`reservationCount`・`totalMinutes` の 4 つ。ページネーションなしの配列
-- **グラフの構成**：「予約件数」と「合計利用時間（時間）」の 2 つの横棒グラフを並べ、その下に同じ値の表を置く。棒の長さは各グラフ内の最大値を 100% とする相対値。色は `--chart-1`・`--chart-2`
-- **期間入力**：`/reservations` の絞り込みと同じ `datetime-local` の `from`・`to`（URL の searchParams で保持し、「集計する」で更新、「リセット」で全期間に戻す）。ページを開いた直後は期間未指定（全期間）
-- **時間の表示**：分を 60 で割り、小数第 1 位に丸める（例 150 分は 2.5 時間）。丸めるのは表示だけで、API は分の整数を返す
-- **タイムゾーン**：変換せず `LocalDateTime` をそのまま使う（既存の API と同じ）
+- **詳細画面の表示項目**：シリーズ件数と残り回数に加えて、繰り返しの種別（毎週 / 毎月）と終了日も表示する。`REC-12` の指定は件数と残り回数だが、種別と終了日は保存する列（REC-01）であり、一緒に出さないと件数の意味が伝わらないため
+- **`NONE` の予約の表示**：詳細画面にシリーズの欄を出さない
+- **ラベル**：`recurrenceType` の表示名は「繰り返さない」「毎週」「毎月」。`lib/labels.ts` に定数を追加する
+- **`recurrenceUntil` の型と形式**：DB は日付型、API は `yyyy-MM-dd`。タイムゾーンは変換せず、`LocalDateTime` をそのまま使う（既存の API と同じ）
+- **過去日時**：既存の予約作成と同じく、過去日時のチェックは追加しない
+- **フォームの入力**：「繰り返さない」が初期値。「毎週」「毎月」を選ぶと終了日（`type="date"`）が現れ、必須になる。「繰り返さない」に戻すと終了日は非表示にして値を送らない（API の 400（a）を避けるため）
+- **成功後の遷移**：トースト表示のあと、従来どおり `/reservations`（下書きは `/reservations?status=DRAFT`）へ遷移する
 
 ## 非機能要件
 
-- **セキュリティ（機能要件として扱う）**：Security Baseline 拡張は適用しない。ADMIN 限定（USG-03）は Controller メソッドの `@PreAuthorize("hasRole('ADMIN')")`（既存の `ReportController`・`UserController` と同じ方式）。未認証は 401、MEMBER / APPROVER は 403（`{code:"FORBIDDEN"}`）。フロントのページは `admin/layout.tsx` が非 ADMIN に 403 画面を出し、API の 403・401 はそのまま扱う
-- **N+1 回避**：予約取得は `JOIN FETCH` でリソースを同時に取得する（`open-in-view: false` と LAZY のため必須）。取得から集計までを `@Transactional(readOnly = true)` 内で行う
-- **性能**：件数上限・ページネーションなし（条件に合う `APPROVED` 予約を全件取得して Java で集計する）。データが大量になるとメモリ使用量が増える点は受け入れる。`start_at`/`end_at` にインデックスは無く、本課題では追加しない
-- **互換性**：テストは H2（PostgreSQL 互換モード）、本番は PostgreSQL。集計ロジックを DB に依存させない（決定事項 10）
-- **OpenAPI**：`GET /api/statistics/resources` が Springdoc の OpenAPI ドキュメントに反映される（Controller の追加で自動反映。受入条件のため、反映されることをテストまたは手動で確認する）
-- **コード品質**：Checkstyle（`ParameterNumber` 最大 7 など）・Spotless（googleJavaFormat）に適合させる。条件は record にまとめる。テストの UUID プレフィックスは `73` を使う
-- **テスト容易性**：切り詰め・合算は純粋関数に切り出してユニットテストする。フロントはグラフの値を表にも出すため、表で値を検証できる。Property-Based Testing は適用しない
-- **画面**：グラフは数値の表を併記し、色だけに頼らずラベルと数値でも読めるようにする（アクセシビリティ）
+- **セキュリティ**：Security Baseline 拡張は適用しない。権限は既存の予約作成と同じ（認証済みユーザー全員が自分の予約を作れる）。追加の認可はない
+- **性能とロック時間（リスク）**：件数の上限がないため、終了日の上限（2 年）までの毎週の繰り返しは、最大 105 件の予約を生成する。重複チェックはリソース行の悲観ロックを取ったまま、既存予約の読み込みと比較を行うので、件数が増えるほどロックの保持時間が伸びる（同じリソースへの他の予約・承認が待たされる）。終了日を開始日から 2 年以内に限る（決定事項 4。PR #150 の AI レビューで追加）ため、毎週で最大 105 件、ロックの保持時間もその件数が上限になる。設計では、既存予約の取得を 1 回にまとめ、メモリ上で全日程を比較する方式を検討する（1 日程ごとの再取得を避ける）
+- **一貫性**：全件の作成は 1 つのトランザクションで行う。重複・承認者不在（422 `APPROVER_NOT_AVAILABLE`）などの例外は `RuntimeException` なので、全件がロールバックされる。保存した兄弟予約が次の重複判定に見えるかは Hibernate の自動フラッシュに依存するため、自己重複はメモリ上の比較で検出する方針とし、設計で確定する
+- **互換性**：既存の予約の `recurrence_type` は `NONE`（既定値）で、既存データに影響しない。`POST /api/reservations` のレスポンスが単体から配列に変わる破壊的変更であり、フロント・MSW・既存のテストを同じ変更で更新する
+- **DB**：本番は `ddl-auto: validate` のため、`Reservation` の `@Column` と V003 の列の名前・型・nullable を一致させる。テストは H2 の `create-drop` で Flyway が無効のため、V003 の SQL の誤りは自動テストで検知できない。PostgreSQL でのローカル起動による確認が必要
+- **コード品質**：Checkstyle の `ParameterNumber`（最大 7）に注意する。`Reservation.create` は現在 7 引数で上限のため、列を足すには引数オブジェクトか別のファクトリが必要。Spotless（googleJavaFormat）に適合させる。テストの UUID プレフィックスは未使用の `40`・`50`・`80`・`90` から選ぶ
+- **テスト容易性**：繰り返し日の生成は、副作用のない純粋関数に切り出してユニットテストする（月末スキップ、基準日からの数え方、終了日当日、日またぎ、自己重複）。Property-Based Testing は適用しない。Radix Select は jsdom で開けないため、フロントのテストでは既存どおり初期値で選択済みを再現する
+- **OpenAPI**：レスポンスの配列化と追加項目が Springdoc のドキュメントに反映される
 
 ## 受入条件（シートと決定事項より）
 
-- [ ] ADMIN で `/admin/reports` を開くと、リソース別の予約件数と合計利用時間の棒グラフと表が表示される
-- [ ] 期間（`from`・`to`）を変更して集計すると、グラフと表が再取得・再描画される
-- [ ] 集計対象は `APPROVED` のみで、他のステータスは件数にも時間にも含まれない
-- [ ] 期間を指定したとき、境界をまたぐ予約は件数に 1 件として数えられ、合計利用時間は期間で切り詰めた時間になる
-- [ ] `from` と `to` の片方だけを指定すると 400 になる。両方未指定のときは全期間が対象になる。`from` が `to` 以降（`from >= to`）でも 400 になる
-- [ ] 利用実績が 0 件の有効なリソースも、件数 0・合計 0 で表示される。無効化済みのリソースは期間内に実績があるときだけ表示される
-- [ ] MEMBER / APPROVER が API にアクセスすると 403、未認証は 401。サイドナビの「利用実績」は ADMIN にだけ表示される
-- [ ] `GET /api/statistics/resources` が OpenAPI ドキュメント（Springdoc）に反映される
-- [ ] バックエンドに集計ロジック（切り詰め・合算・0 件のリソース・ステータス絞り込み）のユニットテストがある
+- [ ] 「毎週」を選んで申請すると、開始日から終了日まで、毎週同じ曜日・時刻の予約が一括登録される（終了日当日の回を含む）
+- [ ] 「毎月」を選んで申請すると、開始日から終了日まで毎月同じ日の予約が一括登録される。その月に存在しない日（例：31 日の 2 月）の月はスキップされる
+- [ ] 一括登録された予約は予約一覧に個別に表示され、それぞれ詳細確認・キャンセルができる
+- [ ] 繰り返し範囲内に重複する予約がある場合、全件が登録されず、409 `RESERVATION_CONFLICT` とエラーメッセージが表示される
+- [ ] 生成した予約どうしが重なる場合（例：8 日間の予約の毎週の繰り返し）も、全件が登録されず 409 になる
+- [ ] 「繰り返さない」（初期値）を選んだ場合は、従来どおり 1 件の予約として登録される（レスポンスは 1 件の配列）
+- [ ] `NONE` で `recurrenceUntil` を指定、`WEEKLY` / `MONTHLY` で未指定、`recurrenceUntil` が開始日より前、のいずれも 400 `VALIDATION_ERROR` になり、予約は作られない
+- [ ] 下書き保存と併用すると、全件が `DRAFT` で登録され、同じ `series_id` を持つ
+- [ ] 承認が必要なリソースでは、全件が `PENDING` で登録され、件数分の承認ステップが作られる
+- [ ] 日をまたぐ予約（例：23:00 から翌 2:00）の繰り返しが、各回とも同じ長さで登録される
+- [ ] 繰り返しで作った予約の詳細画面に、種別・終了日・シリーズ件数・残り回数が表示される。一覧には表示されない
+- [ ] 登録に成功すると、「N 件の予約を登録しました」とトーストが表示される
+- [ ] Flyway マイグレーション `V003` が正常に実行され、既存データへの影響がない（PostgreSQL で確認）
+- [ ] バックエンド・フロントエンドの既存テストが（配列化への追従後に）pass する
+- [ ] 繰り返し日の生成ロジックに対応するユニットテストがある
 
 ## 影響範囲（RE 成果物に基づく変更予定ファイル）
 
 仕様（Spec-first で先に更新）
-- `docs-next/docs/spec/api-spec.md`：§統計（新セクション）と `GET /api/statistics/resources`
-- `docs-next/docs/spec/screen-spec.md`：`/admin/reports` と、サイドナビの管理者メニュー
-- `docs-next/docs/spec/requirements.md`：UC-10 と `USG-01`〜`06`、API 権限マトリクス、画面アクセス権限表
+- `docs-next/docs/spec/requirements.md`：`REC-01`〜`12`（UC-03 の拡張）
+- `docs-next/docs/spec/api-spec.md`：`POST /api/reservations`（繰り返しパラメータ、配列のレスポンス）と `GET /api/reservations/{id}`（シリーズ情報）
+- `docs-next/docs/spec/er-diagram.md`：`reservations` の 3 列
+- `docs-next/docs/spec/screen-spec.md`：`/reservations/new` の繰り返し入力、予約詳細のシリーズ情報
 
 バックエンド（`backend/src/main/java/com/example/bookflow/`）
-- `presentation/StatisticsController.java`（新規）、`application/StatisticsService.java`（新規）
-- `presentation/dto/`：集計条件の record とレスポンス DTO（新規）
-- `domain/ReservationRepository.java`・`domain/ResourceRepository.java`：集計用の取得クエリの追加
-- テスト（新規）：`StatisticsServiceTest`、`StatisticsControllerTest`
+- `src/main/resources/db/migration/V003__...sql`（新規）
+- `domain/Reservation.java`（3 列の追加。`create` の引数の扱いを設計で決定）、`domain/ReservationRepository.java`（シリーズ件数・残り回数の取得）
+- `presentation/dto/CreateReservationRequest.java`・`ReservationResponse.java`
+- `presentation/ReservationController.java`（戻り値を配列に）、`application/ReservationService.java`（日付生成、全件の重複チェック、一括作成）
+- テスト：`ReservationServiceTest`、`ReservationControllerTest`、繰り返し日の生成ロジックのテスト（新規）
 
 フロントエンド（`frontend/src/`）
-- `app/(authenticated)/admin/reports/page.tsx`（新規）、期間フィルタ（Client）、棒グラフのコンポーネント（新規）
-- `server/actions/statistics.ts`（新規）、`lib/types/api.ts`（スキーマ追加）、`components/layout/nav-items.ts`（ナビ追加）
-- テスト（新規・変更）：Server Action・ページ・棒グラフ・期間フィルタ、`nav-items.test.ts`、`tests/unit/msw/handlers.ts`
+- `lib/schemas/reservation.ts`、`lib/types/api.ts`、`lib/types/enums.ts`、`lib/labels.ts`
+- `server/actions/reservations.ts`（配列のレスポンス）、`app/(authenticated)/reservations/new/ReservationForm.tsx`
+- `app/(authenticated)/reservations/[id]/` の詳細画面（シリーズ情報）
+- テスト：`reservation-form.test.tsx`、`server/actions/reservations.test.ts`、詳細画面のテスト、`tests/unit/msw/handlers.ts`、E2E の予約フロー
 
 ## スコープ外
 
-- 利用率（稼働可能時間を分母にした割合）、日別・月別などの時系列（期間別）集計、カテゴリ別の集計、統計の CSV・PDF 出力、ダッシュボードへのグラフ追加、グラフライブラリの導入、`start_at`/`end_at` へのインデックス追加
+- 日次の繰り返し、曜日の複数指定、N 週ごとの間隔指定
+- シリーズの一括変更・一括キャンセル・一括承認、シリーズの専用テーブル（`reservation_series`）
+- 件数そのものの上限（終了日の上限は対象）と、過去日時の検証、`series_id` 以外の列へのインデックス追加
+- 予約の一覧画面でのシリーズ情報の表示
+- 重複した日付のエラーメッセージへの記載

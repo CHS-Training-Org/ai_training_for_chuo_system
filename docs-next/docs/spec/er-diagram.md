@@ -11,7 +11,8 @@ references:
   - ./requirements.md
   - backend/src/main/resources/db/migration/V001__create_initial_schema.sql
   - backend/src/main/resources/db/migration/V002__add_resource_equipment_and_notes.sql
-last_updated: '2026-10-11T15:00:00+09:00'
+  - backend/src/main/resources/db/migration/V003__add_reservation_recurrence.sql
+last_updated: '2026-10-12T05:39:56+09:00'
 ---
 
 # ER 図
@@ -23,6 +24,8 @@ last_updated: '2026-10-11T15:00:00+09:00'
 ![ER 図](/diagrams/spec/er-diagram.drawio.svg)
 
 > **注意**：タイムスタンプ型は `TIMESTAMP`（`TIMESTAMPTZ` ではない）。H2 PostgreSQL 互換モードで動作するため PostgreSQL 固有型（`jsonb`・`gen_random_uuid` 等）は不使用。
+
+> **注意**：上の図は、V003（繰り返し予約）で追加した `reservations` の 3 列（`recurrence_type`、`recurrence_until`、`series_id`）をまだ反映していない。列の定義は、下の[エンティティ定義](#reservations-table)の表が正である。
 
 ---
 
@@ -64,7 +67,7 @@ last_updated: '2026-10-11T15:00:00+09:00'
 | `notes` | `TEXT` | NULL 可 | 利用上の注意 |
 | `created_at` | `TIMESTAMP` | NOT NULL / DEFAULT CURRENT_TIMESTAMP | |
 
-### reservations
+### reservations {#reservations-table}
 
 | カラム名 | 型 | 制約 | 備考 |
 |---------|-----|------|------|
@@ -78,6 +81,11 @@ last_updated: '2026-10-11T15:00:00+09:00'
 | `status` | `VARCHAR(20)` | NOT NULL / CHECK (`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`) | **DB DEFAULT なし**（アプリ層で設定）。`DRAFT` は下書き保存時の状態（[requirements.md](./requirements.md) の「予約申請」セクション参照） |
 | `created_at` | `TIMESTAMP` | NOT NULL / DEFAULT CURRENT_TIMESTAMP | |
 | `updated_at` | `TIMESTAMP` | NOT NULL / DEFAULT CURRENT_TIMESTAMP | |
+| `recurrence_type` | `VARCHAR(10)` | NOT NULL / DEFAULT `'NONE'` / CHECK (`NONE` / `WEEKLY` / `MONTHLY`) | 繰り返しの種別（V003）。既存の行は `NONE` |
+| `recurrence_until` | `DATE` | NULL 可 | 繰り返しの終了日（V003）。`NONE` の予約は NULL |
+| `series_id` | `UUID` | NULL 可 | 同じ繰り返しで作った予約を束ねる ID（V003）。FK ではなく、`NONE` の予約は NULL。種別が `NONE` 以外の予約すべてに付く |
+
+> **繰り返し予約の整合制約**：CHECK `chk_reservations_series` が、種別と `series_id`、`recurrence_until` の整合を守る。種別が `NONE` なら `series_id` と `recurrence_until` は NULL、`NONE` 以外なら両方が NOT NULL でなければならない。繰り返しで作った予約は、種別、終了日、`series_id` を系列内のすべての予約に同じ値で保存する（[requirements.md の繰り返し予約](./requirements.md#recurring-reservation)）。
 
 > **重複予約防止**：同一リソース・同一時間帯に `status IN ('PENDING', 'APPROVED')` の予約が複数存在することを禁止する。V001 に専用 DB 制約はないため**アプリ層（Service）での排他制御**が実装責務。
 
@@ -111,7 +119,7 @@ last_updated: '2026-10-11T15:00:00+09:00'
 
 ## インデックス方針
 
-V001 で定義された 5 つのインデックス。予約一覧・承認待ち一覧の検索性能を最適化する。
+V001 で定義された 5 つと、V003 で追加した 1 つ（計 6 つ）のインデックス。予約一覧、承認待ち一覧、繰り返し予約のシリーズ件数の検索性能を最適化する。
 
 | インデックス名 | テーブル | カラム | 用途 |
 |--------------|---------|-------|------|
@@ -120,3 +128,4 @@ V001 で定義された 5 つのインデックス。予約一覧・承認待ち
 | `idx_reservations_status` | `reservations` | `status` | ステータスフィルター |
 | `idx_approval_steps_reservation_id` | `approval_steps` | `reservation_id` | 予約に紐づく承認ステップ取得 |
 | `idx_approval_steps_approver_id` | `approval_steps` | `approver_id` | 承認者別の承認待ち一覧 |
+| `idx_reservations_series_id` | `reservations` | `series_id` | 繰り返し予約のシリーズ件数、残り回数の取得（V003） |

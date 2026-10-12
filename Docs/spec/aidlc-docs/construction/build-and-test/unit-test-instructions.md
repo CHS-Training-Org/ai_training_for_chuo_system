@@ -1,36 +1,48 @@
-# Unit Test Execution（usage-report）
+# Unit Test Execution（recurring-reservation）
 
 ## Run Unit Tests
 
-### 1. Execute All Unit Tests（直列・省メモリ）
+### 1. Execute All Unit Tests
 
 ```bash
+# backend（JUnit 5、Mockito、H2）
 cd backend && ./gradlew test --max-workers=1
+
+# frontend（Vitest、MSW。vitest.config.ts の maxForks: 1 に従い直列）
 cd frontend && pnpm test
 ```
 
-`vitest.config.ts` は `maxForks: 1` に固定されているため、frontend は並列にならない。複数のビルド・テストを同時に起動しない。
-
-### 2. Run Only This Unit's Tests
+本ユニットのテストだけを実行する場合：
 
 ```bash
-cd backend && ./gradlew test --tests '*UsageCalculatorTest' --tests '*StatisticsServiceTest' --tests '*StatisticsControllerTest' --max-workers=1
-cd frontend && pnpm test datetime statistics usage admin-reports admin-layout nav-items
+cd backend && ./gradlew test --max-workers=1 \
+  --tests "*RecurrenceScheduleTest" --tests "*ReservationServiceTest*" --tests "*ReservationControllerTest"
+cd frontend && pnpm test reservation-form reservation-detail-page reservations-page server/actions/reservations
 ```
 
-### 3. Review Test Results
+### 2. Review Test Results
 
-- **Expected**: backend 304 件・frontend 233 件がすべて成功、失敗 0
-- **本ユニットの新規テスト**:
-  - backend：`UsageCalculatorTest` 11 件、`StatisticsServiceTest` 13 件、`StatisticsControllerTest` 19 件（計 43 件）
-  - frontend：`datetime.test.ts` 3 件、`server/actions/statistics.test.ts` 7 件、`usage-format.test.ts` 11 件、`usage-bar-chart.test.tsx` 5 件、`usage-filter-form.test.tsx` 9 件、`admin-reports-page.test.tsx` 12 件、`admin-layout.test.tsx` 4 件、`layout/nav-items.test.ts` に追加 2 件（計 53 件）
+- **Expected**: backend 390 件、frontend 269 件（計 659 件）がすべて成功し、失敗 0
 - **Test Coverage**: 未計測（カバレッジ計測ツールは本リポジトリの既定で未導入）
-- **Test Report Location**: backend は `backend/build/reports/tests/test/index.html` と `backend/build/test-results/test/*.xml`、frontend は標準出力
+- **Test Report Location**: `backend/build/reports/tests/test/index.html`、`backend/build/test-results/test/*.xml`
+
+### 3. 本ユニットの新規テスト（124 件。PR #150 の AI レビュー対応の追加分を含む）
+
+| 区分 | ファイル | 件数 | 主な内容 |
+|---|---|---|---|
+| backend | `RecurrenceScheduleTest` | 21 | 毎週・毎月の件数、終了日当日と前日、31 日のスキップ、基準日からの数え直し、うるう年、年またぎ、時刻の保持、2 年分で 105 件 |
+| backend | `ReservationServiceTest`（`CreateRecurring`） | 29 | 生成、同一の系列、日またぎの長さ、400 の 3 パターンとロックを取らないこと、既存との重複、自己重複、取得が 1 回、ステータスと承認ステップ、承認者なし |
+| backend | `ReservationServiceTest`（`GetSeries`） | 3 | シリーズ件数と残り回数、最後の回は 0、`NONE` は null |
+| backend | `ReservationControllerTest` | 28 | 配列のレスポンス、全件ロールバック、400 と 409 と 422、`DRAFT`、承認ステップの件数、各回のキャンセル・`submit`・承認・却下、詳細と一覧、OpenAPI |
+| backend | `ReservationRecurrenceMigrationTest` | 7 | V003 の Flyway マイグレーション（H2）。既存データの保持、`NONE`・NULL・NULL、CHECK 制約とインデックス、整合・不整合な行の受け付けと拒否（結合テストの性格だが、Spring を使わないため単体テストと同じ場所で実行される） |
+| frontend | `reservation-form-schema.test.ts` | 15 | 終了日の必須・範囲・`NONE` での不要 |
+| frontend | `reservation-form.test.tsx` | 11 | 種別の Select と条件付きの終了日、検証、ペイロード、トースト、下書き、409 |
+| frontend | `server/actions/reservations.test.ts` | 3 | 繰り返しのペイロード、複数件の配列、400 |
+| frontend | `reservation-detail-page.test.tsx` | 6 | シリーズ情報の表示と非表示 |
+| frontend | `reservations-page.test.tsx` | 1 | 一覧にシリーズ情報が出ない |
+
+既存のテストのうち、作成系（backend の `ReservationServiceTest` 5 件と構成子 8 箇所、`ReservationControllerTest` 3 件、frontend の `reservation-form.test.tsx` と `server/actions/reservations.test.ts`）は、レスポンスの配列化に追従させた。
 
 ### 4. Fix Failing Tests
 
-失敗したら次の順で確認する。
-
-1. `StatisticsControllerTest` が落ちる場合、H2 を他の結合テストと共有するため、他クラスのテストデータの残りがないかを確認する（本ユニットのテストは 2030 年の予約と接頭辞 `利用実績テスト` のリソースで seed し、自分のリソースだけを取り出して検証している。UUID の先頭は `73`）
-2. `admin-reports-page.test.tsx` は Server Action をモックして Server Component を直接 `await` する。Client Component（`UsageFilterForm`）の `next/navigation` のモックが必要
-3. 実装を修正し、全件が通るまで再実行する
+失敗したら、`backend/build/reports/tests/test/index.html` か Vitest の出力で、失敗したテストを特定する。Flyway は H2 のテストで無効なため、V003 の SQL の誤りはここでは見つからない（`integration-test-instructions.md` の PostgreSQL での確認を行う）。
