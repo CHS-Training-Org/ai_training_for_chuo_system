@@ -2210,3 +2210,12 @@ timestamp: 2026-08-29
 **Context**: PR #150 の AI レビュー対応。コード変更済み・未コミット
 
 ---
+
+
+## PR #150 AI レビュー対応（観点 1「要求整合性」: Flyway マイグレーションテスト）（recurring-reservation）
+**Timestamp**: 2026-10-12T06:57:21Z
+**User Input**: "AIレビュー観点1「要求整合性」が判定不能になった指摘へ対応してください。\n\n原因は、CI BackendでFlywayが無効化されており、\nV003マイグレーションの正常実行と既存データへの影響を\n差分またはCIで自動確認できないことです。\n\n以下を対応してください。\n\n1. flyway-coreを使用したマイグレーションテストを追加する（V001からV002までを適用／V002時点のreservationsへ既存データを登録／V003を適用／既存データが保持されていることを確認／recurrence_typeがNONEになることを確認／recurrence_untilがNULLであることを確認／series_idがNULLであることを確認／V003のCHECK制約を満たしていることを確認）\n\n2. このテストが通常の ./gradlew test またはCI Backendで実行されるようにする\n\n3. 必要であればbackend/build.gradle.ktsのテスト依存関係を更新する\n\n4. テストを一時的に壊し、V003の問題を検出できることをbreak-and-verifyで確認する\n\n5. backendのspotlessCheck、checkstyleMain、test、buildを実行する\n\n6. AI-DLCのBuild and Test文書と監査ログへ対応内容を追記する\n\n既存機能の実装は変更せず、Flyway/V003の自動検証追加を中心に対応してください。"
+**AI Response**: "ReservationRecurrenceMigrationTest（7 件、src/test/.../migration/）を追加。Spring を使わず flyway-core で V001〜V002 を H2（PostgreSQL 互換モード）に適用し、V002 時点の reservations に既存データ 3 件を登録してから V003 を適用して、V003 のみの適用、既存データの保持（10 列）、recurrence_type = NONE・recurrence_until と series_id が NULL、CHECK 制約 2 つとインデックスの存在と既存行の充足、整合した行の受け付けと不整合な 5 通りの拒否、列省略の INSERT が NONE になること、を検証。通常の ./gradlew test と CI Backend（./gradlew test）で自動実行される。build.gradle.kts は変更不要（flyway-core は implementation、H2 は testRuntimeOnly にすでにある）。既存機能の実装は変更していない。実装中に、Flyway が別の接続で適用すると H2 が「The database has been closed」で CHECK 制約の評価に失敗することを発見し、SingleConnectionDataSource で Flyway と検証に同じ接続を使う形にした。break-and-verify を V003 の 7 通りで実施し、すべて検出を確認して復元（最初の 1 件は、置換が SQL 冒頭のコメントに当たり 0 件失敗となったため、DDL の行を狙って再実施）。spotlessCheck・checkstyleMain・test・build が成功（backend 390 件、失敗 0）。Build and Test 文書（summary、integration-test-instructions、unit-test-instructions）と backend-summary に追記。H2 は PostgreSQL ではないため、PostgreSQL での手動確認（Scenario 6）は引き続き有効。コミットと push は未実施（指示待ち）。"
+**Context**: PR #150 の AI レビュー対応（観点 1）。コード（テスト）変更済み・未コミット
+
+---

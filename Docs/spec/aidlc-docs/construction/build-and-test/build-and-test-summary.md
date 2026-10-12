@@ -3,7 +3,7 @@
 ## スコープ判定（Adaptive Execution）
 
 - **Unit Tests**: ALWAYS EXECUTE（Code Generation で生成済み。本ステージで `clean build` による fresh な実行で確認）
-- **Integration Tests**: EXECUTE（`ReservationControllerTest`（H2、68 件）。加えて、V003 と CHECK 制約と `validate` 起動を、使い捨ての PostgreSQL 16 で手動確認）
+- **Integration Tests**: EXECUTE（`ReservationControllerTest`（H2、68 件）、**Flyway マイグレーションテスト `ReservationRecurrenceMigrationTest`（H2、7 件。CI Backend の `./gradlew test` で自動実行）**。加えて、V003 と CHECK 制約と `validate` 起動を、使い捨ての PostgreSQL 16 で手動確認）
 - **E2E Tests**: SKIP（新規の E2E は追加せず、既存の E2E も変更の必要がない）。ブラウザでの実機確認の手順を `e2e-test-instructions.md` に記載
 - **Performance Tests**: SKIP（性能要件の NFR Requirements ステージは SKIP 判定）。終了日の上限（2 年）まで作った場合の所要時間の確認は、`e2e-test-instructions.md` の手順 C に記載
 - **Contract Tests**: SKIP（モノリスのため対象外）。OpenAPI への反映は `ReservationControllerTest` で確認した
@@ -20,16 +20,23 @@
 
 ### Unit Tests
 
-- **Total Tests**: 639（backend 375 + frontend 264）
-- **Passed**: 639
+- **Total Tests**: 659（backend 390 + frontend 269）
+- **Passed**: 659
 - **Failed**: 0
-- **本ユニットの新規**: 104 件（backend 73 + frontend 31）
+- **本ユニットの新規**: 124 件（backend 88 + frontend 36。PR #150 の AI レビュー対応で、終了日の上限のテスト 13 件と、Flyway マイグレーションテスト 7 件を追加した）
 - **Coverage**: 未計測
 - **Status**: Pass
 
 ### Integration Tests
 
 - **自動（H2）**: `ReservationControllerTest` 68 件（うち本ユニットの新規 26 件）が成功
+- **自動（H2、Flyway）**: `ReservationRecurrenceMigrationTest` 7 件が成功。V001 から V002 を適用し、V002 時点の `reservations` に既存データを 3 件入れてから V003 を適用して、次を確認する（PR #150 の AI レビューで「CI Backend では Flyway が無効で、V003 の実行と既存データへの影響を自動確認できない」と指摘されたことへの対応）
+  - V003 だけが適用され、バージョンが 3 になる
+  - 既存の行の件数と、V003 が触れない列（id、日時、目的、参加人数、ステータスなど）が変わらない
+  - 既存の行が `recurrence_type = NONE`、`recurrence_until` と `series_id` が NULL になる
+  - 2 つの CHECK 制約と `idx_reservations_series_id` が存在し、既存の行が制約の条件を満たす（違反する行が 0 件）
+  - 制約が、整合した行（`NONE`・NULL・NULL、`WEEKLY` / `MONTHLY` で終了日と系列がそろう）を受け付け、不整合な行（5 通り）を拒否する
+  - 繰り返しの列を省略した INSERT が `NONE` になる
 - **手動（PostgreSQL 16）**: 次の 4 点が期待どおり
   - V001、V002 を適用した既存データへの V003 の適用（既存の行は `NONE`・NULL・NULL）
   - 2 つの CHECK 制約による不整合な行の拒否（6 通りの INSERT）
