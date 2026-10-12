@@ -71,14 +71,17 @@ public class ReservationController {
   }
 
   /**
-   * 予約を申請する（201 Created）。
+   * 予約を申請する（201 Created）。レスポンスは常に配列（繰り返さない場合は 1 件）。
    *
    * <p>{@code draft=true} → {@code DRAFT}（下書き保存、承認ステップは作成しない）。{@code draft=false}（省略時含む）の場合は {@code
    * requires_approval=false} → 即 {@code APPROVED}、{@code true} → {@code PENDING}。
+   *
+   * <p>{@code recurrenceType} が {@code WEEKLY}/{@code MONTHLY} のときは、{@code recurrenceUntil}
+   * まで繰り返す複数の予約を 1 回で作る（1 件でも重複すれば全件を作らず 409）。
    */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public ReservationResponse create(
+  public List<ReservationResponse> create(
       @Valid @RequestBody CreateReservationRequest req, @CurrentUser User currentUser) {
     return reservationService.create(req, currentUser);
   }

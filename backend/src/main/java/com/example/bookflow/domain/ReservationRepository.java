@@ -389,4 +389,27 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
       @Param("status") ReservationStatus status,
       @Param("from") LocalDateTime from,
       @Param("to") LocalDateTime to);
+
+  // ---------------------------------------------------------------------------
+  // 繰り返し予約のシリーズ件数（詳細 API 用。全ステータスを数える）
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 同じ系列（{@code series_id}）の予約の件数を返す（キャンセル済み・却下済みを含む全ステータス）。
+   *
+   * @param seriesId 系列 ID
+   * @return シリーズ件数
+   */
+  long countBySeriesId(UUID seriesId);
+
+  /**
+   * 同じ系列の予約のうち、指定した開始日時より後に始まるものの件数を返す（残り回数。全ステータス）。
+   *
+   * <p>基準の予約自身は {@code startAt} が等しいため含まれない。
+   *
+   * @param seriesId 系列 ID
+   * @param startAt 基準の開始日時
+   * @return 残り回数
+   */
+  long countBySeriesIdAndStartAtAfter(UUID seriesId, LocalDateTime startAt);
 }

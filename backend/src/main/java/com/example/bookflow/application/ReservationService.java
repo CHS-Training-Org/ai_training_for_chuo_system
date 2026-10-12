@@ -4,6 +4,8 @@ import com.example.bookflow.application.exception.BusinessException;
 import com.example.bookflow.application.exception.ErrorCode;
 import com.example.bookflow.application.exception.ReservationConflictException;
 import com.example.bookflow.application.exception.ResourceNotFoundException;
+import com.example.bookflow.application.exception.ValidationException;
+import com.example.bookflow.domain.RecurrenceType;
 import com.example.bookflow.domain.Reservation;
 import com.example.bookflow.domain.ReservationRepository;
 import com.example.bookflow.domain.ReservationStatus;
@@ -14,7 +16,10 @@ import com.example.bookflow.domain.User;
 import com.example.bookflow.presentation.dto.CreateReservationRequest;
 import com.example.bookflow.presentation.dto.ReservationResponse;
 import com.example.bookflow.presentation.dto.UpdateReservationRequest;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
  * <ul>
  *   <li>重複予約チェック（{@code PENDING}/{@code APPROVED} との時間帯重複 → 409）
  *   <li>{@code requires_approval} 分岐（false → 即 {@code APPROVED}、true → {@code PENDING}）
+ *   <li>繰り返し予約（{@code recurrenceType} が {@code WEEKLY}/{@code MONTHLY} のとき、全日程を 1
+ *       トランザクションで作成し、既存予約との重複 または生成した予約どうしの重複が 1 件でもあれば全件ロールバックして 409）
  *   <li>所有権チェック（本人または ADMIN のみ操作可 → 403）
  *   <li>ステータスガード（PUT は PENDING のみ・cancel は PENDING/APPROVED のみ → 422）
  * </ul>
@@ -190,7 +197,15 @@ public class ReservationService {
   public ReservationResponse get(UUID id, User currentUser) {
     Reservation reservation = findOrThrow(id);
     checkReadAccess(reservation, currentUser);
-    return ReservationResponse.from(reservation);
+    UUID seriesId = reservation.getSeriesId();
+    if (seriesId == null) {
+      return ReservationResponse.from(reservation);
+    }
+    // 繰り返しで作った予約だけ、シリーズ件数と残り回数（全ステータス）を数える。一覧では数えない（N+1 回避）
+    long seriesCount = reservationRepository.countBySeriesId(seriesId);
+    long remainingCount =
+        reservationRepository.countBySeriesIdAndStartAtAfter(seriesId, reservation.getStartAt());
+    return ReservationResponse.from(reservation, seriesCount, remainingCount);
   }
 
   // ---------------------------------------------------------------------------
@@ -198,40 +213,50 @@ public class ReservationService {
   // ---------------------------------------------------------------------------
 
   /**
-   * 予約を申請する（下書き保存を含む）。
+   * 予約を申請する（下書き保存・繰り返し予約を含む）。
    *
    * <p>業務ロジック：
    *
    * <ol>
-   *   <li>リソース存在確認（404）
+   *   <li>繰り返し指定の検証（400 {@code VALIDATION_ERROR}。DB に触れず、ロックより前に行う）
+   *   <li>リソース存在確認（404、悲観ロックで取得）
    *   <li>日時整合性チェック（endAt &gt; startAt）
-   *   <li>重複予約チェック（409 {@code RESERVATION_CONFLICT}）
+   *   <li>日程の生成（繰り返さない場合は 1 件、{@code WEEKLY}/{@code MONTHLY} は終了日まで）
+   *   <li>生成した予約どうしの重複チェック（409 {@code RESERVATION_CONFLICT}）
+   *   <li>既存予約との重複チェック（409。既存予約の取得は 1 回）
    *   <li>{@code draft} と {@code requires_approval} に応じてステータスを決定（{@code draft=true} → {@code
-   *       DRAFT}、 {@code false} → {@code APPROVED}、{@code true} → {@code PENDING}）
-   *   <li>予約を保存
-   *   <li>ステータスが {@code PENDING} になる場合のみ、{@code approval_steps} を生成し承認者を割り当てる
+   *       DRAFT}、 {@code false} → {@code APPROVED}、{@code true} → {@code PENDING}）。全件に同じステータスを付ける
+   *   <li>予約を保存（繰り返しのときは全件に同じ系列 ID を付ける）
+   *   <li>ステータスが {@code PENDING} になる場合のみ、予約ごとに {@code approval_steps} を生成し承認者を割り当てる
    * </ol>
+   *
+   * <p>どの段階で例外が出ても、クラス単位の {@code @Transactional} により、保存済みの予約と承認ステップは全件ロールバックされる。
    *
    * @param req 予約申請リクエスト
    * @param requester 申請ユーザー
-   * @return 作成後の {@link ReservationResponse}
+   * @return 作成した予約の {@link ReservationResponse}（開始日時の昇順。繰り返さない場合は 1 件）
    */
-  public ReservationResponse create(CreateReservationRequest req, User requester) {
-    // 1. リソース存在確認（悲観ロックで取得し、以降の重複チェックを直列化）
+  public List<ReservationResponse> create(CreateReservationRequest req, User requester) {
+    // 1. 繰り返し指定の検証（入力だけで判定できるため、リソース行のロックより前に行う）
+    RecurrenceType recurrence = validateRecurrence(req);
+
+    // 2. リソース存在確認（悲観ロックで取得し、以降の重複チェックを直列化）
     Resource resource =
         resourceRepository
             .findByIdForUpdate(req.resourceId())
             .orElseThrow(() -> new ResourceNotFoundException("リソースが存在しません: " + req.resourceId()));
 
-    // 2. 日時整合性チェック
+    // 3. 日時整合性チェック
     if (!req.endAt().isAfter(req.startAt())) {
       throw new BusinessException(ErrorCode.VALIDATION_ERROR, "終了日時は開始日時より後に設定してください。");
     }
 
-    // 3. 重複予約チェック（自分含む全 PENDING/APPROVED を検索。下書きも対象時間帯の確認は行う）
-    checkConflict(resource.getId(), null, req.startAt(), req.endAt());
+    // 4〜6. 日程の生成と、重複予約チェック（自己重複 → 既存予約。下書きも対象時間帯の確認は行う）
+    List<TimeSlot> slots = generateSlots(req, recurrence);
+    checkSelfConflict(slots);
+    checkConflicts(resource.getId(), slots);
 
-    // 4. ステータス決定（draft=true → DRAFT、false → requires_approval に応じて PENDING/APPROVED）
+    // 7. ステータス決定（draft=true → DRAFT、false → requires_approval に応じて PENDING/APPROVED）
     ReservationStatus status;
     boolean createsApprovalStep;
     if (req.isDraft()) {
@@ -243,24 +268,106 @@ public class ReservationService {
       createsApprovalStep = resource.isRequiresApproval();
     }
 
-    // 5. 予約保存
-    Reservation reservation =
-        Reservation.create(
-            resource,
-            requester,
-            req.startAt(),
-            req.endAt(),
-            req.purpose(),
-            req.attendeesCount(),
-            status);
-    Reservation saved = reservationRepository.save(reservation);
-
-    // 6. ステータスが PENDING になる場合のみ、承認ステップを生成する
-    if (createsApprovalStep) {
-      approvalService.createInitialStep(saved);
+    // 8. 予約保存（繰り返しのときは、1 回の作成で 1 つ採番した系列 ID を全件で共有する）
+    UUID seriesId = recurrence == RecurrenceType.NONE ? null : UUID.randomUUID();
+    List<Reservation> saved = new ArrayList<>();
+    for (TimeSlot slot : slots) {
+      Reservation reservation =
+          Reservation.create(
+              resource,
+              requester,
+              slot.startAt(),
+              slot.endAt(),
+              req.purpose(),
+              req.attendeesCount(),
+              status);
+      if (seriesId != null) {
+        reservation.joinSeries(seriesId, recurrence, req.recurrenceUntil());
+      }
+      saved.add(reservationRepository.save(reservation));
     }
 
-    return ReservationResponse.from(saved);
+    // 9. ステータスが PENDING になる場合のみ、予約ごとに承認ステップを生成する
+    if (createsApprovalStep) {
+      for (Reservation reservation : saved) {
+        approvalService.createInitialStep(reservation);
+      }
+    }
+
+    return saved.stream().map(ReservationResponse::from).toList();
+  }
+
+  /** 1 回分の利用時間帯（{@code [startAt, endAt)}）。 */
+  private record TimeSlot(LocalDateTime startAt, LocalDateTime endAt) {}
+
+  /**
+   * 繰り返し指定の組み合わせを検証し、種別を返す（{@code null} は {@code NONE}）。
+   *
+   * <p>違反はすべて 400 {@code VALIDATION_ERROR}（{@link ValidationException}）。{@code endAt > startAt}
+   * の検証（422）とは HTTP ステータスが異なる。
+   */
+  private static RecurrenceType validateRecurrence(CreateReservationRequest req) {
+    RecurrenceType type = req.recurrence();
+    LocalDate until = req.recurrenceUntil();
+    if (type == RecurrenceType.NONE) {
+      if (until != null) {
+        throw new ValidationException("繰り返しなしの場合、繰り返し終了日は指定できません。");
+      }
+      return type;
+    }
+    if (until == null) {
+      throw new ValidationException("繰り返し終了日は必須です。");
+    }
+    if (until.isBefore(req.startAt().toLocalDate())) {
+      throw new ValidationException("繰り返し終了日は開始日以降にしてください。");
+    }
+    return type;
+  }
+
+  /** 各回の利用時間帯を、開始日時の昇順で生成する。各回の長さは 1 回目の {@code endAt - startAt} と同じ。 */
+  private static List<TimeSlot> generateSlots(CreateReservationRequest req, RecurrenceType type) {
+    Duration length = Duration.between(req.startAt(), req.endAt());
+    return RecurrenceSchedule.startDates(type, req.startAt(), req.recurrenceUntil()).stream()
+        .map(start -> new TimeSlot(start, start.plus(length)))
+        .toList();
+  }
+
+  /**
+   * 生成した予約どうしの重複（自己重複）を検出する。重複があれば {@link ReservationConflictException}。
+   *
+   * <p>各回の長さが同じで開始日時が昇順なので、隣り合う 2 回が重ならなければ、それより離れた回も重ならない。そのため隣り合う 2 回の比較だけで足りる。
+   * 保存前の日程どうしで比較するため、保存した兄弟予約が次の判定に見えるか（自動フラッシュ）には依存しない。
+   */
+  private static void checkSelfConflict(List<TimeSlot> slots) {
+    for (int i = 1; i < slots.size(); i++) {
+      TimeSlot previous = slots.get(i - 1);
+      TimeSlot current = slots.get(i);
+      if (ResourceService.overlaps(
+          previous.startAt(), previous.endAt(), current.startAt(), current.endAt())) {
+        throw new ReservationConflictException();
+      }
+    }
+  }
+
+  /**
+   * 既存の {@code PENDING}/{@code APPROVED} 予約との重複を、全日程について検出する。
+   *
+   * <p>既存予約の取得は 1 回だけ（日程の数だけ取得しない）。1 件でも重複すれば {@link ReservationConflictException}。
+   */
+  private void checkConflicts(UUID resourceId, List<TimeSlot> slots) {
+    List<Reservation> existing =
+        reservationRepository.findByResource_IdAndStatusIn(resourceId, OCCUPIED_STATUSES);
+    for (TimeSlot slot : slots) {
+      boolean conflict =
+          existing.stream()
+              .anyMatch(
+                  r ->
+                      ResourceService.overlaps(
+                          r.getStartAt(), r.getEndAt(), slot.startAt(), slot.endAt()));
+      if (conflict) {
+        throw new ReservationConflictException();
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
