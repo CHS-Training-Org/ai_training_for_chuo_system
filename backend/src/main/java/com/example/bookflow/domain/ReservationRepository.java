@@ -323,4 +323,38 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
       @Param("to") LocalDateTime to,
       @Param("statuses") Collection<ReservationStatus> statuses,
       Pageable pageable);
+
+  // ---------------------------------------------------------------------------
+  // 帳票出力用の全件取得（CSV。ページネーションなし、開始日時の昇順・同値は ID の昇順）
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 指定ステータスの全予約を、ページネーションなしで返す（CSV 帳票用・JOIN FETCH）。
+   *
+   * @param statuses 対象ステータス群（呼び出し元が非空にして渡す）
+   * @return 開始日時の昇順（同値は ID の昇順）の予約
+   */
+  @Query(
+      "SELECT r FROM Reservation r JOIN FETCH r.resource JOIN FETCH r.requester"
+          + " WHERE r.status IN :statuses ORDER BY r.startAt ASC, r.id ASC")
+  List<Reservation> findAllForReportByStatusIn(
+      @Param("statuses") Collection<ReservationStatus> statuses);
+
+  /**
+   * 期間が重複する指定ステータスの全予約を、ページネーションなしで返す（CSV 帳票用・JOIN FETCH）。
+   *
+   * @param from 期間の開始日時
+   * @param to 期間の終了日時
+   * @param statuses 対象ステータス群（呼び出し元が非空にして渡す）
+   * @return 開始日時の昇順（同値は ID の昇順）の予約
+   */
+  @Query(
+      "SELECT r FROM Reservation r JOIN FETCH r.resource JOIN FETCH r.requester"
+          + " WHERE r.status IN :statuses AND "
+          + PERIOD_MATCH
+          + " ORDER BY r.startAt ASC, r.id ASC")
+  List<Reservation> findAllForReportByPeriodAndStatusIn(
+      @Param("from") LocalDateTime from,
+      @Param("to") LocalDateTime to,
+      @Param("statuses") Collection<ReservationStatus> statuses);
 }

@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-10-11T15:00:00+09:00'
+last_updated: '2026-10-12T13:00:00+09:00'
 ---
 
 # REST API 仕様書
@@ -188,6 +188,12 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 | GET | `/api/approvals/pending` | 承認待ち一覧 | APPROVER / ADMIN |
 | POST | `/api/approvals/{stepId}/approve` | 承認（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
 | POST | `/api/approvals/{stepId}/reject` | 却下（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
+
+### 帳票
+
+| メソッド | パス | 概要 | 権限 |
+|--------|------|------|------|
+| GET | `/api/reports/reservations/csv` | 予約一覧の CSV ダウンロード（期間・ステータスで絞り込み可） | ADMIN |
 
 ---
 
@@ -486,7 +492,7 @@ Authorization: Bearer <JWT>
 
 ## §予約
 
-### `GET /api/reservations`（予約一覧）
+### `GET /api/reservations`（予約一覧） {#get-api-reservations}
 
 #### リクエスト
 
@@ -863,6 +869,76 @@ Content-Type: application/json
 ![承認・却下シーケンス図](/diagrams/spec/api-spec-approval.drawio.svg)
 
 > **[1]** `SELECT 1 FROM reservations WHERE resource_id = ? AND status IN ('PENDING','APPROVED') AND start_at < endAt AND end_at > startAt AND id != reservationId`
+
+---
+
+## §帳票出力 {#report}
+
+### `GET /api/reports/reservations/csv`（予約一覧の CSV ダウンロード、ADMIN） {#report-reservations-csv}
+
+#### リクエスト
+
+```http
+GET /api/reports/reservations/csv?status=APPROVED&status=PENDING&from=2025-06-01T00:00:00&to=2025-06-30T23:59:59
+Authorization: Bearer <JWT>
+```
+
+#### クエリパラメータ
+
+| パラメータ | 型 | 必須 | 説明 |
+|------------|-----|------|------|
+| `status` | string | ❌ | ステータスフィルター（`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`）。未指定の場合は `DRAFT` を除く 4 ステータスが対象 |
+| `from` | TIMESTAMP | ❌ | 予約期間の絞り込み開始日時（`to` と同時指定必須） |
+| `to` | TIMESTAMP | ❌ | 予約期間の絞り込み終了日時（`from` と同時指定必須） |
+
+> ページネーションは行わず、条件に合う全件を返す（件数の上限なし）。
+>
+> `from` / `to` の判定は [`GET /api/reservations`](#get-api-reservations) と同じ期間重複（半開区間 `[startAt, endAt)` 同士の重複。境界が一致するだけの隣接予約は含まない）。両方を省略すると期間条件なしの全期間が対象になる。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。
+>
+> `status` を省略したときに `DRAFT` を含めないのは、画面の予約一覧（「すべて」タブ）と同じ範囲にそろえるため。`status=DRAFT` を明示した場合は、申請者を問わず `DRAFT` の予約を出力する（ADMIN は `DRAFT` を含む全予約を閲覧できる）。
+>
+> `resourceName` による絞り込みは本エンドポイントでは受け付けない。
+
+#### レスポンス（200 OK）
+
+```http
+HTTP/1.1 200 OK
+Content-Type: text/csv;charset=UTF-8
+Content-Disposition: attachment; filename="reservations_20250630.csv"
+Cache-Control: no-store
+```
+
+本文は UTF-8（先頭に BOM `EF BB BF`）、改行は CRLF（最終行の後ろにも付ける）。
+
+```csv
+予約ID,リソース名,申請者名,開始日時,終了日時,目的,承認状態
+550e8400-e29b-41d4-a716-446655440030,第1会議室,山田 太郎,2025-06-02 10:00,2025-06-02 12:00,週次ミーティング,承認済み
+```
+
+**CSV の列定義**
+
+| 列 | ヘッダ | 値 |
+|----|--------|-----|
+| 1 | 予約ID | 予約 ID（UUID） |
+| 2 | リソース名 | リソース名 |
+| 3 | 申請者名 | 申請者名 |
+| 4 | 開始日時 | `yyyy-MM-dd HH:mm`（秒なし、タイムゾーン変換なし） |
+| 5 | 終了日時 | `yyyy-MM-dd HH:mm`（同上） |
+| 6 | 目的 | 利用目的 |
+| 7 | 承認状態 | `DRAFT`=下書き・`PENDING`=承認待ち・`APPROVED`=承認済み・`REJECTED`=却下・`CANCELLED`=キャンセル済み |
+
+- 並び順は開始日時の昇順（同値は予約 ID の昇順）
+- 条件に合う予約が 0 件のときは、ヘッダ行のみの CSV を 200 で返す
+- **エスケープ**：セルにカンマ・二重引用符・改行（CR / LF）が含まれる場合は全体を二重引用符で囲み、内部の二重引用符は 2 つ重ねる（RFC 4180）
+- **数式インジェクション対策**：セルの先頭が `=` `+` `-` `@` タブ CR のいずれかの場合は、先頭に `'` を付ける（Excel 等で数式として実行させない。取り込み先では `'` がそのまま表示される）
+
+#### エラー
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| 400 | `VALIDATION_ERROR` | `from` と `to` の片方のみ指定、または `status` に定義にない値を指定 |
+| 401 | `UNAUTHORIZED` | 認証トークンなし・不正・期限切れ |
+| 403 | `FORBIDDEN` | ADMIN 以外（MEMBER / APPROVER）のアクセス |
 
 ---
 

@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./api-spec.md
-last_updated: '2026-10-11T15:00:00+09:00'
+last_updated: '2026-10-12T13:00:00+09:00'
 ---
 
 # 画面仕様書
@@ -228,10 +228,13 @@ Cognito 側で認証を処理するため、フォームバリデーションは
 | ステータスバッジ | `PENDING`=黄・`APPROVED`=緑・`REJECTED`=赤・`CANCELLED`=グレー・`DRAFT`=グレー |
 | 「詳細」リンク | 予約詳細（`/reservations/{id}`）へ遷移 |
 | ページネーション | page/size 方式（デフォルト 20 件/ページ） |
+| 「CSV ダウンロード」ボタン | **ADMIN のみ表示**（MEMBER / APPROVER には表示しない）。ヘッダ行の「リソースを探す」の隣に置く。クリックで `GET /api/reports/reservations/csv` を呼び、現在の絞り込み（ステータス・期間 `from` / `to`）を引き継いだ CSV（`reservations_yyyyMMdd.csv`）をブラウザにダウンロードさせる。リソース名検索とページ番号は引き継がない |
 
 > ADMIN は全ユーザーの予約一覧を閲覧できる（フィルターに申請者を絞る UI を追加してもよい）。
 >
 > **「すべて」タブの範囲**：「すべて」タブ（既定表示）は `DRAFT` を含まない（`PENDING`/`APPROVED`/`REJECTED`/`CANCELLED` の4ステータス）。下書きは専用の「下書き」タブでのみ表示される。
+>
+> **CSV ダウンロードの範囲**：ステータスを選んでいない（「すべて」タブ）場合、CSV も `DRAFT` を含まない 4 ステータスが対象になる（`GET /api/reports/reservations/csv` の `status` 未指定時の既定）。リソース名検索欄で絞り込んでいても、その条件は CSV に反映されない。
 
 ---
 

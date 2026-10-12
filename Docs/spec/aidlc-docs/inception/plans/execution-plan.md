@@ -1,32 +1,32 @@
-# Execution Plan — reservation-draft
+# Execution Plan — csv-report
 
 ## Detailed Analysis Summary
 
 ### Transformation Scope（Brownfield）
 
-- **Transformation Type**: Single component change（予約ドメインの状態遷移ロジック拡張。新しいサービス・新しい画面ルートは追加しない）
-- **Primary Changes**: `DRAFT` ステータスを実際に機能させるための、作成時の分岐・更新時の遷移ロジック・アクセス制御・一覧表示の拡張
-- **Related Components**: `ReservationService`（create/update/checkReadAccess/list）、予約申請フォーム・予約一覧・予約詳細・予約編集の各画面
+- **Transformation Type**: Single component 追加が中心（予約ドメインの読み取り専用の新規エンドポイントと、既存の予約一覧画面へのボタン追加。既存の予約作成・更新・承認ロジックには触れない）
+- **Primary Changes**: backend に帳票出力の Controller・Service・`CsvWriter`・全件取得クエリを新設し、frontend に Route Handler とダウンロードボタンを追加する
+- **Related Components**: `ReservationRepository`（全件取得クエリの追加）、`SecurityConfig` と `@PreAuthorize` の既存方式、`/reservations` ページと `ReservationFilterForm` の searchParams
 
 ### Change Impact Assessment
 
-- **User-facing changes**: Yes（下書き保存ボタン・正式申請ボタン・下書きタブという新しい操作）
-- **Structural changes**: No（新しいテーブル・新しいAPIエンドポイントは追加しない。既存の`POST`/`PUT /api/reservations`を拡張する）
-- **Data model changes**: No（`DRAFT`は既存のDB CHECK制約に定義済み。スキーマ変更なし）
-- **API changes**: Yes（`CreateReservationRequest`に`draft`、`UpdateReservationRequest`に`submit`を追加。既存フィールドの破壊的変更はない）
-- **NFR impact**: Yes（アクセス制御の強化：DRAFTはAPPROVERの閲覧対象から除外する）。ただし新たな認証基盤・暗号化等の変更ではなく、既存の所有者チェックパターンの拡張であるため、拡張（Security Baseline）としては不採用
+- **User-facing changes**: Yes（ADMIN 向けの「CSV ダウンロード」ボタンと CSV ファイル）
+- **Structural changes**: No（新しいレイヤーや外部連携は追加しない。既存の 4 層構成に沿って新規クラスを置く）
+- **Data model changes**: No（テーブル・マイグレーションの変更なし。読み取りのみ）
+- **API changes**: Yes（`GET /api/reports/reservations/csv` の新設。既存 API の破壊的変更はない）
+- **NFR impact**: Yes（ADMIN 限定、CSV 数式インジェクション対策、件数上限なしによるメモリ使用量）。ただし要件書で機能要件・受け入れ済みトレードオフとして扱うため、拡張（Security / Resiliency / PBT）は不採用
 
 ### Component Relationships（Brownfield）
 
-- **Primary Component**: `backend/.../application/ReservationService.java`（状態遷移・承認ステップ作成条件・アクセス制御の中心）
-- **Dependent Components**: `ApprovalService`（`createInitialStep`の呼び出し条件は変わらないが、呼び出しタイミングがcreate以外にupdateからも発生するようになる）、予約一覧・詳細・編集画面（frontend）
-- **Supporting Components**: `ReservationServiceTest`・`ReservationControllerTest`（既存のステータス遷移テストと整合させる必要がある）
+- **Primary Component**: `backend/.../presentation/ReportController`・`application/ReservationReportService`・`application/csv/CsvWriter`（いずれも新規）
+- **Dependent Components**: `ReservationRepository`（クエリ追加）、フロントの `/reservations` ページ（ボタン追加）、Route Handler（新規。`getAccessToken` と `BACKEND_URL` を使う）
+- **Supporting Components**: `docs-next/docs/spec/`（api-spec・screen-spec・requirements）、`tests/unit/` と `backend/src/test/`
 
 ### Risk Assessment
 
-- **Risk Level**: Medium（既存の予約作成・更新フローという広く使われているロジックに手を入れるため、既存テスト（`update_approvedReservation_throwsBusinessException`等）を壊さないよう慎重な変更が必要）
-- **Rollback Complexity**: Moderate（複数ファイルにまたがるが、新しいテーブル・マイグレーションは発生しないため当該コミットの取り消しで対応可能）
-- **Testing Complexity**: Complex（状態遷移の組み合わせ（DRAFT作成/編集/正式申請×承認要否）とロール別アクセス制御の両方を検証する必要がある）
+- **Risk Level**: Low（読み取り専用の新規追加で既存ロジックを変更しない。ロールバックはコミットの取り消しで足りる）
+- **Rollback Complexity**: Easy
+- **Testing Complexity**: Moderate（CSV のバイト列（BOM・CRLF・エスケープ）、ロール別の 401/403、期間・ステータスの組合せ、Route Handler のバイナリ中継を検証する）
 
 ## Workflow Visualization
 
@@ -102,29 +102,36 @@ flowchart TD
 - [x] User Stories（COMPLETED）
 - [x] Execution Plan（IN PROGRESS）
 - [ ] Application Design — **SKIP**
-  - **Rationale**: 既存の`ReservationService`・既存画面という境界内の拡張であり、新しいサービス・新しいモジュール境界は発生しない
+  - **Rationale**: 追加するクラス（`ReportController`・`ReservationReportService`・`CsvWriter`・`ReportCondition`、Route Handler、ボタン）は要件書の「影響範囲」で既に列挙済みで、境界は既存の 4 層構成に収まる。メソッド単位の署名と責務は Functional Design で定義する
 - [ ] Units Generation — **SKIP**
-  - **Rationale**: Issue #30は単一のunits of work（縦切り1機能）であり、複数ユニットへの分解は不要
+  - **Rationale**: Issue #29 は単一の units of work（縦切り 1 機能）であり、複数ユニットへの分解は不要
 
-### 🟢 CONSTRUCTION PHASE
+### 🟢 CONSTRUCTION PHASE（ユニット: csv-report）
 
 - [ ] Functional Design — **EXECUTE**
-  - **Rationale**: 状態遷移ルール（新規作成時・DRAFT→PENDING/APPROVED遷移）、`approval_steps`の統一作成条件、ロール別アクセス制御（DRAFTはAPPROVER除外）という複数の業務ルールが絡み合うため、Code Generation前に明文化が必要
+  - **Rationale**: CSV の列定義と値の整形（日時書式・承認状態ラベル・ソート）、エスケープと数式対策のルール、期間・ステータスの絞り込みクエリ、Route Handler の中継仕様（ヘッダ・ステータスコードの扱い）を Code Generation 前に明文化する
 - [ ] NFR Requirements — **SKIP**
-  - **Rationale**: アクセス制御の強化は本課題の中心的な機能要件（Functional Designの業務ルールとして扱う）であり、新たな認証基盤・暗号化等のNFR横断的要求ではない。requirements.mdのとおりSecurity/Resiliency/PBT拡張はいずれも不採用
+  - **Rationale**: ADMIN 限定と数式対策は機能要件として要件書に記載済み。Security / Resiliency / PBT 拡張は不採用、件数上限なしは受け入れ済みのトレードオフ
 - [ ] NFR Design — **SKIP**
-  - **Rationale**: NFR Requirementsに連動してSKIP
+  - **Rationale**: NFR Requirements に連動して SKIP
 - [ ] Infrastructure Design — **SKIP**
   - **Rationale**: インフラ変更は発生しない
 - [ ] Code Generation — **EXECUTE (ALWAYS)**
-  - **Rationale**: 実装計画の作成とコード生成が必要
+  - **Rationale**: 実装計画の作成とコード生成が必要。着手前に `/update-spec` で api-spec・screen-spec・requirements を更新する（Spec-first）
 - [ ] Build and Test — **EXECUTE (ALWAYS)**
   - **Rationale**: ビルド・テストの実行と検証が必要
 
 ### 🟡 OPERATIONS PHASE
 
 - [ ] Operations — **PLACEHOLDER**
-  - **Rationale**: BookFlowではCI品質ゲート（`CI Frontend`/`CI Backend`）として運用。PR作成・push後に自動実行
+  - **Rationale**: BookFlow では CI 品質ゲート（`CI Frontend` / `CI Backend`）として運用。PR 作成・push 後に自動実行
+
+## Package Change Sequence（Brownfield）
+
+1. `docs-next/docs/spec/`：api-spec・screen-spec・requirements を先に更新（Spec-first）
+2. backend：`CsvWriter` → `ReportCondition` と Repository クエリ → `ReservationReportService` → `ReportController`（各層のテストを同時に書く）
+3. frontend：Route Handler → `CsvDownloadButton` → `/reservations` ページへの組み込み
+   - **Reason**: frontend の Route Handler は backend の API 契約（パス・ヘッダ・ステータスコード）に依存するため、backend を先に確定する
 
 ## Estimated Timeline
 
@@ -133,8 +140,8 @@ flowchart TD
 
 ## Success Criteria
 
-- **Primary Goal**: `DRAFT`ステータスを実際に機能させ、下書き保存・再編集・正式申請・一覧表示・アクセス制御を実現する
-- **Key Deliverables**: backend（`CreateReservationRequest`/`UpdateReservationRequest`/`ReservationService`の拡張）、frontend（下書き保存ボタン・正式申請ボタン・下書きタブ）、関連テスト一式
-- **Quality Gates**: `./gradlew test`・`pnpm lint`・`pnpm format:check`・`pnpm test`・`pnpm build`すべて成功。requirements.mdの受入条件6項目をすべて満たす。既存のステータス遷移テストが壊れていないこと
+- **Primary Goal**: ADMIN が `/reservations` から、絞り込み条件を引き継いだ予約一覧を UTF-8 BOM 付き CSV でダウンロードできる
+- **Key Deliverables**: backend（`ReportController`・`ReservationReportService`・`CsvWriter`・`ReportCondition`・Repository クエリ）、frontend（Route Handler・`CsvDownloadButton`・ページ組み込み）、spec 更新、関連テスト一式
+- **Quality Gates**: `./gradlew test`・`pnpm lint`・`pnpm format:check`・`pnpm test`・`pnpm build` がすべて成功。stories.md の受入条件（US-01〜05）と requirements.md の受入条件 5 項目をすべて満たす。既存の予約一覧・テストが回帰していないこと
 
-- **Integration Testing**: 既存の予約作成・承認フロー（PENDING/APPROVED系）が回帰していないことを確認する
+- **Integration Testing**: ADMIN の 200（BOM・ヘッダ・本文）と MEMBER・APPROVER の 403・未認証の 401 を `ReportControllerTest` で確認し、既存の予約一覧 API が変わらないことを確認する
