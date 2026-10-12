@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-10-12T05:39:41+09:00'
+last_updated: '2026-10-12T06:18:55+09:00'
 ---
 
 # REST API 仕様書
@@ -614,13 +614,13 @@ Content-Type: application/json
 | `attendeesCount` | integer / null | ❌ | 1 以上 |
 | `draft` | boolean | ❌ | 省略時は `false` として扱う |
 | `recurrenceType` | string | ❌ | `NONE` / `WEEKLY` / `MONTHLY`。省略、`null` は `NONE`。定義外の値は `400`（`code: VALIDATION_ERROR`） |
-| `recurrenceUntil` | DATE | 条件付き | `yyyy-MM-dd`。`WEEKLY` / `MONTHLY` では必須（未指定は `400`）。`NONE` では指定不可（指定すると `400`）。`startAt` の日付より前は `400`。`startAt` と同じ日付は有効で 1 件だけ生成する（すべて `code: VALIDATION_ERROR`） |
+| `recurrenceUntil` | DATE | 条件付き | `yyyy-MM-dd`。`WEEKLY` / `MONTHLY` では必須（未指定は `400`）。`NONE` では指定不可（指定すると `400`）。`startAt` の日付より前は `400`。`startAt` の日付から 2 年を超える場合も `400`（2 年後の同じ日までは有効。開始日が 2 月 29 日で 2 年後が平年なら 2 月 28 日まで）。`startAt` と同じ日付は有効で 1 件だけ生成する（すべて `code: VALIDATION_ERROR`） |
 
 **繰り返しの生成規則**：`recurrenceType` が `WEEKLY` / `MONTHLY` のとき、1 回の申請で複数の予約を作る。
 
 - 1 回目は `startAt` / `endAt` そのもの。`WEEKLY` は 7 日ごと（同じ曜日、同じ時刻）
 - `MONTHLY` は 1 回目の日（day of month）を基準に毎月同じ日。その月に存在しない日（31 日の 2 月など）の月はスキップし、スキップの後も基準日から数える（1 月 31 日の次は 3 月 31 日）
-- 開始日時の日付が `recurrenceUntil` 以前の回を作る（終了日当日を含む）。件数の上限はない
+- 開始日時の日付が `recurrenceUntil` 以前の回を作る（終了日当日を含む）。終了日は開始日から 2 年以内に限られるため、件数は最大でも 2 年分（毎週で 105 件）になる
 - 各回の長さは 1 回目の `endAt - startAt` と同じ。日をまたぐ予約も繰り返せる
 - 全件が同じ `status`、同じ `seriesId`、`recurrenceType`、`recurrenceUntil` を持つ。`recurrenceType` が `NONE` 以外なら、生成が 1 件だけでも `seriesId` が付く
 - 作った予約はそれぞれ独立した予約で、個別にキャンセル、変更できる（シリーズの一括操作はない）
@@ -664,7 +664,7 @@ Content-Type: application/json
 
 | HTTP | `code` | 条件 |
 |------|--------|------|
-| 400 | `VALIDATION_ERROR` | 繰り返し指定の不整合（`NONE` で `recurrenceUntil` を指定、`WEEKLY` / `MONTHLY` で未指定、`recurrenceUntil` が `startAt` の日付より前、`recurrenceType` が定義外の値） |
+| 400 | `VALIDATION_ERROR` | 繰り返し指定の不整合（`NONE` で `recurrenceUntil` を指定、`WEEKLY` / `MONTHLY` で未指定、`recurrenceUntil` が `startAt` の日付より前、`recurrenceUntil` が `startAt` の日付から 2 年を超える、`recurrenceType` が定義外の値） |
 | 404 | `NOT_FOUND` | `resourceId` のリソースが存在しない |
 | 409 | `RESERVATION_CONFLICT` | 既存の予約と重複、または繰り返しで生成した予約どうしが重複（自己重複）。**1 件でも該当すれば全件を作らない**。メッセージは固定文言で、衝突した日付は含めない |
 | 422 | `VALIDATION_ERROR` | `endAt ≦ startAt` |
