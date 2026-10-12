@@ -1,52 +1,36 @@
-# Integration Test Instructions
+# Integration Test Instructions（csv-report）
 
 ## Purpose
 
-BookFlow はモノリス構成（マイクロサービス分割なし）のため、ここでの「統合テスト」は以下2層を指す。
-
-1. **Controller ↔ Service ↔ Repository（H2）統合**: `ReservationControllerTest`（JUnit 5 + MockMvc + H2）
-2. **Frontend Server Action ↔ Backend API 統合**: Playwright E2E（`e2e-test-instructions.md` を参照、本ユニットでは既存スイートの回帰確認のみ実施）
+モノリス構成のため、サービス間統合ではなくレイヤー間の統合（Controller、Security、Service、Repository、H2）と、frontend の Route Handler とバックエンド API の契約を確認する。
 
 ## Test Scenarios
 
-### Scenario 1: ReservationController → ReservationService → H2
+### Scenario 1: ReportController から DB まで（backend）
 
-- **Description**: HTTP リクエスト（JSON）から DB 永続化までを MockMvc + 組み込み H2 で検証する
-- **Setup**: `./gradlew test` 実行時に Spring Boot Test コンテキストが自動起動（追加のサービス起動不要）
-- **Test Steps**: `backend/src/test/java/com/example/bookflow/presentation/ReservationControllerTest.java` を参照。DRAFT 作成（201）・DRAFT 内容更新（200）・DRAFT 詳細アクセス制御（403）等、本ユニットで追加した9シナリオを含む
-- **Expected Results**: 全シナリオでステータスコード・レスポンスボディが仕様（`docs-next/docs/spec/api-spec.md`）どおり
-- **Cleanup**: `@Transactional` ロールバックにより自動クリーンアップ（手動操作不要）
+- **Description**: `GET /api/reports/reservations/csv` が、認可・パラメータ変換・Repository の JOIN FETCH クエリ・CSV 整形・応答ヘッダまで一貫して仕様どおりに動く
+- **Setup**: `ReportControllerTest`（`BaseControllerTest`、`@SpringBootTest`、H2、`@WithMockAdmin` 等）。JdbcTemplate で部署・ユーザー（申請者と認証用）・リソース・予約 5 件（APPROVED 2、PENDING、DRAFT、CANCELLED）を seed する
+- **Test Steps**: ADMIN・MEMBER・APPROVER・未認証で呼び、期間・ステータスの組合せを変える
+- **Expected Results**:
+  - ADMIN は 200、先頭 3 バイトが BOM、`Content-Type: text/csv;charset=UTF-8`、`Content-Disposition: attachment; filename="reservations_yyyyMMdd.csv"`、`Cache-Control: no-store`
+  - MEMBER・APPROVER は 403（`FORBIDDEN`）、未認証は 401（`UNAUTHORIZED`）
+  - `from` のみ・`to` のみは 400（`VALIDATION_ERROR`）、不正な `status` は 400
+  - 期間重複と境界隣接の除外、`status` 未指定で DRAFT 除外、`status=DRAFT` で DRAFT のみ、開始日時の昇順、0 件はヘッダのみ
+  - LAZY の関連（リソース名・申請者名）が例外なく出力される
+- **Cleanup**: `@AfterEach` で予約・リソース・ユーザー・部署を削除する
 
-## Setup Integration Test Environment
+### Scenario 2: Route Handler とバックエンド API の契約（frontend）
 
-### 1. Start Required Services
-
-```bash
-# 不要（H2 インメモリDBを使用するため、PostgreSQL起動は不要）
-```
-
-### 2. Configure Service Endpoints
-
-```bash
-# 不要（Spring Boot Test が組み込みサーバーでコンテキストを起動）
-```
+- **Description**: Route Handler が、バックエンドの契約（パス、Bearer、`Accept: */*`、3 項目のクエリ、秒付き日時）どおりに呼び、結果をバイト列のまま中継する
+- **Setup**: `reports-csv-route.test.ts`。MSW で `BACKEND_URL`（`http://backend.test`）の `GET /api/reports/reservations/csv` をテストごとにスタブし、`@/lib/session` をモックする
+- **Expected Results**: トークンなしは 401、`status`・`from`・`to` の転送と 16 文字の日時への `:00` 補完、`resourceName`・`page` の非転送、非 2xx の透過、BOM を含むバイト列の保持、接続失敗で 502
 
 ## Run Integration Tests
 
-### 1. Execute Integration Test Suite
-
 ```bash
-cd backend && ./gradlew test --tests "*ReservationControllerTest"
+cd backend && ./gradlew test --tests '*ReportControllerTest' --max-workers=1
+cd frontend && pnpm test reports-csv-route
 ```
 
-### 2. Verify Service Interactions
-
-- **Test Scenarios**: 9件（本ユニット新規分）。既存シナリオを含めた全体は `ReservationControllerTest` 全件（`./gradlew test` の一部として実行）
-- **Expected Results**: 全件成功。201/200/403 のステータスコード検証を含む
-- **Logs Location**: `backend/build/reports/tests/test/classes/com.example.bookflow.presentation.ReservationControllerTest.html`
-
-### 3. Cleanup
-
-```bash
-# 不要（H2インメモリDBはテストプロセス終了時に破棄される）
-```
+- **Logs Location**: `backend/build/test-results/test/TEST-com.example.bookflow.presentation.ReportControllerTest.xml`
+- **Setup/Cleanup**: 外部サービスの起動は不要（H2 と MSW のみ）
