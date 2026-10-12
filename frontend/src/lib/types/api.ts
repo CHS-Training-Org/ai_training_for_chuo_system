@@ -143,3 +143,16 @@ export const ApprovalStepResponseSchema = z.object({
   createdAt: z.string(),
 });
 export type ApprovalStepResponse = z.infer<typeof ApprovalStepResponseSchema>;
+
+// ---------------------------------------------------------------------------
+// 利用実績の集計（api-spec.md §統計 の ResourceUsageResponse）
+// ---------------------------------------------------------------------------
+
+export const ResourceUsageResponseSchema = z.object({
+  resourceId: z.string().uuid(),
+  resourceName: z.string(),
+  reservationCount: z.number().int(),
+  /** 合計利用時間（分）。 */
+  totalMinutes: z.number().int(),
+});
+export type ResourceUsageResponse = z.infer<typeof ResourceUsageResponseSchema>;

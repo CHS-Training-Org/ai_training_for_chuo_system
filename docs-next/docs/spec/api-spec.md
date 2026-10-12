@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-10-12T13:00:00+09:00'
+last_updated: '2026-10-12T19:00:00+09:00'
 ---
 
 # REST API 仕様書
@@ -194,6 +194,12 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 | メソッド | パス | 概要 | 権限 |
 |--------|------|------|------|
 | GET | `/api/reports/reservations/csv` | 予約一覧の CSV ダウンロード（期間・ステータスで絞り込み可） | ADMIN |
+
+### 統計
+
+| メソッド | パス | 概要 | 権限 |
+|--------|------|------|------|
+| GET | `/api/statistics/resources` | リソース別の利用実績（承認済み予約の件数と合計利用時間）の集計（期間で絞り込み可） | ADMIN |
 
 ---
 
@@ -937,6 +943,76 @@ Cache-Control: no-store
 | HTTP | `code` | 条件 |
 |------|--------|------|
 | 400 | `VALIDATION_ERROR` | `from` と `to` の片方のみ指定、または `status` に定義にない値を指定 |
+| 401 | `UNAUTHORIZED` | 認証トークンなし・不正・期限切れ |
+| 403 | `FORBIDDEN` | ADMIN 以外（MEMBER / APPROVER）のアクセス |
+
+---
+
+## §統計 {#statistics}
+
+### `GET /api/statistics/resources`（リソース別の利用実績、ADMIN） {#get-api-statistics-resources}
+
+#### リクエスト
+
+```http
+GET /api/statistics/resources?from=2025-06-01T00:00:00&to=2025-06-30T23:59:59
+Authorization: Bearer <JWT>
+```
+
+#### クエリパラメータ
+
+| パラメータ | 型 | 必須 | 説明 |
+|------------|-----|------|------|
+| `from` | TIMESTAMP | ❌ | 集計期間の開始日時（`to` と同時指定必須） |
+| `to` | TIMESTAMP | ❌ | 集計期間の終了日時（`from` と同時指定必須。`from` より後であること） |
+
+> 集計の対象は `status = APPROVED` の予約のみ（過去・未来を問わない）。`PENDING` / `REJECTED` / `CANCELLED` / `DRAFT` は件数にも時間にも含まれない。
+>
+> `from` / `to` を指定した場合、予約期間（`startAt`〜`endAt`）が指定期間と重複する予約だけが対象になる（[`GET /api/reservations`](#get-api-reservations) と同じ半開区間 `[startAt, endAt)` 同士の重複判定。境界が一致するだけの隣接予約は含まない）。両方を省略すると期間条件なしの全期間が対象になる。片方のみ指定、または `from` が `to` 以降（同値を含む）の場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。
+>
+> **件数**：対象の予約の数。期間の境界をまたぐ予約も 1 件として数える。
+>
+> **合計利用時間（`totalMinutes`）**：期間を指定したときは、各予約の利用時間を指定期間で切り詰めた（`max(startAt, from)` から `min(endAt, to)` まで）時間を、予約ごとの秒で合算し、最後に 60 で割って切り捨てた分（整数）。期間を省略したときは各予約の `startAt` から `endAt` までの全時間。
+>
+> **表示するリソース**：有効（`is_active = true`）なリソースは実績が 0 件でも常に含め（件数 0・合計 0）、無効化済みのリソースは対象の予約が 1 件以上あるときだけ含める。
+>
+> **並び順**：`totalMinutes` の降順、同値は `reservationCount` の降順、さらに同値は `resourceName` の昇順。ページネーションは行わず、全件を配列で返す。
+>
+> 利用率（稼働可能時間を分母にした割合）は本エンドポイントの対象外。
+
+#### レスポンス（200 OK）
+
+```json
+[
+  {
+    "resourceId": "550e8400-e29b-41d4-a716-446655440020",
+    "resourceName": "第1会議室",
+    "reservationCount": 12,
+    "totalMinutes": 1530
+  },
+  {
+    "resourceId": "550e8400-e29b-41d4-a716-446655440021",
+    "resourceName": "プロジェクター",
+    "reservationCount": 0,
+    "totalMinutes": 0
+  }
+]
+```
+
+**ResourceUsageResponse 型定義**
+
+| フィールド | 型 | 説明 |
+|-----------|-----|------|
+| `resourceId` | UUID | リソース ID |
+| `resourceName` | string | リソース名 |
+| `reservationCount` | integer | 対象の承認済み予約の件数 |
+| `totalMinutes` | integer | 合計利用時間（分） |
+
+#### エラー
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| 400 | `VALIDATION_ERROR` | `from` と `to` の片方のみ指定、または `from` が `to` 以降 |
 | 401 | `UNAUTHORIZED` | 認証トークンなし・不正・期限切れ |
 | 403 | `FORBIDDEN` | ADMIN 以外（MEMBER / APPROVER）のアクセス |
 

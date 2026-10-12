@@ -357,4 +357,36 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
       @Param("from") LocalDateTime from,
       @Param("to") LocalDateTime to,
       @Param("statuses") Collection<ReservationStatus> statuses);
+
+  // ---------------------------------------------------------------------------
+  // 利用実績の集計用の取得（ページネーションなし。構築子射影で LAZY 関連を触らない）
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 指定ステータスの全予約を、集計用の射影（リソース ID・開始・終了）で返す。
+   *
+   * @param status 対象ステータス（利用実績では {@code APPROVED}）
+   * @return 射影のリスト
+   */
+  @Query(
+      "SELECT new com.example.bookflow.domain.ApprovedUsage(r.resource.id, r.startAt, r.endAt)"
+          + " FROM Reservation r WHERE r.status = :status")
+  List<ApprovedUsage> findApprovedUsage(@Param("status") ReservationStatus status);
+
+  /**
+   * 期間が重複する指定ステータスの予約を、集計用の射影で返す。
+   *
+   * @param status 対象ステータス（利用実績では {@code APPROVED}）
+   * @param from 期間の開始日時
+   * @param to 期間の終了日時
+   * @return 射影のリスト
+   */
+  @Query(
+      "SELECT new com.example.bookflow.domain.ApprovedUsage(r.resource.id, r.startAt, r.endAt)"
+          + " FROM Reservation r WHERE r.status = :status AND "
+          + PERIOD_MATCH)
+  List<ApprovedUsage> findApprovedUsageByPeriod(
+      @Param("status") ReservationStatus status,
+      @Param("from") LocalDateTime from,
+      @Param("to") LocalDateTime to);
 }
