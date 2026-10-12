@@ -19,12 +19,12 @@ timestamp: 2026-10-12
 
 - **Project Type**: Brownfield
 - **Start Date**: 2026-10-12T01:45:00Z
-- **Current Stage**: CONSTRUCTION - Code Generation
+- **Current Stage**: OPERATIONS（CI 品質ゲートへ引き継ぎ）
 - **Workspace Root**: /workspace
-- **Target Issue**: GitHub Issue #29「CSV 帳票出力」（依頼文・ブランチ名の「#31」は誤り。#31 は「繰り返し予約」）
+- **Target Issue**: GitHub Issue #29「CSV 帳票出力」
 - **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/intermediate/csv-export.md`
 - **前提課題**: なし
-- **ブランチ**: `feature/CHS-FUJITA-RIKA/31-csv-report-aidlc`（Issue 番号が実際の #29 と不一致。ブランチ操作は行わず開示のみ）
+- **ブランチ**: `feature/CHS-FUJITA-RIKA/29-csv-report-aidlc`
 
 ## Code Location Rules
 
@@ -58,19 +58,19 @@ timestamp: 2026-10-12
 - [ ] NFR Requirements（条件付き、ユニット別） — SKIP
 - [ ] NFR Design（条件付き、ユニット別） — SKIP
 - [ ] Infrastructure Design（条件付き、ユニット別） — SKIP
-- [ ] Code Generation（必須、ユニット別） — 計画承認済み。全 10 ステップ完了（backend 261 件・frontend 180 件のテスト成功、lint・format・build 成功）、成果物の承認待ち
-- [ ] Build and Test（必須）
+- [x] Code Generation（必須、ユニット別） — 全 10 ステップ完了（backend 261 件・frontend 180 件のテスト成功、lint・format・build 成功）、承認済み
+- [x] Build and Test（必須） — backend `clean build` 成功（261 件）、frontend lint・format:check・test（180 件）・build 成功、docs-next build 成功。E2E は SKIP（手動確認手順を記載、未実施）。承認済み
 
 ### OPERATIONS PHASE
 
-- [ ] Operations（プレースホルダー）
+- [x] Operations（プレースホルダー） — BookFlow では CI 品質ゲート（`CI Frontend`/`CI Backend`）として運用。`/aidlc` 本体はここで追加生成を行わず、`/commit-push`・`/create-pr` へ引き継ぐ
 
 ## Current Status
 
-- **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Code Generation 完了、承認待ち（コード変更なし）
-- **Next Stage**: Build and Test
-- **Status**: Awaiting Approval（Code Generation 成果物）
+- **Lifecycle Phase**: OPERATIONS
+- **Current Stage**: csv-report ユニットの CONSTRUCTION フェーズ完了。`/aidlc` ワークフロー本体は完了
+- **Next Stage**: `/commit-push`（コミット分割・push）→ `/create-pr`（PR 作成）→ CI 品質ゲート
+- **Status**: Complete（csv-report ユニット）
 
 ---
 

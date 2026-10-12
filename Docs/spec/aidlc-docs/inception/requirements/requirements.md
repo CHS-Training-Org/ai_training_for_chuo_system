@@ -2,7 +2,7 @@
 
 ## Intent Analysis Summary
 
-- **User Request**: 管理者（ADMIN）が予約一覧を CSV でダウンロードできるようにする（GitHub Issue #29、ビジネス要求シート `docs-next/docs/spec/enhancements/intermediate/csv-export.md`、UC-07）。依頼文・ブランチ名の「#31」は誤りで、#31 は「繰り返し予約」
+- **User Request**: 管理者（ADMIN）が予約一覧を CSV でダウンロードできるようにする（GitHub Issue #29、ビジネス要求シート `docs-next/docs/spec/enhancements/intermediate/csv-export.md`、UC-07）
 - **Request Type**: New Feature（帳票出力エンドポイントと画面ボタンの新設）
 - **Scope Estimate**: Multiple Components（frontend + backend 両方）
 - **Complexity Estimate**: Moderate（再利用できる既存実装はなく新規コンポーネントが中心だが、規模は小さい）

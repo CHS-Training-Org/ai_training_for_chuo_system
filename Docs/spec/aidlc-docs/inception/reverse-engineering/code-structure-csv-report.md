@@ -2,7 +2,6 @@
 
 > 本ファイルは Issue #29「CSV 帳票出力」（要件 RPT-01〜RPT-05）の実装に必要な範囲に限定した Reverse Engineering 成果物である。既存の `code-structure-*.md`（他ユニット向け）は変更しない。
 > 調査はコード変更なしの読み取りのみ。サブエージェントの報告のうち、CSV ライブラリ不在・期間重複条件・`@PreAuthorize`・`ALL_STATUSES` は本体側で再確認済み。それ以外は報告に基づく。`【推測】` は未検証。
-> 注意：ブランチ名・依頼文は「Issue #31」だが、CSV 帳票出力は Issue #29（#31 は「繰り返し予約」）。
 
 パス略記：`B/` = `backend/src/main/java/com/example/bookflow/`、`T/` = `backend/src/test/java/com/example/bookflow/`、`F/` = `frontend/src/`。
 

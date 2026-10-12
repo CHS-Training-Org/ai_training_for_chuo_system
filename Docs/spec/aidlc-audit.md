@@ -1768,3 +1768,45 @@ timestamp: 2026-08-29
 **Context**: Code Generation Part 2 完了、成果物の承認待ち。承認プロンプト: 『Request Changes か Continue to Next Stage（Build and Test）』
 
 ---
+
+
+## Code Generation — Approval（csv-report）
+**Timestamp**: 2026-10-12T06:00:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "Code Generation 成果物の承認を記録。Build and Test へ遷移。"
+**Context**: Code Generation 承認 → Build and Test
+
+---
+
+## Build and Test Stage（csv-report）
+**Timestamp**: 2026-10-12T06:15:00Z
+**Build Status**: Success（backend `./gradlew clean build --max-workers=1` 約31秒・jar 生成、frontend `pnpm lint`・`format:check`・`test`・`NODE_OPTIONS=--max-old-space-size=1536 pnpm build`、docs-next `npm run build`）
+**Test Status**: Pass（backend 全261件〔既存208 + 新規53〕／frontend unit 全180件〔既存158 + 新規22〕、計441件、失敗0。Integration Test は `ReportControllerTest`（H2）と `reports-csv-route.test.ts`（MSW）として Unit Test に含めて実施。E2E は新規追加がスコープ外・既存 E2E に `/reservations` ヘッダや CSV の参照がなく壊れる経路がない（grep 確認）・PostgreSQL と cognito-local のコンテナ未稼働のため SKIP し、ブラウザでの手動確認手順を記載（未実施）。Performance/Contract/Security は Workflow Planning 時点の SKIP 判定を踏襲し対象外）
+**Notes**: 最初の `clean build` 実行は `/usr/bin/time` が環境にないためコマンドが起動せず、表示された261件は前回結果だったことに気づき、`time` なしで再実行して fresh な結果（261件・jar 生成）を確認した。
+**Files Generated**:
+- `Docs/spec/aidlc-docs/construction/build-and-test/build-instructions.md`（csv-report 向けに更新）
+- `Docs/spec/aidlc-docs/construction/build-and-test/unit-test-instructions.md`（同）
+- `Docs/spec/aidlc-docs/construction/build-and-test/integration-test-instructions.md`（同）
+- `Docs/spec/aidlc-docs/construction/build-and-test/e2e-test-instructions.md`（同。SKIP 判定と手動確認手順）
+- `Docs/spec/aidlc-docs/construction/build-and-test/build-and-test-summary.md`（同）
+**Context**: Build and Test ステージ実行完了、承認待ち
+
+---
+
+
+## Build and Test — Approval（csv-report）
+**Timestamp**: 2026-10-12T06:30:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "承認を記録。csv-report ユニットの CONSTRUCTION フェーズ（Functional Design・Code Generation・Build and Test）を完了。BookFlow では OPERATIONS フェーズは CI 品質ゲート（`CI Frontend` / `CI Backend`）として運用され、PR 作成・push 時に自動実行されるため、`/aidlc` 自体がこの場で追加生成するステージはない旨をユーザーに説明し、次のアクション（`/commit-push`・`/create-pr`）を案内する。PR 前の確認事項として、ブランチ名の Issue 番号（31）と実際の Issue（#29）の不一致、およびブラウザでの手動確認（未実施）を再掲する。"
+**Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。`/aidlc` ワークフロー本体はここで完了
+
+---
+
+
+## Issue 番号の訂正（csv-report）
+**Timestamp**: 2026-10-12T07:00:00Z
+**User Input**: "Issue#29にしたいです。"
+**AI Response**: "開始時の依頼文・ブランチ名の「#31」は誤りで、CSV 帳票出力の Issue は #29（`gh issue view` で確認済み。#31 は「繰り返し予約」）。ブランチは作業中にユーザーが `feature/CHS-FUJITA-RIKA/29-csv-report-aidlc` へ訂正済みであることを確認した。これを受けて、状態ファイル（`aidlc-state.md`）、`requirements.md`、`code-structure-csv-report.md` の Issue 番号まわりの記述を #29 に統一し、番号不一致に関する注記を削除した。本監査ログは追記専用のため、過去の記録（ユーザー入力の原文『Issue #31』と Workflow Start の説明）は書き換えず、本エントリで訂正を示す。コード・spec・テストに Issue 番号の記載はなく変更なし。"
+**Context**: Issue 番号の訂正。以降の記録・PR 本文では Issue #29 を使う
+
+---
