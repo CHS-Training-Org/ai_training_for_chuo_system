@@ -10,8 +10,9 @@
 | BR-02 | `recurrenceType` が `NONE` で `recurrenceUntil` が指定されたら、400 `VALIDATION_ERROR`（`ValidationException`、文言「繰り返しなしの場合、繰り返し終了日は指定できません。」） | 決定事項 7(a)、US-04 |
 | BR-03 | `WEEKLY` / `MONTHLY` で `recurrenceUntil` が未指定なら、400 `VALIDATION_ERROR`（文言「繰り返し終了日は必須です。」） | 決定事項 7(b)、US-04 |
 | BR-04 | `recurrenceUntil` が `startAt` の日付より前なら、400 `VALIDATION_ERROR`（文言「繰り返し終了日は開始日以降にしてください。」）。同じ日付は有効で、1 件だけ生成する | 決定事項 7(c)、US-04 |
+| BR-04b | `recurrenceUntil` が `startAt` の日付から 2 年を超えるなら、400 `VALIDATION_ERROR`（文言「繰り返し終了日は開始日から 2 年以内にしてください。」）。上限は `startAt` の日付の `plusYears(2)`（2 年後の同じ日。開始日が 2 月 29 日で 2 年後が平年なら 2 月 28 日）。BR-04 の後ろで判定し、ロックより前に行う。フロントの `CreateReservationFormSchema` も同じ規則で送信前に止める（`MAX_RECURRENCE_YEARS = 2`、BE の `MAX_RECURRENCE_YEARS` と一致） | 決定事項 4（PR #150 の AI レビューで変更）、US-04 |
 | BR-05 | BR-02〜BR-04 の検証は DB に触れる前に行う（リソース行のロックより前）。既存の `endAt > startAt` の検証（422）より前に判定する | 設計上の判断 |
-| BR-06 | 件数の上限は設けない。終了日だけで範囲が決まる | 決定事項 4 |
+| BR-06 | 件数そのものの上限は設けない。範囲は終了日の上限（BR-04b、開始日から 2 年以内）で抑える。毎週で最大 105 件 | 決定事項 4 |
 
 ### 日程の生成
 

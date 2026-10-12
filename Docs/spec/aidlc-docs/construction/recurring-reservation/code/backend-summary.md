@@ -50,4 +50,12 @@ Code Generation の Step 2 から Step 7 の記録。設計は `functional-desig
 - **V003 の SQL と 2 つの CHECK 制約**：テストは Flyway を実行しない。PostgreSQL での適用と、食い違った行（例：`NONE` なのに `series_id` が非 NULL）を DB が拒否することの確認が必要
 - **`ddl-auto: validate` での起動**：`Reservation` の `@Column` と V003 の列の整合は、PostgreSQL に接続した起動でしか確認できない
 - **ロック下の一括作成の並行性**：悲観ロックの並行テストはなく、Mockito と H2 の逐次実行のみ。同時に 2 つの繰り返し申請を送る確認は手動になる
-- **件数上限なしのリスク**：`business-logic-model.md` に記載したとおり、極端に遠い終了日の挙動（時間・メモリ・範囲外の日付）は検証していない
+- **終了日の上限いっぱいの所要時間**：終了日を開始日から 2 年以内に限った（下の「PR #150 の AI レビュー対応」）。毎週 105 件の一括作成は、H2 の結合テストでは通るが、PostgreSQL とロック下での所要時間は未計測
+
+## PR #150 の AI レビュー対応（終了日の上限）
+
+AI レビューの Should fix に対応し、繰り返し終了日の上限（開始日から 2 年以内）を追加した。要件の決定事項 4（件数の上限なし）を、終了日の上限に変更したもの。
+
+- `ReservationService.validateRecurrence`：`recurrenceUntil` が `startAt` の日付の `plusYears(2)` を超えたら、`ValidationException`（400 `VALIDATION_ERROR`、「繰り返し終了日は開始日から 2 年以内にしてください。」）。ロックより前に判定する。定数は `MAX_RECURRENCE_YEARS = 2`
+- 上限は 2 年後の同じ日まで有効。開始日が 2 月 29 日で 2 年後が平年なら、2 月 28 日まで（`LocalDate.plusYears` の丸め）
+- テスト：`ReservationServiceTest`（ちょうど 2 年で 105 件、翌日で 400 かつロックを取らない、毎月、下書き、2 月 29 日、`NONE` は終了日の指定自体が不可）、`ReservationControllerTest`（超過で 400 と固定文言と 0 件、ちょうど 2 年で 105 件）

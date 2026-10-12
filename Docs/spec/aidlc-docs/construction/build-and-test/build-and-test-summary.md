@@ -5,7 +5,7 @@
 - **Unit Tests**: ALWAYS EXECUTE（Code Generation で生成済み。本ステージで `clean build` による fresh な実行で確認）
 - **Integration Tests**: EXECUTE（`ReservationControllerTest`（H2、68 件）。加えて、V003 と CHECK 制約と `validate` 起動を、使い捨ての PostgreSQL 16 で手動確認）
 - **E2E Tests**: SKIP（新規の E2E は追加せず、既存の E2E も変更の必要がない）。ブラウザでの実機確認の手順を `e2e-test-instructions.md` に記載
-- **Performance Tests**: SKIP（性能要件の NFR Requirements ステージは SKIP 判定）。件数上限なしの所要時間の確認は、`e2e-test-instructions.md` の手順 C に記載
+- **Performance Tests**: SKIP（性能要件の NFR Requirements ステージは SKIP 判定）。終了日の上限（2 年）まで作った場合の所要時間の確認は、`e2e-test-instructions.md` の手順 C に記載
 - **Contract Tests**: SKIP（モノリスのため対象外）。OpenAPI への反映は `ReservationControllerTest` で確認した
 - **Security Tests**: SKIP（Security Baseline 拡張は不採用。権限は既存の予約作成と同じで、追加の認可はない）
 
@@ -59,7 +59,7 @@
 
 - **ブラウザでの実機確認は未実施**：繰り返しの入力、トースト、詳細画面のシリーズ情報（`e2e-test-instructions.md` の手順 A、B）
 - **ロック下の一括作成の並行性と所要時間は未確認**：同時申請と、1 年・2 年分の所要時間（手順 C）
-- **件数上限なしのリスク**：極端に遠い終了日は、ロック保持時間とメモリを増やし、`LocalDate` の上限付近では日付計算が例外になりうる。要件の決定事項 4 で受け入れ済みで、見直し候補は上限件数の導入（超過は 400）
+- **ロック保持時間とメモリ**：終了日を開始日から 2 年以内に限った（PR #150 の AI レビューで追加）ため、毎週で最大 105 件に収まる。極端に遠い終了日のリスクは解消した。上限いっぱいでの所要時間は、実機ではまだ測っていない（手順 C）
 - **画面遷移図と ER 図（drawio の SVG）は未更新**：`screen-spec.md` と `er-diagram.md` の表を正とする
 - **設計書への未反映**：実装中に見つけた `@ColumnDefault("'NONE'")`（テストの生 SQL の INSERT 対策）は、`functional-design/` に反映していない（`code/backend-summary.md` に記録）
 

@@ -2201,3 +2201,12 @@ timestamp: 2026-08-29
 **Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。/aidlc ワークフロー本体はここで完了
 
 ---
+
+
+## PR #150 AI レビュー対応（Should fix: 繰り返し終了日の上限）（recurring-reservation）
+**Timestamp**: 2026-10-12T06:22:13Z
+**User Input**: "AIレビューのShould fixに対応します。\n\n繰り返し終了日の上限を追加してください。\n\n方針：\n- recurrenceUntil は開始日から2年以内\n- 超過時は400 VALIDATION_ERROR\n- validateRecurrence に実装\n- FEのCreateReservationFormSchemaにも反映\n- api-spec.md\n- requirements.md\n- screen-spec.md\n\nも更新してください。\n\nテスト追加後、変更内容を説明してください。"
+**AI Response**: "要件の決定事項 4（件数の上限なし）を、終了日の上限（開始日から 2 年以内）に変更。ReservationService.validateRecurrence に MAX_RECURRENCE_YEARS = 2 の判定を追加（startDate.plusYears(2) を超えたら ValidationException、ロックより前）。FE の CreateReservationFormSchema にも同じ規則の refine を追加（2 月 29 日が平年に丸まる BE の plusYears に合わせた addYears）。仕様書 3 ファイル（requirements.md・api-spec.md・screen-spec.md）と、AI-DLC 成果物（要件定義書の決定事項 4・非機能要件、US-04、business-rules.md の BR-04b と BR-06、business-logic-model.md のリスク、Build and Test の記述、backend/frontend-summary）を整合させた。テスト追加: backend 8 件（Service 6、Controller 2）、frontend 5 件（スキーマ 4、フォーム 1）。break-and-verify で、上限判定を外すと該当テストが失敗することを確認して復元。backend 383 件、frontend 269 件、lint・format:check・build・docs build がすべて成功。コミットと push は未実施（指示待ち）。"
+**Context**: PR #150 の AI レビュー対応。コード変更済み・未コミット
+
+---

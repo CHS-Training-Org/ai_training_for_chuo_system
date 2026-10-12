@@ -138,10 +138,17 @@ Scenario: 終了日が開始日と同じ日なら、1 件だけ作られる
   When 予約を作成する
   Then 1 件の予約が作られ、レスポンスは 1 件の配列になる
 
-Scenario: 件数の上限はない
-  Given recurrenceType が WEEKLY で、recurrenceUntil が開始日の 2 年後である
+Scenario: 終了日は開始日から 2 年後の同じ日まで指定できる
+  Given recurrenceType が WEEKLY で、recurrenceUntil が開始日のちょうど 2 年後である
   When 予約を作成する
-  Then 件数による拒否はなく、重複がなければ約 104 件が作られる
+  Then 件数による拒否はなく、重複がなければ 105 件（開始日が月曜の場合）が作られる
+
+Scenario: 終了日が開始日から 2 年を超えると 400 になる
+  Given recurrenceType が WEEKLY で、recurrenceUntil が開始日の 2 年後の翌日である
+  When 予約を作成する
+  Then 400 VALIDATION_ERROR が返り、予約は作られない
+  And フォームも、送信前に「繰り返し終了日は開始日から 2 年以内にしてください」を表示して止める
+  And 開始日が 2 月 29 日で 2 年後が平年なら、上限は 2 月 28 日になる
 ```
 
 ## US-05: 下書き・承認が必要なリソースとの併用

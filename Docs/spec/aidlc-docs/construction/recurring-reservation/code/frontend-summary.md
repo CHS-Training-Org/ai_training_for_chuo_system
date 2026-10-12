@@ -46,7 +46,7 @@ Code Generation の Step 8 から Step 11 の記録。設計は `functional-desi
 | US-01 毎週 | `RecurrenceScheduleTest`（件数・終了日当日・翌日の除外・年またぎ）、`ReservationServiceTest.CreateRecurring`（日をまたぐ長さ・同一の系列）、`ReservationControllerTest`（昇順の配列・各項目） |
 | US-02 毎月 | `RecurrenceScheduleTest`（31 日のスキップ・基準日からの数え直し・28 日以前・うるう年）、`ReservationServiceTest`・`ReservationControllerTest` の 31 日の例 |
 | US-03 重複時の全件失敗 | Service と Controller で、既存の `APPROVED`・`PENDING` との重複、自己重複（下書きを含む）、承認者不在のロールバック、固定文言。隣接は重複でない（Service） |
-| US-04 検証と従来互換 | Service と Controller で、`NONE` の 1 件の配列、400 の 3 パターンと定義外の値、終了日が開始日と同じ日、上限なし（`RecurrenceScheduleTest` の 105 件）。フォーム側は `reservation-form-schema.test.ts` |
+| US-04 検証と従来互換 | Service と Controller で、`NONE` の 1 件の配列、400 の 3 パターンと定義外の値、終了日が開始日と同じ日、終了日の上限（開始日から 2 年以内）。フォーム側は `reservation-form-schema.test.ts` |
 | US-05 下書き・承認 | Service と Controller で、全件 `DRAFT`・`PENDING`（承認ステップが件数分）・`APPROVED`、各回の `submit`、各回の承認と却下 |
 | US-06 個別管理 | `ReservationControllerTest`：一覧に個別に並ぶ、1 件だけキャンセル、1 件だけ `submit`。一括操作は存在しない（操作そのものを作っていないため、テストはない） |
 | US-07 フォーム | `reservation-form.test.tsx`：初期値、「毎週」で終了日が現れる、「繰り返さない」に戻すと消える、必須・範囲のエラー、ペイロード、トースト、下書きの遷移、409 |
@@ -58,3 +58,8 @@ Code Generation の Step 8 から Step 11 の記録。設計は `functional-desi
 - ロック下の一括作成の並行性（同時に 2 つの繰り返し申請を送る）
 - ブラウザでの手動確認：繰り返しの入力、終了日欄の表示切替、トースト、詳細画面のシリーズ情報。Playwright の E2E は、既存のフロー（繰り返さない）が変わらないため、変更も追加もしていない
 - 画面遷移図・ER 図（drawio の SVG）は、今回の変更を反映していない（ER 図は表を正とする注記を `er-diagram.md` に追記した）
+
+## PR #150 の AI レビュー対応（終了日の上限）
+
+- `lib/schemas/reservation.ts`：`CreateReservationFormSchema` に、終了日が開始日から 2 年を超えたら「繰り返し終了日は開始日から 2 年以内にしてください」を出す `.refine` を追加。`MAX_RECURRENCE_YEARS = 2`（BE と一致）。2 年後の計算は、2 月 29 日が平年に丸まる BE の `plusYears` に合わせて自前の `addYears`（`Date` の月末オーバーフローを避ける）
+- テスト：`reservation-form-schema.test.ts`（ちょうど 2 年は通る、翌日はエラー、毎月、2 月 29 日）、`reservation-form.test.tsx`（超過で送信されない）
