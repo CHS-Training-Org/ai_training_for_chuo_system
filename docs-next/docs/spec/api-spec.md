@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-10-12T19:00:00+09:00'
+last_updated: '2026-10-12T05:39:41+09:00'
 ---
 
 # REST API 仕様書
@@ -176,7 +176,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 | メソッド | パス | 概要 | 権限 |
 |--------|------|------|------|
 | GET | `/api/reservations` | 予約一覧（自分の予約。ADMIN は全件） | 全ロール |
-| POST | `/api/reservations` | 予約申請 | 全ロール |
+| POST | `/api/reservations` | 予約申請（下書き保存、繰り返し予約に対応。レスポンスは配列） | 全ロール |
 | GET | `/api/reservations/{id}` | 予約詳細 | 全ロール（本人 or APPROVER/ADMIN） |
 | PUT | `/api/reservations/{id}` | 予約内容更新（PENDING のみ） | 申請者本人 |
 | POST | `/api/reservations/{id}/cancel` | キャンセル | 申請者本人 or ADMIN |
@@ -541,7 +541,12 @@ Authorization: Bearer <JWT>
       "attendeesCount": 5,
       "status": "APPROVED",
       "createdAt": "2025-06-01T09:00:00",
-      "updatedAt": "2025-06-01T09:00:00"
+      "updatedAt": "2025-06-01T09:00:00",
+      "seriesId": null,
+      "recurrenceType": "NONE",
+      "recurrenceUntil": null,
+      "seriesCount": null,
+      "remainingCount": null
     }
   ],
   "totalElements": 3,
@@ -569,10 +574,15 @@ Authorization: Bearer <JWT>
 | `status` | string | `DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`（[er-diagram.md](./er-diagram.md) 参照） |
 | `createdAt` | TIMESTAMP | 申請日時 |
 | `updatedAt` | TIMESTAMP | 最終更新日時 |
+| `seriesId` | UUID / null | 繰り返しで作った予約を束ねる ID。繰り返さない予約（`recurrenceType = NONE`）は `null` |
+| `recurrenceType` | string | `NONE` / `WEEKLY` / `MONTHLY`（既存の予約は `NONE`） |
+| `recurrenceUntil` | DATE / null | 繰り返しの終了日（`yyyy-MM-dd`）。`NONE` は `null` |
+| `seriesCount` | integer / null | 同じ `seriesId` の予約の件数（全ステータス）。**予約詳細（`GET /api/reservations/{id}`）だけが値を返す**。一覧、申請、更新、キャンセルと、`NONE` の予約は `null` |
+| `remainingCount` | integer / null | `startAt` がその予約より後の、同じ `seriesId` の予約の件数（全ステータス、自身を含まない）。返す条件は `seriesCount` と同じ |
 
 ---
 
-### `POST /api/reservations`（予約申請）
+### `POST /api/reservations`（予約申請） {#post-api-reservations}
 
 #### リクエスト
 
@@ -587,7 +597,9 @@ Content-Type: application/json
   "endAt": "2025-06-02T12:00:00",
   "purpose": "週次ミーティング",
   "attendeesCount": 5,
-  "draft": false
+  "draft": false,
+  "recurrenceType": "WEEKLY",
+  "recurrenceUntil": "2025-06-23"
 }
 ```
 
@@ -601,32 +613,64 @@ Content-Type: application/json
 | `purpose` | string | ✅ | 255 文字以内 |
 | `attendeesCount` | integer / null | ❌ | 1 以上 |
 | `draft` | boolean | ❌ | 省略時は `false` として扱う |
+| `recurrenceType` | string | ❌ | `NONE` / `WEEKLY` / `MONTHLY`。省略、`null` は `NONE`。定義外の値は `400`（`code: VALIDATION_ERROR`） |
+| `recurrenceUntil` | DATE | 条件付き | `yyyy-MM-dd`。`WEEKLY` / `MONTHLY` では必須（未指定は `400`）。`NONE` では指定不可（指定すると `400`）。`startAt` の日付より前は `400`。`startAt` と同じ日付は有効で 1 件だけ生成する（すべて `code: VALIDATION_ERROR`） |
+
+**繰り返しの生成規則**：`recurrenceType` が `WEEKLY` / `MONTHLY` のとき、1 回の申請で複数の予約を作る。
+
+- 1 回目は `startAt` / `endAt` そのもの。`WEEKLY` は 7 日ごと（同じ曜日、同じ時刻）
+- `MONTHLY` は 1 回目の日（day of month）を基準に毎月同じ日。その月に存在しない日（31 日の 2 月など）の月はスキップし、スキップの後も基準日から数える（1 月 31 日の次は 3 月 31 日）
+- 開始日時の日付が `recurrenceUntil` 以前の回を作る（終了日当日を含む）。件数の上限はない
+- 各回の長さは 1 回目の `endAt - startAt` と同じ。日をまたぐ予約も繰り返せる
+- 全件が同じ `status`、同じ `seriesId`、`recurrenceType`、`recurrenceUntil` を持つ。`recurrenceType` が `NONE` 以外なら、生成が 1 件だけでも `seriesId` が付く
+- 作った予約はそれぞれ独立した予約で、個別にキャンセル、変更できる（シリーズの一括操作はない）
 
 #### レスポンス（201 Created）
+
+**レスポンスは常に配列**（`startAt` の昇順）。`recurrenceType` が `NONE` のときは 1 件の配列になる。以下のステータス決定は、配列の全件に同じく適用する。
 
 - `draft = true` の場合：`status = "DRAFT"`（下書き保存。`requires_approval` の値に関わらず承認ステップは生成しない）
 - `draft = false`（省略時含む）の場合：
   - `requires_approval = false` の場合：`status = "APPROVED"`（即時確定）
-  - `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`・`step_order = 1`）を 1 件生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](./requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
+  - `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`、`step_order = 1`）を予約 1 件につき 1 件（繰り返しでは件数分）生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](./requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
 
 ```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440030",
-  "resourceId": "550e8400-e29b-41d4-a716-446655440020",
-  "resourceName": "第1会議室",
-  "requesterId": "550e8400-e29b-41d4-a716-446655440001",
-  "requesterName": "山田 太郎",
-  "startAt": "2025-06-02T10:00:00",
-  "endAt": "2025-06-02T12:00:00",
-  "purpose": "週次ミーティング",
-  "attendeesCount": 5,
-  "status": "APPROVED",
-  "createdAt": "2025-06-01T09:00:00",
-  "updatedAt": "2025-06-01T09:00:00"
-}
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440030",
+    "resourceId": "550e8400-e29b-41d4-a716-446655440020",
+    "resourceName": "第1会議室",
+    "requesterId": "550e8400-e29b-41d4-a716-446655440001",
+    "requesterName": "山田 太郎",
+    "startAt": "2025-06-02T10:00:00",
+    "endAt": "2025-06-02T12:00:00",
+    "purpose": "週次ミーティング",
+    "attendeesCount": 5,
+    "status": "APPROVED",
+    "createdAt": "2025-06-01T09:00:00",
+    "updatedAt": "2025-06-01T09:00:00",
+    "seriesId": "550e8400-e29b-41d4-a716-446655440090",
+    "recurrenceType": "WEEKLY",
+    "recurrenceUntil": "2025-06-23",
+    "seriesCount": null,
+    "remainingCount": null
+  }
+]
 ```
 
-重複予約の場合は `409 Conflict`（`code: "RESERVATION_CONFLICT"`）を返す。
+上の例は、`WEEKLY` で 6/2 から 6/23 まで申請した場合の先頭の 1 件分（実際は 6/2、6/9、6/16、6/23 の 4 件の配列が返る）。`seriesCount` と `remainingCount` は申請のレスポンスでは `null` で、予約詳細で取得する。
+
+**エラー**
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| 400 | `VALIDATION_ERROR` | 繰り返し指定の不整合（`NONE` で `recurrenceUntil` を指定、`WEEKLY` / `MONTHLY` で未指定、`recurrenceUntil` が `startAt` の日付より前、`recurrenceType` が定義外の値） |
+| 404 | `NOT_FOUND` | `resourceId` のリソースが存在しない |
+| 409 | `RESERVATION_CONFLICT` | 既存の予約と重複、または繰り返しで生成した予約どうしが重複（自己重複）。**1 件でも該当すれば全件を作らない**。メッセージは固定文言で、衝突した日付は含めない |
+| 422 | `VALIDATION_ERROR` | `endAt ≦ startAt` |
+| 422 | `APPROVER_NOT_AVAILABLE` | 承認が必要なリソースで APPROVER ロールのユーザーが存在しない（全件作らない） |
+
+`409` と `422`（`APPROVER_NOT_AVAILABLE`）は、1 件でも例外になった時点で、作成済みの予約と承認ステップを含めてすべてロールバックする。繰り返し指定の検証（`400`）は、リソースの存在確認、日時の整合（`422`）より前に行う。
 
 ---
 
@@ -641,7 +685,7 @@ Authorization: Bearer <JWT>
 
 #### レスポンス（200 OK）
 
-ReservationResponse 型。
+ReservationResponse 型。`seriesId` を持つ予約（繰り返しで作った予約）では、`seriesCount`（同じ `seriesId` の全ステータスの件数）と `remainingCount`（`startAt` がこの予約より後の件数）に値が入る。`NONE` の予約では、どちらも `null`。
 
 **アクセス制御**：MEMBER は本人の予約のみ取得可。他人の予約へのアクセスは `403 Forbidden`。`status = 'DRAFT'` の予約は、申請者本人または ADMIN 以外（APPROVER を含む）は `403 Forbidden`（他のステータスでは APPROVER/ADMIN は本人以外も取得可）。
 
@@ -666,7 +710,7 @@ Content-Type: application/json
 ```
 
 **制約**：`status = 'PENDING'` または `status = 'DRAFT'` の予約のみ更新可（`APPROVED` 等への更新は不可）。申請者本人のみ操作可能。日時変更時は重複予約チェックを再実行する（自分自身を除外）。  
-リクエストフィールド、バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可。代わりに `submit` を持つ）。
+リクエストフィールド、バリデーションは `POST /api/reservations` と同一（ただし `resourceId` と繰り返し指定（`recurrenceType`、`recurrenceUntil`）は含まない＝リソースの変更と、予約後の繰り返し設定の変更は不可。代わりに `submit` を持つ）。繰り返しで作った予約も、1 件ずつ更新でき、同じ系列の他の予約に影響しない（`seriesId` は変わらない）。
 
 **`submit` フィールド（正式申請）**：対象予約が `status = 'DRAFT'` のときのみ意味を持つ。
 

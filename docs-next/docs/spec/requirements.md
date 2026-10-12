@@ -11,7 +11,7 @@ references:
   - ./er-diagram.md
   - ./api-spec.md
   - ../learn/glossary.md
-last_updated: '2026-10-12T19:00:00+09:00'
+last_updated: '2026-10-12T05:39:41+09:00'
 ---
 
 # 要件定義
@@ -224,6 +224,9 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `endAt` | TIMESTAMP | ✅ | 利用終了日時（`startAt` より後であること） |
 | `purpose` | VARCHAR(255) | ✅ | 利用目的 |
 | `attendeesCount` | INTEGER | ❌ | 参加人数 |
+| `draft` | BOOLEAN | ❌ | `true` で下書き保存（省略時 `false`） |
+| `recurrenceType` | ENUM | ❌ | 繰り返しの種別（`NONE` / `WEEKLY` / `MONTHLY`。省略時 `NONE`）。詳細は [繰り返し予約](#recurring-reservation) |
+| `recurrenceUntil` | DATE | 条件付き | 繰り返しの終了日（`yyyy-MM-dd`）。`WEEKLY` / `MONTHLY` では必須、`NONE` では指定不可 |
 
 #### ステータス初期値（ワンステップ申請・下書き保存）
 
@@ -236,6 +239,27 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `false`（省略時含む） | `true` | `PENDING`（承認待ち） | 生成する（→ §承認 参照） |
 
 `DRAFT` の予約は、`PUT /api/reservations/{id}`（`submit=true`）で正式申請すると、上記の `requires_approval` 判定を再実行して `PENDING`/`APPROVED` に遷移する（このときのみ `approval_steps` を生成する）。申請者本人・`ADMIN` 以外（`APPROVER` を含む）は `DRAFT` の予約を閲覧できない。
+
+#### 繰り返し予約（UC-03 の拡張） {#recurring-reservation}
+
+`recurrenceType` に `WEEKLY`（毎週）または `MONTHLY`（毎月）と終了日を指定すると、1 回の申請で複数の予約を一括登録する。作った予約は、それぞれ独立した予約として扱う。
+
+| # | 要件 |
+|---|------|
+| REC-01 | `reservations` に `recurrence_type`（`NONE` / `WEEKLY` / `MONTHLY`）、`recurrence_until`（終了日）、`series_id`（UUID、NULL 許容）を追加する。既存の行は `recurrence_type = NONE`、他は NULL になる |
+| REC-02 | `POST /api/reservations` が `recurrenceType`（省略時 `NONE`）と `recurrenceUntil` を受け付け、繰り返しパターンに従って複数の予約を一括作成する |
+| REC-03 | 繰り返し日は、1 回目を入力の `startAt` / `endAt` とし、`WEEKLY` は 7 日ごと、`MONTHLY` は 1 回目の日（day of month）を基準に毎月同じ日とする。その月に存在しない日（31 日の 2 月など）の月はスキップし、スキップの後も基準日から数える（1 月 31 日の次は 3 月 31 日）。開始日時の日付が `recurrenceUntil` 以前の回を、終了日当日を含めて生成する。各回の長さは 1 回目と同じで、日をまたぐ予約も繰り返せる。件数の上限は設けない |
+| REC-04 | 一括作成した予約は、それぞれ独立した予約として管理する。個別に詳細確認、キャンセル、変更ができ、1 件の操作が同じ系列の他の予約に影響しない。シリーズの一括変更、一括キャンセル、一括承認は提供しない |
+| REC-05 | 一括作成時に、既存の予約との重複、または生成した予約どうしの重複（自己重複）が 1 件でもあれば、全件を作らずに `409 Conflict`（`RESERVATION_CONFLICT`）を返す。メッセージに衝突した日付は含めない |
+| REC-06 | `POST /api/reservations` のレスポンスは、`recurrenceType` にかかわらず常に配列（201）で返す。`NONE` のときは 1 件の配列になる。配列は `startAt` の昇順 |
+| REC-07 | 下書き保存（`draft: true`）と併用できる。全件を `DRAFT` で作り、同じ `series_id` を付ける |
+| REC-08 | 承認が必要なリソースでは、全件を `PENDING` で作り、件数分の承認ステップを作る。承認、却下は 1 件ずつ行う |
+| REC-09 | 繰り返し指定を検証し、違反は `400 VALIDATION_ERROR` で返す。(a) `NONE` で `recurrenceUntil` が指定された、(b) `WEEKLY` / `MONTHLY` で `recurrenceUntil` が未指定、(c) `recurrenceUntil` が `startAt` の日付より前。`recurrenceUntil` が `startAt` と同じ日なら有効で、1 件だけ生成する |
+| REC-10 | `GET /api/reservations/{id}` が、シリーズの情報（`seriesId`、`recurrenceType`、`recurrenceUntil`、`seriesCount`、`remainingCount`）を返す。`seriesCount` は同じ `series_id` の全ステータスの件数、`remainingCount` は `startAt` がその予約より後の同じ `series_id` の件数（全ステータス、自身を含まない）。一覧 API は `seriesCount` と `remainingCount` を返さない（null） |
+| REC-11 | 予約申請フォーム（`/reservations/new`）に繰り返しの入力 UI（「繰り返さない」「毎週」「毎月」と終了日）を追加し、登録に成功したら「N 件の予約を登録しました」とトーストで知らせる |
+| REC-12 | 予約の詳細画面に、繰り返しの種別、終了日、シリーズ件数、残り回数を表示する。予約の一覧画面には表示しない。繰り返さない予約には表示しない |
+
+`series_id` は、種別が `NONE` 以外の予約すべてに付く（終了日が開始日と同じ日で 1 件だけ生成されるときも付く）。`NONE` の予約は `series_id` と `recurrence_until` が NULL である。
 
 ### UC-04：承認不要リソースの予約が即時確定される {#uc-04}
 `requires_approval = false` のリソースを予約申請した場合、`approval_steps` を生成せず即座に `status = APPROVED` で確定する（UC-03 の即時確定パスと同一）。
@@ -269,6 +293,7 @@ AND end_at > :startAt
 - 上記レコードが存在する場合は `409 Conflict`（`code: RESERVATION_CONFLICT`）を返す
 - `PUT` 時は自分自身の予約（`id = :id`）を除外してチェックする
 - V001 に DB 制約（専用 UNIQUE INDEX 等）は定義されていないため、**アプリ層（Service）での排他制御が実装責務**
+- 繰り返し予約（[REC-05](#recurring-reservation)）では、生成した全日程について判定する。既存の予約との重複に加え、生成した予約どうしの重複（開始から終了までが繰り返しの間隔より長い場合など）も対象で、1 件でも該当すれば全件を作らずに `409 Conflict` を返す。下書き（`draft: true`）でも、自己重複は同じく `409` になる
 
 ---
 
