@@ -1997,3 +1997,207 @@ timestamp: 2026-08-29
 **Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。`/aidlc` ワークフロー本体はここで完了
 
 ---
+
+
+## Workflow Start（新規ユニット: recurring-reservation）
+**Timestamp**: 2026-10-12T14:00:00Z
+**User Input**: "/aidlc\nIssue #31「繰り返し予約」を実装します。\n\nまず実装は行わず、既存実装を調査してください。\n\n【バックエンド】\n- Reservation作成処理の流れ\n- 重複チェック処理\n- 承認フローとの関係\n- 再利用できるService・Repository\n- 予約作成APIのバリデーション\n\n【フロントエンド】\n- 予約作成画面の構成\n- 日時入力コンポーネント\n- 繰り返し設定UIの候補\n- 既存のフォームバリデーション\n\n【設計観点】\n- 繰り返しルール（日次・週次など）の候補\n- 保存方式\n- 予約生成タイミング\n- 重複時の扱い\n- 変更対象ファイル一覧"
+**AI Response**: "Pre-flight：`Docs/spec/aidlc-state.md` は前ユニット（#28）の完了状態のため新規ワークフローと判断。ブランチ `feature/CHS-FUJITA-RIKA/31-recurring-reservation-aidlc` は命名規約に合致し、作業ツリーは clean、直前の PR #149 もマージ済み（`learner/CHS-FUJITA-RIKA/main` と同期）のためブランチ操作は行わず、short-desc `recurring-reservation-aidlc` から対象シートを `docs-next/docs/spec/enhancements/intermediate/recurring-reservation.md` と特定（`gh issue view 31` で Issue #31「繰り返し予約」であることを確認済み）。"
+**Context**: Pre-flight 完了 → エンジン起動（Workspace Detection）
+
+---
+
+## Workspace Detection（recurring-reservation）
+**Timestamp**: 2026-10-12T14:01:00Z
+**User Input**: "(N/A — ワークスペーススキャンによる自動判定)"
+**AI Response**: "既存コードベースあり（Brownfield）と判定。既存の RE 成果物には予約作成・重複チェック・承認フロー・予約申請フォームを扱う `code-structure-reservation-draft.md` があるが、下書き保存スコープに限定されており繰り返し予約の観点（一括作成・トランザクション・マイグレーション・重複時の扱い）は未調査のため転用不可と判断。次ステージを Reverse Engineering（本課題スコープに限定）に設定。"
+**Context**: Workspace Detection — EXECUTE、Brownfield、次ステージ = Reverse Engineering
+
+---
+
+
+## Reverse Engineering（recurring-reservation）
+**Timestamp**: 2026-10-12T14:20:00Z
+**User Input**: "(上記 Workflow Start と同一の依頼。コード変更なしの調査と、繰り返しルール・保存方式・予約生成タイミング・重複時の扱い・変更対象ファイル一覧の整理を要求)"
+**AI Response**: "EXECUTE 判定（Brownfield かつ本課題スコープの既存 RE 成果物なし）。Explore subagent 2 本（backend・frontend）で調査し、本体側で最新マイグレーションが V002、`RSV-01`〜`07` の既存と衝突、クラス単位の `@Transactional`、`Reservation.create` が 7 引数で `ParameterNumber` の上限に達していることを再確認して `code-structure-recurring-reservation.md` を生成。主要な発見：予約作成は 1 トランザクション・リソース行の悲観ロック・Java 側の重複判定／例外は RuntimeException で全件ロールバックが効く／N 件の PENDING は承認ステップ N 件／過去日時チェックなし／複数件を返す POST の既存パターンなし／テストは Flyway を検証しない／シートの要件 ID と UC は既存と衝突し、未決事項（上限件数・月末・draft 併用・レスポンス形など）が多い。コード変更なし。設計観点と要判断事項を提示し、承認待ち。"
+**Context**: Reverse Engineering — EXECUTE（スコープ限定）、成果物生成完了、承認待ち
+
+---
+
+
+## Reverse Engineering — Approval + Requirements Analysis 開始（recurring-reservation）
+**Timestamp**: 2026-10-12T05:15:26Z
+**User Input**: "以下で進めます。\n\n- recurrenceType は NONE / WEEKLY / MONTHLY\n- 月次で存在しない日はスキップ\n- reservation に seriesId(UUID nullable) を追加\n- 作成時に全件生成する\n- 1件でも重複したら全件ロールバック\n- レスポンスは常に配列を返す\n- シリーズ一括変更・一括削除は今回のスコープ外\n\nこの前提で Requirements Analysis を開始してください。"
+**AI Response**: "Reverse Engineering の指摘事項に対する設計方針の回答を受領し、次ステージへの進行指示と解釈して Reverse Engineering を承認扱いとした。Requirements Analysis を開始。Pre-flight は aidlc-state.md が存在するためスキップ。共通ルールと拡張の opt-in（Security Baseline / Resiliency Baseline / Property-Based Testing）を読み込み、決定済み 7 項目を前提として確定。未決の論点（要件 ID 接頭辞、保存する列、draft 併用、件数上限、終了日の扱い、日跨ぎ、承認要リソース、重複エラー内容、完了後の UI、拡張 3 件）を requirement-verification-questions.md に質問として作成する。"
+**Context**: Reverse Engineering 承認 → Requirements Analysis（Standard 深度）、質問ファイル生成
+
+---
+
+
+## Requirements Analysis — User Answers（recurring-reservation）
+**Timestamp**: 2026-10-12T05:18:00Z
+**User Input**: "回答しました。\n\n1. 要件ID\n→ 新しい接頭辞 REC-01 ～ REC-xx\n\n2. 保存列\n→ recurrenceType\n→ recurrenceUntil\n→ seriesId(UUID)\n\n3. #30(DRAFT)との併用\n→ 対応する\n\n4. 件数上限\n→ なし\n\n5. 終了日当日の扱い\n→ 含む\n\n6. NONE + recurrenceUntil\n→ 400\n\n7. 日をまたぐ予約\n→ 許可する\n\n8. 承認が必要なリソース\n→ N件分の承認ステップ作成を許可\n\n9. 重複エラー\n→ 系列内重複も含める\n（1件でも重複なら全体失敗）\n\n10. 登録成功後\n→ トースト表示\n\n11. シリーズ情報表示\n→ 詳細画面のみ表示\n（一覧は表示しない）\n\n12. Security Baseline\n→ No\n\n13. Resiliency Baseline\n→ No\n\n14. Property-Based Testing\n→ No\n\nRequirements Analysis"
+**AI Response**: "回答を requirement-verification-questions.md に転記。確定: Q1=A、Q2=B、Q3=B、Q4=C、Q5=A、Q6=B、Q7=A、Q8=A、Q10=A、Q12=B（No）、Q13=B（No）、Q14=C（No）。拡張 3 件はすべて無効として aidlc-state.md の Extension Configuration に記録し、完全版ルールは読み込まない。曖昧さを 3 点検出し requirement-clarification-questions.md を作成: (1) Q9「系列内重複も含める」が既存予約との重複方針の確認か、生成した予約どうしの自己重複（Q7 で日跨ぎを許可したため、開始から終了までが繰り返し間隔より長いと発生）の検出要件か不明で、衝突日をメッセージに含めるかも未回答、(2) Q11 の詳細画面の表示内容が未定、(3) WEEKLY/MONTHLY での recurrenceUntil 欠落および開始日より前の場合の扱いとエラー種別が未定。Q4（上限なし）はロック保持時間の増大リスクとして要件定義書の非機能要件に記載する旨を注記。回答待ち。"
+**Context**: Requirements Analysis — 回答分析、追加質問ファイル生成（要件定義書の生成は未着手）
+
+---
+
+
+## Requirements Analysis — Clarification Answers（recurring-reservation）
+**Timestamp**: 2026-10-12T05:19:39Z
+**User Input**: "回答します。\n\nQ9:\n系列内重複も409に含める\n\nQ11:\n詳細画面でシリーズ件数・残り回数を表示する\n\nQ3-1:\nWEEKLY/MONTHLY は終了日必須。未指定は400\n\nQ3-2:\n終了日 < 開始日は400\n\nRequirements Analysis"
+**AI Response**: "回答を分析。確定: 1-1=B（生成した予約どうしの自己重複も検出し、1 件でも重複すれば全体失敗）、1-3=A（409 RESERVATION_CONFLICT）、Q3-1=A（終了日必須、未指定は 400）、Q3-2=A（終了日が開始日より前は 400。既存の endAt>startAt の 422 とはステータスが異なる）。未確定: (1) 1-2 衝突日をメッセージに含めるか（未回答）、(2) Q11 の「シリーズ件数・残り回数」について、件数にキャンセル・却下を含めるか、「残り回数」の基準（その予約より後か、現在より後か）。AskUserQuestion（BookFlow 運用、aidlc-questions.md）で追加確認する。"
+**Context**: Requirements Analysis — 追加回答の分析、残る曖昧点 2 件を確認
+
+---
+
+
+## Requirements Analysis — 追加確認の回答（AskUserQuestion）
+**Timestamp**: 2026-10-12T05:22:47Z
+**User Input**: "重複エラー（409）のメッセージに衝突した日付を含めるか → 含めない／詳細画面の「シリーズ件数」はどの予約を数えるか → 全ステータスを数える／詳細画面の「残り回数」の基準 → この予約より後"
+**AI Response**: "全項目が確定し矛盾なし。clarification-questions.md に回答を転記（1-1=B、1-2=含めない、1-3=A、Q2=件数・残り回数、Q3-1=A、Q3-2=A）。requirements.md を生成（要件 REC-01〜12、決定事項 12 点、既定の前提 7 点、非機能要件、受入条件 15 件、影響範囲、スコープ外）。UC は新規採番せず UC-03 の拡張とした。既定の前提として、詳細画面に種別と終了日も表示すること、残り回数の件数対象を全ステータスとすること（決定事項 9 から導出）を置き、承認時にレビュー可能とした。非機能要件に、上限なしによるロック時間増大のリスクを記載。"
+**Context**: Requirements Analysis — 要件定義書の生成完了、承認待ち
+
+---
+
+
+## Requirements Analysis — Approval（recurring-reservation）
+**Timestamp**: 2026-10-12T05:24:17Z
+**User Input**: "Approve & Continue"
+**AI Response**: "Requirements Analysis の承認を記録（既定の前提 2 点：詳細画面に種別と終了日も表示、残り回数の件数対象は全ステータス、を含めて承認）。次ステージ User Stories に進み、Intelligent Assessment を実施する。"
+**Context**: Requirements Analysis 承認 → User Stories 開始
+
+---
+
+
+## User Stories — Part 1 計画（recurring-reservation）
+**Timestamp**: 2026-10-12T05:24:53Z
+**User Input**: "(Requirements Analysis の承認 'Approve & Continue' に続く自動進行)"
+**AI Response**: "Intelligent Assessment を実施し EXECUTE と判定（High Priority: New User Features・User Experience Changes・Complex Business Logic、SKIP 条件に非該当）。user-stories-assessment.md と story-generation-plan.md を作成。方針は Feature-Based + Persona-Based のハイブリッド、ペルソナ 2（MEMBER・APPROVER）、8 ストーリー（US-01 毎週、US-02 毎月、US-03 重複時の全件失敗、US-04 検証と従来互換、US-05 下書き・承認要リソースとの併用、US-06 個別管理、US-07 フォーム、US-08 詳細画面のシリーズ情報）、Gherkin 形式の受入条件。requirements.md の決定事項 12 件と既定の前提で曖昧点は解消済みと判断し、追加質問は作成しない（前ユニットと同じ運用）。計画の承認を依頼する。"
+**Context**: User Stories Part 1 — 計画の承認待ち
+
+---
+
+
+## User Stories — Part 1 Approval（recurring-reservation）
+**Timestamp**: 2026-10-12T05:25:55Z
+**User Input**: "Approve & Continue"
+**AI Response**: "ストーリー生成計画の承認を記録。Part 2（生成）に進み、personas.md と stories.md を生成する。"
+**Context**: User Stories Part 1 承認 → Part 2 生成
+
+---
+
+
+## User Stories — Part 2 生成（recurring-reservation）
+**Timestamp**: 2026-10-12T05:26:54Z
+**User Input**: "(計画承認 'Approve & Continue' に続く自動進行)"
+**AI Response**: "計画に従い personas.md（MEMBER・APPROVER の 2 ペルソナ）と stories.md（US-01〜US-08、Gherkin 形式の受入条件）を生成。stories.md 末尾に、requirements.md の受入条件 15 項目との対応表と INVEST 検証を記載。plan のチェックボックスを全て [x] に更新。INVEST 検証で、US-03 と US-05 から US-08 は生成機能（US-01・US-02）に依存し完全には独立しない旨を明記（実装順の制約にはならない）。承認を依頼する。"
+**Context**: User Stories Part 2 完了、承認待ち
+
+---
+
+
+## User Stories — Approval（recurring-reservation）
+**Timestamp**: 2026-10-12T05:27:48Z
+**User Input**: "Approve & Continue"
+**AI Response**: "User Stories の承認を記録。次ステージ Workflow Planning に進む。"
+**Context**: User Stories 承認 → Workflow Planning 開始
+
+---
+
+
+## Workflow Planning — 計画提示（recurring-reservation）
+**Timestamp**: 2026-10-12T05:28:33Z
+**User Input**: "(User Stories の承認 'Approve & Continue' に続く自動進行)"
+**AI Response**: "全コンテキスト（RE・要件・ストーリー）から execution-plan.md を生成。リスクは Medium（既存の予約作成の変更、レスポンスの破壊的変更、V003 は H2 のテストで未検証、悲観ロック下の一括作成で件数上限なし）、ロールバックは Moderate（V003 適用後は追加マイグレーションが必要）、テストは Complex。判定: Application Design = SKIP（新規クラスは日付生成の純粋関数のみ）、Units Generation = SKIP（単一ユニット）、Functional Design = EXECUTE（日付生成アルゴリズム、全件の重複判定方式、V003 の設計、Reservation.create の 7 引数問題、シリーズ件数の取得、400/422/409 の振り分け、フォームと Server Action）、NFR Requirements / NFR Design / Infrastructure Design = SKIP、Code Generation・Build and Test = EXECUTE。Mermaid の構文は前ユニットの検証済みの形に揃えた。計画の承認を依頼する。"
+**Context**: Workflow Planning 完了、承認待ち
+
+---
+
+
+## Workflow Planning — Approval（recurring-reservation）
+**Timestamp**: 2026-10-12T05:29:57Z
+**AI Prompt**: "Ready to proceed with this plan?"
+**User Input**: "Approve & Continue"
+**Status**: Approved
+**Context**: Workflow plan created with 3 stages to execute（Functional Design・Code Generation・Build and Test）。次ステージ Functional Design に進む
+
+---
+
+
+## Functional Design（recurring-reservation）
+**Timestamp**: 2026-10-12T05:33:55Z
+**User Input**: "(Workflow Planning の承認 'Approve & Continue' に続く自動進行)"
+**AI Response**: "EXECUTE。既存コード（Reservation・ReservationService.create/update/get・ReservationRepository・CreateReservationRequest・ReservationResponse・ApprovalService.createInitialStep・V001/V002・ReservationForm・server actions・詳細画面・api-client）を実調査し、前ユニットと同じく質問は作成せず（設計に必要な曖昧点は要件の決定事項と実調査で解消）、functional-design-plan.md と成果物 4 点（domain-entities.md・business-logic-model.md・business-rules.md・frontend-components.md）を生成。主要な設計: (1) Reservation.create は 7 引数のまま、系列は joinSeries で設定（Checkstyle ParameterNumber 回避。create のテスト呼び出しは 0 件）、(2) CreateReservationRequest の構成子呼び出し 8 件（ReservationServiceTest）を Code Generation で更新、(3) 400 検証は Service で ValidationException、ロックより前、(4) 既存予約の取得は 1 回、自己重複は隣接 2 回の比較のみで判定（長さが同じため）、(5) 月次は基準日から数え直す（plusMonths の積み上げによる日のずれを回避）、(6) ReservationResponse は 17 項目の単一レコード、詳細のみ seriesCount/remainingCount、(7) V003 に CHECK 制約 2 つとインデックス（テストで検証されないため PostgreSQL で手動確認）。設計中に、フロントエンドのテスト方針の矛盾（初期値の注入手段がないまま注入で再現と記載）を発見し、CreateReservationFormSchema の export と polyfill による Select 操作に修正。リスクとして、件数上限なしによるロック保持時間・メモリ・範囲外日付の 500 を business-logic-model.md に記載（承認済みのトレードオフ）。"
+**Context**: Functional Design 完了、承認待ち（2 択: Request Changes / Continue）
+
+---
+
+
+## Functional Design — Approval（recurring-reservation）
+**Timestamp**: 2026-10-12T05:35:39Z
+**User Input**: "Approve & Continue"
+**AI Response**: "Functional Design の承認を記録（設計上の判断 3 点と、件数上限なしのリスク記載を含めて承認）。Functional Design ステージ完了。次ステージ Code Generation に進む。"
+**Context**: Functional Design 承認 → Code Generation（Part 1: 計画）
+
+---
+
+
+## Code Generation — Part 1 計画（recurring-reservation）
+**Timestamp**: 2026-10-12T05:36:43Z
+**User Input**: "(Functional Design の承認 'Approve & Continue' に続く自動進行)"
+**AI Response**: "code-generation.md と前ユニットの計画書の形式に従い、recurring-reservation-code-generation-plan.md を作成（12 ステップ）。Step 1 仕様書更新（Spec-first）→ Step 2 DB・ドメイン → Step 3 日付生成と単体テスト → Step 4 DTO と既存テストのコンパイル追従 → Step 5 Service と単体テスト → Step 6 Controller と結合テスト → Step 7 backend 検証（spotlessApply・checkstyleMain・test を --max-workers=1、break-and-verify）→ Step 8〜10 frontend（型・スキーマ・Server Action、フォーム、詳細画面）→ Step 11 frontend 検証 → Step 12 ストーリー対応の最終確認と手動確認事項の引き継ぎ。確認した事実: POST /api/reservations を呼ぶ既存の結合テストは ReservationControllerTest の 5 件、frontend で createReservationAction を使うのは ReservationForm のみ、lib/datetime.ts は直前ユニットで追加済み。テスト・ビルドは省メモリ・直列で実行する制約を計画に明記（メモリ枯渇の再発防止）。計画の承認を依頼する。"
+**Context**: Code Generation Part 1 完了、計画の承認待ち
+
+---
+
+
+## Code Generation — Part 1 Approval（recurring-reservation）
+**Timestamp**: 2026-10-12T05:38:46Z
+**User Input**: "Approve & Continue"
+**AI Response**: "Code Generation 計画（12 ステップ）の承認を記録。Part 2（生成）を開始し、Step 1（/update-spec による仕様書更新）から着手する。"
+**Context**: Code Generation Part 1 承認 → Part 2 生成開始
+
+---
+
+
+## Code Generation — Part 2 生成（recurring-reservation）
+**Timestamp**: 2026-10-12T05:57:38Z
+**User Input**: "Approve & Continue"（Code Generation 計画の承認。上記 Part 1 Approval を参照）
+**AI Response**: "計画の 12 ステップをすべて実行し、チェックボックスを [x] に更新。Step 1: /update-spec で requirements.md（REC-01〜12）・api-spec.md・er-diagram.md・screen-spec.md を更新し、docs-next の npm run build が成功（既存の drawio 画像の警告のみ）。中黒の並列使用を docs-next/CLAUDE.md の文章規範に合わせて読点に置換。Step 2〜7: V003（3 列・CHECK 2 つ・インデックス）、RecurrenceType、Reservation（3 列・joinSeries）、RecurrenceSchedule、DTO、ReservationService（一括作成・シリーズ件数）、Controller（配列）を実装。spotlessCheck・checkstyleMain・test が成功（375 件、失敗 0）。Checkstyle の警告 4 件は既存のコード由来。break-and-verify 5 件を確認して復元。Step 8〜11: 型・ラベル・スキーマ（CreateReservationFormSchema）・Server Action・ReservationForm・詳細画面を実装。lint・format:check・test（264 件）・build が成功。break-and-verify 4 件を確認して復元。Step 12: ストーリー照合で足りなかったテスト 4 点を結合テストで補った。実装中に見つけた事実: (1) テストが reservations へ生 SQL で INSERT するため、recurrence_type に @ColumnDefault が必要（Functional Design で見落とし）、(2) 保存は save のループ（既存テストの save スタブとの整合、DB への挙動は saveAll と同じ）、(3) Radix Select は polyfill で jsdom でも操作可能。自動テストで検証できていない項目（V003 の PostgreSQL 適用・CHECK 制約・validate 起動・並行性・ブラウザ確認）を Build and Test に引き継ぐ。2 択（Request Changes / Continue）の完了メッセージを提示。"
+**Context**: Code Generation 完了、承認待ち
+
+---
+
+
+## Code Generation — Approval（recurring-reservation）
+**Timestamp**: 2026-10-12T05:58:52Z
+**User Input**: "Approve & Continue"
+**AI Response**: "Code Generation の承認を記録。次ステージ Build and Test に進む。"
+**Context**: Code Generation 承認 → Build and Test
+
+---
+
+
+## Build and Test Stage（recurring-reservation）
+**Timestamp**: 2026-10-12T06:03:53Z
+**Build Status**: Success（backend clean build、frontend build、docs-next build）
+**Test Status**: Pass（backend 375 件、frontend 264 件、計 639 件、失敗 0。本ユニットの新規 104 件）
+**AI Response**: "fresh な clean build と全テストを実行。使い捨ての PostgreSQL 16（ローカルの postgres:16 イメージ、既存の postgres-data ボリュームには触れず、確認後に削除）で、V003 の既存データへの適用（既存行は NONE・NULL・NULL）、2 つの CHECK 制約による不整合な行の拒否（6 通り）、idx_reservations_series_id の存在、アプリ起動（Flyway が 3 マイグレーションを適用し ddl-auto: validate を通る）を確認。この環境では Docker のポート公開が localhost に届かず、jar を docker cp で渡して起動した。未実施: ブラウザでの手動確認、ロック下の一括作成の並行性と所要時間。Checkstyle の警告は checkstyleMain 4 件（既存）、checkstyleTest は MethodName のみ（ADR-018 の命名規約）。"
+**Files Generated**:
+- build-instructions.md
+- unit-test-instructions.md
+- integration-test-instructions.md
+- e2e-test-instructions.md
+- build-and-test-summary.md
+
+---
+
+
+## Build and Test — Approval（recurring-reservation）
+**Timestamp**: 2026-10-12T06:04:57Z
+**User Input**: "Approve & Continue"
+**AI Response**: "Build and Test の承認を記録。recurring-reservation ユニットの CONSTRUCTION フェーズ（Functional Design・Code Generation・Build and Test）を完了。BookFlow では OPERATIONS フェーズは CI 品質ゲート（CI Frontend / CI Backend）として運用され、PR 作成・push 時に自動実行されるため、/aidlc 自体がこの場で追加生成するステージはない旨をユーザーに説明し、次のアクション（/commit-push・/create-pr）を案内する。PR 前の確認事項として、ブラウザでの手動確認（手順 A・B）、ロック下の一括作成の並行性と所要時間（手順 C）、drawio の SVG（画面遷移図・ER 図）の未更新、functional-design への @ColumnDefault の未反映を再掲する。"
+**Context**: Build and Test 承認 → OPERATIONS フェーズ（CI 品質ゲート、PR 作成後に実行）へ移行。/aidlc ワークフロー本体はここで完了
+
+---
