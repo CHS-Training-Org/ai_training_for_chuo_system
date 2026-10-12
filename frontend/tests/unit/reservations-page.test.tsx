@@ -78,6 +78,42 @@ describe("ReservationsPage", () => {
     expect(draftTab).toHaveAttribute("href", "/reservations?status=DRAFT");
   });
 
+  it("繰り返しで作った予約も、一覧にはシリーズ情報（種別・件数・残り回数）を表示しない", async () => {
+    const seriesReservation: ReservationResponse = {
+      id: "20000000-0000-0000-0000-000000000010",
+      resourceId: "20000000-0000-0000-0000-000000000020",
+      resourceName: "第1会議室",
+      requesterId: "20000000-0000-0000-0000-000000000001",
+      requesterName: "田中 花子",
+      startAt: "2026-11-09T10:00:00",
+      endAt: "2026-11-09T11:00:00",
+      purpose: "定例会議",
+      attendeesCount: null,
+      status: "APPROVED",
+      createdAt: "2026-11-01T09:00:00",
+      updatedAt: "2026-11-01T09:00:00",
+      seriesId: "20000000-0000-0000-0000-000000000090",
+      recurrenceType: "WEEKLY",
+      recurrenceUntil: "2026-11-23",
+      seriesCount: null,
+      remainingCount: null,
+    };
+    listReservationsActionMock.mockResolvedValue({
+      ...EMPTY_PAGE,
+      content: [seriesReservation],
+      totalElements: 1,
+      totalPages: 1,
+    });
+    getProfileActionMock.mockResolvedValue(null);
+
+    render(await ReservationsPage({ searchParams: Promise.resolve({}) }));
+
+    expect(screen.getByText("第1会議室")).toBeInTheDocument();
+    expect(screen.queryByText("毎週")).not.toBeInTheDocument();
+    expect(screen.queryByText(/シリーズ/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/残り回数/)).not.toBeInTheDocument();
+  });
+
   describe("CSV ダウンロードボタン", () => {
     it("ADMIN にはボタンが表示される", async () => {
       await renderPage({}, "ADMIN");

@@ -4,11 +4,15 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { CreateReservationSchema } from "@/lib/schemas/reservation";
+import { toast } from "sonner";
+import {
+  CreateReservationFormSchema,
+  type CreateReservationFormValues,
+} from "@/lib/schemas/reservation";
 import { createReservationAction } from "@/server/actions/reservations";
 import type { ResourceResponse } from "@/lib/types/api";
 import { ApiClientError } from "@/lib/api-client";
+import { RECURRENCE_TYPE_LABELS } from "@/lib/labels";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -28,14 +32,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-// cross-field バリデーション（終了日時 > 開始日時）はクライアント側で追加する
-// （'use server' ファイルでは .refine のクロージャを export できないため）
-const FormSchema = CreateReservationSchema.refine(
-  (data) => !data.startAt || !data.endAt || data.endAt > data.startAt,
-  { message: "終了日時は開始日時より後に設定してください", path: ["endAt"] },
-);
-
-type FormValues = z.infer<typeof FormSchema>;
+// cross-field バリデーション（終了日時 > 開始日時、繰り返し終了日の必須・範囲）は
+// CreateReservationFormSchema（lib/schemas/reservation.ts）に定義している。
+type FormValues = CreateReservationFormValues;
 
 export function ReservationForm({
   resources,
@@ -51,21 +50,34 @@ export function ReservationForm({
   const [conflictError, setConflictError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(CreateReservationFormSchema),
     defaultValues: {
       resourceId: defaultResourceId ?? "",
       startAt: defaultStartAt ?? "",
       endAt: "",
       purpose: "",
       attendeesCount: null,
+      recurrenceType: "NONE",
+      recurrenceUntil: "",
     },
   });
+
+  // 「毎週」「毎月」のときだけ、繰り返し終了日の入力欄を出す
+  const recurrenceType = form.watch("recurrenceType");
+  const isRecurring = !!recurrenceType && recurrenceType !== "NONE";
 
   const submitForm = (draft: boolean) => (values: FormValues) => {
     setConflictError(null);
     startTransition(async () => {
       try {
-        await createReservationAction({ ...values, draft });
+        // 「繰り返さない」では終了日を送らない（API は NONE で終了日があると 400 にするため）
+        const { recurrenceUntil, ...rest } = values;
+        const created = await createReservationAction({
+          ...rest,
+          ...(isRecurring ? { recurrenceUntil } : {}),
+          draft,
+        });
+        toast.success(`${created.length} 件の予約を登録しました`);
         router.push(draft ? "/reservations?status=DRAFT" : "/reservations");
       } catch (err) {
         if (err instanceof ApiClientError && err.code === "RESERVATION_CONFLICT") {
@@ -138,6 +150,54 @@ export function ReservationForm({
             </FormItem>
           )}
         />
+
+        {/* 繰り返し */}
+        <FormField
+          control={form.control}
+          name="recurrenceType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>繰り返し</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger data-testid="reservation-form-recurrence-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {Object.entries(RECURRENCE_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* 繰り返し終了日（毎週・毎月のときだけ表示） */}
+        {isRecurring && (
+          <FormField
+            control={form.control}
+            name="recurrenceUntil"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>繰り返し終了日 *</FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    data-testid="reservation-form-recurrence-until"
+                    {...field}
+                    value={field.value ?? ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         {/* 利用目的 */}
         <FormField

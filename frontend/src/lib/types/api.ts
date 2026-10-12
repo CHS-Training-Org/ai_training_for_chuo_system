@@ -8,6 +8,7 @@
 import { z } from "zod";
 import {
   ApprovalStatusSchema,
+  RecurrenceTypeSchema,
   ReservationStatusSchema,
   ResourceCategorySchema,
   RoleSchema,
@@ -123,6 +124,16 @@ export const ReservationResponseSchema = z.object({
   status: ReservationStatusSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
+  // 繰り返し予約（recurring-reservation ユニット）。旧形式のレスポンスでも通るよう省略可能にする。
+  /** 繰り返しで作った予約を束ねる ID。繰り返さない予約は null */
+  seriesId: z.string().uuid().nullish(),
+  recurrenceType: RecurrenceTypeSchema.optional(),
+  /** 繰り返しの終了日（yyyy-MM-dd）。繰り返さない予約は null */
+  recurrenceUntil: z.string().nullish(),
+  /** シリーズ件数（全ステータス）。予約詳細だけが値を返し、それ以外と繰り返さない予約は null */
+  seriesCount: z.number().int().nullish(),
+  /** 残り回数（この予約より後に始まる同じ系列の件数）。返す条件は seriesCount と同じ */
+  remainingCount: z.number().int().nullish(),
 });
 export type ReservationResponse = z.infer<typeof ReservationResponseSchema>;
 

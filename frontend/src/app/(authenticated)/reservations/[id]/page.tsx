@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CancelButton } from "./CancelButton";
-import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
+import { RECURRENCE_TYPE_LABELS, RESERVATION_STATUS_LABELS } from "@/lib/labels";
 
 /**
  * 予約詳細画面（screen-spec.md §予約詳細 /reservations/{id} 準拠）。
@@ -17,6 +17,8 @@ import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
  * DRAFT/PENDING/APPROVED 状態のみキャンセルボタンを表示（本人 or ADMIN）。DRAFT のキャンセルは
  * 下書きの削除に相当する。
  * 承認ステップの表示はカテゴリ 6（ApprovalStepResponse）で実装。
+ * 繰り返しで作った予約（recurrenceType が NONE 以外）には、シリーズ情報（種別・終了日・シリーズ件数・
+ * 残り回数）を表示する（recurring-reservation ユニット）。繰り返さない予約と旧形式のレスポンスでは出さない。
  */
 
 const STATUS_LABELS = RESERVATION_STATUS_LABELS;
@@ -51,6 +53,8 @@ export default async function ReservationDetailPage({
   const canEdit =
     (reservation.status === "PENDING" || reservation.status === "DRAFT") && isOwner && !isAdmin;
   const canCancel = CANCELLABLE_STATUSES.includes(reservation.status) && (isOwner || isAdmin);
+  // 繰り返しで作った予約だけ、シリーズ情報を出す（NONE と、項目がない旧形式のレスポンスでは出さない）
+  const isSeries = !!reservation.recurrenceType && reservation.recurrenceType !== "NONE";
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -93,6 +97,44 @@ export default async function ReservationDetailPage({
 
             <dt className="font-medium text-muted-foreground">申請日時</dt>
             <dd>{new Date(reservation.createdAt).toLocaleString("ja-JP")}</dd>
+
+            {isSeries && (
+              <>
+                <dt className="font-medium text-muted-foreground">繰り返し</dt>
+                <dd data-testid="reservation-detail-recurrence-type">
+                  {RECURRENCE_TYPE_LABELS[reservation.recurrenceType!] ??
+                    reservation.recurrenceType}
+                </dd>
+
+                {reservation.recurrenceUntil && (
+                  <>
+                    <dt className="font-medium text-muted-foreground">繰り返し終了日</dt>
+                    {/* yyyy-MM-dd を Date に通すとタイムゾーンで日がずれうるため、文字列のまま整形する */}
+                    <dd data-testid="reservation-detail-recurrence-until">
+                      {reservation.recurrenceUntil.replaceAll("-", "/")}
+                    </dd>
+                  </>
+                )}
+
+                {reservation.seriesCount != null && (
+                  <>
+                    <dt className="font-medium text-muted-foreground">シリーズ件数</dt>
+                    <dd data-testid="reservation-detail-series-count">
+                      {reservation.seriesCount} 件
+                    </dd>
+                  </>
+                )}
+
+                {reservation.remainingCount != null && (
+                  <>
+                    <dt className="font-medium text-muted-foreground">残り回数</dt>
+                    <dd data-testid="reservation-detail-remaining-count">
+                      {reservation.remainingCount} 回
+                    </dd>
+                  </>
+                )}
+              </>
+            )}
 
             <dt className="font-medium text-muted-foreground">更新日時</dt>
             <dd>{new Date(reservation.updatedAt).toLocaleString("ja-JP")}</dd>
