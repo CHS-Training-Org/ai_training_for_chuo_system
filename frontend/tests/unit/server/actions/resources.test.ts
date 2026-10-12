@@ -136,6 +136,27 @@ describe("createResourceAction", () => {
     expect(result.id).toBeDefined();
   });
 
+  it("equipment / notes をリクエストボディに含めてバックエンドへ送る", async () => {
+    let sentBody: Record<string, unknown> | undefined;
+    server.use(
+      http.post("/api/backend/resources", async ({ request }) => {
+        sentBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(MOCK_RESOURCE_RESPONSE, { status: 201 });
+      }),
+    );
+
+    await createResourceAction({
+      name: "新会議室",
+      category: "ROOM",
+      requiresApproval: false,
+      isActive: true,
+      equipment: "モニター",
+      notes: "飲食禁止",
+    });
+
+    expect(sentBody).toMatchObject({ equipment: "モニター", notes: "飲食禁止" });
+  });
+
   it("401 時: ApiClientError をスローする", async () => {
     server.use(
       http.post("/api/backend/resources", () => {
@@ -183,5 +204,26 @@ describe("updateResourceAction", () => {
     });
 
     expect(result.name).toBe("第1会議室（改装後）");
+  });
+
+  it("equipment / notes をリクエストボディに含めてバックエンドへ送る（null も送る）", async () => {
+    let sentBody: Record<string, unknown> | undefined;
+    server.use(
+      http.put("/api/backend/resources/:id", async ({ request }) => {
+        sentBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(MOCK_RESOURCE_RESPONSE);
+      }),
+    );
+
+    await updateResourceAction(MOCK_RESOURCE_RESPONSE.id, {
+      name: "第1会議室",
+      category: "ROOM",
+      requiresApproval: false,
+      isActive: true,
+      equipment: null,
+      notes: "更新後の注意",
+    });
+
+    expect(sentBody).toMatchObject({ equipment: null, notes: "更新後の注意" });
   });
 });
