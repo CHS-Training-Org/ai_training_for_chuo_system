@@ -12,7 +12,7 @@ describe("navItemsForRole", () => {
   // APPROVER / ADMIN のみ
   const approverHrefs = ["/approvals"];
   // ADMIN のみ
-  const adminHrefs = ["/admin/resources", "/admin/users"];
+  const adminHrefs = ["/admin/resources", "/admin/users", "/admin/reports"];
 
   it("未認証（null）の場合は空配列を返す", () => {
     expect(navItemsForRole(null)).toEqual([]);
@@ -84,11 +84,23 @@ describe("navItemsForRole", () => {
       }
     });
 
-    it("管理者メニュー（/admin/resources・/admin/users）が表示される", () => {
+    it("管理者メニュー（/admin/resources・/admin/users・/admin/reports）が表示される", () => {
       for (const href of adminHrefs) {
         expect(hrefs).toContain(href);
       }
     });
+  });
+
+  it("ADMIN には「利用実績」（/admin/reports）が管理者メニューの末尾に表示される", () => {
+    const items = navItemsForRole("ADMIN" as Role);
+    const last = items[items.length - 1];
+    expect(last).toEqual({ label: "利用実績", href: "/admin/reports" });
+  });
+
+  it("MEMBER・APPROVER には「利用実績」は表示されない", () => {
+    for (const role of ["MEMBER", "APPROVER"] as Role[]) {
+      expect(navItemsForRole(role).map((i) => i.label)).not.toContain("利用実績");
+    }
   });
 
   it("順序が一定（共通 → APPROVER専用 → ADMIN専用）", () => {
