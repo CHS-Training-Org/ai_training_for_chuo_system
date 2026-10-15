@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
+import { setKeywordParam } from "./resource-filter-utils";
 
 interface ResourceFilterFormProps {
   defaultCategory?: string;
@@ -44,12 +45,11 @@ export function ResourceFilterForm({
       const params = new URLSearchParams();
 
       const category = data.get("category") as string;
-      const keyword = ((data.get("keyword") as string | null) ?? "").trim();
       const from = data.get("from") as string;
       const to = data.get("to") as string;
 
       if (category && category !== "ALL") params.set("category", category);
-      if (keyword) params.set("keyword", keyword);
+      setKeywordParam(params, data.get("keyword"));
       if (from) params.set("from", from);
       if (to) params.set("to", to);
 
