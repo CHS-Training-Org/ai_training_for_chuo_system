@@ -1,36 +1,43 @@
 # Build Instructions
 
 ## Prerequisites
-- **Build Tool**: Gradle wrapper（backend、Java 25）/ pnpm（frontend、Node 24）
-- **Dependencies**: backend は Gradle が取得。frontend は `pnpm install`
-- **Environment Variables**: frontend のビルドは `frontend/.env.local`（`cp frontend/.env.local.example frontend/.env.local`）。backend のテストは不要（H2 を使う）
-- **System Requirements**: DevContainer 上での実行を想定
+- **Build Tool**: pnpm（frontend）、npm（docs-next）。backend は今回変更しないためビルド対象外
+- **Node.js**: v24 系（確認時は v24.21.0）
+- **System Requirements**: 追加なし。新しい依存は追加していない（`package.json`、`pnpm-lock.yaml` に差分なし）
 
 ## Build Steps
 
 ### 1. Install Dependencies
 ```bash
 cd frontend && pnpm install
+cd ../docs-next && npm install
 ```
 
-### 2. Build All Units
+### 2. Configure Environment
+ビルドには追加の設定は要らない。画面を動かす場合のみ `cp frontend/.env.local.example frontend/.env.local` と `bash scripts/provision-cognito.sh` が必要（[CLAUDE.md](../../../../../CLAUDE.md) のセットアップ手順）。
+
+### 3. Build All Units
 ```bash
-cd backend && ./gradlew clean build      # コンパイル、Spotless、Checkstyle、テストを含む
-cd frontend && pnpm build                # Next.js プロダクションビルド
-cd docs-next && npm run build            # 仕様書のリンク・アンカー検証
+cd frontend && pnpm build
+cd ../docs-next && npm run build
 ```
 
-### 3. Verify Build Success
-- **Expected Output**: 各コマンドが終了コード 0。backend は `BUILD SUCCESSFUL`
-- **Build Artifacts**: `backend/build/`、`frontend/.next/`、`docs-next/build/`
-- **Common Warnings**: backend の Checkstyle `MethodNameCheck`（テスト名のアンダースコア。ADR-018 の命名規約による既存の警告）。`docs-next` の SVG 画像の読み取り警告（既存）
+### 4. Verify Build Success
+- **Expected Output**: frontend は `Compiled successfully`。`/resources/[id]` と `/reservations/new` が動的ルート（`ƒ`）として並ぶ。docs-next は `[SUCCESS] Generated static files in "build"`
+- **Build Artifacts**: `frontend/.next/`、`docs-next/build/`
+- **既存の警告**: docs-next の SVG 画像（`api-spec-dashboard.drawio.svg` など）の読み取り警告は既存で、今回の変更とは無関係
+
+## Backend が変更されていないことの確認
+```bash
+git diff --stat -- backend
+git diff --stat -- frontend/src/server frontend/src/lib
+```
+- **Expected**: どちらも出力なし（`getAvailabilityAction` と `AvailabilitySlotSchema` も無変更）
 
 ## Troubleshooting
 
-### Build Fails with Formatting Errors
-- **Cause**: Spotless / oxfmt の整形差分
-- **Solution**: `./gradlew spotlessApply`、`pnpm format` を実行して再ビルド
+### `pnpm build` が型エラーで失敗する
+- `npx tsc --noEmit` で場所を特定する。`searchParams` の型（`Promise<Record<string, string | string[] | undefined>>`）が Next.js 15 の期待と合っているかを確認する
 
-### Build Fails with Compilation Errors
-- **Cause**: `ResourceService.list` のシグネチャ違い（旧 5 引数と新 6 引数のオーバーロード）の呼び出し誤り
-- **Solution**: 呼び出し側の引数順 `(category, keyword, from, to, isAdmin, pageable)` を確認する
+### docs-next のビルドがリンク・アンカー破損で失敗する
+- `screen-spec.md` に追加した明示 ID（`{#resource-detail}`、`{#availability-calendar}`）と、本文内のリンク `#availability-calendar` が一致しているかを確認する
