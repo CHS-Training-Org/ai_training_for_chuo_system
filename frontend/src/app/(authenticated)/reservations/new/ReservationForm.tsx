@@ -40,9 +40,15 @@ type FormValues = z.infer<typeof FormSchema>;
 export function ReservationForm({
   resources,
   defaultResourceId,
+  defaultStartAt = "",
+  defaultEndAt = "",
 }: {
   resources: ResourceResponse[];
   defaultResourceId?: string;
+  /** 開始日時の初期値（`YYYY-MM-DDTHH:mm`。リソース詳細のカレンダーから遷移したとき） */
+  defaultStartAt?: string;
+  /** 終了日時の初期値（同上） */
+  defaultEndAt?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -52,8 +58,8 @@ export function ReservationForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       resourceId: defaultResourceId ?? "",
-      startAt: "",
-      endAt: "",
+      startAt: defaultStartAt,
+      endAt: defaultEndAt,
       purpose: "",
       attendeesCount: null,
     },

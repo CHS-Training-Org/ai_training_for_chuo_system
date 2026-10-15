@@ -4,17 +4,45 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
+import { AvailabilityCalendar } from "./availability/AvailabilityCalendar";
+import {
+  getMonthGrid,
+  getWeekRange,
+  nowInTokyo,
+  parseCalendarParams,
+} from "./availability/calendar-utils";
 
 /**
  * リソース詳細画面（screen-spec.md §リソース /resources/{id} 準拠）。
  *
- * リソース情報・空き状況（OccupiedSlot[]）を表示し、「このリソースを予約する」ボタンで
- * /reservations/new へ遷移する（カテゴリ 5 で実装予定）。
- * 空き照会は当日〜7日後の範囲をデフォルト表示する。
+ * リソース情報・空き状況（AvailabilitySlot[]）を表示し、「このリソースを予約する」ボタンで
+ * /reservations/new へ遷移する。
+ * 空き状況は、週/月のカレンダー（`?view=week|month&date=YYYY-MM-DD`、既定は今日を含む週）と、
+ * 当日〜7日後の占有時間帯リストの両方で表示する。カレンダーの空き枠は予約申請フォームへ遷移する。
  */
-export default async function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ResourceDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
+  const sp = await searchParams;
   const resource = await getResourceAction(id);
+
+  // カレンダー: 表示期間（Asia/Tokyo 基準）を決めて、その期間の占有スロットを取得する
+  const calendarNow = nowInTokyo();
+  const { view, date } = parseCalendarParams(sp, calendarNow);
+  const range = view === "month" ? getMonthGrid(date) : getWeekRange(date);
+  let calendarSlots: Awaited<ReturnType<typeof getAvailabilityAction>> = [];
+  let calendarError = false;
+  try {
+    calendarSlots = await getAvailabilityAction(id, range.from, range.to);
+  } catch {
+    // 取得失敗でもリソース詳細は表示し、カレンダー領域にメッセージを出す
+    calendarError = true;
+  }
 
   // デフォルトの空き照会範囲: 今日〜7日後
   const now = new Date();
@@ -30,7 +58,7 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-4xl">
       {/* 戻るリンク */}
       <Link href="/resources" className="text-sm text-primary hover:underline">
         ← リソース一覧に戻る
@@ -81,7 +109,21 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
         </Button>
       )}
 
-      {/* 空き状況 */}
+      {/* 空き状況カレンダー */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">空き状況カレンダー</h2>
+        <AvailabilityCalendar
+          resourceId={resource.id}
+          view={view}
+          date={date}
+          slots={calendarSlots}
+          isActive={resource.isActive}
+          now={calendarNow}
+          error={calendarError}
+        />
+      </section>
+
+      {/* 空き状況リスト */}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">
           空き状況（{now.toLocaleDateString("ja-JP")} 〜 {weekLater.toLocaleDateString("ja-JP")}）
