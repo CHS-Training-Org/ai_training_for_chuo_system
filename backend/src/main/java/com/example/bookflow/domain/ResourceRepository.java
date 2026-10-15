@@ -1,6 +1,7 @@
 package com.example.bookflow.domain;
 
 import jakarta.persistence.LockModeType;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,4 +57,55 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
   List<Resource> findByCategory(ResourceCategory category);
+
+  // ---- キーワード検索（name / description の部分一致・大文字小文字無視）----
+  //
+  // keyword が空・未指定の場合は上記の派生クエリを使う（ResourceService で分岐）。
+  // PostgreSQL は null パラメータの型推論に失敗することがあるため、これらのクエリには null を渡さない。
+  // カテゴリ未指定は全カテゴリの IN で、有効無効は boolean で表す。
+  // keyword 中の % と _ は LIKE のワイルドカードとして働く（エスケープしない仕様）。
+
+  /**
+   * キーワードに一致するリソースをページネーションで返す。
+   *
+   * @param categories 対象カテゴリ（カテゴリ未指定時は全カテゴリを渡す）
+   * @param includeInactive true の場合は inactive も含める（ADMIN）
+   * @param keyword 検索語（空でない文字列）
+   * @param pageable ページネーション
+   * @return 一致したリソースのページ
+   */
+  @Query(
+      """
+      SELECT r FROM Resource r
+      WHERE r.category IN :categories
+        AND (:includeInactive = true OR r.isActive = true)
+        AND (LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      """)
+  Page<Resource> searchByKeyword(
+      @Param("categories") Collection<ResourceCategory> categories,
+      @Param("includeInactive") boolean includeInactive,
+      @Param("keyword") String keyword,
+      Pageable pageable);
+
+  /**
+   * キーワードに一致するリソースを全件返す（from/to フィルタ用）。
+   *
+   * @param categories 対象カテゴリ（カテゴリ未指定時は全カテゴリを渡す）
+   * @param includeInactive true の場合は inactive も含める（ADMIN）
+   * @param keyword 検索語（空でない文字列）
+   * @return 一致したリソースのリスト
+   */
+  @Query(
+      """
+      SELECT r FROM Resource r
+      WHERE r.category IN :categories
+        AND (:includeInactive = true OR r.isActive = true)
+        AND (LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      """)
+  List<Resource> searchByKeyword(
+      @Param("categories") Collection<ResourceCategory> categories,
+      @Param("includeInactive") boolean includeInactive,
+      @Param("keyword") String keyword);
 }

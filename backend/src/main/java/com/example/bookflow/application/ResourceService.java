@@ -57,10 +57,7 @@ public class ResourceService {
   // ---------------------------------------------------------------------------
 
   /**
-   * リソース一覧を返す。
-   *
-   * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を指定した場合は、当該時間帯に {@code
-   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
+   * リソース一覧を返す（キーワード指定なし）。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
@@ -76,15 +73,58 @@ public class ResourceService {
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
-    if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
-    }
-    return listPaginated(category, isAdmin, pageable);
+    return list(category, null, from, to, isAdmin, pageable);
   }
 
-  /** from/to 指定なし：通常ページネーション。 */
+  /**
+   * リソース一覧を返す。
+   *
+   * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を指定した場合は、当該時間帯に {@code
+   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
+   *
+   * <p>{@code keyword} は前後の空白を除去したうえで、{@code name} または {@code description} への部分一致（大文字・小文字を区別しない）で
+   * 絞り込む。null・空文字・空白のみの場合はキーワード条件を適用しない。カテゴリ・空き確認とは AND 条件で組み合わさる。
+   *
+   * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param keyword キーワード（null・空白のみの場合は条件なし）
+   * @param from 空き確認の開始日時（null の場合はフィルタしない）
+   * @param to 空き確認の終了日時（null の場合はフィルタしない）
+   * @param isAdmin ADMIN ロールであれば inactive を含む
+   * @param pageable ページネーション
+   * @return {@link ResourceResponse} のページ
+   */
+  @Transactional(readOnly = true)
+  public Page<ResourceResponse> list(
+      ResourceCategory category,
+      String keyword,
+      LocalDateTime from,
+      LocalDateTime to,
+      boolean isAdmin,
+      Pageable pageable) {
+    String normalizedKeyword = normalizeKeyword(keyword);
+    if (from != null && to != null) {
+      return listWithAvailabilityFilter(category, normalizedKeyword, from, to, isAdmin, pageable);
+    }
+    return listPaginated(category, normalizedKeyword, isAdmin, pageable);
+  }
+
+  /** 前後の空白を除去する。空になった場合は「キーワードなし」として null を返す。 */
+  private static String normalizeKeyword(String keyword) {
+    if (keyword == null) {
+      return null;
+    }
+    String stripped = keyword.strip();
+    return stripped.isEmpty() ? null : stripped;
+  }
+
+  /** from/to 指定なし：通常ページネーション。keyword 指定時はキーワード検索クエリを使う。 */
   private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
+      ResourceCategory category, String keyword, boolean isAdmin, Pageable pageable) {
+    if (keyword != null) {
+      return resourceRepository
+          .searchByKeyword(categoriesOf(category), isAdmin, keyword, pageable)
+          .map(ResourceResponse::from);
+    }
     Page<Resource> page;
     if (isAdmin) {
       page =
@@ -107,12 +147,13 @@ public class ResourceService {
    */
   private Page<ResourceResponse> listWithAvailabilityFilter(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
     // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    List<Resource> candidates = fetchAllCandidates(category, keyword, isAdmin);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -138,7 +179,11 @@ public class ResourceService {
     return new PageImpl<>(content, pageable, total);
   }
 
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
+  private List<Resource> fetchAllCandidates(
+      ResourceCategory category, String keyword, boolean isAdmin) {
+    if (keyword != null) {
+      return resourceRepository.searchByKeyword(categoriesOf(category), isAdmin, keyword);
+    }
     if (isAdmin) {
       return category != null
           ? resourceRepository.findByCategory(category)
@@ -148,6 +193,11 @@ public class ResourceService {
           ? resourceRepository.findByCategoryAndIsActiveTrue(category)
           : resourceRepository.findByIsActiveTrue();
     }
+  }
+
+  /** カテゴリ未指定（null）は全カテゴリとして扱う（JPQL に null を渡さないため）。 */
+  private static List<ResourceCategory> categoriesOf(ResourceCategory category) {
+    return category != null ? List.of(category) : List.of(ResourceCategory.values());
   }
 
   // ---------------------------------------------------------------------------
