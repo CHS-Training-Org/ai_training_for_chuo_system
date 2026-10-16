@@ -50,6 +50,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/resources")
 public class ResourceController {
 
+  private static final int MAX_KEYWORD_LENGTH = 100;
+
   private final ResourceService resourceService;
 
   public ResourceController(ResourceService resourceService) {
@@ -63,6 +65,7 @@ public class ResourceController {
    * {@code PENDING} / {@code APPROVED} の予約が存在しないリソースのみを返す。
    *
    * @param category カテゴリフィルタ（任意）
+   * @param keyword 名称・説明文への部分一致（任意・前後の空白を除去・100 文字以内）
    * @param from 空き確認の開始日時（任意・to と同時指定）
    * @param to 空き確認の終了日時（任意・from と同時指定）
    * @param pageable ページネーション（デフォルト: size=20）
@@ -72,6 +75,7 @@ public class ResourceController {
   @GetMapping
   public Page<ResourceResponse> list(
       @RequestParam(required = false) ResourceCategory category,
+      @RequestParam(required = false) String keyword,
       @RequestParam(required = false) LocalDateTime from,
       @RequestParam(required = false) LocalDateTime to,
       @PageableDefault(size = 20) Pageable pageable,
@@ -81,7 +85,19 @@ public class ResourceController {
       throw new ValidationException("from と to は同時に指定してください。");
     }
     boolean isAdmin = currentUser.getRole() == Role.ADMIN;
-    return resourceService.list(category, from, to, isAdmin, pageable);
+    return resourceService.list(category, normalizeKeyword(keyword), from, to, isAdmin, pageable);
+  }
+
+  /** keyword の前後の空白を除去する。空なら null（絞り込まない）。101 文字以上は検証エラー。 */
+  private static String normalizeKeyword(String raw) {
+    if (raw == null) {
+      return null;
+    }
+    String trimmed = raw.strip();
+    if (trimmed.length() > MAX_KEYWORD_LENGTH) {
+      throw new ValidationException("keyword は " + MAX_KEYWORD_LENGTH + " 文字以内で指定してください。");
+    }
+    return trimmed.isEmpty() ? null : trimmed;
   }
 
   /**
