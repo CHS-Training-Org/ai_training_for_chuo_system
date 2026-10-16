@@ -916,3 +916,74 @@ Authorization: Bearer <JWT>
 ### ダッシュボード情報取得シーケンス図
 
 ![ダッシュボード情報取得シーケンス図](/diagrams/spec/api-spec-dashboard.drawio.svg)
+
+
+---
+
+## §帳票
+
+### `GET /api/reports/reservations/csv`（予約一覧の CSV ダウンロード、ADMIN） {#get-api-reports-reservations-csv}
+
+#### リクエスト
+
+```http
+GET /api/reports/reservations/csv?status=PENDING&status=APPROVED&from=2026-10-01T00:00:00&to=2026-11-01T00:00:00
+Authorization: Bearer <JWT>
+```
+
+**権限**：ADMIN のみ。MEMBER / APPROVER は `403 Forbidden`、未認証は `401 Unauthorized`。
+
+#### クエリパラメータ
+
+| パラメータ | 型 | 必須 | 説明 |
+|------------|-----|------|------|
+| `status` | string（複数指定可） | ❌ | `DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED` で絞り込む（`?status=PENDING&status=APPROVED`）。未指定は全ステータス |
+| `from` | TIMESTAMP | ❌ | 出力対象の開始日時。`start_at` が `from` 以上の予約を対象にする |
+| `to` | TIMESTAMP | ❌ | 出力対象の終了日時。`start_at` が `to` 未満の予約を対象にする（`to` ちょうどは含まない） |
+
+> `status` / `from` / `to` は AND 条件で組み合わせる。`from` / `to` は片方のみの指定も許可し、未指定の側は無制限とする。日時の形式は [§共通 日時フォーマット](#datetime-format) に従う。
+
+#### レスポンス（200 OK）
+
+```http
+HTTP/1.1 200 OK
+Content-Type: text/csv; charset=UTF-8
+Content-Disposition: attachment; filename="reservations_20261014_153000.csv"
+Cache-Control: no-store
+```
+
+本文は `StreamingResponseBody` による逐次書き出しで、件数の上限はない。ファイル名の日時はサーバーの現在時刻（ローカル日時）。
+
+```csv
+予約ID,リソース名,申請者名,開始日時,終了日時,利用目的,ステータス
+550e8400-e29b-41d4-a716-446655440100,第1会議室,山田 太郎,2026-10-20 10:00,2026-10-20 11:00,"A,B 会議",承認済み
+```
+
+**CSV の書式**
+
+| 項目 | 内容 |
+|------|------|
+| 文字コード・改行 | UTF-8（先頭に BOM `EF BB BF`）、改行は CRLF |
+| 列 | 予約ID, リソース名, 申請者名, 開始日時, 終了日時, 利用目的, ステータスの 7 列。ヘッダ行 1 行 + 予約 1 件につき 1 行 |
+| 日時列 | `yyyy-MM-dd HH:mm`（秒なし。タイムゾーン変換なし、DB の値のまま） |
+| ステータス列 | 日本語ラベル。`DRAFT`=ドラフト、`PENDING`=承認待ち、`APPROVED`=承認済み、`REJECTED`=却下、`CANCELLED`=キャンセル済み（フロントエンドの `RESERVATION_STATUS_LABELS` と同一表記） |
+| 出力順 | `start_at` 昇順、同一なら `id` 昇順 |
+| エスケープ | RFC 4180 に従う。カンマ・改行（CR / LF）・`"` を含む値は `"` で囲み、値中の `"` は `""` にする |
+| 数式注入対策 | リソース名・申請者名・利用目的の値が `=` `+` `-` `@`・タブ・CR で始まる場合は先頭に `'` を付ける。この無害化は RFC 4180 のエスケープより先に行う |
+| 該当なし | ヘッダ行のみの CSV（BOM 付き）を返す。エラーにはしない |
+
+> **注意**：認可（401 / 403）とパラメータ検証（400）は書き出しの開始前に完了する。書き出し開始後は HTTP ステータスを変更できないため、DB エラーやクライアント切断などの失敗では CSV が途中で切れる。
+
+#### エラー
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| 400 | `VALIDATION_ERROR` | `from` と `to` が両方指定され `from` が `to` 以上、日時の形式が不正、`status` が列挙値以外 |
+| 401 | `UNAUTHORIZED` | JWT 未設定・不正・期限切れ |
+| 403 | `FORBIDDEN` | ADMIN 以外のロール |
+
+エラー時は書き出しが始まる前なので、[§共通 共通エラーレスポンス](#common-error) の JSON 形式で返す。
+
+#### 実行記録（ログ）
+
+完了時に INFO（`event=csv_export_completed`）、未完了時に WARN（`event=csv_export_aborted`、`failureType` を付与）の構造化ログを 1 行出す。項目は `userId`・`statuses`・`from`・`to`・`rowCount`・`elapsedMs`。氏名・メール・利用目的など CSV の内容はログに出さない。
