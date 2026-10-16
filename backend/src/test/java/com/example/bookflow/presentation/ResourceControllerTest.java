@@ -171,6 +171,161 @@ class ResourceControllerTest extends BaseControllerTest {
         .andExpect(jsonPath("$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]").exists());
   }
 
+  // ---- keyword 検索 ----
+
+  private static String activeIdFilter() {
+    return "$.content[?(@.id == '" + ACTIVE_RESOURCE_ID + "')]";
+  }
+
+  private static String inactiveIdFilter() {
+    return "$.content[?(@.id == '" + INACTIVE_RESOURCE_ID + "')]";
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesName_returnsOnlyMatching() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(activeIdFilter()).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesNothing_returnsEmptyContent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "存在しない語").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithSurroundingSpaces_isTrimmed() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "  会議  ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(activeIdFilter()).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordOnlySpaces_treatedAsUnspecified() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "   ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(activeIdFilter()).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordPercent_isLiteralNotWildcard() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "%").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keyword100Chars_isAccepted() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "あ".repeat(100))
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keyword101Chars_returns400ValidationError() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "あ".repeat(101))
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordAndCategoryMismatch_isAnd() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議")
+                .param("category", "EQUIPMENT")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(activeIdFilter()).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordAndOverlappingTimeRange_excludesOccupiedResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議")
+                .param("from", "2025-06-02T09:00:00")
+                .param("to", "2025-06-02T11:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(activeIdFilter()).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordAndAdjacentTimeRange_includesResource() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議")
+                .param("from", "2025-06-02T08:00:00")
+                .param("to", "2025-06-02T10:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(activeIdFilter()).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMismatchAndFreeTimeRange_returnsEmptyContent() throws Exception {
+    // 隣接する時間帯（08:00〜10:00）では 第1会議室 は空いているが、keyword が一致しない。
+    // 空き確認の経路でも keyword が効いていれば、結果は空になる
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "存在しない語")
+                .param("from", "2025-06-02T08:00:00")
+                .param("to", "2025-06-02T10:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberKeywordMatchesInactiveOnly_hidesInactive() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(inactiveIdFilter()).doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminKeywordMatchesInactive_includesInactive() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(inactiveIdFilter()).exists());
+  }
+
   @Test
   @WithMockMember
   void list_fromOnlyWithoutTo_returns400ValidationError() throws Exception {

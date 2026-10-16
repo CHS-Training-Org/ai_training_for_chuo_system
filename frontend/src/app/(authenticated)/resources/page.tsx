@@ -10,6 +10,7 @@ import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 interface SearchParams {
   category?: string;
+  keyword?: string;
   from?: string;
   to?: string;
   page?: string;
@@ -18,7 +19,7 @@ interface SearchParams {
 /**
  * リソース一覧画面（screen-spec.md §リソース /resources 準拠）。
  *
- * カテゴリフィルタ・空き確認フォーム（from/to）・リソースカードリストを表示する。
+ * カテゴリフィルタ・キーワード検索・空き確認フォーム（from/to）・リソースカードリストを表示する。
  * ADMIN は is_active=false のリソースもグレーアウト表示する（BE 側でロール判定）。
  */
 export default async function ResourcesPage({
@@ -30,8 +31,11 @@ export default async function ResourcesPage({
   const profile = await getProfileAction();
   const isAdmin = profile.role === "ADMIN";
 
+  const keyword = params.keyword?.trim() || undefined;
+
   const resources = await listResourcesAction({
     category: params.category,
+    keyword,
     from: params.from,
     to: params.to,
     page: params.page ? Number(params.page) : 0,
@@ -56,6 +60,7 @@ export default async function ResourcesPage({
       {/* フィルタフォーム */}
       <ResourceFilterForm
         defaultCategory={params.category}
+        defaultKeyword={keyword}
         defaultFrom={params.from}
         defaultTo={params.to}
       />
@@ -71,9 +76,11 @@ export default async function ResourcesPage({
       <Suspense fallback={<p className="text-muted-foreground">読み込み中...</p>}>
         {resources.content.length === 0 ? (
           <p className="text-muted-foreground">
-            {hasTimeFilter
-              ? "指定した時間帯に空きのあるリソースがありません。"
-              : "リソースがありません。"}
+            {keyword
+              ? `キーワード『${keyword}』に一致するリソースがありません。`
+              : hasTimeFilter
+                ? "指定した時間帯に空きのあるリソースがありません。"
+                : "リソースがありません。"}
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

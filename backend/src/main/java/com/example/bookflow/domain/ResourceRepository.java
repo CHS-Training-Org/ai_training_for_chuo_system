@@ -1,12 +1,10 @@
 package com.example.bookflow.domain;
 
 import jakarta.persistence.LockModeType;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,11 +12,12 @@ import org.springframework.data.repository.query.Param;
 /**
  * リソースリポジトリ。
  *
- * <p>ADMIN は全リソース（inactive 含む）を参照できるが、それ以外のロールは有効リソース（{@code is_active = true}）のみ。 ページネーション有り / 無し
- * の両形式を提供するのは、 {@code GET /api/resources?from&to} の空きフィルタが Java 側（{@link
- * com.example.bookflow.application.ResourceService}）で行われるため、 フィルタ前に全件を取得する必要があるためである。
+ * <p>一覧の検索条件（category・isActive・keyword）は {@link ResourceSpecifications} で組み立て、{@link
+ * JpaSpecificationExecutor} の {@code findAll(Specification[, Pageable])} で実行する。 ADMIN
+ * は全リソース（inactive 含む）、それ以外は有効リソースのみという切り替えも Specification 側が担う。
  */
-public interface ResourceRepository extends JpaRepository<Resource, UUID> {
+public interface ResourceRepository
+    extends JpaRepository<Resource, UUID>, JpaSpecificationExecutor<Resource> {
 
   // ---- 悲観ロック（重複予約の直列化） ----
 
@@ -34,26 +33,4 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT r FROM Resource r WHERE r.id = :id")
   Optional<Resource> findByIdForUpdate(@Param("id") UUID id);
-
-  // ---- 非 ADMIN 用（is_active = true のみ）----
-
-  /** 有効リソース一覧をページネーションで返す。 */
-  Page<Resource> findByIsActiveTrue(Pageable pageable);
-
-  /** 有効リソース全件を返す（from/to フィルタ用）。 */
-  List<Resource> findByIsActiveTrue();
-
-  /** 有効リソースをカテゴリで絞り込んでページネーションで返す。 */
-  Page<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category, Pageable pageable);
-
-  /** 有効リソースをカテゴリで絞り込んで全件返す（from/to フィルタ用）。 */
-  List<Resource> findByCategoryAndIsActiveTrue(ResourceCategory category);
-
-  // ---- ADMIN 用（inactive 含む）----
-
-  /** リソースをカテゴリで絞り込んでページネーションで返す（inactive 含む）。 */
-  Page<Resource> findByCategory(ResourceCategory category, Pageable pageable);
-
-  /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
-  List<Resource> findByCategory(ResourceCategory category);
 }
