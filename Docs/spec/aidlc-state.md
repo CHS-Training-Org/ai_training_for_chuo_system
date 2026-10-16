@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-10-02
+timestamp: 2026-10-16
 ---
 
 # AI-DLC State Tracking
@@ -18,11 +18,12 @@ timestamp: 2026-10-02
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-10-02T00:41:15+00:00
-- **Current Stage**: ワークフロー完了（INCEPTION→CONSTRUCTION→OPERATIONS すべて完了）
+- **Start Date**: 2026-10-14T10:41:10+00:00
+- **Current Stage**: CONSTRUCTION - Code Generation
 - **Workspace Root**: /workspace
-- **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`（リソース一覧の検索・フィルタ追加、Issue #76）
-- **Branch**: `feature/CHS-SUZUKI-YOKO/76-resource-list-filter-aidlc`（既存。規約合致のため新規作成なし）
+- **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/intermediate/csv-export.md`（CSV 帳票出力、Issue #29）
+- **Branch**: `feature/CHS-SUZUKI-YOKO/29-csv-export`（既存。規約合致のため新規作成なし）
+- **Previous Workflow**: Issue #76 resource-list-filter（完了・main にマージ済み。前回分の成果物は git 履歴に残る）
 
 ## Workspace State
 
@@ -30,7 +31,7 @@ timestamp: 2026-10-02
 - **Programming Languages**: Java 25（backend）, TypeScript（frontend, docs-next）
 - **Build System**: Gradle（Kotlin DSL, backend）/ pnpm（frontend）/ npm（docs-next）
 - **Project Structure**: Monorepo（frontend + backend + docs-next）
-- **Reverse Engineering Needed**: Yes（既存成果物なし）
+- **Reverse Engineering Needed**: No（`Docs/spec/aidlc-docs/inception/reverse-engineering/` に 2026-10-02 付の成果物あり。以降のコード変更は同日の #76 のみのため stale ではない。ただし範囲はリソース領域が中心のため、予約領域の知見は Requirements Analysis で補完する）
 
 ## Code Location Rules
 
@@ -40,47 +41,49 @@ timestamp: 2026-10-02
 
 ## Execution Plan Summary
 
-- **Total Stages**: 10（Workspace Detection, Reverse Engineering, Requirements Analysis, User Stories, Workflow Planning, Code Generation, Build and Test = EXECUTE 7件／Application Design, Units Generation, Functional Design, Infrastructure Design = SKIP 4件／NFR Requirements, NFR Design = EXECUTE 2件）
-- **Stages to Execute**: Workspace Detection, Reverse Engineering, Requirements Analysis, User Stories, Workflow Planning, NFR Requirements, NFR Design, Code Generation, Build and Test
-- **Stages to Skip**: Application Design（既存コンポーネント境界内のため）, Units Generation（単一ユニット=単一縦切りIssueのため）, Functional Design（新規データモデルなし・業務ルールはrequirements.mdで確定済みのため）, Infrastructure Design（インフラ変更なしのため）
+- **Total Stages**: 13（EXECUTE 8 / SKIP 5）＋ エンジン外の Spec Integration（`/update-spec`）を Code Generation 直前に 1 回
+- **Stages to Execute**: Workspace Detection, Requirements Analysis, Workflow Planning, Application Design（Minimal）, NFR Requirements, NFR Design, Code Generation, Build and Test
+- **Stages to Skip**: Reverse Engineering（既存成果物が current）, User Stories（単一ペルソナ ADMIN・受入条件は要件書で具体化済み。エンジン標準基準からの意識的な逸脱として記録）, Units Generation（単一ユニット `csv-export`）, Functional Design（新規データモデルなし・業務ルールは FR-03〜13 で確定済み）, Infrastructure Design（インフラ変更なし）
+- **ユニット名**: `csv-export`
 - **詳細**: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md` 参照
 
 ## Extension Configuration
 
 | Extension | Enabled | Decided At |
 |---|---|---|
-| Security Baseline | Yes | Requirements Analysis（2026-10-02） |
-| Resiliency Baseline | No | Requirements Analysis（2026-10-02） |
-| Property-Based Testing | No | Requirements Analysis（2026-10-02） |
+| Security Baseline | Yes | Requirements Analysis（2026-10-14） |
+| Resiliency Baseline | No | Requirements Analysis（2026-10-14） |
+| Property-Based Testing | No | Requirements Analysis（2026-10-14） |
 
 ## Stage Progress
 
 ### INCEPTION PHASE
 
-- [x] Workspace Detection
-- [x] Reverse Engineering（Brownfield の場合） — Completed on 2026-10-02T00:41:15+00:00、承認済み（2026-10-02T00:52:00+00:00）
-- [x] Requirements Analysis — Completed on 2026-10-02T01:10:00+00:00、承認済み（2026-10-02T01:15:00+00:00）
-- [x] User Stories（条件付き） — EXECUTE 判定（High Priority: 既存インターフェースの変更）。Minimal深さで生成済み、承認済み（2026-10-02T01:20:00+00:00）
-- [x] Workflow Planning — 承認済み（2026-10-02T01:35:00+00:00）
-- [x] Application Design（条件付き） — **SKIP**（既存コンポーネント境界内のため）
-- [x] Units Generation（条件付き） — **SKIP**（単一ユニット=単一縦切りIssueのため、ユニット名: `resource-list-filter`）
+- [x] Workspace Detection — 2026-10-14T10:41:10+00:00
+- [x] Reverse Engineering（Brownfield の場合） — **SKIP**（既存成果物が current。予約領域は Requirements Analysis で補完）
+- [x] Requirements Analysis — 完了。承認済み（2026-10-14T13:30:00+00:00）
+- [x] User Stories（条件付き） — **SKIP**
+- [x] Workflow Planning — 完了。承認済み（2026-10-14T14:00:00+00:00）
+- [x] Application Design（条件付き） — 完了。承認済み（2026-10-15T09:30:00+00:00）
+- [x] Units Generation（条件付き） — **SKIP**（単一ユニット）
 
-### CONSTRUCTION PHASE（ユニット: `resource-list-filter`）
+### CONSTRUCTION PHASE
 
-- [x] Functional Design（条件付き、ユニット別） — **SKIP**（新規データモデルなし）
-- [x] NFR Requirements（条件付き、ユニット別） — **EXECUTE**（Security Baseline SECURITY-05）。承認済み（2026-10-02T01:50:00+00:00）
-- [x] NFR Design（条件付き、ユニット別） — **EXECUTE**。承認済み（2026-10-02T02:00:00+00:00）
-- [ ] Infrastructure Design（条件付き、ユニット別） — **SKIP**（インフラ変更なし）
-- [x] Code Generation（必須、ユニット別） — 完了。承認済み（2026-10-02T02:50:00+00:00）
-- [x] Build and Test（必須） — 完了。承認済み（2026-10-02T03:20:00+00:00、PostgreSQL手動検証でCAST修正を1件実施）
+- [x] Functional Design（条件付き、ユニット別） — **SKIP**
+- [x] NFR Requirements（条件付き、ユニット別） — 完了。承認済み（2026-10-16T09:30:00+00:00）
+- [x] NFR Design（条件付き、ユニット別） — 完了。承認済み（2026-10-16T10:25:00+00:00）
+- [x] Infrastructure Design（条件付き、ユニット別） — **SKIP**
+- [x] Spec Integration（エンジン外 `/update-spec`、Code Generation 直前） — 完了（2026-10-16T10:50:00+00:00）
+- [ ] Code Generation（必須、ユニット別）
+- [ ] Build and Test（必須）
 
 ### OPERATIONS PHASE
 
-- [x] Operations（プレースホルダー、BookFlowではCI品質ゲート相当） — 完了。ローカルでCI Frontend/CI Backend相当のコマンドをすべて再現し全pass
+- [ ] Operations（プレースホルダー、BookFlow では CI 品質ゲート相当）
 
 ## Current Status
 
-- **Lifecycle Phase**: INCEPTION
-- **Current Stage**: 完了
-- **Next Stage**: /commit-push・/create-pr（本エンジンの範囲外）
-- **Status**: Complete
+- **Lifecycle Phase**: CONSTRUCTION
+- **Current Stage**: Code Generation（ユニット: csv-export）Part 1 開始前
+- **Next Stage**: Code Generation Part 1（計画作成・承認）
+- **Status**: Spec Integration 完了（画面遷移図への /admin/reports 追加を含む）。仕様書・成果物をコミット済み

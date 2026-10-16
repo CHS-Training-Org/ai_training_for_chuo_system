@@ -220,3 +220,279 @@ timestamp: 2026-08-29
 **User Input**: "/aidlc"（Operations継続）
 **AI Response**: "BookFlowではOperationsはCI品質ゲート（CI Frontend/CI Backend）相当として運用する。両CIワークフローの実行コマンドを確認したところ、CI Frontendが`pnpm build`を実行することを確認し、Build and Testステージではこれを未実行だったため追加実行した（next build成功、全11ルートの静的ページ生成・型チェック完走）。CI Backend相当（test/spotlessCheck/checkstyleMain）は既に実行・再実行済みで全pass。Docs/spec/aidlc-docs/operations/ci-gate-check.mdにローカル再現結果を記録。デプロイ自動化・監視は本エンジンの対象外（別タスク）。AI-DLCワークフロー全体（INCEPTION→CONSTRUCTION→OPERATIONS）が完了。次のアクションは/commit-push・/create-prスキル（本エンジンの範囲外）。"
 **Context**: Operations 完了。AI-DLCワークフロー全体完了。
+
+## Workspace Detection（新規ワークフロー: Issue #29 csv-export）
+**Timestamp**: 2026-10-14T10:41:10+00:00
+**User Input**: "Issue #29「CSV帳票出力」を AI-DLC で進めてください。\nビジネス要求シートはdocs-next/docs/spec/enhancements/intermediate/csv-export.mdです。\n先ほど確認した既存コードとコーディング規約を踏まえ、未決定の実装方式については要件・既存アーキテクチャとの整合性を比較しながら進めてください。"（直前の依頼: "まだ /aidlc は開始しないでください。実装前のコードベース理解として、既存の予約一覧について、フロントエンド → Server Action/BFF → バックエンドController → Service → Repository → DBの処理の流れを、関連する実ファイル名を示しながら説明してください。あわせて、CSV帳票出力の実装で再利用できそうな既存処理と、関連する既存テストを教えてください。この時点ではコードやファイルを変更しないでください。"）
+**AI Response**: "/aidlc を起動。Pre-flight: ブランチ feature/CHS-SUZUKI-YOKO/29-csv-export は規約合致のためブランチ操作なし、対象シート csv-export.md を採用。既存の aidlc-state.md は Issue #76（完了済み・main にマージ済み）のものだったため、再開ではなく新規ワークフローとして状態ファイルをテンプレートにリセット（過去に 88a378c2 でリセットの前例あり）。監査ログは追記専用のため追記のみ。Workspace Detection: Brownfield（Java 25 / TypeScript、Gradle + pnpm のモノレポ）。既存 Reverse Engineering 成果物（2026-10-02）は以降のコード変更が同日の #76 のみのため current と判定し RE は SKIP。ただし範囲がリソース領域中心のため、予約領域の知見（調査済みのフロー・admin ルートの存在等）は Requirements Analysis で補完する。なお、直前の説明で『admin ルートは存在しない』と述べたのは誤りで、admin/resources と admin/users が存在する（訂正済み）。"
+**Context**: INCEPTION - Workspace Detection 完了。次: Requirements Analysis（Standard 深さ）。
+
+---
+
+## Requirements Analysis — Clarifying Questions
+**Timestamp**: 2026-10-14T10:55:00+00:00
+**User Input**: "（同上。Requirements Analysis の開始）"
+**AI Response**: "要件シート・既存コード・ADR-004/016/018・requirements.md 非機能要件・api-spec.md を分析。Intent Analysis: Request Type=New Feature（既存データの新規エクスポート機能）、Scope=Multiple Components（BE presentation/application/domain + FE route/page/nav）、Complexity=Moderate、Depth=Standard。検出した曖昧点・食い違い（UC-07 番号の食い違い、管理者ページの設置場所、CSV 生成方式、FE ダウンロード方式、承認状態の意味、期間絞り込みの意味、列構成、CSV インジェクション、件数上限）と拡張機能 3 種の opt-in を Docs/spec/aidlc-docs/inception/requirements/requirement-verification-questions.md（全 12 問、推奨案と比較表付き）にまとめた。回答待ち。"
+**Context**: Requirements Analysis Step 5〜6。GATE: 全質問への回答まで要件定義書の生成に進まない。
+
+---
+
+## Requirements Analysis — User Clarification (Q1)
+**Timestamp**: 2026-10-14T11:10:00+00:00
+**User Input**: "まだ回答は記入しません。\n確認質問を1問ずつ理解してから回答したいです。\nまず質問1について、選択肢とそれぞれの意味、推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問1（UC 番号の扱い）の選択肢 A/B/C の意味と推奨案 A の理由を説明した。回答ファイルは未記入のまま。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q2)
+**Timestamp**: 2026-10-14T11:20:00+00:00
+**User Input**: "質問1はAで理解しました。まだ回答ファイルには記入せず、質問2について、選択肢とそれぞれの意味、推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問1は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問2（CSV ダウンロードボタンの設置場所）の選択肢 A/B/C の意味と推奨案 A の理由を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q3)
+**Timestamp**: 2026-10-14T11:30:00+00:00
+**User Input**: "質問2はAで理解しました。まだ回答ファイルには記入せず、質問3について、選択肢とそれぞれの意味、推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問2は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問3（バックエンドの CSV 生成方式）の選択肢 A/B/C の意味と推奨案 A の理由を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q4)
+**Timestamp**: 2026-10-14T11:40:00+00:00
+**User Input**: "質問3はAで理解しました。まだ回答ファイルには記入せず、質問4について、選択肢とそれぞれの意味、推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問3は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問4（フロントエンドのダウンロード方式）の選択肢 A/B の意味と推奨案 A の理由を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q5)
+**Timestamp**: 2026-10-14T11:50:00+00:00
+**User Input**: "質問4はAで理解しました。まだ回答ファイルには記入せず、質問5について、選択肢とそれぞれの意味、推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問4は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問5（「承認状態」「ステータス」の意味）の選択肢 A/B の意味と推奨案 A の理由を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q6)
+**Timestamp**: 2026-10-14T12:00:00+00:00
+**User Input**: "質問5はAで理解しました。まだ回答ファイルには記入せず、質問6について、具体例を使って、選択肢とそれぞれの意味、推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問5は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問6（期間 from/to の絞り込み意味とバリデーション）の選択肢 A/B/C の意味と推奨案 A の理由を、具体例つきで説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q7)
+**Timestamp**: 2026-10-14T12:10:00+00:00
+**User Input**: "質問6はAで理解しました。まだ回答ファイルには記入せず、質問7について、選択肢とそれぞれの意味、推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問6は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問7（CSV の列構成と表記）の選択肢 A/B の意味と推奨案 A の理由を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q8)
+**Timestamp**: 2026-10-14T12:20:00+00:00
+**User Input**: "質問7はAで理解しました。まだ回答ファイルには記入せず、質問8について、CSV数式注入とは何か具体例を示したうえで、選択肢とそれぞれの意味、推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問7は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問8（CSV インジェクション対策）について、CSV 数式注入の仕組みを具体例つきで示し、選択肢 A/B の意味と推奨案 A の理由を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q9)
+**Timestamp**: 2026-10-14T12:30:00+00:00
+**User Input**: "質問8はAで理解しました。まだ回答ファイルには記入せず、質問9について、出力件数に上限を設ける場合と設けない場合の違いを具体例で示して、選択肢と推奨案を初心者にも分かるように説明してください。"
+**AI Response**: "質問8は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問9（出力件数の上限）について、上限あり/なしの違いを具体例で示し、選択肢 A/B の意味と推奨案 A の理由を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q10)
+**Timestamp**: 2026-10-14T12:40:00+00:00
+**User Input**: "質問9はAで理解しました。まだ回答ファイルには記入せず、質問10について、何を決める質問なのか、選択肢とそれぞれの意味、今回のCSV帳票出力で推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問9は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問10（Security Baseline Extension の適用可否）について、拡張機能の位置づけ・選択肢 A/B の意味・今回の CSV 帳票出力に関連するルールと推奨案 A の理由を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q11)
+**Timestamp**: 2026-10-14T12:50:00+00:00
+**User Input**: "質問10はAで理解しました。まだ回答ファイルには記入せず、質問11について、Resiliency Baselineとは何か、Yes/Noで今回のCSV帳票出力にどのような違いが出るのか、推奨案を選ぶ理由を初心者にも分かるように説明してください。"
+**AI Response**: "質問10は A で理解したとの意思表示を記録（回答ファイルは未記入）。質問11（Resiliency Baseline Extension の適用可否）について、拡張機能の内容・Yes/No の違い・推奨案の理由を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — User Clarification (Q12)
+**Timestamp**: 2026-10-14T13:00:00+00:00
+**User Input**: "質問11はBで理解しました。まだ回答ファイルには記入せず、質問12について、Property-Based Testingとは何か、通常のユニットテストとの違いを具体例で示して、Yes/Noの選択肢と今回のCSV帳票出力での推奨案を初心者にも分かるように説明してください。"
+**AI Response**: "質問11は B（No）で理解したとの意思表示を記録（回答ファイルは未記入）。質問12（Property-Based Testing Extension の適用可否）について、PBT とは何か、通常のユニットテストとの違い、選択肢 A/B/C の意味、今回の CSV 帳票出力での推奨案を説明した。"
+**Context**: Requirements Analysis GATE 継続中（回答待ち）。
+
+---
+
+## Requirements Analysis — Answers Received
+**Timestamp**: 2026-10-14T13:10:00+00:00
+**User Input**: "全12問を理解しました。\n回答は以下でお願いします。\nQ1: A\nQ2: A\nQ3: A\nQ4: A\nQ5: A\nQ6: A\nQ7: A\nQ8: A\nQ9: A\nQ10: A\nQ11: B\nQ12: C\nこの内容を回答ファイルの各 [Answer]: に記入して、Requirements Analysisを続けてください。"
+**AI Response**: "requirement-verification-questions.md の 12 個の [Answer]: に指定どおり記入。矛盾・曖昧さの検査を実施: Q3(手書き生成)・Q8(数式注入対策)・Q9(上限なし)・Q12(PBTなし)は整合、Q10(Security Yes)と Q11(Resiliency No)も独立で矛盾なし。追加の確認質問は不要と判断。拡張機能: Security Baseline=Yes（security-baseline.md を読み込み）、Resiliency Baseline=No、PBT=No（いずれも full rules は未読込/対象外）。"
+**Context**: Requirements Analysis Step 6 GATE 通過。
+
+---
+
+## Requirements Analysis — Requirements Document Generated
+**Timestamp**: 2026-10-14T13:20:00+00:00
+**User Input**: "（同上）"
+**AI Response**: "Docs/spec/aidlc-docs/inception/requirements/requirements.md を生成（前回 #76 の同名ファイルを上書き。#76 分は main にマージ済みで git 履歴に残る）。FR-01〜18、NFR-01〜07、Security Baseline 適用マッピング（blocking: SECURITY-05/08/15、確認: 03/11、他 N/A）、Out of Scope、既存ドキュメント・Issue の食い違いの記録を含む。技術的最大リスクは PostgreSQL の null バインド変数型推論（#76 の教訓、NFR-03）。aidlc-state.md を更新。承認待ち。User Stories は SKIP 候補の判定を Workflow Planning 前に提示する。"
+**Context**: Requirements Analysis 完了。次: ユーザー承認 → User Stories（条件付き）/ Workflow Planning。
+
+---
+
+## Requirements Analysis — Approval
+**Timestamp**: 2026-10-14T13:30:00+00:00
+**User Input**: "Approve & Continue"
+**AI Response**: "要件定義書（Docs/spec/aidlc-docs/inception/requirements/requirements.md）を承認済みとして記録。User Stories は追加せず（AI 推奨のスキップを採用。ユーザーは Add User Stories を選択していない）、Workflow Planning に進む。"
+**Context**: Requirements Analysis 承認。次ステージ: Workflow Planning。
+
+---
+
+## Workflow Planning — Plan Generated
+**Timestamp**: 2026-10-14T13:50:00+00:00
+**User Input**: "Approve & Continue"（Requirements Analysis の承認に続く自動遷移）
+**AI Response**: "Docs/spec/aidlc-docs/inception/plans/execution-plan.md を生成。Risk=Medium（個人情報の一括出力・ストリーミング・PostgreSQL 型推論・ADR-004 例外）、Rollback=Easy、Testing=Moderate。判定: EXECUTE=Application Design(Minimal)/NFR Requirements/NFR Design/Code Generation/Build and Test、SKIP=Reverse Engineering/User Stories/Units Generation/Functional Design/Infrastructure Design。User Stories は技術的には『新規ユーザー向け機能』の ALWAYS 基準に該当するが、単一ペルソナ(ADMIN)・受入条件は要件書で具体化済みのため、Requirements Analysis 承認時に提示したスキップ推奨をユーザーが受け入れた形でスキップ（意識的な逸脱として記録）。Application Design は新規コンポーネント追加のため EXECUTE（前回 #76 は既存境界内で SKIP）。Code Generation 直前に /update-spec による Spec Integration（Spec-first）を挟む。Mermaid 構文は検証済み（ノード ID は英数字のみ）。状態ファイル更新済み。承認待ち。"
+**Context**: Workflow Planning。承認ゲート（学習者がチャットで直接承認。AskUserQuestion での再確認はしない）。
+
+---
+
+## Workflow Planning - Approval
+**Timestamp**: 2026-10-14T14:00:00+00:00
+**AI Prompt**: "Ready to proceed with this plan?"
+**User Response**: "Approve & Continue"
+**Status**: Approved
+**Context**: Workflow plan created with 8 stages to execute（Application Design / NFR Requirements / NFR Design / Code Generation / Build and Test ＋ 既完了 3 ステージ）。次ステージ: Application Design（Minimal）。
+
+---
+
+## Application Design — Plan & Questions
+**Timestamp**: 2026-10-14T14:15:00+00:00
+**User Input**: "Approve & Continue"（Workflow Planning の承認）
+**AI Response**: "Application Design（Minimal 深さ）を開始。.aidlc-rule-details/inception/application-design.md に従い、Docs/spec/aidlc-docs/inception/plans/application-design-plan.md を生成（設計スコープ表、既存コード調査で確定した前提、9 ステップのチェックリスト、確認質問 5 問）。調査で確認した事実: application 層は presentation.dto を参照する前例あり、GlobalExceptionHandler は MethodArgumentTypeMismatchException と ValidationException を既に 400 に変換、UserController に @PreAuthorize(hasRole('ADMIN')) の前例、FE の ResourceFilterForm は datetime-local を使用、toIsoWithSeconds が既存、Clock Bean は無し。質問: Q1 CSV 組み立てロジックの配置、Q2 ページ単位読み出し方式、Q3 ステータスラベルの持ち場所、Q4 ダウンロード失敗時の FE の扱い（Functional Design をスキップしたためここで決定）、Q5 期間入力欄の形式。回答待ち。"
+**Context**: Application Design Step 1〜7。GATE: 全質問への回答まで設計成果物の生成に進まない。
+
+---
+
+## Application Design — Answers Received
+**Timestamp**: 2026-10-15T09:00:00+00:00
+**User Input**: "Q1: A / Q1: A / Q2: A / Q3: A / Q4: B / Q5: A"（各質問の選択肢・推奨理由を 1 問ずつ説明したうえで、ユーザーが理解を確認。Q1 が 2 行重複していたが同値のため入力の重複と解釈し、Q1=A / Q2=A / Q3=A / Q4=B / Q5=A として記入）
+**AI Response**: "application-design-plan.md の [Answer]: に 5 問分を記入。回答検査: 曖昧・矛盾・選択肢の組み合わせ回答なし、追加質問は不要。既存コードの追加調査（ReservationRepository の JOIN FETCH 方針、open-in-view: false、ResourceRepository の CAST 前例、ErrorCode、toIsoWithSeconds が 'use server' ファイル内の非公開関数であること）を踏まえ、components.md / component-methods.md / services.md / component-dependency.md / application-design.md を Docs/spec/aidlc-docs/inception/application-design/ に生成。設計判断: ページ単位トランザクションは Service ではなく ReservationRepository のクエリメソッドの @Transactional(readOnly = true) に持たせる（同一クラス内呼び出しでプロキシが効かないため）。toIsoWithSeconds は src/lib/datetime.ts へ抽出。FE の error クエリは許可リストでのみ表示。検証指摘: (1) FR-05 に DRAFT のラベルがない（Writer の switch 網羅のため『ドラフト』を補い、Spec Integration で api-spec.md に 5 値で明記）、(2) Cache-Control: no-store は要件外の設計上の追加、(3) toIsoWithSeconds 抽出は reservations.ts への小さなリファクタを伴う。FR-01〜17 / NFR-01〜07 は全て割り当て済み（FR-18 は Spec Integration の担当）。Mermaid 図はノード ID を英数字にして構文を確認。"
+**Context**: Application Design Step 3〜9 完了。次: 承認ゲート。
+
+---
+
+## Application Design — Approval Prompt
+**Timestamp**: 2026-10-15T09:10:00+00:00
+**AI Prompt**: "Application Design Complete — REVIEW REQUIRED: Docs/spec/aidlc-docs/inception/application-design/ の成果物を確認してください。Request Changes（設計の修正依頼）/ Add Units Generation（現在スキップ中の Units Generation を追加）/ Approve & Continue（承認して CONSTRUCTION PHASE の NFR Requirements へ進む）のいずれかを返答してください。"
+**Status**: Awaiting approval
+**Context**: Application Design 承認ゲート（学習者がチャットで直接返答する。AskUserQuestion での再確認はしない）。
+
+---
+
+## Application Design — Approval
+**Timestamp**: 2026-10-15T09:30:00+00:00
+**AI Prompt**: "Application Design Complete — Request Changes / Add Units Generation / Approve & Continue のいずれかを返答してください。"
+**User Response**: "Approve & Continue"
+**Status**: Approved
+**Context**: Application Design 承認。Units Generation は単一ユニットのためスキップのまま。次ステージ: NFR Requirements（CONSTRUCTION PHASE、ユニット: csv-export）。
+
+---
+
+## NFR Requirements — Plan & Questions
+**Timestamp**: 2026-10-15T09:45:00+00:00
+**User Input**: "Approve & Continue"（Application Design の承認）
+**AI Response**: "NFR Requirements を開始。.aidlc-rule-details/construction/nfr-requirements.md に従い、Docs/spec/aidlc-docs/construction/plans/csv-export-nfr-requirements-plan.md を生成（確定前提、7 ステップのチェックリスト、確認質問 5 問）。調査で確認した事実: ログ基盤は logback-spring.xml（Logstash JSON・traceId）と RequestLoggingConfig（ADR-017）が既存、application.yml に非同期タイムアウト設定なし、FE の next.config.ts・ミドルウェアに CSP / HSTS / X-Frame-Options 等のヘッダ設定なし（アプリ全体の既存状況）。requirements.md の Security Baseline マッピングは SECURITY-04 を N/A としていたが、新規 HTML ページ /admin/reports を追加するため、質問 4 で扱いを確認する。質問: Q1 性能の目標とデータ規模、Q2 長時間ダウンロードのタイムアウト、Q3 エクスポート実行の記録（SECURITY-03/14）、Q4 HTTP セキュリティヘッダ（SECURITY-04）、Q5 手動検証の範囲。回答待ち。"
+**Context**: NFR Requirements Step 1〜3。GATE: 全質問への回答まで成果物の生成に進まない。
+
+---
+
+## Session Continuity — Welcome Back
+**Timestamp**: 2026-10-15T10:00:00+00:00
+**User Input**: "/aidlc"（引数なし。既存ワークフローの再開）
+**AI Response**: "aidlc-state.md を読み込み、再開と判定（Pre-flight はスキップ）。読み込んだ成果物: aidlc-state.md、csv-export-nfr-requirements-plan.md、application-design/ 配下、監査ログ末尾。現在地: CONSTRUCTION / NFR Requirements（ユニット: csv-export）。Step 1〜3 完了、Step 4（質問 5 問への回答受領）で停止中。回答を受けるため質問 Q1〜Q4 を AskUserQuestion で、Q5 を続けて提示する。"
+**Context**: Session continuity。Next: NFR Requirements Step 4。
+
+---
+
+## NFR Requirements — Answers Received
+**Timestamp**: 2026-10-16T09:00:00+00:00
+**User Input**: "Q1: A 目安として記録 (Recommended) / Q2: A 明示設定 (Recommended) / Q3: A 完了時に構造化ログ 1 行 (Recommended) / Q4: B nosniff のみ付与 (Recommended) / Q5: A PostgreSQL と Excel の両方 (Recommended)"（AskUserQuestion による回答。Q1〜Q4 を 1 回、Q5 を続けて 1 回で受領）
+**AI Response**: "csv-export-nfr-requirements-plan.md の [Answer]: に 5 問分を記入し Step 4〜6 を完了。回答検査: 全問が単一選択で曖昧・矛盾なし、追加質問は不要。nfr-requirements.md（性能・可用性・信頼性・セキュリティ・保守性・ユーザビリティ・検証方針・NFR Design への申し送り）と tech-stack-decisions.md（決定 1〜7）を Docs/spec/aidlc-docs/construction/csv-export/nfr-requirements/ に生成。要点: (1) 性能は目安のみ記録し負荷テストなし、(2) spring.mvc.async.request-timeout を明示設定（初期値 5 分・暫定、Build and Test で検証）、(3) 完了時に INFO の構造化ログ 1 行（ユーザー ID・条件・件数・所要時間、PII なし）、(4) SECURITY-04 は requirements.md の N/A 記載を上書きし、CSV 用 Route Handler のみ nosniff 付与・全画面ヘッダは既知ギャップとして別課題、(5) 手動検証は実 PostgreSQL と Excel の両方。NFR Design への申し送り: ストリーミング別スレッドで SecurityContext が引き継がれないためユーザー ID は Controller で取得して渡す、途中切断時のログ有無、非同期実行基盤の確認。"
+**Context**: NFR Requirements Step 4〜6 完了。次: Step 7 完了メッセージと承認ゲート。
+
+---
+
+## NFR Requirements — Approval Prompt
+**Timestamp**: 2026-10-16T09:10:00+00:00
+**AI Prompt**: "NFR Requirements Complete - csv-export — REVIEW REQUIRED: Docs/spec/aidlc-docs/construction/csv-export/nfr-requirements/ を確認してください。Request Changes / Continue to Next Stage（NFR Design）のいずれかを返答してください。"
+**Status**: Awaiting approval
+**Context**: NFR Requirements 承認ゲート（Construction フェーズ標準の 2 択）。
+
+---
+
+## NFR Requirements — Approval
+**Timestamp**: 2026-10-16T09:30:00+00:00
+**AI Prompt**: "NFR Requirements Complete - csv-export — Request Changes / Continue to Next Stage"
+**User Response**: "Continue to Next Stage"
+**Status**: Approved
+**Context**: NFR Requirements 承認。次ステージ: NFR Design（ユニット: csv-export）。
+
+---
+
+## NFR Design — Plan, Answers & Artifacts
+**Timestamp**: 2026-10-16T10:00:00+00:00
+**User Input**: "Continue to Next Stage"（NFR Requirements の承認）／ AskUserQuestion の回答: "Q1: A WARN を 1 行出す (Recommended) / Q2: A 既定のまま・制限なし (Recommended) / Q3: A StructuredArguments (kv) (Recommended)"
+**AI Response**: "NFR Design を開始。csv-export-nfr-design-plan.md を生成（確定前提・7 ステップ・質問 3 問）。調査: @CurrentUser User がリクエストスレッドで解決される前例、logstash-logback-encoder:8.0 導入済み、configureAsyncSupport・実行器の設定なし。回答検査: 全問単一選択で曖昧・矛盾なし。nfr-design-patterns.md（D-01〜D-07、ログ項目表、残余リスク、NFR 対応検証）と logical-components.md（割り当て、設定値、新規インフラなしの確認、ログ定義、テストへの影響）を Docs/spec/aidlc-docs/construction/csv-export/nfr-design/ に生成。決定: 完了時 INFO / 未完了時 WARN（例外メッセージ・PII なし、try/finally、userId はリクエストスレッドで取得）、同時実行は制限なし（制約として記録）、ログは kv() の構造化フィールド。NFR Requirements の申し送り 3 件すべてを解消。"
+**Context**: NFR Design Step 1〜7。次: 承認ゲート（2 択）。
+
+---
+
+## NFR Design — Approval Prompt
+**Timestamp**: 2026-10-16T10:10:00+00:00
+**AI Prompt**: "NFR Design Complete - csv-export — Request Changes / Continue to Next Stage（Spec Integration）"
+**Status**: Awaiting approval
+**Context**: NFR Design 承認ゲート（Construction フェーズ標準の 2 択）。
+
+---
+
+## Session Continuity — Welcome Back
+**Timestamp**: 2026-10-16T10:20:00+00:00
+**User Input**: "/aidlc"（引数なし。既存ワークフローの再開）
+**AI Response**: "aidlc-state.md を読み込み、再開と判定（Pre-flight はスキップ）。現在地: CONSTRUCTION / NFR Design（ユニット: csv-export）。成果物（nfr-design-patterns.md・logical-components.md）は生成済みで、承認ゲート（Request Changes / Continue）の返答待ち。再開方針を AskUserQuestion で確認する。"
+**Context**: Session continuity。Next: NFR Design 承認ゲート。
+
+---
+
+## NFR Design — Approval
+**Timestamp**: 2026-10-16T10:25:00+00:00
+**AI Prompt**: "NFR Design Complete - csv-export — Request Changes / Continue to Next Stage（Spec Integration）"
+**User Response**: "Continue to Next Stage (Recommended)"（AskUserQuestion による回答）
+**Status**: Approved
+**Context**: NFR Design 承認。次ステージ: Spec Integration（エンジン外 /update-spec、Code Generation 直前）。
+
+---
+
+## Spec Integration（/update-spec）
+**Timestamp**: 2026-10-16T10:50:00+00:00
+**User Input**: "/aidlc"（再開）→ NFR Design 承認後、Spec Integration を実行
+**AI Response**: "docs-next/docs/spec/ へ統合。requirements.md: UC-09 と §帳票（RPT-01〜09）、UC 一覧、API 権限マトリクス、画面アクセス権限。api-spec.md: エンドポイント一覧に §帳票、§帳票 に GET /api/reports/reservations/csv（書式・エラー・実行ログ。DRAFT を含む 5 値のラベルを明記）。screen-spec.md: 画面一覧（#12）、サイドナビ、§帳票 /admin/reports。index.md: 全 12 画面。enhancements/intermediate/csv-export.md: UC-07 → UC-09、更新対象 spec を実態に修正。npm run build 成功（既存 drawio.svg の画像サイズ警告のみ）。未対応: 画面遷移図 screen-spec-navigation.drawio(.svg) への /admin/reports 追加。"
+**Context**: エンジン外の Spec Integration 完了。次: Code Generation（Part 1 計画の作成・承認）。
+
+---
+
+## Spec Integration — 画面遷移図の追記とコミット
+**Timestamp**: 2026-10-16T11:20:00+00:00
+**User Input**: "先に画面遷移図と仕様書のコミットを片付けてから Code Generation に進めたいです。"
+**AI Response**: "screen-spec-navigation.drawio / .drawio.svg に /admin/reports（ADMIN）ノードと ADMIN ラベル付きの遷移（ダッシュボード → 帳票出力）を追加。SVG は埋め込み XML も更新（この環境の Python は標準ライブラリ html / xml が欠けているため Node.js で処理）。整形式を sax で検証済み。見た目の確認は VSCode の drawio 拡張での目視に委ねる。仕様書変更を docs(spec) コミット、AI-DLC 成果物を docs(aidlc) コミットに分割して commit-push。"
+**Context**: Spec Integration の未対応事項を解消。次: Code Generation Part 1。
+
+---
