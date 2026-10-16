@@ -294,6 +294,22 @@ class ResourceControllerTest extends BaseControllerTest {
 
   @Test
   @WithMockMember
+  void list_keywordMismatchAndFreeTimeRange_returnsEmptyContent() throws Exception {
+    // 隣接する時間帯（08:00〜10:00）では 第1会議室 は空いているが、keyword が一致しない。
+    // 空き確認の経路でも keyword が効いていれば、結果は空になる
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "存在しない語")
+                .param("from", "2025-06-02T08:00:00")
+                .param("to", "2025-06-02T10:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @WithMockMember
   void list_memberKeywordMatchesInactiveOnly_hidesInactive() throws Exception {
     mockMvc
         .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
