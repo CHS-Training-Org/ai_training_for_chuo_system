@@ -19,7 +19,7 @@ timestamp: 2026-10-16
 
 - **Project Type**: Brownfield
 - **Start Date**: 2026-10-14T10:41:10+00:00
-- **Current Stage**: CONSTRUCTION - Code Generation
+- **Current Stage**: OPERATIONS
 - **Workspace Root**: /workspace
 - **Target Enhancement Sheet**: `docs-next/docs/spec/enhancements/intermediate/csv-export.md`（CSV 帳票出力、Issue #29）
 - **Branch**: `feature/CHS-SUZUKI-YOKO/29-csv-export`（既存。規約合致のため新規作成なし）
@@ -74,8 +74,8 @@ timestamp: 2026-10-16
 - [x] NFR Design（条件付き、ユニット別） — 完了。承認済み（2026-10-16T10:25:00+00:00）
 - [x] Infrastructure Design（条件付き、ユニット別） — **SKIP**
 - [x] Spec Integration（エンジン外 `/update-spec`、Code Generation 直前） — 完了（2026-10-16T10:50:00+00:00）
-- [ ] Code Generation（必須、ユニット別）
-- [ ] Build and Test（必須）
+- [x] Code Generation（必須、ユニット別） — 完了。承認済み（2026-10-16T13:00:00+00:00）
+- [x] Build and Test（必須） — 完了。承認済み（2026-10-20）
 
 ### OPERATIONS PHASE
 
@@ -83,7 +83,7 @@ timestamp: 2026-10-16
 
 ## Current Status
 
-- **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Code Generation（ユニット: csv-export）Part 1 開始前
-- **Next Stage**: Code Generation Part 1（計画作成・承認）
-- **Status**: Spec Integration 完了（画面遷移図への /admin/reports 追加を含む）。仕様書・成果物をコミット済み
+- **Lifecycle Phase**: OPERATIONS
+- **Current Stage**: Operations（CI 品質ゲート。ユニット: csv-export）
+- **Next Stage**: なし（PR のセルフレビュー・マージで完了）
+- **Status**: Build and Test 承認済み。Operations: コミット・push を実施。次は PR 作成（create-pr）と CI 成功の確認

@@ -496,3 +496,102 @@ timestamp: 2026-08-29
 **Context**: Spec Integration の未対応事項を解消。次: Code Generation Part 1。
 
 ---
+
+## Code Generation — Part 1 Plan & Approval Prompt
+**Timestamp**: 2026-10-16T11:40:00+00:00
+**User Input**: "進めてください。"（画面遷移図・仕様書コミットの完了後、Code Generation への移行）
+**AI Response**: "Code Generation Part 1 を開始。code-generation.md、application-design（C1〜C8）、nfr-design（D-01〜D-07）、既存コード（ReservationRepository、ResourceController、CurrentUser、session.ts の getAccessToken、admin/layout.tsx、nav-items.ts、reservations.ts の toIsoWithSeconds、BaseControllerTest）を確認し、Docs/spec/aidlc-docs/construction/plans/csv-export-code-generation-plan.md を生成（14 ステップ。BE 4 + テスト 3、FE 5 + テスト、Security Baseline 確認記録、サマリー）。依存・Flyway・インフラの変更なし。テストの実行と実 PostgreSQL / Excel の確認は Build and Test に持ち越し。計画の承認をチャットで求める。"
+**Context**: Code Generation Step 1〜6。承認待ち（Step 7）。
+
+---
+
+## Code Generation — Plan Approval
+**Timestamp**: 2026-10-16T12:00:00+00:00
+**AI Prompt**: "Code Generation 計画（14 ステップ）の承認をチャットで求める"
+**User Response**: "計画を承認します。Part 2 に進めてください。"
+**Status**: Approved
+**Context**: Code Generation Part 1 完了。Part 2（生成）を Step 1 から開始する。
+
+---
+
+## Code Generation — Part 2 Complete & Approval Prompt
+**Timestamp**: 2026-10-16T12:40:00+00:00
+**User Input**: "計画を承認します。Part 2 に進めてください。"
+**AI Response**: "計画の Step 1〜14 を順に実行し、すべて [x]。BE: ReservationRepository#findForReport、ReservationCsvWriter、ReservationReportService、ReportController、application.yml の request-timeout。FE: lib/datetime.ts（抽出）、Route Handler、/admin/reports、nav-items。テスト: BE 63 件を新規（Writer 26 / Service 16 / Controller 21）、FE 新規（datetime 3 / route 11 / page 10 + nav-items 追記）。生成中の確認: BE 全体 197 件 pass・spotlessCheck / checkstyle 成功、FE 113 件 pass・lint / format:check / tsc 問題なし。Security Baseline: SECURITY-05 / 08 / 15 / 03 / 11 compliant、04 は既知のギャップ（partial）、non-compliant 0。H2 で CAST 方式が通ることを確認。実 PostgreSQL・Excel の確認は Build and Test の V-01〜V-05 へ。成果物: construction/csv-export/code/summary.md。設計からの逸脱なし（Route Handler の引数型を Request にした点のみ記録）。"
+**Context**: Code Generation Step 10〜14。完了メッセージ（Request Changes / Continue の 2 択）を提示、承認待ち。
+
+---
+
+## Code Generation — Approval
+**Timestamp**: 2026-10-16T13:00:00+00:00
+**AI Prompt**: "Code Generation Complete - csv-export — Request Changes / Continue to Next Stage（Build and Test）"
+**User Response**: "Code Generation を承認します。Continue to Next Stage で Build and Test に進めてください。"
+**Status**: Approved
+**Context**: Code Generation 承認。次ステージ: Build and Test。
+
+---
+
+## Build and Test Stage
+**Timestamp**: 2026-10-16T13:30:00+00:00
+**User Input**: "Code Generation を承認します。Continue to Next Stage で Build and Test に進めてください。"
+**AI Response**: "Build and Test を実行。Build Status: Success（backend: ./gradlew build、frontend: pnpm build、docs-next: npm run build）。Test Status: Pass（backend 197 件・frontend 113 件、spotless / checkstyle / lint / format / tsc も問題なし）。実 PostgreSQL・実 BE・実 FE での手動確認を実施（V-01 全組み合わせ OK・CAST 方式確定、V-03 20,000 件 / 300,000 件で完走・メモリ増加なし、V-04 既定は約 30 秒で途中切断・300s で 30 万件まで完走）。手動確認で 1 件の不具合を発見・修正: 303 リダイレクトの Location が内部ホスト（0.0.0.0:3000）になる問題を相対パスに修正し、単体テストを強化。所見: 処理時間は件数に線形でなく 30 万件で約 300 秒（request-timeout にほぼ一致）。途中切断をクライアントが検知できない点を残余リスクとして記録。未実施: V-02（Excel での表示確認。GUI なし環境のため。サンプルと手順を用意）とブラウザでの実ダウンロード。テスト用に投入した予約 32 万件は削除し、DB は seed の 2 件に戻した。"
+**Files Generated**:
+- build-instructions.md
+- unit-test-instructions.md
+- integration-test-instructions.md
+- performance-test-instructions.md
+- security-test-instructions.md
+- manual-test-instructions.md
+- csv-export-excel-sample.csv
+- build-and-test-summary.md
+
+---
+
+## Build and Test — Approval Prompt
+**Timestamp**: 2026-10-16T13:35:00+00:00
+**AI Prompt**: "Build and Test Complete — Request Changes / Approve & Continue（Operations）"
+**Status**: Awaiting approval
+**Context**: Build and Test 承認ゲート。
+
+---
+
+## Build and Test — V-02（Excel 確認）の結果記録
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**User Input**: "V-02 のExcel確認を実施しました。#1～#9はすべて○で、期待どおり表示されました。manual-test-instructions.md に結果を記録してください。まだ Approve & Continue はせず、Operationsにも進まないでください。次にブラウザでの実ダウンロード確認を行います。"
+**AI Response**: "manual-test-instructions.md の V-02 の結果欄 #1〜#9 に ○ を記録し、見出し・冒頭・V-05 の表を『実施済み（2026-10-20、全項目 ○）』に更新。ブラウザ確認は未実施のまま。build-and-test-summary.md の V-02『未実施』の記載はブラウザ確認の結果と合わせて更新する（本回では未変更）。承認ゲートは保留のまま、Operations へは進んでいない。"
+**Context**: Build and Test 承認ゲート保留中。
+
+---
+
+## Build and Test — ブラウザ確認の結果記録
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**User Input**: "ブラウザ確認を実施しました。・ADMINで帳票出力画面を表示できました。・条件なしでCSVをダウンロードでき、ヘッダー＋2件が正常に表示されました。・期間の指定を不正にすると「期間の指定が正しくありません」が表示されました。・MEMBERで /admin/reports を直接開くと403「アクセス権限がありません」が表示されました。確認結果を manual-test-instructions.md と build-and-test-summary.md に反映してください。まだ Approve & Continue はせず、Operationsにも進まないでください。"
+**AI Response**: "BE・FE を起動（学習者がブラウザで確認）。報告された 4 点を manual-test-instructions.md のブラウザ確認の表に ○ で記録し、報告のなかった項目（ステータス絞り込み、リダイレクト後のアドレス欄の URL、MEMBER のサイドナビ非表示、画面の個別 UI 要素）は『未報告』として確認済みとは扱わずに明記。build-and-test-summary.md は V-02 を ✅、手動確認（Excel・ブラウザ）を Additional Tests に追記し、『未実施』を『未報告の項目』に置き換え、Overall Status と Next Steps を更新。security-test-instructions.md の Excel の記述も確認済みに更新。承認ゲートは保留のまま、Operations へは進んでいない。"
+**Context**: Build and Test 承認ゲート保留中。
+
+---
+
+## Build and Test — ブラウザ追加確認の結果記録と BE・FE の停止
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**User Input**: "追加のブラウザ確認結果です。・MEMBERでログインした際、サイドナビに「帳票出力」が表示されないことを確認しました。・http://localhost:3000/admin/reports?error=VALIDATION_ERROR となっており、0.0.0.0:3000 にはなっていないことを確認しました。この結果を manual-test-instructions.md と build-and-test-summary.md に反映してください。反映後、BE・FEを停止してください。まだ Approve & Continue はせず、Operationsにも進まないでください。"
+**AI Response**: "manual-test-instructions.md のブラウザ確認 #5（リダイレクト後の URL が localhost:3000 で 0.0.0.0 にならない）と #6（MEMBER のサイドナビ非表示）を ○ に更新し、未報告の項目から除外。build-and-test-summary.md も同様に更新（未報告で残るのは任意項目のステータス絞り込みと画面の個別 UI 要素のみ）。反映後、BE（java）・FE（next-server・pnpm dev）のプロセスを個別に停止し、8080 / 3000 が応答しないことを確認。停止に伴い、起動時のバックグラウンドタスク 2 件が終了コード 143 / 1 で終了した通知が出たが、意図した停止による想定内の結果。承認ゲートは保留のまま、Operations へは進んでいない。"
+**Context**: Build and Test 承認ゲート保留中。
+
+---
+
+## Build and Test — Approval
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**AI Prompt**: "Build and Test Complete — Request Changes / Approve & Continue（Operations）"
+**User Response**: "Build & Test の結果を承認します。Approve & Continue で Operations に進んでください。"
+**Status**: Approved
+**Context**: Build and Test 承認。次ステージ: Operations（BookFlow では CI 品質ゲート相当）。
+
+---
+
+## Operations — コミットと push
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**User Input**: "Build & Test の結果を承認します。Approve & Continue で Operations に進んでください。"（commit-push の確認で「現在のブランチのまま」「3 コミットの分割案でよい」「push する」を選択）
+**AI Response**: "Operations（BookFlow では CI 品質ゲート相当）を開始。CI（CI Backend: test / spotlessCheck / checkstyleMain、CI Frontend: lint / format:check / build / test、Docs Check: docs-next のビルド）と同じコマンドはローカルで実行済み（すべて成功）。残りの作業は、コミット・push・PR 作成・CI の成功確認。commit-push スキルの確認を経て、feat(backend)・feat(frontend)・docs(aidlc) の 3 コミットに分けて現在のブランチへコミットし、push する。PR の作成は create-pr スキルで別途確認する。"
+**Context**: Operations。次: push 後に PR 作成の確認、CI の結果確認。
+
+---
