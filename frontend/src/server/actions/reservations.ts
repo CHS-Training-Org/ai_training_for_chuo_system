@@ -4,6 +4,7 @@ import { createApiClient } from "@/lib/api-client";
 import { ReservationResponseSchema, type ReservationResponse } from "@/lib/types/api";
 import { getAccessToken } from "@/lib/session";
 import type { CreateReservationInput, UpdateReservationInput } from "@/lib/schemas/reservation";
+import { toIsoWithSeconds } from "@/lib/datetime";
 
 // ---------------------------------------------------------------------------
 // 一覧パラメータ（"use server" ファイルは非同期関数以外の export 不可のため非公開）
@@ -13,19 +14,6 @@ interface ListReservationsParams {
   status?: string[];
   page?: number;
   size?: number;
-}
-
-// ---------------------------------------------------------------------------
-// datetime-local → ISO 秒付き変換ユーティリティ
-// ---------------------------------------------------------------------------
-
-/**
- * datetime-local 入力値（"2025-06-10T10:00" 16文字）を
- * BE が期待する秒付き ISO 文字列（"2025-06-10T10:00:00" 19文字）に正規化する。
- */
-function toIsoWithSeconds(value: string): string {
-  if (value.length === 16) return `${value}:00`;
-  return value;
 }
 
 // ---------------------------------------------------------------------------
