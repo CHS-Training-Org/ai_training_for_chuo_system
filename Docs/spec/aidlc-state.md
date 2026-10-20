@@ -86,4 +86,4 @@ timestamp: 2026-10-16
 - **Lifecycle Phase**: OPERATIONS
 - **Current Stage**: Operations（CI 品質ゲート。ユニット: csv-export）
 - **Next Stage**: なし（PR のセルフレビュー・マージで完了）
-- **Status**: PR #153（base: `learner/CHS-SUZUKI-YOKO/main`）を作成済み。CI Backend / CI Frontend / Docs Check（build）はすべて成功し、mergeable は CLEAN。残りは、学習者によるセルフレビューの未チェック項目（仕様と実装の一致、AI 生成コードの理解）の確認と、セルフマージ
+- **Status**: PR #153（base: `learner/CHS-SUZUKI-YOKO/main`）を作成済み。CI 3 件は成功済み。セルフレビューを踏まえ、仕様書（件数上限・ファイル名のタイムゾーン・シートの背景・選択課題カタログ・リンク表記・FE 中継の仕様）を修正し、コミット・push 済み。残りは、学習者によるセルフレビューの未チェック項目（仕様と実装の一致、AI 生成コードの理解）の確認、セルフマージ

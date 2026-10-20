@@ -611,3 +611,19 @@ timestamp: 2026-08-29
 **Context**: Operations（CI 品質ゲート相当）。CI は成功。残りは学習者によるセルフレビューの未チェック項目の確認とセルフマージ。
 
 ---
+
+## Operations — セルフレビューを踏まえた仕様書の最小修正
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**User Input**: "セルフレビューの結果を踏まえ、PRをマージする前に仕様書を最小限修正してください。修正内容は次のとおりです。1. 「件数に上限なし」は、「件数による明示的な上限は設けないが、request-timeout は300秒であり、大量件数では途中終了する可能性がある」という内容にしてください。30万件は固定上限とはせず、検証環境で約30万件・約300秒だった実測結果として記載してください。2. CSVファイル名の日時は、サーバーのタイムゾーンに従い、現在の実行環境ではUTCになることを明記してください。今回はJST固定へのコード変更は行いません。3. ビジネス要求シートの背景にある「利用実績」を削除し、今回の対象が予約一覧のみであることと整合させてください。4. requirements.md の注記にある、ファイル名を使ったリンクテキストを文章として分かる表現に直してください。5. API仕様に、CSV応答の nosniff、no-store と、Route Handlerのエラー変換を追記してください。Issue #29 本文自体は変更しなくて構いません。実装コードは変更せず、仕様書とAI-DLCの記録だけを更新してください。更新後、変更内容を提示してください。まだコミット、push、PR本文のチェック変更、マージは行わないでください。"
+**AI Response**: "セルフレビュー（Issue #29・シート・仕様書と実装の照合。指摘は仕様漏れ 2・仕様にない実装・Issue との差・表記）を踏まえ、仕様書を修正。(1) requirements.md の RPT-05 と api-spec.md §帳票を『件数による明示的な上限は設けないが、request-timeout（300 秒）があり、大量件数では途中で終了しうる』に変更し、api-spec.md に新節『出力件数と所要時間』（{#csv-export-limit}）を追加。約 2 万件が約 3〜4.5 秒、約 30 万件が約 300 秒だったことを、検証環境での実測値であり固定の上限ではないと明記。(2) api-spec.md にファイル名の日時はサーバーのタイムゾーンに従い、現在の実行環境（DevContainer）では UTC のため日本時間と 9 時間ずれる、JST 固定は行わない旨を追記。(3) csv-export シートの背景と frontmatter の description から『利用実績』を削除し、予約一覧のみが対象と整合。(4) requirements.md の注記のリンクテキストを『API 仕様書の 予約一覧の CSV ダウンロード API』に変更（api-spec.md への新規追記内のリンクテキストも、ファイル名ではなく『帳票出力画面の仕様』とした）。(5) api-spec.md の応答ヘッダに X-Content-Type-Options: nosniff を追加（BE は Spring Security の既定で付与、Cache-Control: no-store は BE が明示）し、新節『ブラウザからのダウンロード（FE の Route Handler による中継）』に BE への転送、成功時に FE が付けるヘッダ（no-store・nosniff）、失敗時の 303（相対 Location）とエラーコードの決め方（UNAUTHORIZED / BE の code / HTTP_<status> / INTERNAL_SERVER_ERROR）を追記。実装コード・Issue #29 本文は変更していない。docs-next の npm run build は成功。気づいた点（未変更）: develop/enhancement-catalog.md の CSV 帳票出力の説明にも『予約一覧・利用実績』が残っている（依頼の範囲外のため未変更）。コミット・push・PR 本文のチェック変更・マージは行っていない。"
+**Context**: Operations。セルフレビューを踏まえた仕様書の修正。未コミット。
+
+---
+
+## Operations — 選択課題カタログの記載の修正と、仕様書修正のコミット
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**User Input**: "内容は問題ありません。仕様の一貫性を保つため、develop/enhancement-catalog.md に残っている「予約一覧・利用実績を CSV 形式で…」の記載も、今回の対象が予約一覧のみであることと整合するよう修正してください。修正後、docs-next のビルドを確認し、今回の仕様書修正とAI-DLC記録をまとめてコミット・pushしてPR #153 に反映してください。まだPR本文のセルフレビューのチェック変更やマージは行わないでください。"
+**AI Response**: "docs-next/docs/develop/enhancement-catalog.md の CSV 帳票出力の行（83 行目）を『予約一覧・利用実績を CSV 形式で…』から『予約一覧を CSV 形式で…』に修正（82 行目は別の課題『利用実績の集計・グラフ表示』のため変更なし）。docs-next の npm run build を確認し、仕様書の修正（前回分）と本修正、AI-DLC の記録をまとめてコミットし、push して PR #153 に反映する。PR 本文のセルフレビューのチェック変更とマージは行わない。"
+**Context**: Operations。前回の監査ログに記録した『enhancement-catalog.md に利用実績が残っている（未変更）』の件を解消。
+
+---
