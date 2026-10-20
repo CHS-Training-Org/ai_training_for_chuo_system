@@ -603,3 +603,11 @@ timestamp: 2026-08-29
 **Context**: Operations。次: 確認のうえ create-pr。
 
 ---
+
+## Operations — PR 作成と CI 結果
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**User Input**: "この内容で gh pr create を実行してPRを作成してください。baseは learner/CHS-SUZUKI-YOKO/main、headは feature/CHS-SUZUKI-YOKO/29-csv-export のままにしてください。"／"PR #153 のCI結果を確認してください。まだセルフレビューのチェック変更やマージは行わないでください。"／"PR作成とCI成功の結果を aidlc-audit.md と aidlc-state.md に記録してください。記録後、コミットして現在のブランチに push し、PR #153 に反映してください。まだセルフレビューのチェック変更やマージは行わないでください。"
+**AI Response**: "PR #153（https://github.com/CHS-Training-Org/ai_training_for_chuo_system/pull/153）を gh pr create で作成。head は feature/CHS-SUZUKI-YOKO/29-csv-export、base は learner/CHS-SUZUKI-YOKO/main（dev-workflow.md の規約どおり。main 宛ではない）。通常の PR（Draft ではない）、6 コミット・52 ファイル、Closes #29。本文の『動作確認結果』には学習者が申告した確認結果（FE・BE のコマンド結果、Excel V-02 #1〜#9 すべて ○、ブラウザ確認 6 項目）を反映。セルフレビューは『フォーマット・Lint・テスト』『動作確認の手順と結果』のみチェックし、『仕様と実装の一致』『AI 生成コードを自分で読み説明できる状態』は未チェックのまま（学習者が判断する項目）。api-spec.md の Content-Type の空白の有無（`text/csv; charset=UTF-8` と実応答の `text/csv;charset=UTF-8`）は、学習者の判断で今回は修正しない。CI の結果: CI Backend pass（1m44s）、CI Frontend pass（1m10s）、build（Docs Check）pass（1m30s）。mergeStateStatus は CLEAN、mergeable は MERGEABLE、reviewDecision は空（レビューは必須ではない）。セルフレビューのチェック変更とマージは行っていない。"
+**Context**: Operations（CI 品質ゲート相当）。CI は成功。残りは学習者によるセルフレビューの未チェック項目の確認とセルフマージ。
+
+---
