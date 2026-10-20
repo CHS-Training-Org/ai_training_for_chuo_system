@@ -86,4 +86,4 @@ timestamp: 2026-10-16
 - **Lifecycle Phase**: OPERATIONS
 - **Current Stage**: Operations（CI 品質ゲート。ユニット: csv-export）
 - **Next Stage**: なし（PR のセルフレビュー・マージで完了）
-- **Status**: PR #153（base: `learner/CHS-SUZUKI-YOKO/main`）を作成済み。CI 3 件は成功済み。セルフレビューを踏まえ、仕様書（件数上限・ファイル名のタイムゾーン・シートの背景・選択課題カタログ・リンク表記・FE 中継の仕様）を修正し、コミット・push 済み。残りは、学習者によるセルフレビューの未チェック項目（仕様と実装の一致、AI 生成コードの理解）の確認、セルフマージ
+- **Status**: PR #153（base: `learner/CHS-SUZUKI-YOKO/main`）。CI 成功済み。AI レビュー ラウンド 1: 観点 1・2 は OK、観点 3 は学習者が回答を投稿済み。再レビュー前に、要件 ID の重複（シートの RPT-01〜05 と requirements.md の RPT-01〜09）を requirements.md 側を CSV-01〜09 にして解消。残りは、再レビュー（`@claude pr-review`）で総合判定を確定し、「完了」になったらセルフマージ

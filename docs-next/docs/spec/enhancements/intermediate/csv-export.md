@@ -54,7 +54,7 @@ BookFlow の予約データは画面上では閲覧できますが、Excel 等�
 - 更新が必要な spec：
   - `api-spec.md`：§帳票（新セクション）として `GET /api/reports/reservations/csv` を追記
   - `screen-spec.md` §帳票：新規画面 `/admin/reports`（帳票出力）の UI 要素を追記
-  - `requirements.md` §帳票：UC-09 と機能要件（RPT-01〜09）、権限マトリクス・画面アクセス権限を追記
+  - `requirements.md` §帳票：UC-09 と機能要件（CSV-01〜09）、権限マトリクス・画面アクセス権限を追記
 
 ## AI 活用ポイント
 

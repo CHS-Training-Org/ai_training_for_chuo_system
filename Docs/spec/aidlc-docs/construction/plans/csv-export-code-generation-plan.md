@@ -5,7 +5,7 @@
 ## ユニットコンテキスト
 
 - **対象**: Issue #29「CSV 帳票出力」。ADMIN が予約一覧を CSV（UTF-8 BOM 付き）でダウンロードできるようにする。
-- **ストーリー**: User Stories は SKIP（単一ペルソナ ADMIN）。トレーサビリティは要件 ID（FR-01〜18 / NFR-01〜07）と、仕様書の UC-09（RPT-01〜09）で取る。
+- **ストーリー**: User Stories は SKIP（単一ペルソナ ADMIN）。トレーサビリティは要件 ID（FR-01〜18 / NFR-01〜07）と、仕様書の UC-09（CSV-01〜09）で取る。
 - **依存**: 単一ユニット。Spec Integration は完了済み（`docs-next/docs/spec/` に UC-09・API・画面を反映済み）。コードは仕様に合わせる。
 - **契約**: `GET /api/reports/reservations/csv`（`status` 複数可 / `from` / `to`、すべて任意）。仕様は `api-spec.md` §帳票。
 - **所有エンティティ**: `Reservation`（読み取りのみ）。スキーマ変更・Flyway マイグレーションなし。

@@ -627,3 +627,11 @@ timestamp: 2026-08-29
 **Context**: Operations。前回の監査ログに記録した『enhancement-catalog.md に利用実績が残っている（未変更）』の件を解消。
 
 ---
+
+## Operations — AI レビュー観点 3 への回答投稿と、要件 ID の重複の解消
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**User Input**: "問1：C … 問2：B … 問3：A … 問4：D …"（観点 3 の回答。理由つき）／"要件IDの重複は、再レビュー前に解消したいです。ビジネス要求シート側の既存IDは変更せず、requirements.md 側の要件IDが重複しないように整理してください。関連する参照箇所も合わせて更新してください。変更後、影響範囲を確認し、必要なビルド・テストを実施してください。その後コミット・pushしてPR #153に反映してください。まだ @claude pr-review の再実行とマージは行わないでください。"
+**AI Response**: "(1) 学習者の観点 3 の回答（1-C・2-B・3-A・4-D。理由は学習者の文面のまま、形式のみ『問番号-選択肢。理由は…』に整形）を PR #153 の会話コメントとして投稿（issuecomment-6291251380）。@claude を含めておらず、AI レビューのワークフローは skipped。(2) AI レビュー観点 1 の補足（シートの RPT-01〜05 と requirements.md の RPT-01〜09 が同じ番号で中身が異なる）を解消するため、docs-next/docs/spec/requirements.md §帳票の機能要件 ID を RPT-01〜09 から CSV-01〜09 に変更（新しい領域接頭辞。既存の AUTH-/RES-/RSV-/APRV-/USER-/DEPT-/DASH- とも重複しない）。ビジネス要求シートの要件表（RPT-01〜05）は変更しない。requirements.md に、シートとの対応（RPT-01→CSV-01、RPT-02→CSV-02、RPT-03→CSV-04、RPT-04→CSV-07、RPT-05→CSV-08。CSV-03 はシートの受入条件、CSV-05・06・09 はシートにない詳細）の注記を追加。参照箇所として、csv-export.md の影響範囲の『機能要件（RPT-01〜09）』と、csv-export-code-generation-plan.md の『仕様書の UC-09（RPT-01〜09）』を CSV-01〜09 に更新。影響範囲の確認: リポジトリ全体の RPT の出現を調べ、コード（backend / frontend）に出現なし、PR 本文にも記載なし。AI-DLC の inception 成果物（requirements.md・requirement-verification-questions.md）の RPT-01〜05 はシートの ID を指すため変更なし。この監査ログ内の過去の記録（RPT-01〜09 と書かれた 2 件）は追記専用のため書き換えていない（当時の名称。現在は CSV-01〜09）。ビルド: docs-next の npm run build は成功。コードの変更はなく、BE・FE のテストは対象外。再レビュー（@claude pr-review）とマージは行っていない。"
+**Context**: Operations。AI レビュー ラウンド 1 は観点 1・2 が OK、観点 3 が回答済み（再レビュー待ち）。
+
+---
