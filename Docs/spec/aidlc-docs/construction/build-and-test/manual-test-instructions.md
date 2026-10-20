@@ -15,6 +15,8 @@
 
 サンプル: `Docs/spec/aidlc-docs/construction/build-and-test/csv-export-excel-sample.csv`（実 PostgreSQL 上のエッジケース 9 件を、実 BE の `GET /api/reports/reservations/csv` で出力したもの。ダミーデータのみ）
 
+> **注意**：このファイルは、アプリの実出力と同じ改行（行末は CRLF、セル内の改行は LF）を保つため、`.gitattributes` で改行の正規化の対象外（`-text`）にしている。エディタや Git の設定で LF に変換して保存し直さないこと。
+
 1. Windows の Excel で、サンプルをダブルクリックして開く（「データ → テキストまたは CSV から」ではなく、**ダブルクリック**。BOM による文字コード判定を確かめるため）
 2. 次を確認し、結果欄に ○ / × を記入する。
 

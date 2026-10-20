@@ -595,3 +595,11 @@ timestamp: 2026-08-29
 **Context**: Operations。次: push 後に PR 作成の確認、CI の結果確認。
 
 ---
+
+## Operations — サンプル CSV の改行コードの修正
+**Timestamp**: 2026-10-20T00:00:00+00:00
+**User Input**: "対応案1でお願いします。サンプルCSVが実際のアプリ出力と同じCRLFを保持するように修正してください。修正後、必要な確認を行ってからPR作成に進めてください。"
+**AI Response**: "コミット済みの csv-export-excel-sample.csv は、.gitattributes の『* text=auto eol=lf』により行末が LF に正規化されていた（作業ツリーは CRLF 10 個・セル内 LF 1 個）。.gitattributes に当該ファイルだけ『-text』を追加し、git add --renormalize で再ステージして、blob が作業ツリーと一致（CR=10・LF=11）することを確認。手順書にも注意書きを追加。V-02 の Excel 確認は CRLF のファイルで実施されており、結果は有効。コミット・push 後、PR 作成前の確認（クローン直後の改行の保持、CI 相当コマンドの再実行）を行う。"
+**Context**: Operations。次: 確認のうえ create-pr。
+
+---
