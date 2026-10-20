@@ -1,7 +1,7 @@
 ---
 sidebar_position: 4
 title: CSV 帳票出力
-description: 予約一覧・利用実績を CSV 形式でエクスポートするエンハンス課題のビジネス要求シート
+description: 予約一覧を CSV 形式でエクスポートするエンハンス課題のビジネス要求シート
 tags:
   - spec
   - enhancement
@@ -21,7 +21,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 BookFlow の予約データは画面上では閲覧できますが、Excel 等への転記や社内報告への利用には CSV 形式でのエクスポートが求められます。現在 `GET /api/reservations` はページネーション付き JSON のみを返し、CSV ダウンロード機能は存在しません。
 
-管理者が予約一覧・利用実績を CSV でダウンロードできる機能を追加することで、外部ツールとの連携を容易にします。これはユースケース UC-07（CSV・帳票出力）の実装にあたります。
+管理者が予約一覧を CSV でダウンロードできる機能を追加することで、外部ツールとの連携を容易にします。今回の対象は予約一覧のみです。これはユースケース [UC-09](../../requirements.md#uc-09)（管理者が予約を CSV でエクスポートする）の実装にあたります。
 
 ## 依存関係
 
@@ -52,8 +52,9 @@ BookFlow の予約データは画面上では閲覧できますが、Excel 等�
 - 推定工数：半日〜1日
 - 対象レイヤー：両方
 - 更新が必要な spec：
-  - `api-spec.md`：§帳票出力（新セクション）として `GET /api/reports/reservations/csv` を追記
-  - `screen-spec.md` §`/admin/resources` または管理者向けページ：CSV ダウンロードボタンの UI 要素を追記
+  - `api-spec.md`：§帳票（新セクション）として `GET /api/reports/reservations/csv` を追記
+  - `screen-spec.md` §帳票：新規画面 `/admin/reports`（帳票出力）の UI 要素を追記
+  - `requirements.md` §帳票：UC-09 と機能要件（CSV-01〜09）、権限マトリクス・画面アクセス権限を追記
 
 ## AI 活用ポイント
 

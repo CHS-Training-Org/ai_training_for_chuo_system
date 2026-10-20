@@ -916,3 +916,115 @@ Authorization: Bearer <JWT>
 ### ダッシュボード情報取得シーケンス図
 
 ![ダッシュボード情報取得シーケンス図](/diagrams/spec/api-spec-dashboard.drawio.svg)
+
+
+---
+
+## §帳票
+
+### `GET /api/reports/reservations/csv`（予約一覧の CSV ダウンロード、ADMIN） {#get-api-reports-reservations-csv}
+
+#### リクエスト
+
+```http
+GET /api/reports/reservations/csv?status=PENDING&status=APPROVED&from=2026-10-01T00:00:00&to=2026-11-01T00:00:00
+Authorization: Bearer <JWT>
+```
+
+**権限**：ADMIN のみ。MEMBER / APPROVER は `403 Forbidden`、未認証は `401 Unauthorized`。
+
+#### クエリパラメータ
+
+| パラメータ | 型 | 必須 | 説明 |
+|------------|-----|------|------|
+| `status` | string（複数指定可） | ❌ | `DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED` で絞り込む（`?status=PENDING&status=APPROVED`）。未指定は全ステータス |
+| `from` | TIMESTAMP | ❌ | 出力対象の開始日時。`start_at` が `from` 以上の予約を対象にする |
+| `to` | TIMESTAMP | ❌ | 出力対象の終了日時。`start_at` が `to` 未満の予約を対象にする（`to` ちょうどは含まない） |
+
+> `status` / `from` / `to` は AND 条件で組み合わせる。`from` / `to` は片方のみの指定も許可し、未指定の側は無制限とする。日時の形式は [§共通 日時フォーマット](#datetime-format) に従う。
+
+#### レスポンス（200 OK）
+
+```http
+HTTP/1.1 200 OK
+Content-Type: text/csv; charset=UTF-8
+Content-Disposition: attachment; filename="reservations_20261014_153000.csv"
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+```
+
+本文は `StreamingResponseBody` による逐次書き出しで、件数による明示的な上限は設けない。ただし応答全体の所要時間には上限があり、大量件数では途中で終了する可能性がある（下の「出力件数と所要時間」を参照）。
+
+`Cache-Control: no-store` は個人情報を含む応答をキャッシュさせないための指定で、BE が明示的に付ける。`X-Content-Type-Options: nosniff` は MIME スニッフィングを禁止する指定で、BE では Spring Security の既定のヘッダとして付与される。
+
+ファイル名の日時（`yyyyMMdd_HHmmss`）は、サーバーの現在時刻をサーバーのタイムゾーンで表したものである。現在の実行環境（DevContainer）のタイムゾーンは UTC のため、日本時間とは 9 時間ずれる。JST への固定は行っていない（ファイル名の日時は利用者が見る表示用で、CSV の中身の日時には影響しない）。
+
+```csv
+予約ID,リソース名,申請者名,開始日時,終了日時,利用目的,ステータス
+550e8400-e29b-41d4-a716-446655440100,第1会議室,山田 太郎,2026-10-20 10:00,2026-10-20 11:00,"A,B 会議",承認済み
+```
+
+**CSV の書式**
+
+| 項目 | 内容 |
+|------|------|
+| 文字コード・改行 | UTF-8（先頭に BOM `EF BB BF`）、改行は CRLF |
+| 列 | 予約ID, リソース名, 申請者名, 開始日時, 終了日時, 利用目的, ステータスの 7 列。ヘッダ行 1 行 + 予約 1 件につき 1 行 |
+| 日時列 | `yyyy-MM-dd HH:mm`（秒なし。タイムゾーン変換なし、DB の値のまま） |
+| ステータス列 | 日本語ラベル。`DRAFT`=ドラフト、`PENDING`=承認待ち、`APPROVED`=承認済み、`REJECTED`=却下、`CANCELLED`=キャンセル済み（フロントエンドの `RESERVATION_STATUS_LABELS` と同一表記） |
+| 出力順 | `start_at` 昇順、同一なら `id` 昇順 |
+| エスケープ | RFC 4180 に従う。カンマ・改行（CR / LF）・`"` を含む値は `"` で囲み、値中の `"` は `""` にする |
+| 数式注入対策 | リソース名・申請者名・利用目的の値が `=` `+` `-` `@`・タブ・CR で始まる場合は先頭に `'` を付ける。この無害化は RFC 4180 のエスケープより先に行う |
+| 該当なし | ヘッダ行のみの CSV（BOM 付き）を返す。エラーにはしない |
+
+#### 出力件数と所要時間 {#csv-export-limit}
+
+件数による明示的な上限は設けない。一方、非同期の応答全体には `spring.mvc.async.request-timeout`（`application.yml`。**300 秒**）が適用され、書き出しがこの時間内に終わらない場合は、その時点で CSV が途中で終了する。
+
+実測（ローカルの検証環境・実 PostgreSQL・BE 1 台）では、約 2 万件が約 3〜4.5 秒、約 30 万件が約 300 秒だった。約 30 万件は検証環境での実測値であり、固定の上限ではない。所要時間は件数・データ・環境によって変わり、件数が増えるほど 1 件あたりの時間が長くなる傾向が見られた。
+
+> **注意**：認可（401 / 403）とパラメータ検証（400）は書き出しの開始前に完了する。書き出し開始後は HTTP ステータスを変更できないため、DB エラーやクライアント切断などの失敗では CSV が途中で切れる。
+
+#### エラー
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| 400 | `VALIDATION_ERROR` | `from` と `to` が両方指定され `from` が `to` 以上、日時の形式が不正、`status` が列挙値以外 |
+| 401 | `UNAUTHORIZED` | JWT 未設定・不正・期限切れ |
+| 403 | `FORBIDDEN` | ADMIN 以外のロール |
+
+エラー時は書き出しが始まる前なので、[§共通 共通エラーレスポンス](#common-error) の JSON 形式で返す。
+
+#### ブラウザからのダウンロード（FE の Route Handler による中継）
+
+ブラウザは BE を直接呼ばず、FE（Next.js）の同じパス `GET /api/reports/reservations/csv` を呼ぶ。この Route Handler が、サーバー側でセッションの JWT を付与して BE の同名 API へ中継する（JWT をブラウザに渡さない）。画面からの呼び出しは [帳票出力画面の仕様](./screen-spec.md) を参照。
+
+**BE への転送**
+
+| 項目 | 内容 |
+|------|------|
+| `status` | 複数指定をそのまま転送する。空文字は送らない |
+| `from` / `to` | 空欄は送らない。`datetime-local` の 16 桁（`2026-10-01T09:00`）には秒（`:00`）を補う |
+| 認証 | `Authorization: Bearer <JWT>` を付与する。JWT が無いときは BE を呼ばない |
+
+**成功時（BE が 200）**: BE の本文をストリーミングのまま返し、`Content-Type` と `Content-Disposition` を引き継ぐ。応答には次のヘッダを FE が明示的に付ける。
+
+| ヘッダ | 値 | 目的 |
+|--------|-----|------|
+| `Cache-Control` | `no-store` | 個人情報を含む応答をキャッシュさせない |
+| `X-Content-Type-Options` | `nosniff` | MIME スニッフィングを禁止する |
+
+**失敗時**: CSV を返さず、`303 See Other` で `/admin/reports?error=<code>` へ戻す。`Location` は相対パスにする（開発サーバーの待ち受けアドレスなど、内部のホスト名をブラウザに渡さないため）。`<code>` は次のとおり決める。
+
+| 状況 | `<code>` |
+|------|----------|
+| JWT が無い（BE を呼ばない） | `UNAUTHORIZED` |
+| BE が 4xx / 5xx を返し、本文が JSON で `code` が `A-Z`・`0-9`・`_` の 1〜64 文字 | BE の `code`（例: `VALIDATION_ERROR`・`FORBIDDEN`） |
+| BE が 4xx / 5xx を返し、本文が JSON でない、または `code` が上の形式でない | `HTTP_<ステータス>`（例: `HTTP_502`） |
+| BE に接続できない | `INTERNAL_SERVER_ERROR` |
+
+画面は、`<code>` のうち許可リストにある値（`VALIDATION_ERROR` / `UNAUTHORIZED` / `FORBIDDEN` / `INTERNAL_SERVER_ERROR`）だけを定型の日本語の警告にし、それ以外は汎用メッセージにする（[帳票出力画面の仕様](./screen-spec.md) のエラー警告を参照）。
+
+#### 実行記録（ログ）
+
+完了時に INFO（`event=csv_export_completed`）、未完了時に WARN（`event=csv_export_aborted`、`failureType` を付与）の構造化ログを 1 行出す。項目は `userId`・`statuses`・`from`・`to`・`rowCount`・`elapsedMs`。氏名・メール・利用目的など CSV の内容はログに出さない。

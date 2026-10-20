@@ -1,13 +1,16 @@
 package com.example.bookflow.domain;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 予約リポジトリ。
@@ -108,4 +111,40 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
       countQuery = "SELECT count(r) FROM Reservation r WHERE r.status IN :statuses")
   Page<Reservation> findByStatusInFetch(
       @Param("statuses") Collection<ReservationStatus> statuses, Pageable pageable);
+
+  // ---------------------------------------------------------------------------
+  // CSV 帳票出力（GET /api/reports/reservations/csv）
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 帳票出力用に、条件に合う予約を {@code start_at} 昇順・{@code id} 昇順の {@link Slice} で返す。
+   *
+   * <p>{@code from} は {@code start_at} が以上、{@code to} は未満（どちらも null で無制限）。1
+   * ページの読み出しごとに短い読み取り専用トランザクションを開閉する （呼び出し側の Service は {@code @Transactional} を持たない）。{@code
+   * resource} / {@code requester} は {@code JOIN FETCH} で読むため、トランザクション終了後に参照しても遅延読み込みは発生しない。
+   *
+   * @param statuses 対象ステータス群（空でないこと。未指定の正規化は呼び出し側の責務）
+   * @param from 期間の開始（null の場合は下限なし）
+   * @param to 期間の終了（排他的。null の場合は上限なし）
+   * @param pageable ページ指定（ソートは JPQL 側で固定のため指定しない）
+   * @return 予約スライス
+   */
+  // CAST(:from AS LocalDateTime) が必須：PostgreSQL は null のバインド変数の型を推論できない
+  // （#76 の教訓。H2 では再現しないため、実 PostgreSQL での検証が Build and Test に必要）。
+  @Transactional(readOnly = true)
+  @Query(
+      """
+      SELECT r FROM Reservation r
+        JOIN FETCH r.resource
+        JOIN FETCH r.requester
+      WHERE r.status IN :statuses
+        AND (CAST(:from AS LocalDateTime) IS NULL OR r.startAt >= :from)
+        AND (CAST(:to AS LocalDateTime) IS NULL OR r.startAt < :to)
+      ORDER BY r.startAt ASC, r.id ASC
+      """)
+  Slice<Reservation> findForReport(
+      @Param("statuses") Collection<ReservationStatus> statuses,
+      @Param("from") LocalDateTime from,
+      @Param("to") LocalDateTime to,
+      Pageable pageable);
 }

@@ -1,46 +1,70 @@
-# Integration Test Instructions — resource-list-filter
+# Integration Test Instructions — csv-export
 
 ## Purpose
 
-`ResourceControllerTest`（MockMvc + H2）は結合テストとして自動実行されるが、H2 は PostgreSQL と方言が異なるため、本番相当の PostgreSQL に対する手動検証を別途行う。本タスクではこの手動検証で**実際に重大な不具合を発見・修正した**（下記「発見した問題」参照）。
+`ReportControllerTest`（MockMvc + H2）は結合テストとして自動実行されるが、H2 と PostgreSQL は方言と型推論が異なる。前ユニット（#76）では、H2 で全 pass していたクエリが PostgreSQL で 500 になった。本ユニットも任意パラメータ（`from` / `to`）を持つクエリを追加したため、**実 PostgreSQL・実 BE・実 FE を通した手動確認**を行った（V-01）。
+
+## Setup Integration Test Environment
+
+```bash
+docker compose -f .devcontainer/docker-compose.yml up -d
+# BE（実 PostgreSQL に接続）
+cd backend && DB_URL=jdbc:postgresql://postgres:5432/bookflow DB_USERNAME=bookflow DB_PASSWORD=bookflow \
+  COGNITO_JWKS_URI=http://cognito-local:9229/local_user_pool_id/.well-known/jwks.json ./gradlew bootRun
+# FE（別ターミナル）
+cd frontend && pnpm dev
+# JWT（ロール別）
+bash scripts/provision-cognito.sh --jwt taro.kanri@example.com      # ADMIN
+bash scripts/provision-cognito.sh --jwt hanako.tanaka@example.com   # MEMBER
+bash scripts/provision-cognito.sh --jwt ichiro.suzuki@example.com   # APPROVER
+```
+
+FE の Route Handler は、開発専用ログインの cookie `dev-id-token=<JWT>` を付けて `curl` で確認できる（ブラウザのサインインはローカルでは動作しないため。`CLAUDE.md` 参照）。
 
 ## Test Scenarios
 
-### Scenario 1: frontend → backend → PostgreSQL の疎通確認
+### Scenario 1（V-01）: 条件の全組み合わせを実 PostgreSQL で実行する
 
-- **Description**: `ResourceFilterForm` から送信される `keyword` パラメータが、実際の PostgreSQL 上で正しく動作するか
-- **Setup**: `.devcontainer/docker-compose.yml` の `postgres`/`cognito-local` コンテナが起動済みであること
-- **Test Steps**:
-  1. `cd backend && DB_URL=jdbc:postgresql://postgres:5432/bookflow DB_USERNAME=bookflow DB_PASSWORD=bookflow COGNITO_JWKS_URI=http://cognito-local:9229/local_user_pool_id/.well-known/jwks.json ./gradlew bootRun`
-  2. JWT 取得：`bash scripts/provision-cognito.sh --jwt hanako.tanaka@example.com`（事前に `bash scripts/provision-cognito.sh` でプロビジョニング済みであること）
-  3. `curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/api/resources?keyword=<キーワード>"`
-- **Expected Results**: `200 OK` で `keyword` に一致するリソースのみ返る
-- **Cleanup**: `bootRun` プロセスを終了する
+- **Test Steps**: `curl -H "Authorization: Bearer $ADMIN" -G http://localhost:8080/api/reports/reservations/csv` に、`from` / `to` / `status` の未指定・単独・組み合わせを付けて実行する
+- **Expected Results**: すべて `200`。null バインド変数の型推論エラー（`function lower(bytea)` 型のエラー）が出ない
 
-### Scenario 2: 大文字小文字非区別・ワイルドカードエスケープの実地確認
-
-- **Test Steps**: `keyword=4k`（小文字）で `description` に `4K`（大文字）を含むリソースがヒットするか、`keyword=%` がリテラル扱いされ0件になるかを確認
-- **Expected Results**: 両方とも期待どおり（下記「実測結果」参照）
-
-## 実測結果（本タスクで実行済み）
-
-| ケース | 結果 |
+| ケース | 結果（実測） |
 |---|---|
-| `keyword` 未指定（回帰確認） | `200 OK`、全件返る |
-| `keyword=会議室` | `200 OK`、「第1会議室」のみヒット |
-| `keyword=プロジェクター` | `200 OK`、名称・説明の両方にヒットする2件を返す |
-| `keyword=4k`（小文字、説明中の`4K`に一致） | `200 OK`、大文字小文字非区別で1件ヒット |
-| `keyword=%` | `200 OK`、0件（リテラルエスケープが機能） |
-| `keyword=会議室&category=EQUIPMENT` | `200 OK`、0件（AND条件が機能） |
-| `keyword=`（空文字列） | `200 OK`、全件返る（条件解除） |
-| `keyword` が101文字 | `400 VALIDATION_ERROR` |
+| 条件なし | 200 |
+| `from` のみ / `to` のみ / `from`+`to` | 200 / 200 / 200 |
+| `status` 単一 / 複数 | 200 / 200 |
+| `status`+`from` / `status`+`to` / 全指定 | 200 / 200 / 200 |
+| 該当なし（2080 年） | 200、ヘッダ行のみ |
+| MEMBER / APPROVER | 403 / 403 |
+| 未認証 | 401 |
+| `from` >= `to` / 不正な日時 / 不正な `status` | 400 / 400 / 400（`VALIDATION_ERROR`） |
 
-## 発見した問題と修正（重要）
+→ **`CAST(:from AS LocalDateTime)` 方式は H2・PostgreSQL の両方で通る。番兵値方式への切り替えは不要。**
 
-**症状**: `keyword` 未指定時（`GET /api/resources` をパラメータなしで呼ぶ最も基本的なケース）に、PostgreSQL 環境でのみ `500 Internal Server Error` が発生した。H2 を使う `ResourceControllerTest`・`ResourceServiceTest` はすべて pass していたため、自動テストでは検出できなかった。
+### Scenario 2: FE（Route Handler とページ）→ BE → 実 PostgreSQL
 
-**原因**: JPQL の `:keyword IS NULL OR LOWER(...) LIKE LOWER(CONCAT('%', :keyword, '%'))` というパターンで、`keyword` が `null` のとき、PostgreSQL の JDBC ドライバがバインド変数の型を正しく推論できず `function lower(bytea) does not exist` エラーを送出していた（H2 はこの型推論に寛容なため再現しない）。
+| ケース | 結果（実測） |
+|---|---|
+| ADMIN で `/api/reports/reservations/csv?status=...&from=2026-06-01T00:00&to=...`（16 桁） | 200。BOM あり、`Content-Disposition`・`Content-Type` を中継、`Cache-Control: no-store`・`X-Content-Type-Options: nosniff` を付与、秒の補完が効いて BE が受理 |
+| MEMBER | 303 → `/admin/reports?error=FORBIDDEN` |
+| ADMIN で `from` >= `to` | 303 → `?error=VALIDATION_ERROR` |
+| Cookie なし | 303 → `?error=UNAUTHORIZED` |
+| `/admin/reports`（ADMIN） | 200。フォーム・入力欄・5 ステータスのチェックボックス・ボタンが描画される |
+| `/admin/reports?error=FORBIDDEN` | 定型の日本語警告を表示 |
+| `/admin/reports?error=<script>alert(1)</script>` | 汎用メッセージを表示。`<script>` は描画されない（Next.js の内部ペイロードに `<` でエスケープされて現れるのみで、実行されない） |
+| `/admin/reports`（MEMBER） | 403 画面（`admin/layout.tsx`） |
 
-**修正**: `ResourceRepository.search(...)` の JPQL で `CAST(:keyword AS string)` を明示することで、PostgreSQL に対してバインド変数の型を明確に伝え、解消した（修正後は H2・PostgreSQL 両方で全ケース pass を確認済み）。
+## 発見した問題と修正
 
-**教訓**: 「結合テストは H2、本番は PostgreSQL」という環境差異（Requirements Analysis の確認質問で既に認識されていた論点）は、`LIKE`/`LOWER` の構文レベルだけでなく、**bind パラメータの型推論**という見えにくい層でも顕在化しうる。null 許容パラメータを含む JPQL を新規に書いた場合は、H2 だけでなく実際の PostgreSQL に対する手動確認を省略しないこと。
+**症状**: 実機確認で、303 リダイレクトの `Location` が `http://0.0.0.0:3000/admin/reports?error=...` になっていた。単体テスト（絶対 URL を `new URL()` で読むだけ）は pass していた。
+
+**原因**: `Response.redirect(new URL(path, request.url))` が `request.url` の origin（開発サーバーの待ち受けアドレス `0.0.0.0`）をそのまま使っていた。ブラウザでは `0.0.0.0` に遷移できない環境があり、本番でもリバースプロキシ配下では内部ホストが露出する。
+
+**修正**: `Location` を相対パス（`/admin/reports?error=<code>`）にした（RFC 9110 で許可。ブラウザが現在のオリジンで解決する）。単体テストに「Location が `/admin/reports?` で始まる相対パスであること」の検証を追加し、実機で再確認した。
+
+## Cleanup
+
+```bash
+# bootRun / pnpm dev を終了する
+# テスト用に投入した予約データは削除済み（seed の 2 件のみが残る状態に戻した）
+```

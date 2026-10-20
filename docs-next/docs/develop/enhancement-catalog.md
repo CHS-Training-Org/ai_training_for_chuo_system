@@ -80,7 +80,7 @@ last_updated: '2026-09-04T00:00:00+09:00'
 | [繰り返し予約](../spec/enhancements/intermediate/recurring-reservation.md) | 毎週・毎月のパターンを指定して一括予約できる機能を実装する（UI・API・DB スキーマ拡張） | 1〜2日 | 両方 |
 | [カレンダービュー](../spec/enhancements/intermediate/calendar-view.md) | リソースの予約状況を週・月単位のカレンダー形式で閲覧できる画面を実装する（既存の空き確認 API を活用） | 半日〜1日 | frontend |
 | [利用実績の集計・グラフ表示](../spec/enhancements/intermediate/usage-statistics.md) | リソースごとの利用率・稼働時間を集計し、管理者が確認できるグラフ付きレポート画面を実装する | 半日〜1日 | 両方 |
-| [CSV 帳票出力](../spec/enhancements/intermediate/csv-export.md) | 予約一覧・利用実績を CSV 形式でダウンロードできる機能を実装する | 半日〜1日 | 両方 |
+| [CSV 帳票出力](../spec/enhancements/intermediate/csv-export.md) | 予約一覧を CSV 形式でダウンロードできる機能を実装する | 半日〜1日 | 両方 |
 | [予約の下書き保存](../spec/enhancements/intermediate/reservation-draft.md) | 入力途中の予約申請を DRAFT（下書き）として保存し後から再編集・申請できる機能を実装する（DB スキーマの DRAFT ステータスを活用） | 半日〜1日 | 両方 |
 
 ---

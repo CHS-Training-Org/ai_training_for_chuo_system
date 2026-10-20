@@ -5,6 +5,10 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/bookflow}
     username: ${DB_USERNAME:bookflow}
     password: ${DB_PASSWORD:bookflow}
+  mvc:
+    async:
+      # CSV 帳票出力（StreamingResponseBody）全体の所要時間の上限。暫定値（Build and Test で確認）
+      request-timeout: 300s
   jpa:
     hibernate:
       ddl-auto: validate

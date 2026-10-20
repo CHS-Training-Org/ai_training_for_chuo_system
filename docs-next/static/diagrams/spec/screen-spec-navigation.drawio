@@ -45,6 +45,10 @@
         <mxCell id="11" value="/admin/users&#xa;ユーザー管理&#xa;🔒 ADMIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
           <mxGeometry x="570" y="580" width="220" height="80" as="geometry" />
         </mxCell>
+        <!-- /admin/reports 帳票出力（ADMIN） -->
+        <mxCell id="22" value="/admin/reports&#xa;帳票出力&#xa;🔒 ADMIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7C3AED;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="570" y="720" width="220" height="80" as="geometry" />
+        </mxCell>
         <!-- Edges -->
         <!-- signin → dashboard（認証成功） -->
         <mxCell id="12" value="認証成功" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;" edge="1" parent="1" source="2" target="3">
@@ -99,6 +103,15 @@
         <!-- reservationList → reservationDetail -->
         <mxCell id="21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;" edge="1" parent="1" source="5" target="8">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- dashboard → adminReports（ADMIN） -->
+        <mxCell id="23" value="ADMIN" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;fontSize=10;exitX=1;exitY=0.9;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="22">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="535" y="208" />
+              <mxPoint x="535" y="760" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

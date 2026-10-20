@@ -1,13 +1,13 @@
-# Build Instructions — resource-list-filter
+# Build Instructions — csv-export
 
 ## Prerequisites
 
-- **Build Tool**: Gradle Wrapper（backend） / pnpm（frontend）
-- **Dependencies**: `CLAUDE.md`「よく使うコマンド」参照。DevContainer 使用時は自動解決
+- **Build Tool**: Gradle Wrapper（backend） / pnpm（frontend） / npm（docs-next）
+- **Dependencies**: `CLAUDE.md`「よく使うコマンド」参照。DevContainer 使用時は自動解決。**依存ライブラリは追加していない**（`build.gradle.kts` / `package.json` は未変更）
 - **Environment Variables**:
-  - backend: `DB_URL` / `DB_USERNAME` / `DB_PASSWORD`（デフォルトは `.devcontainer/docker-compose.yml` の `postgres` サービス）、`COGNITO_JWKS_URI`
-  - frontend: `frontend/.env.local`（`cp frontend/.env.local.example frontend/.env.local` 後に `COGNITO_USER_POOL_ID`/`COGNITO_CLIENT_ID` を設定）
-- **System Requirements**: Java 25（Gradle toolchain が自動解決）、Node.js（pnpm 経由）
+  - backend: `DB_URL` / `DB_USERNAME` / `DB_PASSWORD`（既定は `.devcontainer/docker-compose.yml` の `postgres`）、`COGNITO_JWKS_URI`
+  - frontend: `frontend/.env.local`（`BACKEND_URL` を Route Handler が使う。未設定時は `http://localhost:8080`）
+- **System Requirements**: Java 25（Gradle toolchain が自動解決）、Node.js 24
 
 ## Build Steps
 
@@ -16,8 +16,6 @@
 ```bash
 cd frontend && pnpm install
 ```
-
-backend は Gradle wrapper が依存関係を自動解決する（追加コマンド不要）。
 
 ### 2. Configure Environment
 
@@ -28,24 +26,27 @@ docker compose -f .devcontainer/docker-compose.yml up -d
 ### 3. Build All Units
 
 ```bash
-cd backend && ./gradlew build
+cd backend && ./gradlew build        # テスト・spotlessCheck・checkstyle を含む
 cd frontend && pnpm build
+cd docs-next && npm run build        # 仕様書のリンク・アンカー検証
 ```
 
 ### 4. Verify Build Success
 
-- **Expected Output**: 両コマンドとも `BUILD SUCCESSFUL` / Next.js のビルド成功メッセージ
-- **Build Artifacts**: `backend/build/libs/*.jar`、`frontend/.next/`
-- **Common Warnings**: `ReservationRepository` の Checkstyle `MethodName` 警告2件（本タスク以前から存在、JPA の `_` 区切りプロパティ参照記法によるもので無害）
+- **Expected Output**: `BUILD SUCCESSFUL` / Next.js のビルド成功。`pnpm build` のルート一覧に `ƒ /admin/reports` と `ƒ /api/reports/reservations/csv` が出る
+- **Build Artifacts**: `backend/build/libs/bookflow-0.0.1-SNAPSHOT.jar`、`frontend/.next/`、`docs-next/build/`
+- **Common Warnings**:
+  - Checkstyle `MethodName`（テストメソッド名のアンダースコア。ADR-018 の命名規約による既存の警告）
+  - `docs-next` の `drawio.svg` の画像サイズ取得警告（既存。今回の変更とは無関係）
 
 ## Troubleshooting
 
-### Build Fails with Dependency Errors
+### `./gradlew test` で `ReportControllerTest` が失敗する
 
-- **Cause**: Gradle/pnpm のキャッシュ不整合
-- **Solution**: `./gradlew clean build` / `pnpm install --force`
+- **Cause**: 結合テストは H2 のインメモリ DB を共有する。他のテストが同じ ID のデータを残すと衝突する
+- **Solution**: `ReportControllerTest` は `2000...` 系の固定 ID と 2090 年台の日時を使い、`@AfterEach` で削除している。新しい結合テストを足すときは、ID と日時が既存と重ならないようにする
 
-### Build Fails with Compilation Errors
+### 開発サーバーを止めるときに自分のシェルまで落ちる
 
-- **Cause**: `ResourceRepository`/`ResourceService`/`ResourceController` 間のメソッドシグネチャ不一致（本タスクでは `list`/`search` の引数順序変更を伴うため）
-- **Solution**: `ResourceController.list()` → `ResourceService.list()` → `ResourceRepository.search()` の呼び出しチェーンで引数の型・順序を確認する
+- **Cause**: `kill` の対象を `cmdline` の部分一致で選ぶと、そのコマンド文字列自体を持つシェルも一致する
+- **Solution**: PID を先に特定し、`comm`（`java` / `node`）で絞ってから個別に止める

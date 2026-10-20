@@ -7,3 +7,7 @@
 
 # 明示的にバイナリ指定（誤変換防止の保険）
 *.jar binary
+
+# Excel 確認用のサンプル CSV は、アプリの実出力（行末 CRLF・セル内の改行は LF）をそのまま保持する。
+# LF に正規化されると、実出力と一致しなくなる。
+Docs/spec/aidlc-docs/construction/build-and-test/csv-export-excel-sample.csv -text
