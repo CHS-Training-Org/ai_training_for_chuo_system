@@ -9,6 +9,7 @@ import { PaginationNav } from "@/components/ui/pagination-nav";
 import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 interface SearchParams {
+  keyword?: string;
   category?: string;
   from?: string;
   to?: string;
@@ -18,7 +19,7 @@ interface SearchParams {
 /**
  * リソース一覧画面（screen-spec.md §リソース /resources 準拠）。
  *
- * カテゴリフィルタ・空き確認フォーム（from/to）・リソースカードリストを表示する。
+ * キーワード検索・カテゴリフィルタ・空き確認フォーム（from/to）・リソースカードリストを表示する。
  * ADMIN は is_active=false のリソースもグレーアウト表示する（BE 側でロール判定）。
  */
 export default async function ResourcesPage({
@@ -31,6 +32,7 @@ export default async function ResourcesPage({
   const isAdmin = profile.role === "ADMIN";
 
   const resources = await listResourcesAction({
+    keyword: params.keyword,
     category: params.category,
     from: params.from,
     to: params.to,
@@ -55,6 +57,7 @@ export default async function ResourcesPage({
 
       {/* フィルタフォーム */}
       <ResourceFilterForm
+        defaultKeyword={params.keyword}
         defaultCategory={params.category}
         defaultFrom={params.from}
         defaultTo={params.to}
