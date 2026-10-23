@@ -1,0 +1,821 @@
+{
+  "runAt": "2026-10-23T07:28:19.158Z",
+  "runId": "mvknd2j0",
+  "specHash": "a519ed695145d940",
+  "exitCode": 0,
+  "totals": {
+    "tests": 25,
+    "passed": 25,
+    "failed": 0,
+    "byKind": {
+      "pass": 25,
+      "assert": 0,
+      "stopped": 0,
+      "setup": 0,
+      "env": 0,
+      "not_run": 0
+    }
+  },
+  "cases": {
+    "RES-LIST-TC-001": {
+      "status": "passed",
+      "title": "RES-LIST-TC-001 MEMBER でサインインしてリソース一覧を開くと、リソースの一覧が表示される",
+      "durationMs": 2789,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-001-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "サインインしたロール",
+          "value": "一般社員（MEMBER）"
+        }
+      ]
+    },
+    "RES-LIST-TC-002": {
+      "status": "passed",
+      "title": "RES-LIST-TC-002 APPROVER でサインインしてリソース一覧を開くと、リソースの一覧が表示される",
+      "durationMs": 1177,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-002-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "サインインしたロール",
+          "value": "承認者（APPROVER）"
+        }
+      ]
+    },
+    "RES-LIST-TC-003": {
+      "status": "passed",
+      "title": "RES-LIST-TC-003 ADMIN でサインインしてリソース一覧を開くと、リソースの一覧が表示される",
+      "durationMs": 1224,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-003-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "サインインしたロール",
+          "value": "管理者（ADMIN）"
+        }
+      ]
+    },
+    "RES-LIST-TC-004": {
+      "status": "passed",
+      "title": "RES-LIST-TC-004 リソース一覧を開くと、リソースのカードに名称・カテゴリ・場所・定員・承認フロー要否が表示される",
+      "durationMs": 1135,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-004-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-01）の名称",
+          "value": "第1会議室"
+        },
+        {
+          "label": "リソース（RES-LIST-D-01）のカテゴリ",
+          "value": "会議室"
+        },
+        {
+          "label": "リソース（RES-LIST-D-01）の場所",
+          "value": "3階 東"
+        },
+        {
+          "label": "リソース（RES-LIST-D-01）の定員",
+          "value": "10"
+        },
+        {
+          "label": "リソース（RES-LIST-D-01）の承認フロー要否",
+          "value": "要承認"
+        }
+      ]
+    },
+    "RES-LIST-TC-005": {
+      "status": "passed",
+      "title": "RES-LIST-TC-005 カテゴリで「会議室」を選ぶと、会議室のリソースだけが表示される",
+      "durationMs": 1638,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-005-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-02・会議室）",
+          "value": "第1会議室"
+        },
+        {
+          "label": "リソース（RES-LIST-D-03・備品）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "リソース（RES-LIST-D-04・社用車）",
+          "value": "社用車A"
+        },
+        {
+          "label": "カテゴリフィルター",
+          "value": "会議室"
+        }
+      ]
+    },
+    "RES-LIST-TC-006": {
+      "status": "passed",
+      "title": "RES-LIST-TC-006 カテゴリで「備品」を選ぶと、備品のリソースだけが表示される",
+      "durationMs": 1683,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-006-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-02・会議室）",
+          "value": "第1会議室"
+        },
+        {
+          "label": "リソース（RES-LIST-D-03・備品）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "リソース（RES-LIST-D-04・社用車）",
+          "value": "社用車A"
+        },
+        {
+          "label": "カテゴリフィルター",
+          "value": "備品"
+        }
+      ]
+    },
+    "RES-LIST-TC-007": {
+      "status": "passed",
+      "title": "RES-LIST-TC-007 カテゴリで「社用車」を選ぶと、社用車のリソースだけが表示される",
+      "durationMs": 1566,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-007-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-02・会議室）",
+          "value": "第1会議室"
+        },
+        {
+          "label": "リソース（RES-LIST-D-03・備品）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "リソース（RES-LIST-D-04・社用車）",
+          "value": "社用車A"
+        },
+        {
+          "label": "カテゴリフィルター",
+          "value": "社用車"
+        }
+      ]
+    },
+    "RES-LIST-TC-008": {
+      "status": "passed",
+      "title": "RES-LIST-TC-008 カテゴリで「すべて」を選ぶと、会議室・備品・社用車のいずれのリソースも表示される",
+      "durationMs": 11458,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-008-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-02・会議室）",
+          "value": "第1会議室"
+        },
+        {
+          "label": "リソース（RES-LIST-D-03・備品）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "リソース（RES-LIST-D-04・社用車）",
+          "value": "社用車A"
+        },
+        {
+          "label": "カテゴリフィルター",
+          "value": "すべて"
+        }
+      ]
+    },
+    "RES-LIST-TC-009": {
+      "status": "passed",
+      "title": "RES-LIST-TC-009 既存の予約の終了より後に収まる時間帯で空き確認すると、そのリソースが一覧に残る",
+      "durationMs": 1648,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-009-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-05）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の開始日時",
+          "value": "2027/2/27 20:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の終了日時",
+          "value": "2027/2/27 20:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の状態",
+          "value": "承認済み"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/2/27 20:45:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/2/27 20:55:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-010": {
+      "status": "passed",
+      "title": "RES-LIST-TC-010 既存の予約の開始より前に収まる時間帯で空き確認すると、そのリソースが一覧に残る",
+      "durationMs": 1545,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-010-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-05）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の開始日時",
+          "value": "2027/2/1 2:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の終了日時",
+          "value": "2027/2/1 2:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の状態",
+          "value": "承認済み"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/2/1 2:05:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/2/1 2:15:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-011": {
+      "status": "passed",
+      "title": "RES-LIST-TC-011 空き確認の開始日時を既存の予約の終了と同じにすると、そのリソースが一覧に残る",
+      "durationMs": 1703,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-011-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-05）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の開始日時",
+          "value": "2027/1/24 0:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の終了日時",
+          "value": "2027/1/24 0:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の状態",
+          "value": "承認済み"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/1/24 0:40:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/1/24 0:55:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-012": {
+      "status": "passed",
+      "title": "RES-LIST-TC-012 空き確認の終了日時を既存の予約の開始と同じにすると、そのリソースが一覧に残る",
+      "durationMs": 1560,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-012-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-05）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の開始日時",
+          "value": "2027/1/30 22:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の終了日時",
+          "value": "2027/1/30 22:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の状態",
+          "value": "承認済み"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/1/30 22:05:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/1/30 22:20:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-013": {
+      "status": "passed",
+      "title": "RES-LIST-TC-013 既存の予約と一部だけ重なる時間帯で空き確認すると、そのリソースが一覧から外れる",
+      "durationMs": 1409,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-013-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-05）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の開始日時",
+          "value": "2027/3/17 20:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の終了日時",
+          "value": "2027/3/17 20:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の状態",
+          "value": "承認済み"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/3/17 20:30:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/3/17 20:50:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-014": {
+      "status": "passed",
+      "title": "RES-LIST-TC-014 既存の予約を内側に含む時間帯で空き確認すると、そのリソースが一覧から外れる",
+      "durationMs": 1557,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-014-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-05）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の開始日時",
+          "value": "2027/1/15 10:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の終了日時",
+          "value": "2027/1/15 10:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の状態",
+          "value": "承認済み"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/1/15 10:10:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/1/15 10:50:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-015": {
+      "status": "passed",
+      "title": "RES-LIST-TC-015 既存の予約の内側に収まる時間帯で空き確認すると、そのリソースが一覧から外れる",
+      "durationMs": 1743,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-015-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-05）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の開始日時",
+          "value": "2027/1/2 8:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の終了日時",
+          "value": "2027/1/2 8:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の状態",
+          "value": "承認済み"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/1/2 8:25:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/1/2 8:35:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-016": {
+      "status": "passed",
+      "title": "RES-LIST-TC-016 承認待ちの予約と重なる時間帯で空き確認すると、そのリソースが一覧から外れる",
+      "durationMs": 1397,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-016-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-06）",
+          "value": "第1会議室"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-06）の開始日時",
+          "value": "2027/2/4 0:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-06）の終了日時",
+          "value": "2027/2/4 0:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-06）の状態",
+          "value": "承認待ち"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/2/4 0:25:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/2/4 0:35:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-017": {
+      "status": "passed",
+      "title": "RES-LIST-TC-017 却下された予約だけがある時間帯で空き確認すると、そのリソースが一覧に残る",
+      "durationMs": 1659,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-017-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-06）",
+          "value": "第1会議室"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-06）の開始日時",
+          "value": "2027/2/22 4:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-06）の終了日時",
+          "value": "2027/2/22 4:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-06）の状態",
+          "value": "却下"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/2/22 4:25:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/2/22 4:35:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-018": {
+      "status": "passed",
+      "title": "RES-LIST-TC-018 キャンセルされた予約だけがある時間帯で空き確認すると、そのリソースが一覧に残る",
+      "durationMs": 1828,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-018-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-05）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の開始日時",
+          "value": "2027/1/30 10:20:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の終了日時",
+          "value": "2027/1/30 10:40:00"
+        },
+        {
+          "label": "既存予約（RES-LIST-D-05）の状態",
+          "value": "キャンセル済み"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/1/30 10:25:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/1/30 10:35:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-019": {
+      "status": "passed",
+      "title": "RES-LIST-TC-019 開始日時と終了日時を入れて絞り込むと、対象の期間と件数のメッセージが表示される",
+      "durationMs": 1433,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "絞り込みのメッセージ",
+          "file": "RES-LIST-TC-019-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "リソース（RES-LIST-D-05）",
+          "value": "プロジェクターA"
+        },
+        {
+          "label": "空き確認の開始日時",
+          "value": "2027/3/13 12:00:00"
+        },
+        {
+          "label": "空き確認の終了日時",
+          "value": "2027/3/13 13:00:00"
+        }
+      ]
+    },
+    "RES-LIST-TC-020": {
+      "status": "passed",
+      "title": "RES-LIST-TC-020 表示対象のリソースが 20 件を超えるとき、1 ページ目に 20 件表示される",
+      "durationMs": 1861,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧とページネーション",
+          "file": "RES-LIST-TC-020-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "足した有効なリソース（RES-LIST-D-08）の件数",
+          "value": "18"
+        },
+        {
+          "label": "MEMBER に表示される有効なリソースの合計件数",
+          "value": "21"
+        }
+      ]
+    },
+    "RES-LIST-TC-021": {
+      "status": "passed",
+      "title": "RES-LIST-TC-021 2 ページ目を開くと、1 ページ目に表示されなかったリソースが表示される",
+      "durationMs": 1775,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-021-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "足した有効なリソース（RES-LIST-D-08）の件数",
+          "value": "18"
+        },
+        {
+          "label": "1 ページ目に表示されたリソースの件数",
+          "value": "20"
+        },
+        {
+          "label": "2 ページ目に表示されたリソースの件数",
+          "value": "1"
+        },
+        {
+          "label": "2 ページ目だけに表示されたリソースの件数",
+          "value": "1"
+        }
+      ]
+    },
+    "RES-LIST-TC-022": {
+      "status": "passed",
+      "title": "RES-LIST-TC-022 リソースカードの「詳細を見る」を押すと、そのリソースの詳細画面へ遷移する",
+      "durationMs": 3706,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "遷移後の画面",
+          "file": "RES-LIST-TC-022-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "押した「詳細を見る」リンクの遷移先",
+          "value": "/resources/30000000-0000-0000-0000-000000000001"
+        }
+      ]
+    },
+    "RES-LIST-TC-023": {
+      "status": "passed",
+      "title": "RES-LIST-TC-023 MEMBER で開くと、無効にされたリソースが一覧に表示されない",
+      "durationMs": 1506,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-023-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "サインインしたロール",
+          "value": "一般社員（MEMBER）"
+        },
+        {
+          "label": "無効にされたリソース（RES-LIST-D-07）",
+          "value": "[e2e] 無効なリソース"
+        }
+      ]
+    },
+    "RES-LIST-TC-024": {
+      "status": "passed",
+      "title": "RES-LIST-TC-024 APPROVER で開くと、無効にされたリソースが一覧に表示されない",
+      "durationMs": 1515,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-024-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "サインインしたロール",
+          "value": "承認者（APPROVER）"
+        },
+        {
+          "label": "無効にされたリソース（RES-LIST-D-07）",
+          "value": "[e2e] 無効なリソース"
+        }
+      ]
+    },
+    "RES-LIST-TC-025": {
+      "status": "passed",
+      "title": "RES-LIST-TC-025 ADMIN で開くと、無効にされたリソースも一覧に表示される",
+      "durationMs": 1593,
+      "error": "",
+      "errors": [],
+      "evidence": [
+        {
+          "kind": "evidence",
+          "label": "リソースカード一覧",
+          "file": "RES-LIST-TC-025-1.png"
+        }
+      ],
+      "values": [
+        {
+          "label": "サインインしたロール",
+          "value": "管理者（ADMIN）"
+        },
+        {
+          "label": "無効にされたリソース（RES-LIST-D-07）",
+          "value": "[e2e] 無効なリソース"
+        }
+      ]
+    }
+  }
+}
