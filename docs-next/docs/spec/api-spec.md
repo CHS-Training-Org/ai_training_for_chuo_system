@@ -164,7 +164,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 
 | メソッド | パス | 概要 | 権限 |
 |--------|------|------|------|
-| GET | `/api/resources` | リソース一覧（カテゴリ・空き日時でフィルタ可） | 全ロール |
+| GET | `/api/resources` | リソース一覧（キーワード・カテゴリ・空き日時でフィルタ可） | 全ロール |
 | POST | `/api/resources` | リソース登録 | ADMIN |
 | GET | `/api/resources/{id}` | リソース詳細 | 全ロール |
 | PUT | `/api/resources/{id}` | リソース更新 | ADMIN |
@@ -260,7 +260,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
+GET /api/resources?keyword=会議&category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -268,6 +268,7 @@ Authorization: Bearer <JWT>
 
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
+| `keyword` | string | ❌ | リソース名（`name`）または説明文（`description`）への部分一致で絞り込む。大文字・小文字は区別しない |
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
@@ -275,6 +276,8 @@ Authorization: Bearer <JWT>
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
 > `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
+>
+> `keyword` を指定した場合、`name` または `description` にキーワードを含むリソースのみを返す（部分一致・大文字小文字を区別しない。`description` が `null` のリソースは `name` のみで判定）。前後の空白は除去して扱い、未指定・空文字・空白のみの場合はキーワード条件なし（従来どおり全件が対象）。`%` / `_` はワイルドカードではなく通常の文字として扱う。`keyword`・`category`・`from`/`to` を複数指定した場合は AND 条件で組み合わせる。
 
 #### レスポンス（200 OK）
 
