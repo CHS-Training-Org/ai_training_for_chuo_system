@@ -180,6 +180,22 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
   }
 
   /**
+   * GET → JSON 以外の応答（CSV など）を文字列で受け取る。応答ヘッダも一緒に返す。
+   *
+   * 本文は `TextDecoder` の `ignoreBOM: true` でデコードし、先頭の UTF-8 BOM を文字列に残す
+   * （`res.text()` は BOM を取り除くため、Excel での文字化け防止用の BOM が失われる）。
+   * 非 2xx は {@code request} 内の `assertOk` で `ApiClientError` になる。
+   */
+  async function getText(
+    path: string,
+    params?: Record<string, string | string[]>,
+  ): Promise<{ text: string; headers: Headers }> {
+    const res = await request("GET", path, { params });
+    const text = new TextDecoder("utf-8", { ignoreBOM: true }).decode(await res.arrayBuffer());
+    return { text, headers: res.headers };
+  }
+
+  /**
    * POST/PUT → レスポンスボディを Zod スキーマで検証して返す。
    */
   async function post<S extends ZodTypeAny>(
@@ -219,7 +235,7 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
     await request("POST", path, { body });
   }
 
-  return { get, getPaginated, getArray, post, put, patch, postEmpty };
+  return { get, getPaginated, getArray, getText, post, put, patch, postEmpty };
 }
 
 /**

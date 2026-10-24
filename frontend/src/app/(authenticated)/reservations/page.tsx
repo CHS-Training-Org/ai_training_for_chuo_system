@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { PaginationNav } from "@/components/ui/pagination-nav";
 import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
+import { CsvExportDialog } from "./CsvExportDialog";
 
 /**
  * マイ予約一覧画面（screen-spec.md §マイ予約 /reservations 準拠）。
@@ -72,9 +73,12 @@ export default async function ReservationsPage({
           <h1 className="text-2xl font-bold">{isAdmin ? "全予約一覧" : "マイ予約"}</h1>
           <p className="text-sm text-muted-foreground">全 {reservations.totalElements} 件</p>
         </div>
-        <Button asChild>
-          <Link href="/resources">リソースを探す</Link>
-        </Button>
+        <div className="flex gap-2">
+          {isAdmin && <CsvExportDialog />}
+          <Button asChild>
+            <Link href="/resources">リソースを探す</Link>
+          </Button>
+        </div>
       </div>
 
       {/* ステータスフィルタタブ */}
