@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,8 +14,12 @@ import org.springframework.data.repository.query.Param;
  * 予約リポジトリ。
  *
  * <p>カテゴリ 4 で空き照会・リソース一覧の重複フィルタ用メソッドを定義。 カテゴリ 5 で予約申請・一覧・キャンセル等のメソッドを追加。
+ *
+ * <p>CSV 帳票出力（Issue #29）の条件付き全件取得には {@link JpaSpecificationExecutor} を使い、条件は {@link
+ * ReservationSpecifications} で組み立てる。
  */
-public interface ReservationRepository extends JpaRepository<Reservation, UUID> {
+public interface ReservationRepository
+    extends JpaRepository<Reservation, UUID>, JpaSpecificationExecutor<Reservation> {
 
   // ---------------------------------------------------------------------------
   // カテゴリ 4（空き照会・リソース一覧フィルタ）
