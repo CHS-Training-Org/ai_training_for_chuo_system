@@ -1,92 +1,91 @@
 # Build and Test Summary
 
-対象: Issue #23 リソース一覧の検索・フィルタ追加（`resource-list-filter`）。
+対象: Issue #29 CSV 帳票出力（`csv-export`）。実施日: 2026-10-24。
 
 ## 記録の出典
 
-- 自動テスト・静的検査の結果は、今回の作業中（Code Generation Part 2）に実施済みの実測結果を使用した。AI-DLC 規定には Build and Test ステージ内での再実行が必須とは記載されていないため、このステージでは再実行していない。
-- ブラウザでの手動確認は、ユーザーからの実施済み報告に基づく。
-- コマンドの実行日時、実行時間、Backend のテストレポートの出力先は確認できていない。
+- Backend・Frontend のコマンドは、Build and Test ステージで現在のコードに対して再実行した結果（`--rerun-tasks` で Backend のテストとチェックスタイルを再実行）。
+- 実画面確認は、ユーザーが実施した結果（`integration-test-instructions.md`）。
+- 仕様書のリンク・アンカーは、`docusaurus` が未導入のため、grep と簡易スクリプトによる代替確認の結果。
 
 ## Build Status
 
 - **Build Tool**: Gradle wrapper（Backend）/ pnpm（Frontend）
-- **Build Status**: 判定対象外。今回の必須確認項目に build コマンドは含まれない。Backend のコンパイルは `./gradlew test` に含まれ、同コマンドは成功している。
-- **Build Artifacts**: 記録なし
-- **Build Time**: 確認できていない
+- **Build Status**: 成功（Backend のコンパイルは `./gradlew test` に含まれる。Frontend は `pnpm build` が成功）
+- **Build Artifacts**: `frontend/.next/`（`.gitignore` 対象）、Backend のテストレポートは `backend/build/reports/tests/test/`
+- **Build Time**: `./gradlew test`（`--rerun-tasks`）14 秒、`pnpm build` は Compiled 30.3 秒
 
-### 追加確認（合否判定の対象外）
+## 実行結果
 
-- `pnpm build` は必須確認項目ではない。成功扱いにしておらず、Build and Test の合否判定にも含めない。
-- ユーザーの報告によれば、追加で実行した `pnpm build` は `next/font` で失敗した。原因の調査と修正は行っていない。今回の変更に起因するかどうかは確認できていない。
+### A. Backend（`cd backend`）
 
-## 必須確認項目（4 項目）
-
-| 項目 | 結果 |
-|---|---|
-| Frontend `cd frontend && pnpm test` | 成功（11 ファイル、92 件） |
-| Frontend `cd frontend && pnpm lint` | 成功（終了コード 0） |
-| Backend `cd backend && ./gradlew test` | 成功（155 件、failures 0、errors 0、skipped 0） |
-| Backend `cd backend && ./gradlew checkstyleMain` | 成功（警告 2 件。`ReservationRepository.java` のメソッド名で、今回の変更対象外・未変更のファイル） |
-
-## Test Execution Summary
-
-### Unit Tests
-
-- **Frontend**: 92 件（11 ファイル）、成功。失敗の記録なし。
-- **Backend**: 155 件、failures 0、errors 0、skipped 0、成功。
-- **Coverage**: 計測していない（確認できていない）。
-- **Status**: Pass
-
-今回の変更に関係するテストの件数は `unit-test-instructions.md` を参照。Backend の 155 件には、実 DB（H2）を使う Repository・Controller のテストも含まれる。
-
-### 補助的な検証
-
-| 項目 | 結果 |
-|---|---|
-| Frontend `pnpm format:check` | 成功 |
-| Backend `spotlessCheck` | 成功 |
-
-### Integration Tests
-
-- **自動**: 専用スイートは追加していない。`./gradlew test` に含まれる `ResourceRepositoryTest`（13 件）と `ResourceControllerTest` の新規 10 件が、H2 の実クエリを検証している（Unit Tests の件数に含まれる）。
-- **手動（ブラウザ、ユーザー報告）**: 5 シナリオとも期待どおり。
-
-| # | 操作 | 結果 |
+| # | コマンド | 結果 |
 |---|---|---|
-| 1 | キーワード「会議室」 | 名称部分一致で第1会議室のみ表示 |
-| 2 | キーワード「ホワイトボード」 | 説明文部分一致で第1会議室のみ表示 |
-| 3 | キーワード解除 | 全 3 件の表示に戻る |
-| 4 | カテゴリ「備品」＋キーワード「プロジェクター」 | 1 件表示 |
-| 5 | 期間指定＋キーワード「会議室」 | AND 条件で第1会議室のみ表示 |
+| A1 | `./gradlew test --rerun-tasks` | 成功。25 クラス・200 件、failures 0、errors 0、skipped 0（結果 XML で集計） |
+| A2 | `./gradlew spotlessCheck` | 成功（整形差分なし） |
+| A3 | `./gradlew checkstyleMain --rerun-tasks` | 成功。警告 2 件のみ（`ReservationRepository.java` の既存メソッド名 `findByResource_IdAndStatusIn`〔37 行目〕、`findByResource_IdInAndStatusIn`〔49 行目〕。今回の変更前から存在） |
 
-- **Status**: Pass（自動テスト成功、手動 5 シナリオ成功）
+### B. Frontend（`cd frontend`）
 
-### Performance Tests
+| # | コマンド | 結果 |
+|---|---|---|
+| B1 | `pnpm lint` | 成功（終了コード 0、指摘なし） |
+| B2 | `pnpm format:check` | 成功（85 ファイルすべて整形済み） |
+| B3 | `pnpm test` | 成功。14 ファイル・112 件 pass、失敗なし |
+| B4 | `npx tsc --noEmit` | 成功（終了コード 0、エラーなし） |
+| B5 | `pnpm build` | 成功（終了コード 0。Next.js 15.5.18、Compiled successfully、静的ページ 11/11 を生成、`/reservations` を含む全ルートが生成された） |
 
-- **Status**: N/A（未作成）
-- **判断理由**: 実行計画で NFR Requirements / NFR Design をスキップしており（`state.md`「該当要件なし」）、性能要件の記載を確認していない。
+#### `pnpm build` について
 
-### Additional Tests
+- 前ワークフロー（#23）では、ユーザーの報告で `next/font` により失敗していた（原因は未調査）。今回は同じ環境（devcontainer）で成功し、失敗は再現しなかった。
+- 今回の変更に起因する失敗はない。#23 の失敗の原因は、今回も特定していない（再現しなかったため）。
 
-- **Contract Tests**: N/A（未作成）。今回の変更は既存 API（`GET /api/resources`）へのクエリパラメータ追加で、サービス間の契約テスト基盤を確認していない。API 仕様は Spec 更新（承認済み）で `api-spec.md` に反映済み。
-- **Security Tests**: N/A（未作成）。拡張設定の Security Baseline は No（`state.md`）。
-- **E2E Tests**: 自動 E2E（Playwright）は未実施・未作成。ブラウザの手動確認は上記 Integration Tests に記録。
+### C. 結合・E2E・その他
 
-## 未実施・未確認事項
+| 項目 | 結果 |
+|---|---|
+| BE の結合テスト | A1 に含まれる。`ReportControllerTest` 20 件、`ReservationSpecificationsTest` 7 件はいずれも pass |
+| 実画面での結合確認 | ユーザーが実施。ADMIN / MEMBER / APPROVER の確認結果はすべて期待どおり（詳細は `integration-test-instructions.md`） |
+| E2E（Playwright） | 対象外。`frontend/tests/e2e/` には `example.spec.ts` しかなく、CI も実行しない。E2E の追加は課題のスコープ外（後続課題） |
+| 性能テスト | 対象外。件数上限なし・一括返却の設計（Application Design Q2）で、専用の性能テストは課題の範囲外 |
+| セキュリティテスト | 対象外。Security Baseline 拡張は無効。認可は `ReportControllerTest` で確認済み（403 / 401） |
+| 契約テスト | 対象外。OpenAPI クライアント自動生成は後続課題 |
 
-- 自動 E2E（Playwright）
-- 本番 PostgreSQL での実測（H2 のみ）
-- docs-next の `npm run build`（`node_modules` が空のため未実行。Spec 更新ステージからの未了事項）
-- `pnpm build` の失敗原因（上記「追加確認」）
-- テストカバレッジの計測
+### D. 仕様書の代替確認（`docs-next/docs/spec/`）
+
+`docusaurus` が未導入のため `npm run build` は実行していない（`npm ci` による依存導入は行わない方針）。代わりに、`api-spec.md`・`requirements.md`・`screen-spec.md` の内部リンクを機械的に確認した。
+
+- 確認した内部リンク: 36 件
+- 今回の変更で追加・変更した行にあるリンク: 壊れているものなし（新規アンカー `{#uc-09}`、`{#report-reservations-csv}` と、参照先 `{#datetime-format}`、`{#common-error}`、`{#auth-method}` の実在を確認）
+- 変更していない行: スクリプト上は 8 件が未解決と判定されたが、いずれもサイト絶対パスの図（`/diagrams/spec/*.drawio.svg`）への参照で、`docs-next/static/diagrams/spec/` に 8 件すべてのファイルが存在することを確認した（実質的な破損なし）
+- 3 ファイルの `last_updated` が更新されていることを確認した
+
+この確認は、Docusaurus のビルド（リンク・アンカーの検証を含む）の代替にはならない。ビルドでの確認は、依存導入が可能な環境（CI の `docs-check.yml` など）に委ねる。
+
+## 未実施項目とその理由
+
+| 項目 | 理由 |
+|---|---|
+| `docs-next` の `npm run build` | `docusaurus` 未導入。`npm ci` による依存導入をしない方針のため |
+| `pnpm install --frozen-lockfile` | 依存は導入済みで、変更していないため |
+| 実画面での複数ステータス選択・期間境界の細部・エスケープ | 自動テストで確認済み。実画面では未確認 |
+| ダウンロードした CSV を Excel で開いた表示 | 未確認（Excel での確認は行っていない） |
+| 実 PostgreSQL に対する自動テスト | 自動テストは H2。実画面確認は実 Postgres で行った（予約 2 件） |
+| カバレッジの計測 | 計測していない |
+| E2E・性能・セキュリティ・契約テスト | 上記のとおり対象外 |
+
+## 今回の変更に起因する未解決事項
+
+なし。
 
 ## Overall Status
 
-- **Build**: 必須確認項目の範囲では判定対象外（`pnpm build` の失敗は追加確認として記録、合否判定には含めない）
-- **All Tests**: Pass（必須確認項目 4 件すべて成功）
-- **Ready for Operations**: Yes（必須確認項目の範囲。承認待ち）
+- **Build**: 成功
+- **All Tests**: 成功（Backend 200 件、Frontend 112 件。失敗 0）
+- **静的検査**: 成功（Backend の Checkstyle 警告 2 件は既存の未変更コード）
+- **実画面確認**: 成功（ユーザー実施）
+- **Ready for Operations**: Yes（CI 品質ゲート `CI Frontend` / `CI Backend` と同じコマンドがすべて成功している。残る確認は PR 作成後の CI の実行結果）
 
 ## Next Steps
 
-ユーザーの承認後、Operations へ進む（BookFlow では CI 品質ゲート `CI Frontend` / `CI Backend` で代替）。
+Operations（BookFlow では CI 品質ゲートで運用）に進む準備ができている。次の手順は PR の作成（`/create-pr`、コミットの分割・push は `/commit-push`）。

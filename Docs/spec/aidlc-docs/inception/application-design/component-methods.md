@@ -1,75 +1,111 @@
-# Component Methods
+# Component Methods: CSV 帳票出力（Issue #29）
 
-業務ルールの詳細は Code Generation の計画で確定する。ここではシグネチャと目的のみ示す。
+シグネチャと目的を示す。振る舞いの詳細は `requirements.md`（確定した解釈・仮定 A1〜A3）と `stories.md`（受入条件 18 件）が正で、ここでは再掲しない。引数名・補助メソッドの細部は Code Generation の計画で確定する。
 
-## ResourceSpecifications（domain、新規）
+## Backend
 
-```java
-public final class ResourceSpecifications {
-  public static Specification<Resource> isActiveTrue();
-  public static Specification<Resource> hasCategory(ResourceCategory category);
-  public static Specification<Resource> keywordContains(String keyword);
-}
-```
-
-| メソッド | 目的 | 入出力 |
-|----------|------|--------|
-| `isActiveTrue()` | 非 ADMIN 用。`is_active = true` に限定する | なし → Specification |
-| `hasCategory(category)` | カテゴリ一致 | `ResourceCategory` → Specification |
-| `keywordContains(keyword)` | `name` または `description` への部分一致（OR）。大文字小文字無視。`%` `_` `\` はエスケープして通常の文字として扱う。description が NULL の行は name のみで判定される | 正規化済みの非空 `String` → Specification |
-
-`keywordContains` は lower(列) LIKE lower(パターン) ESCAPE `\` をバインドパラメータで組み立てる（文字列連結でクエリを組まない）。PostgreSQL と H2 の両方で動く比較方式とする。
-
-## ResourceRepository（domain、変更）
+### ReportController（presentation）
 
 ```java
-public interface ResourceRepository
-    extends JpaRepository<Resource, UUID>, JpaSpecificationExecutor<Resource> {
-  Optional<Resource> findByIdForUpdate(UUID id); // 維持
-  // findAll(Specification, Pageable) / findAll(Specification) は継承
-}
-```
-
-## ResourceService（application、変更）
-
-```java
-public Page<ResourceResponse> list(
-    ResourceCategory category, String keyword,
-    LocalDateTime from, LocalDateTime to,
-    boolean isAdmin, Pageable pageable);          // keyword を追加
-
-private Specification<Resource> buildSpec(
-    ResourceCategory category, String keyword, boolean isAdmin);
-
-private static String normalizeKeyword(String keyword); // trim。null / 空白のみは null を返す
-```
-
-| メソッド | 目的 |
-|----------|------|
-| `list(...)` | keyword 付きの一覧。`from` と `to` が両方ある場合は空き確認経路、それ以外は通常経路 |
-| `buildSpec(...)` | 条件のリストを組み立て、`Specification.allOf(conditions)` で AND 結合する。`isAdmin` が false のときだけ `isActiveTrue()` を加える（ADMIN は条件を加えない）。category があれば `hasCategory`、正規化後 keyword があれば `keywordContains` を加える。**戻り値は常に非 null**（契約は下記） |
-| `normalizeKeyword(...)` | trim。空・空白のみは「条件なし」として null |
-
-### buildSpec の契約
-
-- 戻り値は常に非 null。条件が 1 つもない場合（ADMIN かつ category・keyword 未指定）は、`Specification.allOf` が空リストに対して返す `Specification.unrestricted()`（WHERE なし）になる。spring-data-jpa 4.0.5 のバイトコードで確認済み
-- `Specification.where(null)` は使わない。4.0.5 の `where(Specification)` は `Assert.notNull("Specification must not be null")` で例外になる
-- `findAll` にリテラル `null` を渡さない。4.0 では `findAll(PredicateSpecification)` のオーバーロードがあり、曖昧になる
-- ADMIN・条件なしの `findAll(spec, pageable)` / `findAll(spec)` は、現行の `findAll(pageable)` / `findAll()` と同じ WHERE なしの問合せで、結果とソート（指定なし）は変わらない
-
-## ResourceController（presentation、変更）
-
-```java
-public Page<ResourceResponse> list(
-    @RequestParam(required = false) ResourceCategory category,
-    @RequestParam(required = false) String keyword,
+@GetMapping("/reservations/csv")
+@PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<byte[]> downloadReservationsCsv(
     @RequestParam(required = false) LocalDateTime from,
     @RequestParam(required = false) LocalDateTime to,
-    @PageableDefault(size = 20) Pageable pageable,
-    @CurrentUser User currentUser);
+    @RequestParam(required = false) List<ReservationStatus> status)
 ```
+
+- **Purpose**: 条件の検証（片方だけ・`from` ≧ `to` は `ValidationException`）、Service の呼び出し、CSV 応答の組み立て
+- **Input**: `from` / `to`（ISO 8601 ローカル日時。オフセット付きは型変換に失敗し、既存の `GlobalExceptionHandler` で 400）、`status`（複数可、未指定は全ステータス）
+- **Output**: `200 OK`、本文は CSV のバイト列、ヘッダ `Content-Type: text/csv; charset=UTF-8` と `Content-Disposition: attachment; filename="reservations_yyyyMMdd.csv"`（日付は `LocalDate.now()`）
+- クラスには `@RestController` と `@RequestMapping("/api/reports")` を付ける
+
+### ReservationReportService（application）
+
+```java
+@Transactional(readOnly = true)
+public byte[] exportReservationsCsv(
+    LocalDateTime from, LocalDateTime to, Collection<ReservationStatus> statuses)
+```
+
+- **Purpose**: 条件に合う予約を開始日時の昇順で全件取得し、CSV のバイト列を返す
+- **Input**: 検証済みの条件（`from` と `to` は両方 null か両方非 null。`statuses` は null または空なら条件なし）
+- **Output**: CSV のバイト列（BOM・ヘッダ行を含む）
+
+### ReservationCsvWriter（application）
+
+```java
+public final class ReservationCsvWriter {
+  public static byte[] write(List<Reservation> reservations)
+}
+```
+
+- **Purpose**: 予約のリストを、RPT-02 の形式（BOM、日本語ヘッダ、表記、エスケープ、CRLF）の CSV にする
+- **Input**: `resource` と `requester` が初期化済みの予約（並び順は呼び出し側の責務）
+- **Output**: UTF-8 の CSV のバイト列。空リストならヘッダ行だけ
+- 承認状態の表示名の対応表、日時の書式、エスケープ処理はこのクラスの非公開メンバーにする
+
+### ReservationSpecifications（domain）
+
+```java
+public final class ReservationSpecifications {
+  public static Specification<Reservation> startAtFrom(LocalDateTime from)      // start_at >= from
+  public static Specification<Reservation> startAtBefore(LocalDateTime to)      // start_at < to
+  public static Specification<Reservation> statusIn(Collection<ReservationStatus> statuses)
+  public static Specification<Reservation> fetchResourceAndRequester()
+}
+```
+
+- **Purpose**: Service が `Specification.allOf` で AND 結合して `ReservationRepository#findAll(Specification, Sort)` に渡す条件の部品
+- `fetchResourceAndRequester()` はページングしない全件取得でのみ使う（件数クエリを発行しないため JOIN FETCH と両立する）
+
+### ReservationRepository（domain、変更）
+
+```java
+public interface ReservationRepository
+    extends JpaRepository<Reservation, UUID>, JpaSpecificationExecutor<Reservation>
+```
+
+- `findAll(Specification<Reservation>, Sort)` を継承で得る。並び順は `Sort.by("startAt").ascending()`
 
 ## Frontend
 
-- `listResourcesAction`: 引数の SearchParams 相当に `keyword?: string` を追加。値があるときのみ `keyword` を API に付与する
-- `ResourceFilterForm`: props に `defaultKeyword?: string` を追加。`handleSubmit` で `keyword` を trim し、非空のときだけ `params.set("keyword", ...)`
+### api-client.ts（追加メソッド）
+
+```typescript
+async function getText(
+  path: string,
+  params?: Record<string, string | string[]>,
+): Promise<{ text: string; headers: Headers }>
+```
+
+- **Purpose**: 非 JSON の応答を受け取る。本文は `TextDecoder("utf-8", { ignoreBOM: true })` でデコードし、BOM を文字列に残す（D11）
+- 非 2xx は既存の `assertOk` で `ApiClientError` を投げる（エラー本文は JSON の `{code, message}`）
+
+### reports.ts（Server Action）
+
+```typescript
+"use server";
+
+export async function exportReservationsCsvAction(params?: {
+  from?: string;      // datetime-local の値（例 "2026-06-01T00:00"）
+  to?: string;
+  status?: string[];
+}): Promise<{ filename: string; content: string }>
+```
+
+- **Purpose**: ADMIN の CSV 取得。`from` / `to` を秒付きに正規化し（既存 `reservations.ts` の `toIsoWithSeconds` と同じ処理）、`getText("/reports/reservations/csv", ...)` を呼ぶ。`Content-Disposition` の `filename` を取り出して返す
+- 引数の型は既存の `reservations.ts` と同じく、ファイル内の非公開の型にする（`'use server'` の制約）
+
+### CsvExportDialog.tsx（Client Component）
+
+```typescript
+export function CsvExportDialog(): JSX.Element
+```
+
+- **Purpose**: ダイアログの開閉（「キャンセル」ボタンでも閉じる。`ApprovalTable` の前例）、入力の保持（`useState`）、送信（`useTransition` 内で `exportReservationsCsvAction` を呼ぶ）、Blob の生成とダウンロード（`URL.createObjectURL` → `<a download>` のクリック → `URL.revokeObjectURL`）、成功時にダイアログを閉じる、失敗時の `toast.error`
+- Blob の型は `text/csv;charset=utf-8`。受け取った文字列（先頭に BOM を含む）をそのまま渡す
+
+### reservations/page.tsx（変更）
+
+- 見出し行の右側（既存の「リソースを探す」ボタンの隣）に、`isAdmin` のときだけ `<CsvExportDialog />` を置く

@@ -1,40 +1,67 @@
-# Component Dependencies
+# Component Dependencies: CSV 帳票出力（Issue #29）
 
 ## 依存マトリクス（Backend）
 
-| From \ To | ResourceSpecifications | ResourceRepository | ReservationRepository |
-|-----------|:---:|:---:|:---:|
-| ResourceController | - | - | - |
-| ResourceService | uses | uses | uses |
-| ResourceRepository | - | - | - |
+行が依存元、列が依存先。○ は依存あり。
 
-ResourceController は ResourceService にのみ依存する（既存どおり）。`ResourceSpecifications` は domain 層内で完結し、上位層には依存しない。
+| From \ To | ReservationReportService | ReservationCsvWriter | ReservationSpecifications | ReservationRepository | Reservation / ReservationStatus |
+|---|---|---|---|---|---|
+| ReportController（presentation） | ○ | - | - | - | ○（`ReservationStatus` のみ、パラメータの型） |
+| ReservationReportService（application） | - | ○ | ○ | ○ | ○ |
+| ReservationCsvWriter（application） | - | - | - | - | ○ |
+| ReservationSpecifications（domain） | - | - | - | - | ○ |
 
-## データフロー
+4 層の依存方向（presentation → application → domain）を守る。domain から上位層への依存、presentation から domain の Repository への直接依存はない。Service は presentation の DTO を使わない（バイト列を返す）。
 
-```
-Browser
-  | GET /resources?category&keyword&from&to
-  v
-page.tsx (Server Component)
-  | listResourcesAction(keyword を空でなければ付与)
-  v
-GET /api/resources?...keyword=...
-  v
-ResourceController.list  --keyword そのまま-->  ResourceService.list
-                                                  | normalizeKeyword -> buildSpec
-                                                  v
-                                       ResourceRepository.findAll(spec[, pageable])
-                                                  | (from/to あり: ReservationRepository で占有除外)
-                                                  v
-                                       Page<ResourceResponse>
-```
+## 依存マトリクス（Frontend）
+
+| From \ To | exportReservationsCsvAction | api-client.ts `getText` | session.ts `getAccessToken` | labels.ts | ui/dialog・button・input・label、sonner |
+|---|---|---|---|---|---|
+| reservations/page.tsx | - | - | - | - | - （`CsvExportDialog` を描画するだけ） |
+| CsvExportDialog.tsx | ○ | - | - | ○（ステータスの表示名） | ○ |
+| reports.ts | - | ○ | ○ | - | - |
 
 ## 通信パターン
 
-- FE と BE の間は REST（`GET /api/resources`）。`keyword` は任意クエリで後方互換
-- BE の層間は同期メソッド呼び出し。依存方向は presentation -> application -> domain（-> infrastructure の JPA 実装は Spring Data が提供）
+- ブラウザ → Next.js：Server Action の呼び出し（RSC のプロトコル）。JWT はブラウザに出ない
+- Next.js → Spring Boot：`BACKEND_URL/api/reports/reservations/csv` への GET（`Authorization: Bearer <JWT>`）。既存の `api-client.ts` のサーバー側経路
+- 応答：BE は CSV のバイト列を一括で返す（Q2）。Server Action は文字列（BOM を含む）とファイル名を返す。ブラウザは Blob を作ってダウンロードさせる
 
-## Package Change Sequence との対応
+## データフロー
 
-spec -> backend（Specifications -> Repository -> Service -> Controller -> テスト）-> frontend（Action -> page -> Form -> テスト）。execution-plan.md の順序と一致する。
+```mermaid
+sequenceDiagram
+    participant U as ADMIN
+    participant D as CsvExportDialog
+    participant A as exportReservationsCsvAction
+    participant C as ReportController
+    participant S as ReservationReportService
+    participant R as ReservationRepository
+    participant W as ReservationCsvWriter
+    U->>D: CSV ダウンロード をクリックし条件を入力
+    D->>A: from, to, status
+    A->>C: GET /api/reports/reservations/csv with Bearer JWT
+    C->>C: PreAuthorize ADMIN と from to の検証
+    C->>S: exportReservationsCsv(from, to, statuses)
+    S->>R: findAll(spec, Sort startAt ASC)
+    R-->>S: List of Reservation
+    S->>W: write(reservations)
+    W-->>S: byte array
+    S-->>C: byte array
+    C-->>A: 200 text/csv with Content-Disposition
+    A-->>D: filename and content
+    D->>U: Blob をダウンロード
+```
+
+テキスト代替:
+
+```
+ADMIN -> CsvExportDialog(条件入力) -> exportReservationsCsvAction
+  -> GET /api/reports/reservations/csv (Bearer JWT)
+  -> ReportController(ADMIN 判定・from/to 検証)
+  -> ReservationReportService -> ReservationRepository.findAll(spec, startAt ASC)
+  -> ReservationCsvWriter.write -> byte[]
+  -> 200 text/csv + Content-Disposition
+  -> {filename, content} -> Blob -> ダウンロード
+エラー: 401 / 403 / 400 -> ApiClientError -> toast.error
+```

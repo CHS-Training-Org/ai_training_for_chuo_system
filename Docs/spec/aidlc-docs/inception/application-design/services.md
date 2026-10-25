@@ -1,22 +1,24 @@
-# Services
+# Services: CSV 帳票出力（Issue #29）
 
-新規 Service はない。既存の `ResourceService.list` を拡張する。
+新規 Service は `ReservationReportService` の 1 つ。既存の `ReservationService` は変えない（帳票は一覧のページング・本人分の制御と要件が異なるため、別の Service に分ける）。
 
-## ResourceService.list のオーケストレーション
+## ReservationReportService
 
-1. `normalizeKeyword(keyword)` で正規化する（trim。空・空白のみは null）
-2. `buildSpec(category, normalizedKeyword, isAdmin)` で Specification を組み立てる（常に非 null。`Specification.allOf` で結合）
-   - 非 ADMIN: `isActiveTrue()` を AND
-   - category が非 null: `hasCategory` を AND
-   - keyword が非 null: `keywordContains` を AND
-   - 上記がすべて該当しない場合（ADMIN・category なし・keyword なし）は `Specification.unrestricted()`（WHERE なし）。`Specification.where(null)` や `null` の受け渡しはしない
-3. 経路を選ぶ
-   - **通常経路**（`from` または `to` が null）: `resourceRepository.findAll(spec, pageable)` の結果を `ResourceResponse` に変換する
-   - **空き確認経路**（`from` と `to` が両方あり）: `resourceRepository.findAll(spec)` で候補を全取得し、占有リソースを除外したうえで手動ページネーションする（既存ロジックを維持。keyword は候補取得の段階で適用済み）
+- **Responsibilities**: 予約一覧 CSV 出力のユースケースの調整役。条件の組み立て、取得、CSV 化を 1 つの読み取り専用トランザクションで行う
+- **Not responsible for**: 認可（Controller の `@PreAuthorize`）、パラメータの組み合わせ検証（Controller）、HTTP ヘッダ（Controller）、CSV の書式（`ReservationCsvWriter`）
 
-## 不変条件
+### exportReservationsCsv のオーケストレーション
 
-- ロール別可視性は不変（ADMIN は inactive を含み、それ以外は active のみ）。keyword はその範囲内の絞り込みである
-- `keyword` 未指定・空のときの結果は現状と同一（後方互換）
-- `from` / `to` が片方だけの場合の 400 は Controller の既存チェックを維持する
-- 一覧のソート順は現状維持（ソート選択は別課題 `resource-list-sort`）
+1. 条件の部品を集める
+   - 常に `ReservationSpecifications.fetchResourceAndRequester()`
+   - `from` と `to` が非 null なら `startAtFrom(from)` と `startAtBefore(to)`
+   - `statuses` が非 null かつ空でなければ `statusIn(statuses)`
+2. `Specification.allOf(...)` で AND 結合し、`reservationRepository.findAll(spec, Sort.by("startAt").ascending())` で全件取得する
+3. `ReservationCsvWriter.write(reservations)` でバイト列にして返す
+
+LAZY 関連（`resource`、`requester`）は手順 1 の JOIN FETCH で取得済みになり、手順 3 はトランザクション内で実行されるため、`LazyInitializationException` は起きない。
+
+## Frontend の調整役
+
+- `exportReservationsCsvAction`（Server Action）が BFF の調整役。JWT の付与は既存の `createApiClient(getAccessToken)` に任せる
+- `CsvExportDialog` は入力と Blob 化だけを担い、バックエンドを直接呼ばない（`coding-conventions.md` の設計原則）

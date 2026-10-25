@@ -1,32 +1,91 @@
-# Application Design（統合版）: リソース一覧の検索・フィルタ追加（Issue #23）
+# Application Design（統合版）: CSV 帳票出力（Issue #29）
 
-詳細は同ディレクトリの `components.md` / `component-methods.md` / `services.md` / `component-dependency.md` を参照。
+詳細は同ディレクトリの `components.md` / `component-methods.md` / `services.md` / `component-dependency.md` を参照。判断の根拠は `Docs/spec/aidlc-docs/inception/plans/application-design-plan.md`。
 
 ## 設計判断
 
-| 論点 | 決定 | 反映先 |
-|------|------|--------|
-| `%` と `_` | 通常の文字として検索（LIKE エスケープ）。`\` も同様にエスケープする | api-spec の `keyword` 仕様、Repository 統合テスト |
-| Repository 方式 | Specification（`JpaSpecificationExecutor`）。一覧取得 8 通り（派生クエリ 6 本 + 継承 `findAll` 2 本）を集約し、派生クエリ 6 本は削除 | `ResourceRepository`、`ResourceServiceTest` のモック更新 |
-| keyword 正規化 | Service で trim。空・空白のみは条件なし | `ResourceService`、Service テスト |
-| UI 文言 | ラベル「キーワード」、プレースホルダ「名称・説明で検索」。見出し「フィルタ・空き確認」は維持 | screen-spec §`/resources` |
+### 確認質問の回答（Q1〜Q7）
 
-## 構成の要点
+| # | 論点 | 決定 |
+|---|------|------|
+| Q1 | 予約データの取得方式 | Specification（`ReservationSpecifications` 新設、`ReservationRepository` に `JpaSpecificationExecutor`） |
+| Q2 | 応答の返し方と件数上限 | `ResponseEntity<byte[]>` で一括、上限なし |
+| Q3 | CSV の生成方法 | 手書き（依存追加なし） |
+| Q4 | 承認状態の表示名の置き場所 | application 層の `ReservationCsvWriter` の中 |
+| Q5 | 画面の入力 UI | ダイアログ（期間とステータスの複数選択） |
+| Q6 | ファイル名 | `reservations_yyyyMMdd.csv` |
+| Q7 | 改行コード | CRLF |
 
-- 新規は `ResourceSpecifications`（domain）のみ。4 層・Flyway・スキーマは変更しない
-- 通常経路と空き確認経路の両方で、同じ Specification を使う
-- 大文字小文字無視は lower(列) LIKE lower(パターン) で実現し、PostgreSQL と H2 の両方で動かす
-- バインドパラメータを使い、文字列連結でクエリを組まない
+### 既存規約・前例から決めた事項（D1〜D11）
 
-## 影響とレビュー観点
+| # | 決定 | 根拠 |
+|---|------|------|
+| D1 | Server Action で取得し、ブラウザで Blob 化 | Server Actions への集約（規約） |
+| D2 | CSV 生成は application 層 | 4 層の責務表 |
+| D3 | `@PreAuthorize("hasRole('ADMIN')")` | 既存 Controller の前例 |
+| D4 | `from` / `to` の検証は Controller | `ResourceController` の前例 |
+| D5 | `datetime-local` | `ResourceFilterForm` の前例 |
+| D6 | 失敗時は `toast.error` | `ApprovalTable` の前例 |
+| D7 | CSV インジェクション対策は採用しない | 要件外（スコープを広げない） |
+| D8 | ダイアログは `Dialog` + `useState` + `useTransition` | `ApprovalTable` の前例 |
+| D9 | ステータスはネイティブのチェックボックス 4 種、未選択は全ステータス | ui 部品なし、`ALL_STATUSES` の前例 |
+| D10 | ファイル名は BE の `Content-Disposition`、日付は `LocalDate.now()` | API が出力元、既存の日時の扱い |
+| D11 | BOM は `TextDecoder` の `ignoreBOM: true` で残す | `res.text()` は BOM を取り除くため |
 
-- **既存テストへの影響**: 受入条件「既存の BE テストが引き続き pass」は、次のとおり解釈する。
-  - `ResourceServiceTest` の既存アサーション（返却件数・ID・占有除外・隣接は非重複）は変更しない
-  - 許容する変更は 2 点のみ。(1) `list(...)` への `keyword` 引数追加に伴うコンパイル追従、(2) スタブ対象を `findByIsActiveTrue(pageable)` / `findAll(pageable)` / `findByIsActiveTrue()` から `findAll(any(Specification.class), ...)` へ置き換えること
-  - **テスト観点の担保層が移る**: 従来はスタブするメソッドの違いで「active のみ」と「全件」を区別していた。`Specification` は不透明なため、置換後の Service モックテストでは可視性を区別できない。ロール別可視性・from/to 除外は、実 DB を使う `ResourceControllerTest`（`@SpringBootTest` + H2）と、新設する Repository 統合テストで担保する
-- **代替案**: 派生クエリを残して keyword 指定時のみ Specification を使う案もあるが、経路が二重になり保守性要件に反するため採らない
-- **テスト**: Specification の実クエリは Repository 層の統合テスト（H2）で検証する。`@DataJpaTest` は現状どこにもないため新設する（既存の `application-test.yml`、H2 `MODE=PostgreSQL` を流用）。方式の詳細は Code Generation の計画で確定する
-- **Code Generation への申し送り（統合テストで検証する項目）**:
-  - H2 で TEXT 列（`description`、`columnDefinition = "TEXT"`）に対する `lower()` と `LIKE ... ESCAPE` が期待どおり動くか（未確認）
-  - 部分一致、大文字小文字の無視、`description` が NULL の行、`%` `_` `\` のリテラル扱い
-  - 非 ADMIN の active 限定、ADMIN の全件（条件なしの `unrestricted()`）、category・keyword の AND
+## コンポーネント構成
+
+| 層 | コンポーネント | 新規 / 変更 |
+|----|--------------|-----------|
+| presentation | `ReportController` | 新規 |
+| application | `ReservationReportService`、`ReservationCsvWriter` | 新規 |
+| domain | `ReservationSpecifications` | 新規 |
+| domain | `ReservationRepository`（`JpaSpecificationExecutor` を追加） | 変更 |
+| FE lib | `api-client.ts`（`getText` を追加） | 変更 |
+| FE server/actions | `reports.ts`（`exportReservationsCsvAction`） | 新規 |
+| FE app | `reservations/CsvExportDialog.tsx` | 新規 |
+| FE app | `reservations/page.tsx`（ADMIN のときだけダイアログを表示） | 変更 |
+
+DB スキーマ、既存 API（`GET /api/reservations` ほか）、`ReservationService` は変えない。
+
+## 画面の文言（提案。承認時に確認してほしい点）
+
+前例があるものは前例に合わせ、前例のないものは提案として示す。変更したい場合は Request Changes で指示してほしい。
+
+| 箇所 | 文言 | 根拠 |
+|------|------|------|
+| ダイアログを開くボタン | 「CSV ダウンロード」 | RPT-05（確定） |
+| 期間の入力欄のラベル | 「開始日時」「終了日時」 | `ResourceFilterForm` の前例 |
+| ステータスの選択肢 | 「承認待ち」「承認済み」「却下」「キャンセル済み」 | `labels.ts` の `RESERVATION_STATUS_LABELS` |
+| ダイアログの見出し | 「CSV ダウンロード」 | 提案（前例なし） |
+| ステータス欄のラベル | 「ステータス」 | 提案（前例なし） |
+| 実行ボタン | 「ダウンロード」 | 提案（前例なし） |
+| 失敗時のトースト | 「CSV のダウンロードに失敗しました。」 | 提案（`ApprovalTable` の「承認に失敗しました。」の形に合わせた） |
+| ダイアログを閉じるボタン | 「キャンセル」 | `ApprovalTable` の承認・却下ダイアログの前例 |
+
+## 受入条件との対応
+
+| 受入条件 | 担うコンポーネント |
+|---------|------------------|
+| AC-1.1 ボタンからダウンロード | `CsvExportDialog`、`exportReservationsCsvAction`、`ReportController` |
+| AC-1.2 BOM・日本語ヘッダ | `ReservationCsvWriter`（BOM の保持は `getText` と Blob 化） |
+| AC-1.3 全件・開始日時の昇順 | `ReservationReportService`（Sort）、`ReservationSpecifications` |
+| AC-1.4 表記 | `ReservationCsvWriter` |
+| AC-1.5 エスケープ | `ReservationCsvWriter` |
+| AC-1.6 0 件はヘッダだけ | `ReservationCsvWriter` |
+| AC-2.1・2.2 開始日時での判定 | `ReservationSpecifications`（`startAtFrom` / `startAtBefore`） |
+| AC-2.3・2.4 片方だけ・`from` ≧ `to` の 400 | `ReportController` |
+| AC-2.5 オフセット付きの 400 | `ReportController` の型変換と既存の `GlobalExceptionHandler` |
+| AC-3.1〜3.3 ステータス・組み合わせ | `ReservationSpecifications`（`statusIn`）と `allOf` |
+| AC-4.1 ADMIN 以外にボタンを出さない | `reservations/page.tsx`（`isAdmin`） |
+| AC-4.2〜4.4 403 / 403 / 401 | `ReportController` の `@PreAuthorize` と既存の Security 設定 |
+
+## テストの方向性（詳細は Code Generation の計画で確定）
+
+- BE：`ReservationCsvWriter` のユニットテスト（シートの受入条件「CSV 生成ロジックのユニットテスト」）、`ReportController` の結合テスト（ロール別、400、ヘッダ。`UserControllerTest` の様式）、期間・ステータス・並び順の実クエリのテスト（H2）
+- FE：`exportReservationsCsvAction` の Vitest + MSW（ファイル名と BOM の受け渡し、エラー）、`CsvExportDialog` のコンポーネントテスト
+
+## Spec 更新 2 回目に反映する事項
+
+- `api-spec.md`：新規 §帳票出力（`GET /api/reports/reservations/csv` のクエリ、応答ヘッダ、CSV の形式、エラー）とエンドポイント一覧
+- `screen-spec.md` §`/reservations`：ダイアログの入力項目と文言
+- `requirements.md` 非機能要件「一覧系 API は page/size 方式」と、CSV の全件出力の関係の明記（Spec 更新 1 回目の報告事項）

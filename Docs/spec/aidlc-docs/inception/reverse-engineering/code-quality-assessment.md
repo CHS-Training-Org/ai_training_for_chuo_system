@@ -2,19 +2,28 @@
 
 ## Test Coverage
 - **Overall**: Fair（定量カバレッジ未計測）
-- **Unit Tests**: ResourceServiceTest 17 / ResourceControllerTest 21 / FE `resources.test.ts`（一覧 3 ケース）
-- **Integration Tests**: Repository 層（`@DataJpaTest` 等）のテストは存在しない。Service テストは Repository を Mockito でモックしているため、**実クエリの検索条件は既存テストで検証されない**
+- **Unit Tests**:
+  - backend Service（Mockito）：ReservationServiceTest 19 / ResourceServiceTest 19 / ApprovalServiceTest 17
+  - backend Specification：ResourceSpecificationsTest 7
+  - frontend（Vitest + MSW）：Server Actions 6 ファイル（reservations 13 / resources 15 / approvals 12 / users 4 / auth 3 / dev-auth 4）、nav-items 12、pagination-nav 10、session 7、resource-filter-form 8
+- **Integration Tests**:
+  - backend Controller（`BaseControllerTest` + MockMvc + H2）：ReservationControllerTest 19 / ResourceControllerTest 31 / ApprovalControllerTest 16 / UserControllerTest 5 / AuthControllerTest 4 / DepartmentControllerTest 4
+  - backend Repository（H2 実クエリ）：ResourceRepositoryTest 13（PR #146 で追加）。ReservationRepository の実クエリテストはない
+  - E2E：`example.spec.ts` のみ（業務シナリオなし）
+- 件数は `@Test` / `it(` の出現数による概数
 
 ## Code Quality Indicators
-- **Linting**: Spotless + Checkstyle / oxlint + oxfmt 設定済み
-- **Code Style**: 一貫（Javadoc 充実）
+- **Linting**: Spotless + Checkstyle / oxlint + oxfmt 設定済み、CI で実行
+- **Code Style**: 一貫（Javadoc・JSDoc が充実し、仕様書の節番号を参照）
 - **Documentation**: Good
 
 ## Technical Debt
-- `ResourceRepository` はページあり/なし×カテゴリ×active の一覧取得 8 通り（派生クエリ 6 本 + `JpaRepository` 継承の `findAll` 2 本）で、条件追加のたびに組合せが倍増する（keyword 追加で 16 本相当）
-- `from`/`to` 指定時は全候補をメモリへ取得し手動ページング（件数増に弱い。本課題のスコープ外）
-- `ResourceFilterForm.tsx` の `useCallback` 依存に未使用の `searchParams`、`defaultFrom?.replace("T", "T")` は無意味な置換
+- `ReservationRepository` の一覧取得は「本人／全件 × ステータス有無」の `@Query` 4 本で、条件（期間など）を足すたびに組み合わせが倍増する。PR #146 前の `ResourceRepository` と同じ構造
+- 一覧系メソッドはすべて Pageable 前提で、全件をページングなしで取得するメソッドはない
+- `api-client.ts` は JSON 専用で、`Content-Type: application/json` を常時付与。非 JSON レスポンスを扱えない
+- 日時はすべて `LocalDateTime`（DB は `TIMESTAMP` タイムゾーンなし）。FE は `new Date(...).toLocaleString("ja-JP")` で表示しており、タイムゾーンの扱いが暗黙
+- `reservations.start_at` にインデックスがない（期間で絞り込む場合の検索性能。現状のデータ量では問題化していない）
 
 ## Patterns and Anti-patterns
-- **Good Patterns**: 4 層分離、Server Component 優先、フィルタ状態の URL 保持、`PaginationNav` が `query` を引き継ぐ
-- **Anti-patterns**: 上記の派生クエリ爆発、全件メモリ取得
+- **Good Patterns**: 4 層分離、`@PreAuthorize` によるエンドポイント単位のロール制御と Service 内の行レベル判定の分離、JOIN FETCH による N+1 回避、ロール別テスト用アノテーション（`@WithMockAdmin` ほか）、Specification による動的条件（`ResourceSpecifications`）、表示ラベルの一元管理（`labels.ts`）
+- **Anti-patterns**: 上記の `@Query` 組み合わせ増加。`ReservationService` が presentation 層の DTO を返す（既存の慣習としてプロジェクト全体で一貫しているため、本課題で変える対象ではない）
