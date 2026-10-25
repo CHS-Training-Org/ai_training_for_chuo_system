@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.bookflow.application.ReservationReportService;
+import com.example.bookflow.domain.ReservationStatus;
 import com.example.bookflow.support.BaseControllerTest;
 import com.example.bookflow.support.WithMockAdmin;
 import com.example.bookflow.support.WithMockApprover;
@@ -14,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -32,6 +35,9 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
  * <p>テスト用 H2 は同じ JVM のほかのテストクラスと共有されるため、応答全体の行数は検証せず、このクラスが投入した予約の ID が 応答に含まれる・含まれないことで検証する。
  * {@link com.example.bookflow.infrastructure.security.RegisteredUserInterceptor}
  * のため、{@code @WithMock*} の既定 sub に対応するユーザーもシードする（{@link UserControllerTest} と同じ）。
+ *
+ * <p>ステータスが null・空リストのときの扱い（条件を付けず全件）は、HTTP の束縛に依存せず {@link ReservationReportService} を
+ * 直接呼び、実クエリ（H2）の結果で確認する。
  *
  * <p>テスト命名規約（ADR-018）: {@code methodName_condition_expectedBehavior}
  */
@@ -77,6 +83,7 @@ class ReportControllerTest extends BaseControllerTest {
   private static final LocalDateTime CREATED_AT = LocalDateTime.of(2026, 1, 1, 0, 0);
 
   @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired private ReservationReportService reportService;
 
   @BeforeEach
   void insertSeedData() {
@@ -423,5 +430,29 @@ class ReportControllerTest extends BaseControllerTest {
     String csv = fetchCsv(periodRequest().param("status", "APPROVED"));
 
     assertContainsOnly(csv, List.of(R_AT_FROM, R_BEFORE_TO));
+  }
+
+  // ---------------------------------------------------------------------------
+  // ステータスが null・空のとき（Service 直接呼び出し。Specification を実クエリで評価する）
+  // ---------------------------------------------------------------------------
+
+  private String exportByService(Collection<ReservationStatus> statuses) {
+    byte[] csv = reportService.exportReservationsCsv(null, null, statuses);
+    return new String(csv, StandardCharsets.UTF_8);
+  }
+
+  @Test
+  void exportReservationsCsv_nullStatuses_includesAllReservations() {
+    assertContainsOnly(exportByService(null), ALL_RESERVATIONS);
+  }
+
+  @Test
+  void exportReservationsCsv_emptyStatuses_includesAllReservations() {
+    assertContainsOnly(exportByService(List.of()), ALL_RESERVATIONS);
+  }
+
+  @Test
+  void exportReservationsCsv_specifiedStatus_returnsOnlyThatStatus() {
+    assertContainsOnly(exportByService(List.of(ReservationStatus.PENDING)), List.of(R_PENDING));
   }
 }

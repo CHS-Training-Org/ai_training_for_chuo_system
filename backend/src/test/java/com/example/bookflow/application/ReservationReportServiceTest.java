@@ -26,8 +26,9 @@ import org.springframework.data.jpa.domain.Specification;
 /**
  * {@link ReservationReportService} 単体テスト（ADR-018 準拠・Mockito）。
  *
- * <p>{@link Specification} は不透明なため、条件の中身（期間・ステータス）は {@code ReservationSpecificationsTest} と {@code
- * ReportControllerTest} で検証する。ここでは Repository 呼び出しの並び順と CSV の組み立てを確認する。
+ * <p>{@link Specification} は不透明で、Repository をモックすると評価されない。そのため条件の中身（期間・ステータス、ステータスが null・空の
+ * ときに条件を付けない分岐を含む）は {@code ReservationSpecificationsTest} と {@code ReportControllerTest}
+ * で実クエリにより検証する。ここでは Repository 呼び出しの並び順と CSV の組み立てを確認する。
  *
  * <p>テスト命名規約（ADR-018）: {@code methodName_condition_expectedBehavior}
  */
