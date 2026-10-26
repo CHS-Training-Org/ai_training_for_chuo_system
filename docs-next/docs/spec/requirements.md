@@ -11,7 +11,7 @@ references:
   - ./er-diagram.md
   - ./api-spec.md
   - ../learn/glossary.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-10-26T10:50:00+09:00'
 ---
 
 # 要件定義
@@ -118,6 +118,7 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `GET /api/users/me` | ✅ | ✅ | ✅ |
 | `GET /api/users` | ❌ | ❌ | ✅ |
 | `GET /api/departments` | ✅ | ✅ | ✅ |
+| `GET /api/reports/reservations/csv` | ❌ | ❌ | ✅ |
 
 #### 画面アクセス権限
 
@@ -133,6 +134,7 @@ BookFlow は 3 種のロールで操作権限を制御する。
 | `/approvals` | ❌ | ✅ | ✅ |
 | `/admin/resources` | ❌ | ❌ | ✅ |
 | `/admin/users` | ❌ | ❌ | ✅ |
+| `/admin/reports` | ❌ | ❌ | ✅ |
 | `/auth/signin` | ✅（未認証） | ✅（未認証） | ✅（未認証） |
 
 ### 予約ステータス遷移図
