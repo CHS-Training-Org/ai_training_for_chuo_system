@@ -14,12 +14,14 @@ import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +78,36 @@ public class ResourceService {
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
+    return list(category, from, to, isAdmin, null, pageable);
+  }
+
+  /**
+   * キーワード検索を含むリソース一覧を返す。
+   *
+   * <p>{@code keyword} は前後の空白を除去し、空なら指定なしとして扱う。指定ありの場合は {@code name} または {@code description}
+   * への大文字・小文字を区別しない部分一致で絞り込み、{@code category}・{@code from} / {@code to} とは AND で組み合わせる。{@code %} と
+   * {@code _} はリテラル文字として扱う。
+   *
+   * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param from 空き確認の開始日時（null の場合はフィルタしない）
+   * @param to 空き確認の終了日時（null の場合はフィルタしない）
+   * @param isAdmin ADMIN ロールであれば inactive を含む
+   * @param keyword 検索キーワード（null・空白のみの場合は絞り込まない）
+   * @param pageable ページネーション
+   * @return {@link ResourceResponse} のページ
+   */
+  @Transactional(readOnly = true)
+  public Page<ResourceResponse> list(
+      ResourceCategory category,
+      LocalDateTime from,
+      LocalDateTime to,
+      boolean isAdmin,
+      String keyword,
+      Pageable pageable) {
+    String pattern = toLikePattern(keyword);
+    if (pattern != null) {
+      return listWithKeyword(category, from, to, isAdmin, pattern, pageable);
+    }
     if (from != null && to != null) {
       return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
     }
@@ -114,20 +146,49 @@ public class ResourceService {
     // 1. 候補リソースを全取得（ページネーション前）
     List<Resource> candidates = fetchAllCandidates(category, isAdmin);
 
-    // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
-    List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
-    if (!candidateIds.isEmpty()) {
-      Set<UUID> occupiedIds =
-          reservationRepository
-              .findByResource_IdInAndStatusIn(candidateIds, OCCUPIED_STATUSES)
-              .stream()
-              .filter(r -> overlaps(r.getStartAt(), r.getEndAt(), from, to))
-              .map(r -> r.getResource().getId())
-              .collect(Collectors.toSet());
-      candidates = candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
-    }
+    // 2. 占有済みを除外し、3. 手動ページネーション
+    return paginate(excludeOccupied(candidates, from, to), pageable);
+  }
 
-    // 3. フィルタ後リストを手動ページネーション
+  /**
+   * keyword 指定あり：キーワードに一致する候補を全取得し、from/to があれば重複判定してから手動ページネーション。
+   *
+   * <p>並び順は {@code pageable} の {@link org.springframework.data.domain.Sort} を候補取得クエリに渡して保つ。
+   */
+  private Page<ResourceResponse> listWithKeyword(
+      ResourceCategory category,
+      LocalDateTime from,
+      LocalDateTime to,
+      boolean isAdmin,
+      String pattern,
+      Pageable pageable) {
+    List<Resource> candidates =
+        fetchKeywordCandidates(category, isAdmin, pattern, pageable.getSort());
+    if (from != null && to != null) {
+      candidates = excludeOccupied(candidates, from, to);
+    }
+    return paginate(candidates, pageable);
+  }
+
+  /** 候補のうち、指定時間帯に占有済み予約があるリソースを除外する（予約取得は 1 クエリ）。 */
+  private List<Resource> excludeOccupied(
+      List<Resource> candidates, LocalDateTime from, LocalDateTime to) {
+    List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
+    if (candidateIds.isEmpty()) {
+      return candidates;
+    }
+    Set<UUID> occupiedIds =
+        reservationRepository
+            .findByResource_IdInAndStatusIn(candidateIds, OCCUPIED_STATUSES)
+            .stream()
+            .filter(r -> overlaps(r.getStartAt(), r.getEndAt(), from, to))
+            .map(r -> r.getResource().getId())
+            .collect(Collectors.toSet());
+    return candidates.stream().filter(r -> !occupiedIds.contains(r.getId())).toList();
+  }
+
+  /** フィルタ後リストを手動ページネーションする。 */
+  private Page<ResourceResponse> paginate(List<Resource> candidates, Pageable pageable) {
     int total = candidates.size();
     int start = (int) pageable.getOffset();
     int end = Math.min(start + pageable.getPageSize(), total);
@@ -148,6 +209,46 @@ public class ResourceService {
           ? resourceRepository.findByCategoryAndIsActiveTrue(category)
           : resourceRepository.findByIsActiveTrue();
     }
+  }
+
+  private List<Resource> fetchKeywordCandidates(
+      ResourceCategory category, boolean isAdmin, String pattern, Sort sort) {
+    if (isAdmin) {
+      return category != null
+          ? resourceRepository.searchByKeywordAndCategory(pattern, category, sort)
+          : resourceRepository.searchByKeyword(pattern, sort);
+    } else {
+      return category != null
+          ? resourceRepository.searchActiveByKeywordAndCategory(pattern, category, sort)
+          : resourceRepository.searchActiveByKeyword(pattern, sort);
+    }
+  }
+
+  /**
+   * キーワードを LIKE 用のパターン（{@code %...%}）に変換する。
+   *
+   * <p>前後の空白（全角空白を含む）を除去し、空なら {@code null}（キーワード指定なし）を返す。 比較は {@code LOWER()} 同士で行うため小文字化し、{@code
+   * !}・{@code %}・{@code _} は {@link ResourceRepository} の {@code ESCAPE '!'} に合わせて {@code !}
+   * でエスケープする。
+   *
+   * @param keyword 入力されたキーワード（null 可）
+   * @return LIKE パターン。キーワード指定なしの場合は {@code null}
+   */
+  private static String toLikePattern(String keyword) {
+    if (keyword == null) {
+      return null;
+    }
+    String normalized = keyword.strip();
+    if (normalized.isEmpty()) {
+      return null;
+    }
+    String escaped =
+        normalized
+            .toLowerCase(Locale.ROOT)
+            .replace("!", "!!")
+            .replace("%", "!%")
+            .replace("_", "!_");
+    return "%" + escaped + "%";
   }
 
   // ---------------------------------------------------------------------------

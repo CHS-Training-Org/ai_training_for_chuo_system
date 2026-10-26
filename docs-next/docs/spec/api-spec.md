@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-10-26T09:30:00+09:00'
 ---
 
 # REST API 仕様書
@@ -164,7 +164,7 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 
 | メソッド | パス | 概要 | 権限 |
 |--------|------|------|------|
-| GET | `/api/resources` | リソース一覧（カテゴリ・空き日時でフィルタ可） | 全ロール |
+| GET | `/api/resources` | リソース一覧（カテゴリ・キーワード・空き日時でフィルタ可） | 全ロール |
 | POST | `/api/resources` | リソース登録 | ADMIN |
 | GET | `/api/resources/{id}` | リソース詳細 | 全ロール |
 | PUT | `/api/resources/{id}` | リソース更新 | ADMIN |
@@ -260,7 +260,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
+GET /api/resources?category=ROOM&keyword=会議&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -269,12 +269,15 @@ Authorization: Bearer <JWT>
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
+| `keyword` | string | ❌ | リソース名（`name`）または説明（`description`）への部分一致キーワード（大文字・小文字を区別しない） |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
 > `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
+
+> **キーワード検索**：`keyword` は前後の空白を除去してから使い、除去後に空文字なら指定なしとして扱う（全件が対象になる）。`name` または `description` のどちらかに、入力全体が 1 つの文字列として含まれるリソースを返す。スペース区切りの複数語には分割しない。`%` と `_` はワイルドカードではなくリテラル文字として検索する。`description` が `null` のリソースは `name` だけで判定する。`category`・`from` / `to` とは AND 条件で組み合わせ、ADMIN の `is_active = false` を含む扱いも変わらない。`keyword` の最大文字数は制限しない。`keyword` 未指定時の動作は従来と同じである。
 
 #### レスポンス（200 OK）
 
