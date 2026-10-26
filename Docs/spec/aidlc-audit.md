@@ -153,3 +153,11 @@ timestamp: 2026-08-29
 **Context**: CONSTRUCTION - Build and Test 承認。OPERATIONS（CI 確認）は PR 作成後。画面確認は学習者が別途実施。
 
 ---
+
+## PR レビュー指摘への対応（ラウンド 1）: フロントエンドのテスト追加
+**Timestamp**: 2026-10-26T00:55:39+00:00
+**User Input**: "PR #157 の AI レビュー（ラウンド 1）で、観点2が NG になりました。指摘は次のとおりです。\n\n- `frontend/src/app/(authenticated)/resources/ResourceFilterForm.tsx:46` の `.trim()` と `:51` の `if (keyword) params.set(\"keyword\", keyword);` を検証するテストがない（:51 を消しても .trim() を外しても失敗するテストがない）\n- `page.tsx:36`（keyword を Server Action に渡す）と `:61`（入力欄の初期値に渡す）を消しても失敗するテストがない\n- `frontend/package.json` に @testing-library/react と jsdom があり、vitest.config.ts も jsdom なので Vitest で書ける\n\n対応してください:\n1. `ResourceFilterForm` のテストを Vitest + Testing Library で追加する。最低限: キーワードを入力して送信すると URL に前後空白を除いた keyword が付く／空白のみなら keyword が付かない（既存の keyword も消える）／初期値が入力欄に反映される。router（next/navigation）のモック方法は既存テストの書き方に合わせる。\n2. 可能なら page.tsx の keyword の受け渡しもテストする（既存に page のテストの前例がなく難しければ、その理由を出力に書いて ResourceFilterForm のテストだけで構いません）。\n3. `pnpm test`、`pnpm lint`、`pnpm format:check`、`pnpm exec tsc --noEmit` を通す。`pnpm build` は実行しないでください（dev サーバーと .next を共有していて壊れるため）。\n4. `test: ...` のコミットを1つ作る（push はしない。こちらで行います）。AI-DLC の audit にも記録してください。"
+**AI Response**: "指摘は妥当（実装は FE の送信処理と page の受け渡しが未テストだった）。実装コードは変更せず、テストのみ追加。(1) `frontend/tests/unit/app/resources/ResourceFilterForm.test.tsx`（8 件、Vitest + Testing Library + user-event。next/navigation は既存の Server Action テストと同じく vi.mock、router.push の引数を検査）: 前後空白の除去、全角空白の除去、空白のみは keyword を付けない、既存 keyword を空白のみにすると消える、page を付けない、defaultKeyword の初期値反映、defaultKeyword なしは空、初期値のまま送信。(2) `frontend/tests/unit/app/resources/page.test.tsx`（3 件）: async Server Component を関数として呼んで描画し、Server Action と next/navigation を vi.mock。keyword が listResourcesAction に渡ること、入力欄の初期値に渡ること、未指定時を検証。既存に page のテストの前例はなかったが、この方法で可能だった。変異確認（該当行を一時的に壊して失敗を確認し、元に戻した。ソース差分なし）: `.trim()` 削除で 4 件失敗、`if (keyword)` 削除で 2 件失敗、page の `keyword:` 削除で 2 件失敗、`defaultKeyword` 削除で 1 件失敗。検証: `pnpm test` 93 件成功（12 ファイル、追加 11 件）、`pnpm lint` 指摘なし、`pnpm format:check` 通過、`pnpm exec tsc --noEmit` 型エラーなし。`pnpm build` は指示により未実行。`test:` コミットを 1 つ作成（push なし）。"
+**Context**: PR #157 レビュー対応。CONSTRUCTION 相当の追加作業（計画外のテスト追加）。実装の挙動は変更なし。
+
+---
