@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-10-26T09:30:00+09:00'
+last_updated: '2026-10-26T10:50:00+09:00'
 ---
 
 # REST API 仕様書
@@ -25,7 +25,7 @@ last_updated: '2026-10-26T09:30:00+09:00'
 | リソース命名 | `/api/<複数形>` の REST 命名規則（例：`/api/resources`・`/api/reservations`） |
 | バージョニング | バージョニングなし（URL パスに `/v1` 等を含めない） |
 | 認証方式 | Bearer JWT（Cognito 発行）。詳細は[§共通 認証方式](#auth-method)を参照 |
-| レスポンス形式 | JSON（`Content-Type: application/json`） |
+| レスポンス形式 | JSON（`Content-Type: application/json`）。ただし `GET /api/reports/reservations/csv` は CSV（`Content-Type: text/csv; charset=UTF-8`）を返す例外で、エラー時は他のエンドポイントと同じ JSON を返す（詳細は[§帳票出力](#reports)） |
 | 日時フォーマット | ISO 8601 ローカル日時・オフセットなし（詳細は[§共通 日時フォーマット](#datetime-format)） |
 | エラー形式 | 全エラーを共通フォーマット `{ "code", "message" }` で返却（詳細は[§共通 共通エラーレスポンス](#common-error)） |
 
@@ -188,6 +188,12 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 | GET | `/api/approvals/pending` | 承認待ち一覧 | APPROVER / ADMIN |
 | POST | `/api/approvals/{stepId}/approve` | 承認（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
 | POST | `/api/approvals/{stepId}/reject` | 却下（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
+
+### 帳票出力
+
+| メソッド | パス | 概要 | 権限 |
+|--------|------|------|------|
+| GET | `/api/reports/reservations/csv` | 予約一覧の CSV 出力（期間・ステータスで絞り込み可） | ADMIN |
 
 ---
 
@@ -916,3 +922,89 @@ Authorization: Bearer <JWT>
 ### ダッシュボード情報取得シーケンス図
 
 ![ダッシュボード情報取得シーケンス図](/diagrams/spec/api-spec-dashboard.drawio.svg)
+
+---
+
+## §帳票出力 {#reports}
+
+### `GET /api/reports/reservations/csv`（予約一覧の CSV 出力、ADMIN） {#get-api-reports-reservations-csv}
+
+#### リクエスト
+
+```http
+GET /api/reports/reservations/csv?from=2026-10-01&to=2026-10-31&status=APPROVED&status=PENDING
+Authorization: Bearer <JWT>
+```
+
+**権限**：ADMIN のみ。MEMBER / APPROVER は `403 Forbidden`（`code: FORBIDDEN`）、未認証は `401 Unauthorized`。ADMIN は全ユーザーの予約が対象になる。
+
+#### クエリパラメータ
+
+| パラメータ | 型 | 必須 | 説明 |
+|------------|-----|------|------|
+| `from` | date（`YYYY-MM-DD`） | ❌ | 期間の開始日。開始日時が `from` の 00:00:00 以降の予約に絞る |
+| `to` | date（`YYYY-MM-DD`） | ❌ | 期間の終了日。開始日時が `to` の翌日 00:00:00 より前の予約に絞る（`to` の日を含む） |
+| `status` | string | ❌ | ステータスフィルター（`PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`）。未指定なら全ステータス |
+
+> **期間の判定**：予約の開始日時（`startAt`）で判定する。終了日時（`endAt`）は判定に使わないため、期間をまたぐ予約は開始日を含む期間の出力にだけ載る。`from` と `to` は片方だけの指定もでき、両方未指定なら期間では絞らない。期間とステータスは AND 条件で組み合わせる。
+
+> **日付の形式**：`from` / `to` は時刻を持たない日付（`YYYY-MM-DD`）で、[§共通 日時フォーマット](#datetime-format)の TIMESTAMP とは別の形式である。日付として解釈できない値は `400 Bad Request`（`code: VALIDATION_ERROR`）となる。
+
+> **ページネーションなし**：`page` / `size` は受け付けない。絞り込み条件に一致する全件を 1 ファイルで返し、件数の上限は設けない。
+
+#### レスポンス（200 OK）
+
+```http
+HTTP/1.1 200 OK
+Content-Type: text/csv; charset=UTF-8
+Content-Disposition: attachment; filename="reservations_20261026_104500.csv"
+```
+
+本文は次の形式の CSV である（先頭に BOM が付くが、下の例では見えない）。
+
+```csv
+予約ID,リソース名,申請者名,開始日時,終了日時,目的,承認状態
+550e8400-e29b-41d4-a716-446655440030,第1会議室,山田 太郎,2026-10-02 10:00:00,2026-10-02 12:00:00,週次ミーティング,承認済み
+```
+
+**CSV の列**
+
+| # | 見出し | 値 | 書式 |
+|---|--------|-----|------|
+| 1 | 予約ID | 予約の ID | UUID |
+| 2 | リソース名 | リソース名 | そのまま |
+| 3 | 申請者名 | 申請者名 | そのまま |
+| 4 | 開始日時 | 利用開始日時 | `yyyy-MM-dd HH:mm:ss` |
+| 5 | 終了日時 | 利用終了日時 | `yyyy-MM-dd HH:mm:ss` |
+| 6 | 目的 | 利用目的 | そのまま |
+| 7 | 承認状態 | 予約のステータス | 日本語ラベル（下表） |
+
+**承認状態のラベル**
+
+| `status` | ラベル |
+|----------|--------|
+| `PENDING` | 承認待ち |
+| `APPROVED` | 承認済み |
+| `REJECTED` | 却下 |
+| `CANCELLED` | キャンセル済み |
+| `DRAFT` | ドラフト（ベース実装では発生しない） |
+
+**CSV の書式規則**
+
+- 文字コードは UTF-8 で、先頭に BOM（`EF BB BF`）を付ける（Excel での文字化けを防ぐため）。
+- 1 行目は日本語のヘッダ行。改行コードは CRLF。
+- カンマ、ダブルクォート、CR、LF のいずれかを含むセルはダブルクォートで囲み、値の中のダブルクォートは 2 つ重ねる（RFC 4180）。
+- 値の先頭が `=` `+` `-` `@`、タブ、CR のいずれかであるセルは、先頭にシングルクォート `'` を付けて出力する（表計算ソフトで数式として実行されることを防ぐ CSV インジェクション対策）。該当するセルの値は、元の値の先頭に `'` が付いたものになる。この処理は RFC 4180 のエスケープより先に適用する。
+- 行は開始日時の昇順に並べ、開始日時が同じ場合は予約 ID の昇順とする。
+- 該当する予約が 0 件のときも `200 OK` で、BOM とヘッダ行だけの CSV を返す。
+- ファイル名は `reservations_YYYYMMDD_HHmmss.csv`（ASCII のみ）。日時は CSV を生成した時刻で、[§共通 日時フォーマット](#datetime-format)と同じくタイムゾーン変換は行わない。
+
+#### エラー
+
+エラー時の本文は CSV ではなく、[§共通 共通エラーレスポンス](#common-error)の JSON である。
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| `400` | `VALIDATION_ERROR` | `from` / `to` が日付として解釈できない。`status` に未知の値を指定した。`from` が `to` より後（同じ日付は許容する） |
+| `401` | `UNAUTHORIZED` | JWT なし・不正・期限切れ |
+| `403` | `FORBIDDEN` | ADMIN 以外のロール |
