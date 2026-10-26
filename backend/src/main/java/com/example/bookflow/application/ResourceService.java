@@ -14,6 +14,7 @@ import com.example.bookflow.presentation.dto.UpdateResourceRequest;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -60,9 +61,11 @@ public class ResourceService {
    * リソース一覧を返す。
    *
    * <p>ADMIN は {@code is_active = false} のリソースも含む。 {@code from} / {@code to} を指定した場合は、当該時間帯に {@code
-   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
+   * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。 {@code keyword} を指定した場合は、名称または説明文に
+   * キーワードを含む（部分一致・大文字小文字を区別しない）リソースに絞り込む。各条件は AND で組み合わせる。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param keyword キーワード（null・空文字・空白のみの場合はフィルタしない。前後の空白は除去する）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
@@ -72,21 +75,48 @@ public class ResourceService {
   @Transactional(readOnly = true)
   public Page<ResourceResponse> list(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
+    String pattern = toLikePattern(keyword);
     if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+      return listWithAvailabilityFilter(category, pattern, from, to, isAdmin, pageable);
     }
-    return listPaginated(category, isAdmin, pageable);
+    return listPaginated(category, pattern, isAdmin, pageable);
+  }
+
+  /**
+   * キーワードを LIKE 検索用のパターンに変換する。
+   *
+   * <p>前後の空白を除去して小文字化し、LIKE のワイルドカード（{@code %}・{@code _}）とエスケープ文字（{@code !}）を {@code !}
+   * でエスケープしたうえで前後を {@code %} で囲む。キーワードが null・空文字・空白のみの場合は null（フィルタなし）を返す。
+   *
+   * @param keyword 入力キーワード
+   * @return LIKE パターン（フィルタしない場合は null）
+   */
+  static String toLikePattern(String keyword) {
+    if (keyword == null || keyword.isBlank()) {
+      return null;
+    }
+    String escaped =
+        keyword
+            .strip()
+            .toLowerCase(Locale.ROOT)
+            .replace("!", "!!")
+            .replace("%", "!%")
+            .replace("_", "!_");
+    return "%" + escaped + "%";
   }
 
   /** from/to 指定なし：通常ページネーション。 */
   private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
+      ResourceCategory category, String pattern, boolean isAdmin, Pageable pageable) {
     Page<Resource> page;
-    if (isAdmin) {
+    if (pattern != null) {
+      page = resourceRepository.searchByKeyword(pattern, category, isAdmin, pageable);
+    } else if (isAdmin) {
       page =
           category != null
               ? resourceRepository.findByCategory(category, pageable)
@@ -107,12 +137,13 @@ public class ResourceService {
    */
   private Page<ResourceResponse> listWithAvailabilityFilter(
       ResourceCategory category,
+      String pattern,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
     // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    List<Resource> candidates = fetchAllCandidates(category, pattern, isAdmin);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -138,7 +169,11 @@ public class ResourceService {
     return new PageImpl<>(content, pageable, total);
   }
 
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
+  private List<Resource> fetchAllCandidates(
+      ResourceCategory category, String pattern, boolean isAdmin) {
+    if (pattern != null) {
+      return resourceRepository.searchByKeyword(pattern, category, isAdmin);
+    }
     if (isAdmin) {
       return category != null
           ? resourceRepository.findByCategory(category)

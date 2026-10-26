@@ -56,4 +56,46 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
   List<Resource> findByCategory(ResourceCategory category);
+
+  // ---- キーワード検索（名称・説明文の部分一致・大文字小文字を区別しない）----
+
+  /** キーワード検索の JPQL。{@code :pattern} は小文字化・ワイルドカードをエスケープ済みの LIKE パターン。 */
+  String KEYWORD_SEARCH_QUERY =
+      "SELECT r FROM Resource r"
+          + " WHERE (:includeInactive = TRUE OR r.isActive = TRUE)"
+          + " AND (:category IS NULL OR r.category = :category)"
+          + " AND (LOWER(r.name) LIKE :pattern ESCAPE '!'"
+          + " OR LOWER(r.description) LIKE :pattern ESCAPE '!')";
+
+  /**
+   * キーワード（名称・説明文の部分一致）でリソースを検索し、ページネーションで返す。
+   *
+   * @param pattern 小文字化し {@code %}・{@code _}・{@code !} を {@code !} でエスケープしたうえで前後を {@code %} で囲んだ
+   *     LIKE パターン（{@link com.example.bookflow.application.ResourceService} が組み立てる）
+   * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param includeInactive true の場合は inactive も含む（ADMIN 用）
+   * @param pageable ページネーション
+   * @return 条件に一致するリソースのページ
+   */
+  @Query(KEYWORD_SEARCH_QUERY)
+  Page<Resource> searchByKeyword(
+      @Param("pattern") String pattern,
+      @Param("category") ResourceCategory category,
+      @Param("includeInactive") boolean includeInactive,
+      Pageable pageable);
+
+  /**
+   * キーワード（名称・説明文の部分一致）でリソースを検索し、全件返す（from/to フィルタ用）。
+   *
+   * @param pattern {@link #searchByKeyword(String, ResourceCategory, boolean, Pageable)} と同じ LIKE
+   *     パターン
+   * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param includeInactive true の場合は inactive も含む（ADMIN 用）
+   * @return 条件に一致するリソース
+   */
+  @Query(KEYWORD_SEARCH_QUERY)
+  List<Resource> searchByKeyword(
+      @Param("pattern") String pattern,
+      @Param("category") ResourceCategory category,
+      @Param("includeInactive") boolean includeInactive);
 }
