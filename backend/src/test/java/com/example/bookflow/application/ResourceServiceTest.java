@@ -2,9 +2,13 @@ package com.example.bookflow.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.example.bookflow.application.exception.ResourceNotFoundException;
@@ -32,6 +36,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * {@link ResourceService} 単体テスト（ADR-018 準拠・Mockito）。
@@ -257,6 +262,177 @@ class ResourceServiceTest {
       Page<ResourceResponse> result = resourceService.list(null, from, to, false, pageable);
 
       assertThat(result.getContent()).hasSize(1);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // list — キーワード検索
+  // ---------------------------------------------------------------------------
+
+  @Nested
+  class ListWithKeyword {
+
+    private final Pageable pageable = PageRequest.of(0, 20);
+
+    private Resource room;
+    private Resource equipment;
+
+    @BeforeEach
+    void setUp() {
+      room = makeResource(UUID.randomUUID(), "第1会議室", ResourceCategory.ROOM, true);
+      equipment = makeResource(UUID.randomUUID(), "プロジェクター", ResourceCategory.EQUIPMENT, true);
+    }
+
+    @Test
+    void list_memberWithKeyword_searchesActiveByLowerCasedPattern() {
+      when(resourceRepository.searchActiveByKeyword("%room%", Sort.unsorted()))
+          .thenReturn(List.of(room));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, false, "ROOM", pageable);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::id)
+          .containsExactly(room.getId());
+      verify(resourceRepository, never()).findByIsActiveTrue(any(Pageable.class));
+    }
+
+    @Test
+    void list_keywordWithSurroundingSpaces_trimsIncludingFullWidthSpace() {
+      when(resourceRepository.searchActiveByKeyword("%会議%", Sort.unsorted()))
+          .thenReturn(List.of(room));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, false, " 　会議　 ", pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_blankKeyword_treatedAsNoKeyword() {
+      when(resourceRepository.findByIsActiveTrue(pageable))
+          .thenReturn(new PageImpl<>(List.of(room, equipment)));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, false, " 　 ", pageable);
+
+      assertThat(result.getContent()).hasSize(2);
+      verify(resourceRepository, never()).searchActiveByKeyword(any(), any());
+    }
+
+    @Test
+    void list_nullKeyword_usesExistingPath() {
+      when(resourceRepository.findByIsActiveTrue(pageable))
+          .thenReturn(new PageImpl<>(List.of(room)));
+
+      Page<ResourceResponse> result = resourceService.list(null, null, null, false, null, pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(resourceRepository, never()).searchActiveByKeyword(any(), any());
+    }
+
+    @Test
+    void list_keywordWithLikeWildcardsAndEscapeChar_escapesThem() {
+      when(resourceRepository.searchActiveByKeyword("%100!%!_!!%", Sort.unsorted()))
+          .thenReturn(List.of());
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, false, "100%_!", pageable);
+
+      assertThat(result.getContent()).isEmpty();
+    }
+
+    @Test
+    void list_adminWithKeyword_searchesIncludingInactive() {
+      when(resourceRepository.searchByKeyword("%a%", Sort.unsorted()))
+          .thenReturn(List.of(room, equipment));
+
+      Page<ResourceResponse> result = resourceService.list(null, null, null, true, "a", pageable);
+
+      assertThat(result.getContent()).hasSize(2);
+    }
+
+    @Test
+    void list_adminWithKeywordAndCategory_searchesByCategory() {
+      when(resourceRepository.searchByKeywordAndCategory(
+              "%a%", ResourceCategory.ROOM, Sort.unsorted()))
+          .thenReturn(List.of(room));
+
+      Page<ResourceResponse> result =
+          resourceService.list(ResourceCategory.ROOM, null, null, true, "a", pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_memberWithKeywordAndCategory_searchesActiveByCategory() {
+      when(resourceRepository.searchActiveByKeywordAndCategory(
+              "%a%", ResourceCategory.EQUIPMENT, Sort.unsorted()))
+          .thenReturn(List.of(equipment));
+
+      Page<ResourceResponse> result =
+          resourceService.list(ResourceCategory.EQUIPMENT, null, null, false, "a", pageable);
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_keywordWithTimeFilterAndOccupied_excludesOccupiedResource() {
+      LocalDateTime from = LocalDateTime.of(2025, 6, 1, 10, 0);
+      LocalDateTime to = LocalDateTime.of(2025, 6, 1, 12, 0);
+      when(resourceRepository.searchActiveByKeyword("%a%", Sort.unsorted()))
+          .thenReturn(List.of(room, equipment));
+      Reservation occupying =
+          makeReservation(
+              UUID.randomUUID(),
+              room,
+              from.minusHours(1),
+              to.plusHours(1),
+              ReservationStatus.PENDING);
+      when(reservationRepository.findByResource_IdInAndStatusIn(anyCollection(), anyCollection()))
+          .thenReturn(List.of(occupying));
+
+      Page<ResourceResponse> result = resourceService.list(null, from, to, false, "a", pageable);
+
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::id)
+          .containsExactly(equipment.getId());
+    }
+
+    @Test
+    void list_keywordWithoutTimeFilter_doesNotQueryReservations() {
+      when(resourceRepository.searchActiveByKeyword("%a%", Sort.unsorted()))
+          .thenReturn(List.of(room));
+
+      resourceService.list(null, null, null, false, "a", pageable);
+
+      verifyNoInteractions(reservationRepository);
+    }
+
+    @Test
+    void list_keywordWithSort_passesSortToRepository() {
+      Sort sort = Sort.by("name");
+      when(resourceRepository.searchActiveByKeyword("%a%", sort)).thenReturn(List.of(room));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, false, "a", PageRequest.of(0, 20, sort));
+
+      assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void list_keywordWithSecondPage_returnsRemainderAndTotal() {
+      Resource third = makeResource(UUID.randomUUID(), "第3会議室", ResourceCategory.ROOM, true);
+      when(resourceRepository.searchActiveByKeyword("%a%", Sort.unsorted()))
+          .thenReturn(List.of(room, equipment, third));
+
+      Page<ResourceResponse> result =
+          resourceService.list(null, null, null, false, "a", PageRequest.of(1, 2));
+
+      assertThat(result.getTotalElements()).isEqualTo(3);
+      assertThat(result.getContent())
+          .extracting(ResourceResponse::id)
+          .containsExactly(third.getId());
     }
   }
 

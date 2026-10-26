@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -56,4 +57,41 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   /** リソースをカテゴリで絞り込んで全件返す（inactive 含む・from/to フィルタ用）。 */
   List<Resource> findByCategory(ResourceCategory category);
+
+  // ---- キーワード検索用（keyword 指定時の候補取得）----
+  //
+  // pattern は呼び出し側（ResourceService）が LIKE 用に組み立てて渡す。小文字化済みで、%・_ と
+  // エスケープ文字（!）は ! でエスケープ済みの "%...%" 形式。大文字・小文字は LOWER() で揃えて比較する。
+  // description は null 可。null の LIKE は偽として扱われるため name だけで判定される。
+  // カテゴリの有無はメソッドを分けて表す（null を JPQL に渡さないため）。
+
+  /** キーワードに一致する全リソースを返す（inactive 含む）。 */
+  @Query(
+      "SELECT r FROM Resource r WHERE"
+          + " (LOWER(r.name) LIKE :pattern ESCAPE '!'"
+          + " OR LOWER(r.description) LIKE :pattern ESCAPE '!')")
+  List<Resource> searchByKeyword(@Param("pattern") String pattern, Sort sort);
+
+  /** キーワードに一致するリソースをカテゴリで絞り込んで返す（inactive 含む）。 */
+  @Query(
+      "SELECT r FROM Resource r WHERE r.category = :category"
+          + " AND (LOWER(r.name) LIKE :pattern ESCAPE '!'"
+          + " OR LOWER(r.description) LIKE :pattern ESCAPE '!')")
+  List<Resource> searchByKeywordAndCategory(
+      @Param("pattern") String pattern, @Param("category") ResourceCategory category, Sort sort);
+
+  /** キーワードに一致する有効リソース（{@code is_active = true}）を返す。 */
+  @Query(
+      "SELECT r FROM Resource r WHERE r.isActive = true"
+          + " AND (LOWER(r.name) LIKE :pattern ESCAPE '!'"
+          + " OR LOWER(r.description) LIKE :pattern ESCAPE '!')")
+  List<Resource> searchActiveByKeyword(@Param("pattern") String pattern, Sort sort);
+
+  /** キーワードに一致する有効リソースをカテゴリで絞り込んで返す。 */
+  @Query(
+      "SELECT r FROM Resource r WHERE r.isActive = true AND r.category = :category"
+          + " AND (LOWER(r.name) LIKE :pattern ESCAPE '!'"
+          + " OR LOWER(r.description) LIKE :pattern ESCAPE '!')")
+  List<Resource> searchActiveByKeywordAndCategory(
+      @Param("pattern") String pattern, @Param("category") ResourceCategory category, Sort sort);
 }
