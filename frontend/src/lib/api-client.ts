@@ -180,6 +180,19 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
   }
 
   /**
+   * GET → Response をそのまま返す（CSV など JSON 以外の本文を中継する用途）。
+   *
+   * 本文は読まない（ストリームのまま呼び出し側に渡す）。非 2xx は他のメソッドと同じく
+   * `ApiClientError` をスローする。
+   */
+  async function getRaw(
+    path: string,
+    params?: Record<string, string | string[]>,
+  ): Promise<Response> {
+    return request("GET", path, { params });
+  }
+
+  /**
    * POST/PUT → レスポンスボディを Zod スキーマで検証して返す。
    */
   async function post<S extends ZodTypeAny>(
@@ -219,7 +232,7 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
     await request("POST", path, { body });
   }
 
-  return { get, getPaginated, getArray, post, put, patch, postEmpty };
+  return { get, getPaginated, getArray, getRaw, post, put, patch, postEmpty };
 }
 
 /**
