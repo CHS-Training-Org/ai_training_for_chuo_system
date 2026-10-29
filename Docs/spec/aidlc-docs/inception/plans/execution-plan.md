@@ -1,30 +1,31 @@
-# Execution Plan
+# Execution Plan（CSV 帳票出力）
 
 ## Detailed Analysis Summary
 
 ### Transformation Scope (Brownfield Only)
-- **Transformation Type**: Single component change（既存 API とフォームの拡張。アーキテクチャ変更なし）
-- **Primary Changes**: `GET /api/resources` への `keyword` 追加（BE）、`ResourceFilterForm` と一覧ページへの反映（FE）
-- **Related Components**: ResourceController / ResourceService / ResourceRepository、`resources/page.tsx` / `ResourceFilterForm.tsx` / `resources.ts`
+- **Transformation Type**: Multiple components（新規エンドポイントと新規画面の追加。アーキテクチャ変更なし）
+- **Primary Changes**: `GET /api/reports/reservations/csv` と CSV 生成ロジックの新設（BE）、`/admin/reservations` とダウンロード経路の新設（FE）、仕様書 3 件の更新
+- **Related Components**: ReservationRepository（期間条件のクエリ）、SecurityConfig と `@PreAuthorize`、`nav-items.ts`、`api-client.ts`（非 JSON 応答の扱い）
 
 ### Change Impact Assessment
-- **User-facing changes**: Yes。キーワード入力欄と 0 件メッセージが加わる
-- **Structural changes**: Minor。BE の検索条件を `Specification` に集約する
+- **User-facing changes**: Yes。管理者ページとサイドナビ項目が加わる
+- **Structural changes**: Minor。`presentation` に帳票用 Controller、`application` に帳票 Service と CSV 生成部を追加する
 - **Data model changes**: No。DB スキーマ変更なし
-- **API changes**: Yes（後方互換）。任意の `keyword` を追加
-- **NFR impact**: No。入力検証のみ（100 文字、LIKE エスケープ）
+- **API changes**: Yes（後方互換）。新規エンドポイントの追加のみ
+- **NFR impact**: Minor。ADMIN 限定、数式インジェクション対策、大量データ時の出力方式（一括かストリーミングか）
 
 ### Component Relationships (Brownfield Only)
-- **Primary Component**: backend（resource 系）、frontend（/resources）
+- **Primary Component**: backend（presentation、application、domain）、frontend（`/admin/reservations`）
 - **Infrastructure Components**: なし
 - **Shared Components**: なし
-- **Dependent Components**: frontend は backend の REST に依存。後続課題（reservation-list-filter、resource-list-sort）が同じ構造を再利用する見込み
-- **Change Type / Priority**: backend Minor・Critical path、frontend Minor・backend の後
+- **Dependent Components**: frontend は backend の REST に依存。後続課題 `openapi-client-gen` は新しいエンドポイントの影響を受ける
+- **Change Type / Priority**: backend Minor・Critical path、frontend Minor・backend の後、docs Minor・実装より先
 
 ### Risk Assessment
-- **Risk Level**: Low
-- **Rollback Complexity**: Easy
-- **Testing Complexity**: Simple〜Moderate（from/to 経路との AND 条件と LIKE エスケープの確認が要点）
+- **Risk Level**: Medium
+- **Rollback Complexity**: Easy（追加のみで、既存機能を変更しない）
+- **Testing Complexity**: Moderate（BOM とエスケープの確認、JWT をサーバー側に持つ構成でのダウンロード経路、期間境界）
+- **主な不確実点**: ダウンロード経路（Route Handler か Server Action か）、一括かストリーミングか
 
 ## Workflow Visualization
 
@@ -99,26 +100,26 @@ OPERATIONS:   placeholder (CI Frontend / CI Backend が相当)
 - [x] Reverse Engineering (COMPLETED)
 - [x] Requirements Analysis (COMPLETED)
 - [ ] User Stories - SKIP
-  - **Rationale**: ペルソナは全ロール共通の 1 つで、受入条件は要件シートに揃っている
+  - **Rationale**: 利用者は ADMIN の 1 ロールのみ。受入条件はシートと requirements.md で確定済み
 - [x] Workflow Planning (IN PROGRESS)
 - [ ] Application Design - EXECUTE
-  - **Rationale**: `Specification` の導入は新しいコンポーネントとメソッドの定義を伴う。Q4 で保留した「`Specification` か `@Query` か」の最終確定もここで行う（軽量に実施）
+  - **Rationale**: 新しいコンポーネント（帳票 Controller と Service、CSV 生成部、期間条件のクエリ、ダウンロード用の FE 経路）の責務とメソッドを定義する。ダウンロード方式（Route Handler か Server Action か）と、一括かストリーミングかの判断をここで確定する
 - [ ] Units Generation - SKIP
   - **Rationale**: BE と FE を縦切りの 1 ユニットで実装する。分割の必要がない
 
 ### CONSTRUCTION PHASE
 - [ ] Functional Design - SKIP
-  - **Rationale**: 業務ルール（空白除去・エスケープ・100 文字）は requirements.md で確定済み。新しいデータモデルなし
+  - **Rationale**: CSV の列、書式、エスケープ、期間の扱いは requirements.md で確定済み。新しいデータモデルなし
 - [ ] NFR Requirements - SKIP
-  - **Rationale**: 性能・セキュリティの新規要件なし。拡張ルールは No
+  - **Rationale**: 新規の性能・セキュリティ要件は requirements.md に含めた。出力方式は Application Design で判断する。拡張ルールはすべて No
 - [ ] NFR Design - SKIP
   - **Rationale**: NFR Requirements を実施しないため
 - [ ] Infrastructure Design - SKIP
   - **Rationale**: インフラ変更なし
 - [ ] Code Generation - EXECUTE (ALWAYS)
-  - **Rationale**: 実装。着手前に `/update-spec` で api-spec.md と screen-spec.md を更新する（Spec-first）
+  - **Rationale**: 実装。着手前に `/update-spec` で api-spec.md、screen-spec.md、requirements.md の権限マトリクスを更新する（Spec-first）
 - [ ] Build and Test - EXECUTE (ALWAYS)
-  - **Rationale**: `./gradlew test`、`pnpm test`、lint、format の検証
+  - **Rationale**: `./gradlew checkstyleMain test`、`pnpm lint`、`pnpm format:check`、`pnpm test`、`npm run build`（docs-next）による検証
 
 ### OPERATIONS PHASE
 - [ ] Operations - PLACEHOLDER
@@ -126,14 +127,14 @@ OPERATIONS:   placeholder (CI Frontend / CI Backend が相当)
 
 ## Package Change Sequence (Brownfield Only)
 1. docs-next/docs/spec（`/update-spec`）
-2. backend（Specification、Service、Controller、テスト）
-3. frontend（Action、フォーム、ページ、テスト）
+2. backend（Repository のクエリ、CSV 生成部、Service、Controller、テスト）
+3. frontend（ダウンロード経路、`/admin/reservations`、ナビ項目、テスト）
 
 ## Estimated Timeline
-- **Total Phases**: 実行 4 ステージ（Application Design、Code Generation、Build and Test と、完了済みの Inception 3 つ）
-- **Estimated Duration**: シート記載の 2〜3 時間
+- **Total Phases**: 実行 3 ステージ（Application Design、Code Generation、Build and Test）。Inception の 3 ステージは完了済み
+- **Estimated Duration**: 2〜3 日（Issue の推定。シートの「半日〜1日」とは異なる）
 
 ## Success Criteria
-- **Primary Goal**: keyword でリソース名・説明を部分一致検索できる
-- **Key Deliverables**: api-spec と screen-spec の更新、BE と FE の実装、追加テスト
-- **Quality Gates**: シートの受入条件 6 項目、既存テスト pass、lint と format の pass
+- **Primary Goal**: ADMIN が期間とステータスで絞り込んだ予約一覧を、Excel で文字化けしない CSV としてダウンロードできる
+- **Key Deliverables**: 仕様書 3 件の更新、BE と FE の実装、追加テスト
+- **Quality Gates**: シートの受入条件 5 項目、既存テスト pass、lint と format の pass、`npm run build`（docs-next）の成功

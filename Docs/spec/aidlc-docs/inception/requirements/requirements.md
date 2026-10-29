@@ -1,41 +1,12 @@
-# Requirements: リソース一覧の keyword 検索追加
+# Requirements（CSV 帳票出力）
 
-## Intent Analysis
-- **User Request**: `/aidlc` でシート `resource-list-filter` を実装する
-- **Request Type**: Enhancement
-- **Scope Estimate**: Multiple Components（BE と FE）
-- **Complexity Estimate**: Simple〜Moderate
-- **Depth**: Standard
-- **入力**: `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`（RES-01〜04 と受入条件）、Reverse Engineering 成果物、質問ファイルの回答
-
-## Functional Requirements
-| # | 要件 | 出典 |
-|---|------|------|
-| FR-01 | `GET /api/resources` に任意の `keyword` を追加し、`resources.name` または `resources.description` への部分一致で絞り込む | RES-01 |
-| FR-02 | 大文字・小文字を区別しない | RES-02 |
-| FR-03 | `ResourceFilterForm` にキーワード入力欄を追加し、「絞り込む」送信時に `keyword` を URL パラメータへ付与する。空のときは付与しない（条件解除） | RES-03 |
-| FR-04 | `category`・`from`/`to`・`keyword` は AND 条件で組み合わせる。ADMIN は inactive を含み、それ以外は active のみ（既存どおり） | RES-04 |
-| FR-05 | `keyword` 未指定時の挙動は既存と同一（全件） | 受入条件 |
-| FR-06 | `keyword` 前後の空白は除去し、全体を 1 つの部分一致文字列として扱う。除去後に空なら未指定と同じ | Q2=A |
-| FR-07 | `%`・`_`・エスケープ文字はリテラルとして検索する（LIKE のエスケープ処理） | Q1=A |
-| FR-08 | `keyword` は 100 文字まで。超過は `400 VALIDATION_ERROR` | Q3=A |
-| FR-09 | `from`/`to` 指定時の経路（Java 側で空き判定後に手動ページング）でも `keyword` を適用する | FR-04 |
-| FR-10 | `keyword` 指定で 0 件のとき、「キーワード『○○』に一致するリソースがありません。」のように条件を示すメッセージを出す | Q5=B |
-
-## Non-Functional Requirements
-- **保守性**: BE は JPA `Specification` で category・isActive・keyword を動的に組み合わせ、派生クエリの組合せ爆発を解消する（Q4=A。最終確定は Application Design）。後続の `reservation-list-filter`・`resource-list-sort` が条件を足しやすい構造にする。
-- **一貫性**: 4 レイヤー構造を守る。FE は Server Components 優先で、絞り込み状態は URL パラメータで持つ（既存方式）。
-- **セキュリティ**: 拡張ルールは適用しない（Q7=B）。ただし入力値の検証（FR-07・FR-08）は通常の品質として実施する。
-
-## Test Requirements
-- BE: `ResourceServiceTest` と `ResourceControllerTest` に keyword のケースを追加する（部分一致、大文字小文字、name/description、ワイルドカード文字、空白のみ、101 文字、category・from/to との AND、ADMIN と非 ADMIN）。既存テストは引き続き pass。
-- FE: `resources.test.ts` に `keyword` が query に渡ることを追加する（Q6=B）。E2E は対象外。
-- 検証コマンド: `./gradlew test`、`pnpm test`、`pnpm lint`、`./gradlew spotlessApply` / `checkstyleMain`。
-
-## Spec Updates（Spec-first、実装より先）
-- `docs-next/docs/spec/api-spec.md` §`GET /api/resources`: `keyword` を追記
-- `docs-next/docs/spec/screen-spec.md` §`/resources`: キーワード入力欄と 0 件メッセージを追記
-- 統合は `/update-spec` で Code Generation より前に行う
+## Intent Analysis Summary
+- **User Request**: `/aidlc` で `docs-next/docs/spec/enhancements/intermediate/csv-export.md`（Issue #29）に取り組む。
+- **Request Type**: New Feature（新規エンドポイントと画面の追加）
+- **Scope Estimate**: Multiple Components（backend と frontend、仕様書）
+- **Complexity Estimate**: Moderate
+- **Requirements Depth**: Standard
+- **Input**: ビジネス要求シート、確認質問 12 問への回答（`requirement-verification-questions.md`）、リバースエンジニアリング成果物
 
 ## Extension Configuration
 | Extension | Enabled |
@@ -44,5 +15,63 @@
 | Resiliency Baseline | No |
 | Property-Based Testing | No |
 
+## Functional Requirements
+
+### Backend
+| ID | 要件 |
+|---|---|
+| RPT-01 | `GET /api/reports/reservations/csv` を新設し、`Content-Type: text/csv; charset=UTF-8` で予約一覧を返す。`Content-Disposition: attachment` でファイル名を指定する |
+| RPT-02 | CSV の列は 日本語ヘッダ行 + 予約 ID、リソース名、申請者名、開始日時、終了日時、目的、承認状態。承認状態は予約ステータス（`reservations.status`）の日本語ラベル（承認待ち、承認済み、却下、キャンセル済み、ドラフト。画面の `RESERVATION_STATUS_LABELS` と同じ）で出す（Q1=A。Code Generation で画面の実ラベルに合わせて「キャンセル」「下書き」から修正した） |
+| RPT-03a | `status` は複数指定可（`?status=PENDING&status=APPROVED`）。未指定なら全ステータス（Q2=A） |
+| RPT-03b | 期間は `from` / `to`（日付、`yyyy-MM-dd`）。基準は利用開始日時（`start_at`）。両端を含み、`from` は当日 0 時以上、`to` は翌日 0 時未満として扱う。片方だけの指定も可、両方省略なら全期間（Q3=A、Q4=A） |
+| RPT-03c | `from` が `to` より後なら 400 `VALIDATION_ERROR`。日付形式が不正でも 400 |
+| RPT-04 | ADMIN のみアクセス可。`@PreAuthorize("hasRole('ADMIN')")` で保護し、MEMBER と APPROVER は 403 `FORBIDDEN`、未認証は 401 |
+| RPT-05 | 文字コードは UTF-8 の BOM 付き。値は RFC 4180 に沿ってエスケープする（カンマ、改行、二重引用符を含む値は引用符で囲む）。行区切りは CRLF |
+| RPT-06 | 日時は `yyyy-MM-dd HH:mm` 形式で出す（Q6=A） |
+| RPT-07 | 先頭が `=`、`+`、`-`、`@` の文字列値は、先頭に `'` を付けて数式として実行されないようにする（Q8=A）。対象は文字列列（リソース名、申請者名、目的）とする |
+| RPT-08 | 並び順は開始日時の昇順、同値なら ID の昇順とし、出力を再現可能にする |
+| RPT-09 | ファイル名は `from` と `to` の両方があるとき `reservations_<from>_<to>.csv`（日付は `yyyyMMdd`）、それ以外は `reservations_<出力日>.csv`（Q7=B） |
+| RPT-10 | 対象 0 件でもヘッダ行のみの CSV を返す（200） |
+
+### Frontend
+| ID | 要件 |
+|---|---|
+| RPT-11 | 新しい管理者ページ `/admin/reservations` を作る。期間（開始日、終了日）、ステータス（複数選択）の入力欄と「CSV ダウンロード」ボタンを置く（Q5=B） |
+| RPT-12 | サイドナビの ADMIN メニューに「予約帳票」（仮称）を追加する。`/admin/*` の既存の ADMIN ガード（403 画面）を使う |
+| RPT-13 | ボタン押下でブラウザが CSV ファイルをダウンロードする。JWT がサーバー側にあるため、ダウンロードの経路はサーバー経由とする（方式は Application Design で決める） |
+| RPT-14 | バックエンドが返したエラー（400、403 など）は、ダウンロードを開始せず画面に通知する |
+
+### Specification（Spec-first）
+| ID | 要件 |
+|---|---|
+| RPT-15 | `api-spec.md` に §帳票出力を追加する（エンドポイント一覧、パラメータ、レスポンス、エラー） |
+| RPT-16 | `screen-spec.md` に `/admin/reservations` と、画面一覧、権限、サイドナビの項目を追加する |
+| RPT-17 | `requirements.md`（要件定義書）の API 権限マトリクスと画面アクセス権限に行を追加する。UC 番号は変更しない（Q9=A、Issue #162 で別途扱う） |
+| RPT-18 | `enhancements/intermediate/csv-export.md` の影響範囲の記述が実態と合うか確認する（`/admin/resources` ではなく `/admin/reservations` に置くため） |
+
+## Non-Functional Requirements
+- **Security**: ADMIN のみ。CSV の数式インジェクション対策（RPT-07）。個人名を含むため、ログに CSV 本文を出さない。
+- **Performance**: 件数の上限は設けない。大量データ時の方式（一括かストリーミングか）は Application Design で決める。
+- **Usability**: Excel で文字化けしない（BOM 付き UTF-8）。
+- **Maintainability**: 4 レイヤーを守り、CSV 生成ロジックは単体テスト可能な形で分離する。
+- **Compatibility**: 既存の `GET /api/reservations` の挙動は変えない。
+
+## Testing Requirements
+- Backend: CSV 生成ロジックのユニットテスト（ヘッダ、BOM、エスケープ、数式対策、日時書式、0 件）。Controller 結合テスト（ADMIN の 200、MEMBER と APPROVER の 403、期間とステータスの絞り込み、不正パラメータの 400）。
+- Frontend: Server Action または Route Handler の Vitest（MSW）。ナビ項目のテスト更新（`nav-items.test.ts`）。
+- 検証コマンド: `./gradlew checkstyleMain test`、`pnpm lint`、`pnpm format:check`、`pnpm test`、`npm run build`（docs-next）。
+
 ## Out of Scope
-- ソート（`resource-list-sort`）、予約一覧の `resourceName` 検索（`reservation-list-filter`）、E2E 追加、DB インデックス追加、全文検索
+- 利用実績の集計、グラフ（別課題 `usage-statistics`）
+- 予約一覧の絞り込み拡張（別課題 `reservation-list-filter`）
+- UC 番号の食い違いの解消（Issue #162）
+- PBT、セキュリティ拡張、レジリエンス拡張
+
+## Assumptions and Open Items for Later Stages
+- ダウンロード方式（Route Handler か Server Action か）と、一括かストリーミングかは Application Design で決める。
+- 期間の `to` を翌日 0 時未満として扱う実装は、`ReservationRepository` への新規クエリ（または Specification）で行う。
+- 予約帳票ページの名称（ナビの表示名）は仮称。
+
+## Traceability
+- シートの RPT-01〜05 は RPT-01〜10 に分割・具体化した。
+- シートの受入条件 5 件は、RPT-11/13（ダウンロード）、RPT-02/05（ヘッダと BOM）、RPT-03/11（絞り込み）、RPT-04（403）、テスト要件に対応する。

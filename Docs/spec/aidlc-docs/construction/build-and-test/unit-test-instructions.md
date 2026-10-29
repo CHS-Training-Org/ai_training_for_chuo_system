@@ -1,13 +1,20 @@
-# Unit Test Execution
+# Unit Test Execution（csv-export）
 
 ```bash
-cd backend && ./gradlew test                                # JUnit（H2）
-cd backend && ./gradlew test --tests "*ResourceServiceTest" # 単一クラス
-cd frontend && pnpm test                                    # Vitest（MSW）
-cd frontend && pnpm test resources                          # 単一パターン
+cd backend && ./gradlew test
+cd frontend && pnpm test
 ```
 
-## Expected
-- BE: 失敗 0。今回の関連は `ResourceSpecificationsTest` 13、`ResourceServiceTest` 20、`ResourceControllerTest` 33
-- FE: 10 ファイル 82 件が pass（`resources.test.ts` は 13 件）
-- レポート: `backend/build/reports/tests/test/index.html`、`backend/build/test-results/test/`
+## 今回の追加分
+| 層 | テスト | 件数 |
+|---|---|---|
+| BE | `ReservationCsvWriterTest` | 14 |
+| BE | `ReservationSpecificationsTest` | 9 |
+| BE | `ReportControllerTest` | 14 |
+| FE | `tests/unit/api/reservations-csv-route.test.ts` | 6 |
+| FE | `tests/unit/admin/ReservationReportForm.test.tsx` | 6 |
+| FE | `tests/unit/lib/download.test.ts` | 4 |
+
+- 単体実行: `./gradlew test --tests "*ReservationCsvWriterTest"`、`pnpm test reservations-csv`
+- **Expected**: 失敗 0（BE 189 件、FE 98 件）
+- レポート: `backend/build/reports/tests/test/index.html`

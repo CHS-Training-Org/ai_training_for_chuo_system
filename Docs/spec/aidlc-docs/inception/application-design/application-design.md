@@ -1,22 +1,44 @@
-# Application Design（統合版）
+# Application Design（CSV 帳票出力）
 
-## 概要
-リソース一覧に `keyword` 検索を追加する。BE は JPA `Specification` で category・isActive・keyword を動的に合成し、派生クエリ 8 本を削除して一本化する。FE は既存ファイルの拡張のみ。
+詳細は同じディレクトリの `components.md`、`component-methods.md`、`services.md`、`component-dependency.md` を参照。
 
-## 設計判断
-| 項目 | 決定 | 理由 |
-|---|---|---|
-| 実装方式 | `Specification` | 後続課題で条件が増えても組合せ爆発しない |
-| 置き場所 | domain 層の `ResourceSpecifications` | Repository と同じ層で、Spring Data への依存は既存 |
-| 既存派生クエリ | 削除して一本化 | 二重経路を避ける。`ResourceServiceTest` のモックは更新する |
-| keyword 検証 | Controller（空白除去、100 文字）＋ Specification（エスケープ） | 既存の `from`/`to` 検証と同じ流儀 |
-| from/to 経路 | 候補を `findAll(spec)` で取得し、Java 判定と手動ページングは現状維持 | 変更を最小に保つ |
-| FE | 既存ファイルの拡張のみ | 再利用の必要が出た時点で切り出す |
+## 設計判断（`application-design-plan.md` の回答）
 
-## 構成
-詳細は components.md、component-methods.md、services.md、component-dependency.md を参照。
+| 論点 | 決定 |
+|---|---|
+| ダウンロード経路 | Route Handler がバックエンドを中継し、クライアントが `fetch` から Blob でダウンロードする。失敗時はトースト（RPT-14） |
+| 出力方式 | 全件をメモリ上でバイト列にして `ResponseEntity<byte[]>` で返す |
+| 件数上限 | 設けない。既知の制約として記録する |
+| CSV 生成の置き場所 | `application` 層の `ReservationCsvWriter`（Spring 非依存）と `ReservationCsvRow` |
+| 条件の問い合わせ | `ReservationSpecifications`（domain）と `JpaSpecificationExecutor` |
+| 画面構成 | サーバーの `page.tsx` と `FormData` 方式の `ReservationReportForm`。新しい shadcn コンポーネントは追加しない |
 
-## リスクと確認事項（Code Generation で検証する）
-- 説明文は `TEXT` 型（nullable）。`lower(description) LIKE` が PostgreSQL と H2 の両方で動くか、テストで確認する。
-- 派生クエリを削除するため、`ResourceServiceTest` と `ResourceControllerTest` のモック・呼び出しを新シグネチャに合わせる必要がある。
-- ADMIN と非 ADMIN の isActive 条件が従来と同一であること（回帰テストで確認）。
+## 構成の要約
+
+```mermaid
+flowchart LR
+  Page[admin reservations page] --> Form[ReservationReportForm]
+  Form --> Route[Route Handler]
+  Route --> Client[api-client getRaw]
+  Client --> Ctrl[ReportController]
+  Ctrl --> Svc[ReportService]
+  Svc --> Spec[ReservationSpecifications]
+  Svc --> Repo[ReservationRepository]
+  Svc --> Writer[ReservationCsvWriter]
+  Repo --> DB[(PostgreSQL)]
+```
+
+## 変更ファイル（予定）
+
+### 新規
+- backend: `ReportController`、`ReportService`、`ReservationCsvWriter`、`ReservationCsvRow`、`ReservationSpecifications`、各テスト
+- frontend: `src/app/api/reports/reservations/csv/route.ts`、`admin/reservations/page.tsx`、`ReservationReportForm.tsx`、各テスト
+### 変更
+- backend: `ReservationRepository`（継承の追加）
+- frontend: `api-client.ts`（`getRaw`）、`nav-items.ts` とそのテスト
+- docs-next: `api-spec.md`、`screen-spec.md`、`requirements.md`（権限マトリクス）、`csv-export.md`（影響範囲の記述）
+
+## 検証メモ
+- 要件 RPT-01〜18 はすべて、上記のコンポーネントのいずれかに割り当てた（RPT-15〜18 は仕様書の更新）。
+- `SecurityConfig` は変更しない（`@PreAuthorize` による認可）。
+- 既存の `GET /api/reservations` と `ReservationService` は変更しない。

@@ -1,12 +1,17 @@
 # Services
 
-## ResourceService.list のオーケストレーション
-1. Controller が `keyword` を正規化して渡す（空は null）
-2. Service が `ResourceSpecifications.forList(category, keyword, isAdmin)` を生成
-3. 分岐
-   - `from`/`to` なし: `resourceRepository.findAll(spec, pageable)` → `ResourceResponse::from`
-   - `from`/`to` あり: `resourceRepository.findAll(spec)` で候補取得 → `findByResource_IdInAndStatusIn` で占有 ID を 1 クエリ取得 → `overlaps` で除外 → 手動ページング（現状維持。Q4=A）
+## ReportService
+- **Responsibilities**: 帳票出力のオーケストレーション。HTTP の知識（ヘッダ、ファイル名）は持たない。
+- **Orchestration**:
+  1. `from` を `from.atStartOfDay()`、`to` を `to.plusDays(1).atStartOfDay()`（排他的な上端）に変換する（null はそのまま）
+  2. `ReservationSpecifications.forReport(...)` と `Sort`（`startAt` 昇順、`id` 昇順）で `ReservationRepository.findAll` を呼ぶ
+  3. 各予約を `ReservationCsvRow` に変換する（トランザクション内で LAZY 関連を読む）
+  4. `ReservationCsvWriter.write` でバイト列にして返す
+- **Transaction**: `@Transactional(readOnly = true)`。`open-in-view: false` のため、LAZY 読み込みはこの範囲で終える（fetch join で N+1 も避ける）。
+- **Authorization**: Service には置かず、Controller の `@PreAuthorize` が担う（`UserController` と同じ流儀）。
 
-## 変更しないもの
-- `overlaps`、`availability`、`create`、`update`、`changeStatus`、`get`
-- `ReservationRepository` の呼び出し
+## 既存 Service への影響
+- `ReservationService` は変更しない。帳票は予約のライフサイクルと責務が異なるため、別 Service に分ける。
+
+## フロントエンドの経路
+- ブラウザは同一オリジンの Route Handler を呼ぶ。Route Handler が `createApiClient(getAccessToken).getRaw(...)` でバックエンドを呼び、Authorization はサーバー側で付与する。

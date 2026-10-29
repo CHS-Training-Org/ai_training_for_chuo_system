@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-10-16
+timestamp: 2026-10-29
 ---
 
 # AI-DLC State Tracking
@@ -18,13 +18,13 @@ timestamp: 2026-10-16
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-10-16T04:25:01Z
-- **Current Stage**: OPERATIONS
+- **Start Date**: 2026-10-29
+- **Current Stage**: CONSTRUCTION - Build and Test
 - **Workspace Root**: /workspace
-- **Target Task**: リソース一覧の検索・フィルタ追加（`docs-next/docs/spec/enhancements/*/resource-list-filter.md`）
-- **Branch**: feature/CHS-WATANABE-FUMIYA/23-resource-list-filter-aidlc（PR base: learner/CHS-WATANABE-FUMIYA/main）
-- **Existing Code**: Yes（Java 58 ファイル / TypeScript 55 ファイル、Gradle + pnpm、モノレポ）
-- **Reverse Engineering Needed**: Yes（成果物なし）
+- **Target Task**: CSV 帳票出力（`docs-next/docs/spec/enhancements/intermediate/csv-export.md`、Issue #29）
+- **Branch**: feature/CHS-WATANABE-FUMIYA/29-csv-export（PR base: learner/CHS-WATANABE-FUMIYA/main）
+- **Existing Code**: Yes（Java 78 ファイル / TypeScript 55 ファイル、Gradle + pnpm、モノレポ）
+- **Reverse Engineering Needed**: Yes（前回成果物は keyword 検索の範囲に限定、かつ resource-list-filter 実装前の内容で古いため再実行）
 
 ## Code Location Rules
 
@@ -49,12 +49,12 @@ timestamp: 2026-10-16
 
 ### INCEPTION PHASE
 
-- [x] Workspace Detection
-- [x] Reverse Engineering（Brownfield の場合）— 2026-10-16 承認済み
-- [x] Requirements Analysis — 2026-10-16 承認済み
+- [x] Workspace Detection — 2026-10-29
+- [x] Reverse Engineering（Brownfield の場合）— 2026-10-29 再実行、承認済み
+- [x] Requirements Analysis — 2026-10-29 承認済み
 - [x] User Stories（条件付き）— SKIP
-- [x] Workflow Planning — 2026-10-16 承認済み
-- [x] Application Design（条件付き）— 2026-10-16 承認済み
+- [x] Workflow Planning — 2026-10-29 承認済み
+- [x] Application Design（条件付き）— 2026-10-29 承認済み
 - [x] Units Generation（条件付き）— SKIP
 
 ### CONSTRUCTION PHASE
@@ -63,21 +63,21 @@ timestamp: 2026-10-16
 - [x] NFR Requirements（条件付き、ユニット別）— SKIP
 - [x] NFR Design（条件付き、ユニット別）— SKIP
 - [x] Infrastructure Design（条件付き、ユニット別）— SKIP
-- [x] Code Generation（必須、ユニット別）— 2026-10-16 承認済み
-- [x] Build and Test（必須）— 2026-10-16 承認済み
+- [x] Code Generation（必須、ユニット別）— 2026-10-29 承認済み
+- [x] Build and Test（必須）— 2026-10-29 承認済み
 
 ### OPERATIONS PHASE
 
-- [x] Operations（プレースホルダー）— CI（CI Frontend / CI Backend）が相当。PR 作成後に実行される
+- [ ] Operations（プレースホルダー）— CI（CI Frontend / CI Backend）が相当
 
 ## Current Status
 
 - **Lifecycle Phase**: OPERATIONS
-- **Current Stage**: Operations
-- **Next Stage**: なし（/commit-push、/create-pr へ）
-- **Status**: Complete
+- **Current Stage**: Operations（CI）
+- **Next Stage**: なし（PR 作成とマージ）
+- **Status**: AI-DLC 全ステージ完了。コミット、PR 作成、CI 確認が残り
 
 ## Reverse Engineering Status
 
-- [x] Reverse Engineering - Completed on 2026-10-16
+- [x] Reverse Engineering - Completed on 2026-10-29（承認済み。前回: 2026-10-16、keyword 検索の範囲のみ）
 - **Artifacts Location**: Docs/spec/aidlc-docs/inception/reverse-engineering/

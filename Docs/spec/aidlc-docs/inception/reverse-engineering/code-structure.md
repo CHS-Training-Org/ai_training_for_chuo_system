@@ -1,28 +1,34 @@
 # Code Structure
 
 ## Build System
-- **Type**: Gradle（Kotlin DSL、backend）/ pnpm（frontend）
+- **Type**: Gradle（Kotlin DSL、`backend/build.gradle.kts`）、pnpm（`frontend/package.json`）
+- **Configuration**: Java 25、Spring Boot 4.0.6、Spotless（google-java-format）、Checkstyle。FE は oxlint と oxfmt。
 
-## Key Classes/Modules
-### Existing Files Inventory（今回の変更候補）
-- `backend/src/main/java/com/example/bookflow/presentation/ResourceController.java` - 一覧 API。category / from / to を受ける。keyword なし。
-- `backend/src/main/java/com/example/bookflow/application/ResourceService.java` - `list` → `listPaginated` / `listWithAvailabilityFilter`。category と isAdmin の組合せで 4 通りに分岐。
-- `backend/src/main/java/com/example/bookflow/domain/ResourceRepository.java` - 派生クエリ 8 本（Page 版と List 版）。
-- `backend/src/main/java/com/example/bookflow/domain/Resource.java` - name（100）、description（TEXT）等。
-- `backend/src/test/java/com/example/bookflow/application/ResourceServiceTest.java` - Service 単体テスト。
-- `backend/src/test/java/com/example/bookflow/presentation/ResourceControllerTest.java` - Controller テスト。
-- `frontend/src/app/(authenticated)/resources/page.tsx` - SearchParams は category / from / to / page。
-- `frontend/src/app/(authenticated)/resources/ResourceFilterForm.tsx` - submit で URLSearchParams を組み立て。
-- `frontend/src/server/actions/resources.ts` - `listResourcesAction`。ListResourcesParams に keyword なし。
-- `frontend/tests/unit/server/actions/resources.test.ts` - MSW でのユニットテスト。
-- `frontend/tests/unit/msw/handlers.ts` - モックデータ。
-- `docs-next/docs/spec/api-spec.md`（§GET /api/resources）、`screen-spec.md`（§/resources）。
+### Existing Files Inventory（CSV 出力の変更候補）
+- `backend/.../presentation/ReservationController.java` - 予約 API。`/api/reports` は未存在
+- `backend/.../application/ReservationService.java` - 予約のユースケース
+- `backend/.../domain/ReservationRepository.java` - ページング付き `@Query`。期間指定なし
+- `backend/.../domain/Reservation.java` - `LocalDateTime` の `startAt` / `endAt`、`status`
+- `backend/.../presentation/UserController.java` - `@PreAuthorize("hasRole('ADMIN')")` の実例
+- `backend/.../presentation/exception/GlobalExceptionHandler.java` - 統一エラー
+- `backend/.../infrastructure/security/SecurityConfig.java` - 認証・認可設定
+- `backend/src/test/.../support/BaseControllerTest.java`、`WithMockAdmin` ほか - ロール別テスト基盤
+- `frontend/src/lib/api-client.ts` - JSON 専用（`request` は非公開、本文は常に `res.json()`）
+- `frontend/src/server/actions/reservations.ts` - 予約の Server Action
+- `frontend/src/app/(authenticated)/reservations/page.tsx` - ADMIN は「全予約一覧」として全件表示
+- `frontend/src/app/(authenticated)/admin/{resources,users}/` - 管理者ページ。予約系の管理者ページは無い
+- `frontend/src/components/layout/nav-items.ts` - ロール別ナビ
+- `frontend/tests/unit/msw/handlers.ts` - MSW スタブ
 
 ## Design Patterns
-### 4 レイヤー + 派生クエリ
-- **Location**: backend
-- **Purpose**: 層の責務分離
-- **Implementation**: 組合せ（category × isAdmin × ページング有無）ごとにメソッドを列挙している。keyword を足すと組合せが倍増する。
+### 4 レイヤー
+- **Location**: `backend/src/main/java/com/example/bookflow/`
+- **Purpose**: domain / application / presentation / infrastructure の分離
+### BFF（Server Action）
+- **Location**: `frontend/src/server/actions/`
+- **Purpose**: JWT をサーバーに閉じ込め、Zod でレスポンスを検証
 
 ## Critical Dependencies
-- Spring Data JPA、Zod（FE スキーマ）、MSW（FE テスト）
+### opencsv など CSV ライブラリ
+- **Version**: 未導入
+- **Usage**: なし。導入するか手書きにするかは設計判断
