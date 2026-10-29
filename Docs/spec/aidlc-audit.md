@@ -316,3 +316,19 @@ timestamp: 2026-08-29
 **Context**: CONSTRUCTION 完了、OPERATIONS へ移行
 
 ---
+
+## Session Resume - /aidlc
+**Timestamp**: 2026-10-29
+**User Input**: "/aidlc"（引数なし）
+**AI Response**: aidlc-state.md が存在するためレジュームとして処理。INCEPTION・CONSTRUCTION の全ステージが承認済みで、Current Stage は Operations（CI）。新たな承認ゲートや実行すべきステージはないため、状態は変更せず、残作業（PR 作成・CI 確認）を案内した。
+**Context**: OPERATIONS - 全ステージ完了後の再開
+
+---
+
+## AI Review Round 1 (Perspective 2) - Change Request
+**Timestamp**: 2026-10-29
+**User Input**: "AI レビュー / 観点2 実装と非機能部分の整合性 / ラウンド 1 判定：NG ..."（指摘 2 点: (1) 出力の並び順（startAt 昇順、同値は id 昇順）が未検証、(2) ReservationSpecificationsTest の fetch join 検証がクラス @Transactional のため無効）
+**AI Response**: 実装コードは変更せずテストのみ修正。(1) ReportControllerTest に exportReservationsCsv_rows_areOrderedByStartAtThenId を追加（並びと逆順に挿入した同時刻・ID 違いの予約を含め、CSV 行の出現順を検証）。(2) forReport_fetchesAssociations を forReport_fetchesAssociations_loadsResourceAndRequesterEagerly に改め、entityManager.clear() 後に PersistenceUtil.isLoaded で初期化済みか判定する形にした。変異テストで、ORDER を DESC に変更・"id" を除去・fetchAssociations を除去の 3 通りがいずれもテスト失敗になることを確認し、実装は元に戻した。spotlessCheck・checkstyleMain・test 成功（BE は 190 件）。
+**Context**: CONSTRUCTION - Code Generation 後のレビュー指摘対応（仕様変更なし）
+
+---
