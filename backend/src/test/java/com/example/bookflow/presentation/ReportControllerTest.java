@@ -248,6 +248,31 @@ class ReportControllerTest extends BaseControllerTest {
 
   @Test
   @WithMockAdmin
+  void exportReservationsCsv_rows_areOrderedByStartAtThenId() throws Exception {
+    // 挿入順を「並び順と逆」にして、DB の自然順では通らないようにする
+    UUID sameStartLargeId = UUID.fromString("81000000-0000-0000-0000-000000000042");
+    UUID sameStartSmallId = UUID.fromString("81000000-0000-0000-0000-000000000041");
+    UUID earliest = UUID.fromString("81000000-0000-0000-0000-000000000043");
+    LocalDateTime sameStart = LocalDateTime.of(2026, 9, 15, 10, 0);
+    insertReservation(sameStartLargeId, sameStart, "同時刻IDの大", "APPROVED");
+    insertReservation(sameStartSmallId, sameStart, "同時刻IDの小", "APPROVED");
+    insertReservation(earliest, LocalDateTime.of(2026, 9, 1, 8, 0), "最も早い予約", "APPROVED");
+
+    MvcResult result =
+        mockMvc
+            .perform(get("/api/reports/reservations/csv"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    String body = csv(result);
+    java.util.List<String> expectedOrder =
+        java.util.List.of("最も早い予約", "同時刻IDの小", "同時刻IDの大", "10月の確定予約", "10月の承認待ち", "11月の確定予約");
+    java.util.List<Integer> positions = expectedOrder.stream().map(body::indexOf).toList();
+    assertThat(positions).doesNotContain(-1).isSorted();
+  }
+
+  @Test
+  @WithMockAdmin
   void exportReservationsCsv_fromAfterTo_returns400() throws Exception {
     mockMvc
         .perform(

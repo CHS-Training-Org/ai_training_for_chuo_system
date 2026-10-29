@@ -2,6 +2,8 @@ package com.example.bookflow.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Persistence;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -33,6 +35,7 @@ class ReservationSpecificationsTest {
 
   @Autowired private ReservationRepository reservationRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired private EntityManager entityManager;
 
   @BeforeEach
   void seed() {
@@ -147,16 +150,22 @@ class ReservationSpecificationsTest {
   }
 
   @Test
-  void forReport_fetchesAssociations_withoutLazyInitializationError() {
+  void forReport_fetchesAssociations_loadsResourceAndRequesterEagerly() {
+    // 永続化コンテキストを空にし、クエリ自身が関連を取得したかだけを見る
+    entityManager.flush();
+    entityManager.clear();
+
     Reservation r =
         reservationRepository
             .findAll(ReservationSpecifications.forReport(OCT_1, NOV_1, null), Sort.by("startAt"))
             .stream()
-            .filter(x -> x.getResource().getId().equals(RESOURCE_ID))
+            .filter(x -> x.getPurpose().equals("予約2"))
             .findFirst()
             .orElseThrow();
 
-    assertThat(r.getResource().getName()).isEqualTo("仕様テスト会議室");
-    assertThat(r.getRequester().getName()).isEqualTo("仕様テスト太郎");
+    // 同一セッション内では遅延読み込みでも値は取れるため、初期化済みかどうかで判定する
+    var persistenceUtil = Persistence.getPersistenceUtil();
+    assertThat(persistenceUtil.isLoaded(r, "resource")).isTrue();
+    assertThat(persistenceUtil.isLoaded(r, "requester")).isTrue();
   }
 }
