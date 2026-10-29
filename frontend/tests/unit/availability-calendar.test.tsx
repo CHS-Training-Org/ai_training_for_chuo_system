@@ -183,6 +183,20 @@ describe("AvailabilityCalendar", () => {
     expect(container.querySelectorAll("[data-state]")).toHaveLength(0);
   });
 
+  it("週表示は年またぎの期間を見出しに出し、「今日」は表示中の日ではなく現在日へ移動する", () => {
+    render(<AvailabilityCalendar {...base} date="2026-12-31" view="week" />);
+    expect(screen.getByText("2026年12月28日 〜 1月3日")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "今日" })).toHaveAttribute(
+      "href",
+      "/resources/res-1?view=week&date=2026-10-14",
+    );
+  });
+
+  it("月表示は年月を見出しに出す", () => {
+    render(<AvailabilityCalendar {...base} date="2026-02-10" view="month" />);
+    expect(screen.getByText("2026年2月")).toBeInTheDocument();
+  });
+
   it("取得失敗時は取得失敗のメッセージを表示し、グリッドは表示しない（ツールバーは残す）", () => {
     const { container } = render(<AvailabilityCalendar {...base} view="week" error />);
     expect(screen.getByRole("alert")).toHaveTextContent("空き状況を取得できませんでした");
