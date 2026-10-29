@@ -1,85 +1,127 @@
-# Requirements Clarification Questions
+# Requirements Clarification Questions（CSV 帳票出力）
 
-対象: リソース一覧の `keyword` 検索追加（`resource-list-filter` シート）。
-シートに書かれていない判断点だけを聞きます。各 `[Answer]:` の後ろに選択肢の記号（A, B など）を書いてください。
+対象: `docs-next/docs/spec/enhancements/intermediate/csv-export.md`（Issue #29）。
+各質問の `[Answer]:` の後ろに選択肢の記号（A、B など）を書いてください。「Other」を選ぶ場合は内容も書いてください。
 
 ## Question 1
 
-`keyword` に `%` や `_`（LIKE のワイルドカード）が含まれる場合、どう扱いますか？
+CSV の「承認状態」列（RPT-02）には、どの値を出力しますか？
 
-A) 通常の文字として検索する（エスケープする）
+A) 予約ステータス（`reservations.status`）を日本語ラベルで出力する（承認待ち、承認済み、却下、キャンセル、下書き。画面の表示と同じ）
 
-B) ワイルドカードとして働いてもよい（特別な処理はしない）
+B) 予約ステータスを英語の値のまま出力する（`PENDING`、`APPROVED` など）
+
+C) 承認ステップのステータス（`approval_steps.status`）を出力する（承認不要の予約は空欄になる）
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]: A（推奨案を承認）
+[Answer]: A
 
 ## Question 2
 
-スペースを含む `keyword`（例: `会議室 3F`）はどう扱いますか？
+`status` による絞り込み（RPT-03）の指定方法はどれですか？
 
-A) 前後の空白だけ除去し、全体を 1 つの部分一致文字列として検索する
+A) 複数指定できる（`?status=PENDING&status=APPROVED`）。予約一覧 API と同じ形式で、未指定なら全ステータス
 
-B) スペースで分割し、すべての語を含むものを返す（語どうしは AND）
+B) 1 つだけ指定できる。未指定なら全ステータス
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]: A（推奨案を承認）
+[Answer]: A
 
 ## Question 3
 
-`keyword` の最大文字数は制限しますか？（超過時は 400 `VALIDATION_ERROR`）
+期間（`from`、`to`）は、予約のどの日時を基準に絞り込みますか？
 
-A) 100 文字まで（`resources.name` の長さに合わせる）
+A) 利用開始日時（`start_at`）が期間内にある予約
 
-B) 制限しない
+B) 利用時間帯が期間と重なる予約（`start_at < to` かつ `end_at > from`）
+
+C) 申請日時（`created_at`）が期間内にある予約
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]: A（推奨案を承認）
+[Answer]: A
 
 ## Question 4
 
-BE の検索ロジックの実装方式は、現時点でどちらを想定しますか？（最終決定は Application Design で行います）
+`from` と `to` の指定形式と省略時の扱いはどうしますか？
 
-A) JPA `Specification`（category・isActive・keyword を動的に組み合わせる。派生クエリの組合せ爆発を解消できる）
+A) 日付（`2026-10-01`）で指定し、両端を含む。片方だけの指定も可、両方省略なら全期間
 
-B) `@Query` でカスタム JPQL を書く（既存の派生クエリは残し、keyword 用を追加する）
+B) 日時（`2026-10-01T00:00:00`）で指定する。片方だけの指定も可、両方省略なら全期間
 
-C) まだ決めない。Application Design で比較してから決める
+C) 日付で指定し、`from` と `to` は両方必須（片方だけは 400）
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]: A（ユーザー委任「将来も見越した判断」により Specification を選択。最終確定は Application Design）
+[Answer]: A
 
 ## Question 5
 
-`keyword` 指定で 0 件のときの画面表示は？
+「CSV ダウンロード」ボタンはどの画面に置きますか？（既存の管理者ページは `/admin/resources` と `/admin/users` で、予約系の管理者ページはありません）
 
-A) 既存の「リソースがありません。」のまま
+A) 既存の `/reservations`（ADMIN には「全予約一覧」として全件が表示される）に、ADMIN のときだけボタンを出す
 
-B) 「キーワード『○○』に一致するリソースがありません。」のように、条件を示すメッセージにする
+B) 新しい管理者ページ `/admin/reservations` を作り、サイドナビの管理者メニューに追加してそこに置く（期間・ステータスの入力欄もそのページに置く）
+
+C) 既存の `/admin/resources` に置く
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]: B（推奨案を承認）
+[Answer]: B
 
 ## Question 6
 
-追加するテストの範囲は？（BE ユニットテストは必須。シートの受入条件）
+CSV の日時列の書式はどうしますか？
 
-A) BE のみ（`ResourceServiceTest` と `ResourceControllerTest`）
+A) `2026-10-01 10:00`（Excel でそのまま日時として扱いやすい形式）
 
-B) BE ＋ FE ユニットテスト（`resources.test.ts` に `keyword` が query に渡ることを追加）
-
-C) BE ＋ FE ユニットテスト ＋ E2E（Playwright）
+B) `2026-10-01T10:00:00`（API と同じ ISO 形式）
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]: B（推奨案を承認）
+[Answer]: A
 
-## Question 7: Security Extensions
+## Question 7
+
+ダウンロードされるファイル名はどうしますか？
+
+A) `reservations_20261029.csv`（出力日）
+
+B) `reservations_20261001_20261031.csv`（指定期間。期間未指定の場合は出力日）
+
+X) Other (please describe after [Answer]: tag below)
+
+[Answer]: B
+
+## Question 8
+
+Excel で開いたときに数式として実行されうる値（先頭が `=`、`+`、`-`、`@` の文字列。利用目的は利用者が自由入力できる）の扱いはどうしますか？
+
+A) 先頭にシングルクォート（`'`）を付けて無害化する
+
+B) 特別な処理はしない（RFC 4180 のエスケープのみ）
+
+X) Other (please describe after [Answer]: tag below)
+
+[Answer]: A
+
+## Question 9
+
+シートにある要件定義書の UC 番号（UC-07）の食い違い（Issue #162 で別途起票済み）は、今回の作業でどう扱いますか？
+
+A) 今回は触らない。`requirements.md` の権限マトリクスに CSV API の行を足すだけにする
+
+B) 今回、要件定義書に新しいユースケース（例：UC-09 帳票出力）を追加し、`csv-export.md` の番号もそれに合わせる
+
+C) 今回、`csv-export.md` から UC 番号の記述だけを外す
+
+X) Other (please describe after [Answer]: tag below)
+
+[Answer]: A
+
+## Question 10: Security Extensions
 
 Should security extension rules be enforced for this project?
 
@@ -89,13 +131,12 @@ B) No — skip all SECURITY rules (suitable for PoCs, prototypes, and experiment
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]: B（推奨標準案を承認）
+[Answer]: B
 
-## Question 8: Resiliency Extensions
+## Question 11: Resiliency Extensions
 
 Should the resiliency baseline be applied to this project?
-
-(Directional, design-time best practices derived from the AWS Well-Architected Framework Reliability Pillar. It does not certify production readiness.)
+（設計時の方向づけとなるベストプラクティスを適用するものです。本番稼働の保証や認証にはなりません。）
 
 A) Yes — apply the resiliency baseline as directional best practices and design-time guidance
 
@@ -103,18 +144,18 @@ B) No — skip the resiliency baseline (suitable for PoCs, prototypes, and exper
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]: B（推奨標準案を承認）
+[Answer]: B
 
-## Question 9: Property-Based Testing Extension
+## Question 12: Property-Based Testing Extension
 
 Should property-based testing (PBT) rules be enforced for this project?
 
 A) Yes — enforce all PBT rules as blocking constraints
 
-B) Partial — enforce PBT rules only for pure functions and serialization round-trips
+B) Partial — enforce PBT rules only for pure functions and serialization round-trips (CSV のエスケープ処理などが該当)
 
-C) No — skip all PBT rules (suitable for simple CRUD applications, UI-only projects, or thin integration layers with no significant business logic)
+C) No — skip all PBT rules (suitable for simple CRUD applications, UI-only projects, or thin integration layers)
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]: C（推奨標準案を承認）
+[Answer]: C

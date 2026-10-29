@@ -1,53 +1,43 @@
 # Component Methods
 
-業務ルールの詳細は requirements.md（FR-06〜08）で確定済み。ここではシグネチャのみ。
+業務ルールの詳細は `requirements.md`（RPT-01〜18）が正。ここではシグネチャと目的のみを示す。
 
-## ResourceSpecifications（domain）
-```java
-public final class ResourceSpecifications {
-  public static Specification<Resource> isActive();
-  public static Specification<Resource> hasCategory(ResourceCategory category);   // null なら条件なし
-  public static Specification<Resource> keywordContains(String keyword);          // null か空なら条件なし
-  public static Specification<Resource> forList(
-      ResourceCategory category, String keyword, boolean isAdmin);                // 上 3 つを AND で合成
-  static String escapeLike(String keyword);                                       // テスト用に package-private
-}
-```
-- `keywordContains`: `lower(name) LIKE :p ESCAPE '\'` OR `lower(description) LIKE :p ESCAPE '\'`。`p` は `%` + エスケープ済み小文字 keyword + `%`
+## ReportController
+| メソッド | 目的 |
+|---|---|
+| `ResponseEntity<byte[]> exportReservationsCsv(List<ReservationStatus> status, LocalDate from, LocalDate to)` | CSV を返す。`status` は任意、`from`・`to` は `@DateTimeFormat(iso = DATE)` で任意。`from > to` なら `ValidationException`（400） |
+| `static String buildFileName(LocalDate from, LocalDate to, LocalDate today)` | 両端があれば `reservations_yyyyMMdd_yyyyMMdd.csv`、なければ `reservations_yyyyMMdd.csv`（出力日） |
 
-## ResourceRepository（domain）
-```java
-public interface ResourceRepository
-    extends JpaRepository<Resource, UUID>, JpaSpecificationExecutor<Resource> {
-  Optional<Resource> findByIdForUpdate(UUID id);  // 既存のまま
-}
-```
+## ReportService
+| メソッド | 目的 |
+|---|---|
+| `byte[] exportReservationsCsv(LocalDate from, LocalDate to, Collection<ReservationStatus> statuses)` | 範囲変換、検索、行変換、CSV 化を行う。`@Transactional(readOnly = true)` |
 
-## ResourceController（presentation）
-```java
-public Page<ResourceResponse> list(
-    @RequestParam(required = false) ResourceCategory category,
-    @RequestParam(required = false) String keyword,       // 追加
-    @RequestParam(required = false) LocalDateTime from,
-    @RequestParam(required = false) LocalDateTime to,
-    @PageableDefault(size = 20) Pageable pageable,
-    @CurrentUser User currentUser);
-// private static String normalizeKeyword(String raw)  // trim、空なら null、101 文字以上は ValidationException
-```
+## ReservationCsvWriter
+| メソッド | 目的 |
+|---|---|
+| `byte[] write(List<ReservationCsvRow> rows)` | BOM、ヘッダ、全行を書き出す。0 件でもヘッダ行は出す |
+| `static String escape(String value)` | 数式対策（先頭の `'` 付与）の後、RFC 4180 の引用符処理を行う |
+| `static String statusLabel(ReservationStatus status)` | 日本語ラベル（承認待ち、承認済み、却下、キャンセル済み、ドラフト。画面の `RESERVATION_STATUS_LABELS` と同じ） |
 
-## ResourceService（application）
-```java
-public Page<ResourceResponse> list(
-    ResourceCategory category, String keyword,            // keyword を追加
-    LocalDateTime from, LocalDateTime to,
-    boolean isAdmin, Pageable pageable);
-// private Page<ResourceResponse> listPaginated(...)             // findAll(spec, pageable)
-// private Page<ResourceResponse> listWithAvailabilityFilter(...) // findAll(spec) → Java 判定 → 手動ページング
-```
-- `fetchAllCandidates` は削除し、`ResourceSpecifications.forList` に置き換える
+## ReservationCsvRow（record）
+`UUID id`、`String resourceName`、`String requesterName`、`LocalDateTime startAt`、`LocalDateTime endAt`、`String purpose`、`ReservationStatus status`
+
+## ReservationSpecifications
+| メソッド | 目的 |
+|---|---|
+| `static Specification<Reservation> startAtFrom(LocalDateTime from)` | `start_at >= from`。null なら条件なし |
+| `static Specification<Reservation> startAtBefore(LocalDateTime toExclusive)` | `start_at < toExclusive`。null なら条件なし |
+| `static Specification<Reservation> statusIn(Collection<ReservationStatus> statuses)` | 空または null なら条件なし |
+| `static Specification<Reservation> forReport(LocalDateTime from, LocalDateTime toExclusive, Collection<ReservationStatus> statuses)` | 上記を AND で合成し、`resource` と `requester` を fetch join する |
+
+## ReservationRepository（継承の追加）
+`JpaSpecificationExecutor<Reservation>` の `List<Reservation> findAll(Specification<Reservation>, Sort)` を使う。並び順は `startAt` 昇順、`id` 昇順。
 
 ## Frontend
-```ts
-interface ListResourcesParams { category?: string; keyword?: string; from?: string; to?: string; page?: number; size?: number }
-interface ResourceFilterFormProps { defaultCategory?: string; defaultKeyword?: string; defaultFrom?: string; defaultTo?: string }
-```
+| 対象 | シグネチャと目的 |
+|---|---|
+| `route.ts` | `export async function GET(request: Request): Promise<Response>`。クエリを転送し、成功時は CSV を、失敗時は `{ code, message }` と元のステータスを返す |
+| `api-client.ts` | `getRaw(path, params?): Promise<Response>`。非 2xx は既存どおり `ApiClientError` |
+| `ReservationReportForm` | 引数なしのクライアントコンポーネント。送信時に URL を組み立てて `fetch` し、Blob をダウンロードする |
+| `nav-items.ts` | `ADMIN_ITEMS` に `{ label: "予約帳票", href: "/admin/reservations" }` を追加 |

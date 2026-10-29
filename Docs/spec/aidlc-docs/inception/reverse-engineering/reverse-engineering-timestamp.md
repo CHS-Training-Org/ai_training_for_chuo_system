@@ -1,9 +1,9 @@
 # Reverse Engineering Metadata
 
-**Analysis Date**: 2026-10-16
+**Analysis Date**: 2026-10-29
 **Analyzer**: AI-DLC
 **Workspace**: /workspace
-**Total Files Analyzed**: 約 12（keyword 検索に関係する範囲に絞った。全 113 ファイルは未走査）
+**Total Files Analyzed**: 約 35（予約、認可、管理者ページ、API クライアント、テスト基盤、仕様書。全 133 ファイルは未走査）
 
 ## Artifacts Generated
 - [x] business-overview.md

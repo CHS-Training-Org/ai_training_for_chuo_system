@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-10-16T00:00:00+09:00'
+last_updated: '2026-10-29T00:00:00+09:00'
 ---
 
 # REST API 仕様書
@@ -188,6 +188,12 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 | GET | `/api/approvals/pending` | 承認待ち一覧 | APPROVER / ADMIN |
 | POST | `/api/approvals/{stepId}/approve` | 承認（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
 | POST | `/api/approvals/{stepId}/reject` | 却下（`stepId` = `approval_steps.id`） | APPROVER / ADMIN |
+
+### 帳票出力
+
+| メソッド | パス | 概要 | 権限 |
+|--------|------|------|------|
+| GET | `/api/reports/reservations/csv` | 予約一覧の CSV ダウンロード（期間とステータスで絞り込み可） | ADMIN |
 
 ---
 
@@ -831,6 +837,75 @@ Content-Type: application/json
 ![承認・却下シーケンス図](/diagrams/spec/api-spec-approval.drawio.svg)
 
 > **[1]** `SELECT 1 FROM reservations WHERE resource_id = ? AND status IN ('PENDING','APPROVED') AND start_at < endAt AND end_at > startAt AND id != reservationId`
+
+---
+
+## §帳票出力
+
+### `GET /api/reports/reservations/csv`（予約 CSV 出力、ADMIN） {#get-api-reports-reservations-csv}
+
+#### リクエスト
+
+```http
+GET /api/reports/reservations/csv?from=2026-10-01&to=2026-10-31&status=APPROVED&status=PENDING
+Authorization: Bearer <JWT>
+```
+
+**権限**：ADMIN のみ。他ロールからのリクエストは `403 Forbidden`。
+
+#### クエリパラメータ
+
+| パラメータ | 型 | 必須 | 説明 |
+|------------|-----|------|------|
+| `status` | string | ❌ | 予約ステータスで絞り込む（`PENDING` / `APPROVED` / `REJECTED` / `CANCELLED` / `DRAFT`）。複数指定可。未指定なら全ステータス |
+| `from` | date | ❌ | 出力対象期間の開始日（`yyyy-MM-dd`）。予約の利用開始日時（`startAt`）がこの日の 0 時以上のものを対象にする |
+| `to` | date | ❌ | 出力対象期間の終了日（`yyyy-MM-dd`）。`startAt` がこの日の翌日 0 時より前（この日を含む）のものを対象にする |
+
+> **注意**：`from` と `to` は日付だけを受け取る。[§共通 日時フォーマット](#datetime-format)（時刻付きの ISO 8601）は適用しない。片方だけの指定も可能で、両方を省略すると全期間になる。`from` が `to` より後の日付なら `400 Bad Request`（`code: VALIDATION_ERROR`）を返す。
+
+#### レスポンス（200 OK）
+
+```http
+HTTP/1.1 200 OK
+Content-Type: text/csv; charset=UTF-8
+Content-Disposition: attachment; filename="reservations_20261001_20261031.csv"
+```
+
+本文の例（先頭に BOM が付く。改行は CRLF）：
+
+```csv
+予約ID,リソース名,申請者名,開始日時,終了日時,目的,承認状態
+550e8400-e29b-41d4-a716-446655440030,第1会議室,山田 太郎,2026-10-02 10:00,2026-10-02 12:00,週次ミーティング,承認済み
+```
+
+**CSV の列**
+
+| 列 | 内容 |
+|----|------|
+| 予約ID | `ReservationResponse.id` |
+| リソース名 | リソース名 |
+| 申請者名 | 申請者名 |
+| 開始日時 | `yyyy-MM-dd HH:mm` |
+| 終了日時 | `yyyy-MM-dd HH:mm` |
+| 目的 | 利用目的 |
+| 承認状態 | 予約ステータスの日本語ラベル（`PENDING`＝承認待ち、`APPROVED`＝承認済み、`REJECTED`＝却下、`CANCELLED`＝キャンセル済み、`DRAFT`＝ドラフト。画面の表示と同じ） |
+
+**出力規則**
+
+- 文字コードは UTF-8 で、Excel での文字化けを防ぐため先頭に BOM を付ける。
+- 値にカンマ、改行、二重引用符が含まれる場合は二重引用符で囲み、値の中の二重引用符は 2 つ重ねる（RFC 4180）。
+- 文字列の列（リソース名、申請者名、目的）は、先頭が `=`、`+`、`-`、`@` のとき先頭に `'` を付ける。Excel で数式として実行されることを防ぐためである。
+- 並び順は開始日時の昇順で、同じ開始日時なら予約 ID の昇順とする。
+- 対象が 0 件でも `200 OK` でヘッダ行だけの CSV を返す。
+- ファイル名は、`from` と `to` の両方を指定したとき `reservations_<from>_<to>.csv`（日付は `yyyyMMdd`）、それ以外は `reservations_<出力日>.csv` とする。
+
+#### エラー
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| 400 | `VALIDATION_ERROR` | `from` が `to` より後、日付の形式が不正、`status` が定義外の値 |
+| 401 | `UNAUTHORIZED` | JWT が不正、期限切れ、または未登録ユーザー |
+| 403 | `FORBIDDEN` | ADMIN 以外のロール |
 
 ---
 

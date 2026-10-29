@@ -4,13 +4,16 @@
 
 ```mermaid
 flowchart LR
-  frontend -->|HTTP /api| backend
-  backend --> postgres[(PostgreSQL)]
+  FE[frontend] --> BE[backend]
+  BE --> DB[(PostgreSQL)]
+  Docs[docs-next] -. 仕様参照 .-> BE
 ```
 
 ### frontend depends on backend
 - **Type**: Runtime
-- **Reason**: Server Actions が REST API を呼ぶ。
+- **Reason**: Server Action が `BACKEND_URL` の REST API を呼ぶ
 
 ## External Dependencies
-バージョンは `backend/build.gradle.kts` と `frontend/package.json` を参照。本課題で新規依存は不要の見込み。
+- CSV 生成ライブラリは未導入（`opencsv` を足す場合は `build.gradle.kts` への追加が要る）
+- Spring Boot BOM、springdoc-openapi 3.0.1、logstash-logback-encoder 8.0、Lombok 1.18.38
+- FE: better-auth、react-hook-form、zod、zustand、sonner ほか（`package.json`）
