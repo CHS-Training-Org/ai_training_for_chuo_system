@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ../../requirements.md
   - ../index.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-10-29T00:00:00+09:00'
 ---
 
 # CSV 帳票出力
@@ -53,7 +53,8 @@ BookFlow の予約データは画面上では閲覧できますが、Excel 等�
 - 対象レイヤー：両方
 - 更新が必要な spec：
   - `api-spec.md`：§帳票出力（新セクション）として `GET /api/reports/reservations/csv` を追記
-  - `screen-spec.md` §`/admin/resources` または管理者向けページ：CSV ダウンロードボタンの UI 要素を追記
+  - `screen-spec.md`：新しい管理者ページ `/admin/reservations`（予約帳票）を画面一覧、サイドナビ、§セクションに追記し、CSV ダウンロードボタンの UI 要素を記述
+  - `requirements.md`：API 権限マトリクスと画面アクセス権限表に行を追加
 
 ## AI 活用ポイント
 
