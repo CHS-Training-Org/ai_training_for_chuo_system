@@ -180,3 +180,88 @@ timestamp: 2026-10-02
 **Context**: CONSTRUCTION - Build and Test 承認。AI-DLC ワークフロー完了。
 
 ---
+
+## Workspace Detection - Initial Request (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**User Input**: "STEP-05 中級課題 Issue #27 「カレンダービュー」に着手します。（要件: リソース詳細画面にカレンダー形式の空き状況を追加／週表示・月表示切替／表示期間の移動／予約済み枠はグレーアウト／空き枠クリックで予約フォームへ遷移／既存リスト表示との共存可。制約: Backend 変更禁止、GET /api/resources/{id}/availability を利用）"
+**AI Response**: "調査（page.tsx、getAvailabilityAction、AvailabilitySlotSchema、予約フォーム、シート、api-spec）のうえ、ライブラリ案・コンポーネント構成・実装ステップ・影響ファイル・MVP・AI-DLC 成果物を提案。確認事項 4 点を提示。"
+**Context**: INCEPTION - 前ユニット（resource-list-filter）の状態ファイルを今回ユニット用にリセット。ブランチは規約準拠のため作成なし。Reverse Engineering は既存成果物を再利用。
+
+---
+
+## Requirements Analysis - Clarification Answers (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**User Input**: "以下の方針で進めます。 - 表示時間帯: 8:00～20:00 - 時間刻み: 1時間 - 過去の空き枠: クリック不可（グレー表示） - 非アクティブリソース: 予約不可、空き枠もクリック不可 - 承認フラグ等の追加情報表示: 今回は対象外 次のWorkflow Planningを作成してください。 requirements.md plan.md を含めたAI-DLCの作業計画を提案してください。"
+**AI Response**: "requirements.md を作成。学習者決定 5 点（Q1 から Q5）を反映し、状態管理（URL searchParams）、ライブラリ（自作）、既存リスト共存、週の開始曜日（月曜）、タイムゾーン（Asia/Tokyo）、拡張機能 3 点は『提案・要確認』として明記。実行環境が UTC のため Q10 を追加。"
+**Context**: INCEPTION - Requirements Analysis 作成（承認待ち）。ファイル名はエンジン規約の execution-plan.md を採用（plan.md の依頼に対応）。
+
+---
+
+## Workflow Planning - Plan Presented (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**User Input**: "(上記と同じ依頼)"
+**AI Response**: "execution-plan.md を作成。User Stories、Application Design、Units Generation、Functional Design、NFR Requirements、NFR Design、Infrastructure Design は SKIP（根拠は計画に記載）。Code Generation と Build and Test を EXECUTE。Code Generation の想定ステップ 8 件、影響ファイル、成果物一覧、MVP の区切りを提示。"
+**Context**: INCEPTION - Workflow Planning（学習者のチャット承認待ち）。
+
+---
+
+## Workflow Planning - Approval (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**User Input**: "計画内容を承認します。 以下の方針で進めてください。 - 表示時間帯: 8:00〜20:00 - 時間刻み: 1時間 - 過去の空き枠はクリック不可 - 非アクティブリソースは予約不可 - 承認フラグ等の追加表示は対象外 - 既存の空き状況リストは残す Code Generation フェーズへ進めてください。"
+**AI Response**: "Requirements Analysis と Workflow Planning を承認として記録。requirements.md で『提案・要確認』とした項目（URL searchParams、ライブラリ自作、月曜始まり、Asia/Tokyo、拡張機能なし）に異議はなく承認されたものとして扱う。Code Generation Part 1 の計画を作成。"
+**Context**: INCEPTION 完了、CONSTRUCTION - Code Generation Part 1 開始。
+
+---
+
+## Code Generation - Part 1 Planning (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**User Input**: "(N/A - 承認後の計画作成)"
+**AI Response**: "calendar-view-code-generation-plan.md を作成（全 11 ステップ: 仕様 1、日付ロジックのテストと実装 2、表示部品のテストと実装 2、ページ組み込みと予約フォーム 3、検証・目視確認・summary 3）。承認を求める。"
+**Context**: CONSTRUCTION - Code Generation Part 1（計画 `Docs/spec/aidlc-docs/construction/plans/calendar-view-code-generation-plan.md` の承認待ち）。
+
+---
+
+## Code Generation - Plan Approval (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**User Input**: "計画内容を確認しました。 以下の方針で進めてください。 - 既存の空き状況リストは残す - 表示時間帯は 8:00〜20:00 - 時間刻みは 1時間 - 過去の空き枠はクリック不可 - 非アクティブリソースは予約不可 - Backend変更なし Code Generation (Part 2) に進めてください。"
+**AI Response**: "計画を承認として記録し、Part 2 を開始。"
+**Context**: CONSTRUCTION - Code Generation Part 1 承認。
+
+---
+
+## Code Generation - Part 2 Generation (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**User Input**: "(N/A - 計画の Step 1 から 11 を順に実行)"
+**AI Response**: "Step 1: /update-spec で screen-spec.md と requirements.md（RES-09 から RES-11）を更新し、docs-next の npm run build 成功（SVG の警告は既存）。Step 2-3: calendar-utils をテスト先行で実装。Step 4-5: WeekGrid、MonthGrid、CalendarToolbar、AvailabilityCalendar を実装。Step 6: page.tsx に組み込み（既存リストは残す）。Step 7-8: 予約フォームの startAt/endAt 初期値（prefill.ts）。Step 9: pnpm test 155 件 pass、lint・format:check・build 成功、backend と getAvailabilityAction に差分なし。Step 10（dev ログインでの目視確認）は backend・DB が起動しておらず未実施。Step 11: summary.md 作成。"
+**Context**: CONSTRUCTION - Code Generation 完了、承認ゲート（Request Changes / Continue）。
+
+---
+
+## Code Generation - Approval (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**User Input**: "Continue: Build and Test"
+**AI Response**: "Code Generation を承認として記録。Build and Test へ進む。"
+**Context**: CONSTRUCTION - Code Generation 承認。
+
+---
+
+## Build and Test Stage (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**Build Status**: Success（frontend pnpm build、docs-next npm run build）
+**Test Status**: Pass（frontend 155 件、うち追加 70 件。oxlint、oxfmt、tsc も通過）。backend は変更なしのため未実行。画面での動作確認は未実施（backend・DB が起動しておらず dev ログインで画面を開けなかった）。
+**Files Generated**:
+- build-instructions.md
+- unit-test-instructions.md
+- integration-test-instructions.md
+- build-and-test-summary.md
+（performance / contract / security / e2e は N/A のためサマリーに記載のみ）
+
+---
+
+## Build and Test - Approval (calendar-view)
+**Timestamp**: 2026-10-15T00:00:00+09:00
+**User Input**: "Approve & Continue"
+**AI Response**: "Build and Test を承認として記録。Operations は CI 品質ゲート（CI Frontend）で代替するプレースホルダーのため、コミット・push・PR 作成（/commit-push、/create-pr）へ案内する。画面での動作確認は未実施のまま PR 作成前に手元で行うよう再掲。"
+**Context**: CONSTRUCTION - Build and Test 承認。AI-DLC ワークフロー完了。
+
+---
