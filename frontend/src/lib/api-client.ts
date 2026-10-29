@@ -167,6 +167,18 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
   }
 
   /**
+   * GET → レスポンスを加工せず返す（CSV など JSON ではない応答用）。
+   *
+   * 非 2xx は他のメソッドと同様に ApiClientError をスローする。呼び出し側が本文とヘッダを扱う。
+   */
+  async function getRaw(
+    path: string,
+    params?: Record<string, string | string[]>,
+  ): Promise<Response> {
+    return request("GET", path, { params });
+  }
+
+  /**
    * GET → 配列で返す（departments, approvals/pending など全件返却エンドポイント用）。
    */
   async function getArray<S extends ZodTypeAny>(
@@ -219,7 +231,7 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
     await request("POST", path, { body });
   }
 
-  return { get, getPaginated, getArray, post, put, patch, postEmpty };
+  return { get, getPaginated, getArray, getRaw, post, put, patch, postEmpty };
 }
 
 /**

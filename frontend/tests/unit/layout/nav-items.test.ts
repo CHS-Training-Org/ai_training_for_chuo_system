@@ -12,7 +12,7 @@ describe("navItemsForRole", () => {
   // APPROVER / ADMIN のみ
   const approverHrefs = ["/approvals"];
   // ADMIN のみ
-  const adminHrefs = ["/admin/resources", "/admin/users"];
+  const adminHrefs = ["/admin/resources", "/admin/users", "/admin/reservations"];
 
   it("未認証（null）の場合は空配列を返す", () => {
     expect(navItemsForRole(null)).toEqual([]);
@@ -84,7 +84,7 @@ describe("navItemsForRole", () => {
       }
     });
 
-    it("管理者メニュー（/admin/resources・/admin/users）が表示される", () => {
+    it("管理者メニュー（/admin/resources・/admin/users・/admin/reservations）が表示される", () => {
       for (const href of adminHrefs) {
         expect(hrefs).toContain(href);
       }
