@@ -3,11 +3,19 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "frontend",
   "workspaceFolder": "/workspace",
+  // ターミナル・拡張機能・postCreateCommand は、ホストと同じ uid の node ユーザーで動かす（Issue #166）。
+  // root のままだと /workspace（ホストの bind mount）に root 所有のファイルが作られ、
+  // ホスト（WSL2）側の git が "cannot lock ref ... Permission denied" で失敗する。
+  // updateRemoteUserUID で node の uid/gid をホストのユーザーに合わせる（WSL2 の既定は 1000 で一致）。
+  // コンテナのメインプロセス（containerUser）は root のまま。feature のエントリポイントと、
+  // docker-compose.yml の frontend サービスの起動コマンドが root を必要とするため。
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
   // Claude Code 未起動だとホストに ~/.claude.json が存在せず、Docker がマウント元を
   // 空ディレクトリとして自動生成 → ファイル↔ディレクトリの型衝突でコンテナ起動が失敗する。
   // マウント前にホスト側で空ファイルの存在を保証して回避する。
   // （.claude ディレクトリはホスト共有をやめコンテナ専用 named volume に隔離したため、
-  //   ホスト側の mkdir は不要になった。docker-compose.yml の claude-config を参照。）
+  //   ホスト側の mkdir は不要になった。docker-compose.yml の claude-config-node を参照。）
   // initializeCommand はホストのシェルで実行される（WSL2/Linux/macOS は /bin/sh）。
   // そのため POSIX sh で記述する。Windows で開発する場合は WSL2 経由で起動すること
   // （README の「Windows ユーザー向け: WSL2 セットアップ」を参照）。
@@ -21,6 +29,17 @@
   //     安全性はスクリプト内コメント参照）。Rancher Desktop 以外では no-op。`|| true` で起動を止めない。
   "initializeCommand": "[ -f \"$HOME/.claude.json\" ] || printf '{}' > \"$HOME/.claude.json\"; sh \"${localWorkspaceFolder}/scripts/clean-devcontainer-mounts.sh\" || true",
   "features": {
+    // node ユーザーにパスワードなしの sudo を与える（common-utils の sudoers オプション。既定値 true のため明示しない）。
+    // `playwright install --with-deps` は root でないとき sudo 経由で apt を実行するため、
+    // sudo が無い node:24-slim のままでは結合テストの環境準備（scripts/e2e-workflow/env.mjs）が失敗する。
+    // zsh・Oh My Zsh・OS パッケージの更新は不要なので無効にし、ビルド時間を抑える。
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "node",
+      "installZsh": false,
+      "installOhMyZsh": false,
+      "installOhMyZshConfig": false,
+      "upgradePackages": false
+    },
     // Java feature は devcontainer-lock.json で 1.8.2 以降に固定する。
     // 1.8.1 以前の install.sh は、バージョン解決の正規表現が SDKMAN の識別子に含まれる
     // ビルド番号（例: 25.0.5.0+8-tem の +8）に一致せず、

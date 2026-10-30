@@ -25,7 +25,7 @@ services:
       # Claude Code の設定ディレクトリ(.claude)はホストと共有せず、コンテナ専用の
       # named volume に隔離する。
       # 理由: .claude 配下（plugins の known_marketplaces.json 等）にはプラグインの設置先や
-      #   各種パスが絶対パスで書き込まれる。ホスト($HOME=/home/<user>)とコンテナ($HOME=/root)で
+      #   各種パスが絶対パスで書き込まれる。ホスト($HOME=/home/<user>)とコンテナ($HOME=/home/node)で
       #   base パスが食い違うため、ディレクトリを共有するとホストが書いたパスをコンテナが
       #   探しに行き、プラグインインストール等が「Source path does not exist」で失敗する
       #   （逆向きにホスト側を壊すシーソーも起きる）。
@@ -33,17 +33,20 @@ services:
       #   ホストとコンテナで完全に独立する（frontend-node-modules の隔離と同じ手法）。
       #   ※ 認証情報(.credentials.json)も .claude 配下のため分離される。コンテナ側では
       #     初回に一度だけ /login が必要（以後はこの volume に保持され再ビルドでも維持される）。
-      - claude-config:/root/.claude
+      # コンテナの作業ユーザーを root から node に変えた際（Issue #166）、volume 名を
+      # claude-config から claude-config-node に変えて作り直した。旧 volume には /root/.claude を
+      # 指す絶対パスが書かれており、/home/node/.claude に付け替えると上記と同じ失敗が起きるため。
+      - claude-config-node:/home/node/.claude
       # ~/.claude.json は .claude ディレクトリ外の単一ファイル。per-project 設定が絶対パスを
       # キーにするためホストと共有しても衝突せず（コンテナは /workspace、ホストは /home/<user>/...）、
       # アカウント識別・MCP 設定を引き継げるので共有を維持する。
       - type: bind
         source: ${USERPROFILE:-$HOME}/.claude.json
-        target: /root/.claude.json
-      # GitHub CLI（gh）の認証情報も claude-config と同じ理由でコンテナ専用の named volume に
+        target: /home/node/.claude.json
+      # GitHub CLI（gh）の認証情報も claude-config-node と同じ理由でコンテナ専用の named volume に
       # 隔離する。初回に一度だけ `gh auth login` が必要（以後はこの volume に保持され
-      # コンテナの再ビルドでも維持される）。
-      - gh-config:/root/.config/gh
+      # コンテナの再ビルドでも維持される）。volume 名を変えた理由は claude-config-node と同じ。
+      - gh-config-node:/home/node/.config/gh
     ports:
       - "3000:3000"
     environment:
@@ -62,7 +65,45 @@ services:
         condition: service_healthy
       cognito-local:
         condition: service_started
-    command: sleep infinity
+      volume-init:
+        condition: service_completed_successfully
+    # メインプロセスは root で動く（作業ユーザーの node とは別。devcontainer.json の remoteUser を参照）。
+    # gh-config-node を /home/node/.config/gh にマウントすると、Docker が親の /home/node/.config を
+    # root 所有で作るため、node が ~/.config 配下に書けなくなる。起動時に node へ戻しておく。
+    # このディレクトリはこのコンテナ内にしか無いので、volume-init サービスからは直せない。
+    command: sh -c "chown node:node /home/node/.config && exec sleep infinity"
+
+  # named volume の所有者を、作業ユーザー（node。uid はホストのユーザーに合わせてある）に揃える
+  # 使い捨てのサービス。frontend と docs はこの完了を待ってから起動する。
+  # Docker は空の named volume を root 所有で作るため、node のままでは pnpm install や
+  # Claude Code のログインが Permission denied になる。新規の volume も、root で動いていた頃に
+  # 作られた既存の volume も、root 所有のものだけを直す（すでに揃っていれば何もしない）。
+  # frontend 用の volume は、ホストのリポジトリ（/workspace）の所有者の uid/gid に揃える
+  # （frontend の node は updateRemoteUserUID でホストの uid に合わせられるため）。
+  # ファイル共有の方式によって /workspace が root 所有に見える環境では 1000:1000 にする。
+  # docs-node-modules は、docs サービスが uid の更新されないイメージの node（1000）で動くため、常に 1000:1000。
+  volume-init:
+    image: node:24-slim
+    user: root
+    volumes:
+      - ..:/workspace:ro
+      - frontend-node-modules:/volumes/frontend-node-modules
+      - pnpm-store:/volumes/pnpm-store
+      - docs-node-modules:/volumes/docs-node-modules
+      - claude-config-node:/volumes/claude-config-node
+      - gh-config-node:/volumes/gh-config-node
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        fix() { find "$$1" ! -uid "$${2%:*}" -exec chown -h "$$2" {} +; }
+        owner=$$(stat -c %u:%g /workspace)
+        case "$$owner" in 0:*) owner=1000:1000 ;; esac
+        for v in frontend-node-modules pnpm-store claude-config-node gh-config-node; do
+          fix "/volumes/$$v" "$$owner"
+        done
+        fix /volumes/docs-node-modules 1000:1000
 
   postgres:
     image: postgres:16
@@ -103,7 +144,14 @@ services:
     # ドキュメントサイト（Docusaurus）のローカルプレビュー。
     # Zensical 版の廃止（Issue #93）に伴い、uv/Python イメージから Node へ移した。
     image: node:24-slim
+    # root のまま動かすと、ビルドの成果物（docs-next/build・docs-next/.docusaurus）がホスト側で
+    # root 所有になる（Issue #166）。node:24-slim の node ユーザー（uid 1000）で動かす。
+    # WSL2 の既定ユーザーの uid も 1000 なので一致する。
+    user: node
     restart: on-failure
+    depends_on:
+      volume-init:
+        condition: service_completed_successfully
     working_dir: /workspace/docs-next
     volumes:
       - ..:/workspace:cached
@@ -132,8 +180,8 @@ volumes:
   # docs（Docusaurus）の node_modules。詳細は docs サービスの volumes のコメントを参照。
   docs-node-modules:
   # Claude Code の設定ディレクトリ(.claude)をホストと分離するための専用ボリューム。
-  # 詳細は frontend サービスの claude-config マウントのコメントを参照。
-  claude-config:
+  # 詳細は frontend サービスの claude-config-node マウントのコメントを参照。
+  claude-config-node:
   # GitHub CLI（gh）の認証情報を保持する専用ボリューム。詳細は frontend サービスの
-  # gh-config マウントのコメントを参照。
-  gh-config:
+  # gh-config-node マウントのコメントを参照。
+  gh-config-node:
