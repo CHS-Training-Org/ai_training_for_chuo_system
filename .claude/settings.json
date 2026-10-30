@@ -3,6 +3,9 @@
     "CLAUDE_CODE_NO_FLICKER": "0"
   },
   "hooks": {},
+  "permissions": {
+    "disableBypassPermissionsMode": "disable"
+  },
   "statusLine": {
     "type": "command",
     "command": "bash .claude/scripts/statusline-command.sh"

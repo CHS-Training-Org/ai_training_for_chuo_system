@@ -14,7 +14,7 @@ references:
   - ../../develop/dev-workflow.md
   - ../../learn/ai-tools-guide.md
   - .claude/settings.json
-last_updated: '2026-10-09T00:00:00+09:00'
+last_updated: '2026-10-29T00:00:00+09:00'
 ---
 
 # Claude Code 設定台帳
@@ -88,6 +88,9 @@ last_updated: '2026-10-09T00:00:00+09:00'
 `.claude/settings.json` の `statusLine` から呼び出されます。
 
 ### Permissions
+
+`.claude/settings.json` の `permissions.disableBypassPermissionsMode: "disable"` で、すべての確認を省く bypass permissions モード（`--dangerously-skip-permissions`）を無効にしている。  
+開発コンテナの作業ユーザーが root から node に変わり（Issue #166）、root では起動できないという Claude Code 側の安全策が効かなくなったためである。研修課題でこのモードを使わない方針（[AI ツール活用ガイド](../../learn/ai-tools-guide.md)）を、リポジトリ設定で担保する。
 
 ローカルの権限設定は `.claude/settings.local.json`（`.gitignore` 対象・個人環境用）が正典です。現在の許可コマンド例（`.claude/settings.local.json` の `permissions.allow`）:
 
