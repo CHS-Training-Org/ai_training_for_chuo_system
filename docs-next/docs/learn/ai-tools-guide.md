@@ -13,7 +13,7 @@ references:
   - ../develop/coding-conventions.md
   - ../develop/no-aidlc-workflow.md
   - ../reference/claude-code/agent-config.md
-last_updated: '2026-08-14T18:00:00+09:00'
+last_updated: '2026-10-29T00:00:00+09:00'
 ---
 
 # AI ツール活用ガイド（Claude Code）
@@ -157,7 +157,9 @@ Claude Code は、ツール実行やファイル編集を**どこまで確認な
 
 :::danger[Bypass permissions モードは研修課題では使わない]
 
-`--dangerously-skip-permissions` フラグ、または設定で明示的に有効化した場合にのみ現れる、**全ての確認をスキップする**モードです（ステータス表示: `⏵⏵ bypass permissions on`）。root/sudo 権限下では起動できない安全策が入っていますが、それ以外の環境では実行内容の妥当性チェックが一切効かなくなります。研修課題では使わないでください。
+`--dangerously-skip-permissions` フラグ、または設定で明示的に有効化した場合にのみ現れる、**全ての確認をスキップする**モードです（ステータス表示: `⏵⏵ bypass permissions on`）。実行内容の妥当性チェックが一切効かなくなるため、研修課題では使わないでください。
+
+BookFlow ではリポジトリの設定（`.claude/settings.json` の `permissions.disableBypassPermissionsMode`）でこのモードを無効にしており、フラグを付けても有効になりません。
 
 :::
 

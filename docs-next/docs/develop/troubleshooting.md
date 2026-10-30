@@ -9,7 +9,7 @@ tags:
 audience: 学習者
 references:
   - ../learn/getting-started.md
-last_updated: '2026-10-09T00:00:00+09:00'
+last_updated: '2026-10-29T00:00:00+09:00'
 ---
 
 # トラブルシューティング
@@ -284,6 +284,16 @@ Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本�
 ---
 
 ## Git・GitHub 関連 {#git}
+### WSL のターミナルで git が `cannot lock ref` / `Permission denied` になる {#git-root-owned}
+
+- **症状**: WSL2 のターミナルで `git fetch` や `git pull` を実行すると、`error: cannot lock ref '...': Unable to create '.../xxx.lock': Permission denied` のように失敗する。
+- **原因**: 以前の DevContainer は作業ユーザーが root だったため、コンテナ内の git やビルドで作られたファイルが、ホスト上で root 所有になっています。WSL のユーザーは root 所有のディレクトリに書き込めません。現在の DevContainer はホストと同じ uid の `node` ユーザーで動くため、root 所有のファイルが新たに増えることはありません。
+- **解決策**: WSL のターミナルでリポジトリのルートに移動し、リポジトリ全体の所有者を自分に戻します。`sudo` はパスワードを求めるので、Claude Code の `!` からではなく、ターミナルから直接実行してください。
+
+  ```bash
+  sudo chown -R "$(id -u):$(id -g)" .
+  ```
+
 ### トランクブランチを push できない（`could not read Username` / `403 Permission denied`）
 
 - **症状**: 自分のトランクブランチを push すると、次のように 2 種類のエラーが続けて出る。
@@ -365,8 +375,15 @@ fork 側では、AI レビュー（`@claude pr-review`）が依存する secrets
 ### コンテナを再作成するたびにログインを求められる／設定が消える
 
 - **症状**: コンテナの再作成後に `claude` の再ログインが必要になる。会話履歴や設定が引き継がれない。
-- **原因**: ホストの `~/.claude` / `~/.claude.json` のバインドマウントが効いておらず、認証情報がコンテナ内にしか保存されていない。
-- **解決策**: コンテナ内で `ls /root/.claude` を実行し、ホスト側（WSL2 の `~/.claude`）と同じ内容が見えるか確認する。見えない場合は `.devcontainer/docker-compose.yml` のマウント定義（`${USERPROFILE:-$HOME}/.claude`）がホスト側の実パスに解決されているかを確認する（WSL2 から起動していれば `$HOME` = `/home/<user>` が使われる）。セットアップ全体は [Claude Code のセットアップ](../learn/ai-tools-guide.md#setup) を参照。
+- **原因**: Claude Code の設定と認証情報（`~/.claude`）は、コンテナ専用の named volume（`claude-config-node`）に保存されます。この volume を削除したり作り直したりすると、ログインし直しになります。DevContainer の作業ユーザーを root から `node` に変えた際に volume を新しくしたため、この変更を取り込んだ後の最初の起動では、Claude Code の `/login` と `gh auth login` が 1 回ずつ必要です。
+- **解決策**: 上の再ログインの後も毎回ログインを求められる場合は、コンテナ内で `ls -la ~/.claude` を実行し、`.credentials.json` があること、所有者が `node` であることを確認します。所有者が `root` の場合は、コンテナを再起動してください（起動のたびに volume の所有者を `node` に揃えます）。セットアップ全体は [Claude Code のセットアップ](../learn/ai-tools-guide.md#setup) を参照。
+
+  root で動いていた頃の volume（名前の末尾が `_claude-config` と `_gh-config`）は使われなくなります。不要であれば、WSL のターミナルで削除できます。
+
+  ```bash
+  docker volume ls | grep -E '_(claude|gh)-config$'
+  docker volume rm <上で表示された volume 名>
+  ```
 
 ---
 
