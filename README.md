@@ -25,9 +25,9 @@
 
 - **公開サイト**: https://chs-training-org.github.io/ai_training_for_chuo_system/
 - **ローカルプレビュー**: devcontainer 起動時に自動で http://localhost:8000 が立ち上がります。
-- **手動ビルド**（`docs-next/build/` への静的出力が必要な場合）:
+- **手動ビルド**（`docs-next/build/` への静的出力が必要な場合）: 作業用コンテナには Docusaurus の依存が無いため、docs コンテナの中でビルドするスクリプトを使います。
   ```bash
-  cd docs-next && npm run build
+  bash scripts/build-docs.sh
   ```
 - **本番ビルドのプレビュー**（`npm run build` の出力をそのまま確認したい場合）: `npm run serve` は自動起動中の開発サーバーと同じ 8000 番ポートを使う設定にしているため、事前に開発サーバーを停止してから実行してください。8000 番以外のポートはホストへ公開されていません。
   ```bash

@@ -87,6 +87,14 @@
     }
   },
   "containerEnv": {
+    // docker CLI をホストのソケットへ直接つなぐ（Issue #164）。
+    // 作業ユーザーが root でないと、docker-outside-of-docker feature は /var/run/docker.sock を
+    // socat で中継する。socat は片方向が閉じると既定 0.5 秒で接続全体を閉じるため、
+    // 0.5 秒を超える docker exec（docs のビルド、psql による DB の初期化、provision-cognito.sh）が
+    // 出力と終了コードを失ったまま終了コード 0 で戻ってしまう。
+    // 受講環境（Rancher Desktop + WSL2）ではホストのソケットが誰でも読み書きできる（777）ため、中継を通さずに使える。
+    // ソケットの権限が狭い環境（Docker Desktop など）では docker が使えなくなるので、その場合はこの行を外す。
+    "DOCKER_HOST": "unix:///var/run/docker-host.sock",
     "WAYLAND_DISPLAY": "",
     "DISPLAY": "",
     "LANG": "C.UTF-8",

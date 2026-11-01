@@ -64,10 +64,10 @@ description: BookFlow の仕様書 docs-next/docs/spec/（requirements / screen-
 3. `docs-next/docs/spec/index.md` の管理ファイル一覧表へ 1 行追加する。
 4. サイドバーへの登録は不要。Docusaurus が `docs-next/docs/` のディレクトリ構造から自動生成する（`sidebars.ts`）。並び順を指定したい場合のみ frontmatter に `sidebar_position` を書く。
 
-5. ビルド確認：
+5. ビルド確認（作業用コンテナには Docusaurus の依存が無いため、docs コンテナの中でビルドする）：
 
    ```bash
-   cd docs-next && npm run build
+   bash scripts/build-docs.sh
    ```
 
    `onBrokenLinks` / `onBrokenAnchors` が `'throw'` なので、存在しないページ・アンカーを指しているとここで失敗する。
