@@ -26,7 +26,7 @@ Docusaurus は日本語見出しの自動 ID を URL エンコードするため
 | `requirements.md` | `#learner-extensions`・`#uc-01`〜`#uc-08` |
 | `api-spec.md` | `#auth-method`・`#datetime-format`・`#common-error` |
 
-> ASCII 見出し（`### \`GET /api/users/me\`` など）も自動 ID は生成されるが、記号の落とし方が直感と合わないことがある（この見出しの ID は `#get-api-users-me`）。他所からリンクする見出しは ASCII でも明示 ID を付けるのが安全。リンクを追加・変更したら `cd docs-next && npm run build` で確認する（`onBrokenAnchors: 'throw'` のため、存在しないアンカーを指すとビルドが失敗する）。
+> ASCII 見出し（`### \`GET /api/users/me\`` など）も自動 ID は生成されるが、記号の落とし方が直感と合わないことがある（この見出しの ID は `#get-api-users-me`）。他所からリンクする見出しは ASCII でも明示 ID を付けるのが安全。リンクを追加・変更したら `bash scripts/build-docs.sh`（docs コンテナの中でビルドする）で確認する（`onBrokenAnchors: 'throw'` のため、存在しないアンカーを指すとビルドが失敗する）。
 
 ---
 

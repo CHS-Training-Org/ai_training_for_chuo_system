@@ -87,8 +87,8 @@ docker compose -f .devcontainer/docker-compose.yml up -d
 
 # ドキュメントサイト（Docusaurus）
 # 開発サーバーは devcontainer 起動時に docs サービスが自動起動（http://localhost:8000）
-cd docs-next
-npm run build         # 手動ビルド（docs-next/build/ に出力。リンク・アンカー破損があれば失敗する）
+# 作業用コンテナには Docusaurus の依存が無いため、ビルドは docs コンテナの中で行う
+bash scripts/build-docs.sh   # 手動ビルド（docs-next/build/ に出力。リンク・アンカー破損があれば失敗する）
 ```
 
 ---

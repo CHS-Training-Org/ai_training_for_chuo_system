@@ -12,7 +12,7 @@ references:
   - ../develop/dev-workflow.md
   - ../develop/review-criteria.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
-last_updated: '2026-09-04T00:00:00+09:00'
+last_updated: '2026-11-01T00:00:00+09:00'
 ---
 
 # 運用ガイド
@@ -157,10 +157,10 @@ AI レビューの採用は [ADR-024](../reference/adr/ADR-024-ai-first-review-a
 
 ### ビルド失敗時の対処
 
-ローカルで以下のコマンドで再現できます（docs コンテナが起動している必要があります）：
+ローカルでは、作業用コンテナのターミナルで次のコマンドを実行すると再現できます。ビルドは docs コンテナの中で行うため、docs コンテナが起動している必要があります。
 
 ```bash
-cd docs-next && npm ci && npm run build
+bash scripts/build-docs.sh
 ```
 
 **主なビルド失敗パターン：**

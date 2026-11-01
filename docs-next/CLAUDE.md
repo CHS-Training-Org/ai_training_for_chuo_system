@@ -55,7 +55,7 @@
 
 - **同じディレクトリの一覧表**：[`docs/reference/adr/index.md`](docs/reference/adr/index.md) の ADR 一覧、[`docs/spec/enhancements/index.md`](docs/spec/enhancements/index.md) のシート一覧のように、ディレクトリ内のファイルを表にまとめているページがある。該当すれば行を追加または削除する。
 - **`_category_.json`・`sidebar_position`**：新しいディレクトリを作ったときはラベルと順序を定義する。既存ディレクトリに追加したときは、意図した位置に入るかを確認する。
-- **参照元のリンク**：削除するときは、そのファイルへのリンクが他のページに残っていないかを確認する。`npm run build` は `onBrokenLinks: 'throw'` なので、残っていればビルドが落ちる。
+- **参照元のリンク**：削除するときは、そのファイルへのリンクが他のページに残っていないかを確認する。ドキュメントサイトのビルド（`bash scripts/build-docs.sh`）は `onBrokenLinks: 'throw'` なので、残っていればビルドが落ちる。
 
 ファイル名の変更は追加と削除の両方に相当するため、上記をいずれも確認する。
 
@@ -73,7 +73,7 @@
 
 - 他ページからリンクされる見出しには、明示 ID を `## 見出し {#anchor-id}` の形で付ける。エスケープ（`\{#...}`）はしない。`.md` は `markdown.format: 'detect'` により CommonMark として解釈されるため、そのまま書ける。
 - 日本語の見出しは自動生成 ID が URL エンコードされて読めなくなるため、リンク先になる見出しでは明示 ID を省略しない。
-- リンクを追加・変更したら `npm run build` で確認する。`onBrokenLinks` / `onBrokenAnchors` が `'throw'` なので、存在しないページ・アンカーを指すとビルドが失敗する。
+- リンクを追加・変更したら `bash scripts/build-docs.sh`（docs コンテナの中でビルドする。作業用コンテナには Docusaurus の依存が無い）で確認する。`onBrokenLinks` / `onBrokenAnchors` が `'throw'` なので、存在しないページ・アンカーを指すとビルドが失敗する。
 
 ---
 
