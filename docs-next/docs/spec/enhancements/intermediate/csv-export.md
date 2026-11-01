@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ../../requirements.md
   - ../index.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-01T00:00:00+09:00'
 ---
 
 # CSV 帳票出力
@@ -21,12 +21,12 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 BookFlow の予約データは画面上では閲覧できますが、Excel 等への転記や社内報告への利用には CSV 形式でのエクスポートが求められます。現在 `GET /api/reservations` はページネーション付き JSON のみを返し、CSV ダウンロード機能は存在しません。
 
-管理者が予約一覧・利用実績を CSV でダウンロードできる機能を追加することで、外部ツールとの連携を容易にします。これはユースケース UC-07（CSV・帳票出力）の実装にあたります。
+管理者が予約一覧・利用実績を CSV でダウンロードできる機能を追加することで、外部ツールとの連携を容易にします。これは要件定義書の[対象外（学習者拡張課題）](../../requirements.md#learner-extensions)にある「CSV / PDF 帳票出力」にあたり、主要ユースケース一覧にはまだありません。実装するときに、UC-09（CSV 帳票出力）として要件定義書に追加します（番号は[ユースケース番号の割り当て](../index.md#uc-numbering)で課題ごとに決めています）。
 
 ## 依存関係
 
 - 前提課題：なし（既存の `reservations` データを CSV 化する新規エンドポイント `GET /api/reports/reservations/csv` の追加が中心）
-- 競合する課題：なし
+- 競合する課題：[利用実績の集計・グラフ表示](./usage-statistics.md)。どちらの課題も `requirements.md` の主要ユースケース一覧を編集するため、マージのときに同じ行が衝突することがあります（番号は UC-09 と UC-10 に分けてあります）。
 - 推奨着手順序：後続として [OpenAPI クライアント自動生成](../advanced/openapi-client-gen.md)・[既存機能の E2E テスト追加](../beginner/e2e-test-coverage.md) がある。
 
 ## 要件
@@ -54,6 +54,7 @@ BookFlow の予約データは画面上では閲覧できますが、Excel 等�
 - 更新が必要な spec：
   - `api-spec.md`：§帳票出力（新セクション）として `GET /api/reports/reservations/csv` を追記
   - `screen-spec.md` §`/admin/resources` または管理者向けページ：CSV ダウンロードボタンの UI 要素を追記
+  - `requirements.md`：主要ユースケース一覧と本文に UC-09（CSV 帳票出力）を追加する。一覧の前文は件数を書かず、「UC-01〜UC-08 はベース実装、UC-09 以降は学習者拡張課題で追加したユースケース」という内容に書き換える（ほかの課題の番号が欠番でもかまわない）
 
 ## AI 活用ポイント
 
