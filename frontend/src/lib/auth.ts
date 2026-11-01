@@ -5,7 +5,7 @@
  * 環境変数はすべて .env.local(.example) を参照。
  *
  * ---- ローカル開発の既知制約 (ADR-008 補足) ----
- * Better Auth 1.6.11 の `cognito` プロバイダは authorize / token / userinfo エンドポイントを
+ * Better Auth 1.7.14 の `cognito` プロバイダは（1.6.11 から変わらず） authorize / token / userinfo エンドポイントを
  * `https://` でハードコードし、JWKS/issuer を AWS 実ドメイン
  * (`cognito-idp.{region}.amazonaws.com`) に固定している
  * （@better-auth/core/dist/social-providers/cognito.mjs を参照）。
