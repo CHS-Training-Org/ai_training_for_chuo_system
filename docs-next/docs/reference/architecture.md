@@ -6,7 +6,7 @@ tags:
   - architecture
   - aws
   - infrastructure
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # AWS 標準アーキテクチャ（受注案件デフォルト構成）
@@ -20,7 +20,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ## システム構成図
 
-![システム構成図](/diagrams/architecture/architecture-system.drawio.svg)
+![システム構成図](/diagrams/architecture/architecture-system.drawio)
 
 > **CI/CD・監視レイヤー**: GitHub Actions → ECR → ECS のローリングデプロイで上記コンテナ群を配信し、Amazon CloudWatch が全レイヤーのログ・メトリクス・アラームを収集する（横断的関心事のため図では省略）。
 
@@ -82,7 +82,7 @@ Next.js を ECS Fargate 上で動かし、フロントエンドと BFF を統合
 
 ## ローカル開発環境の構成概要
 
-![ローカル開発環境の構成概要](/diagrams/architecture/architecture-local-dev.drawio.svg)
+![ローカル開発環境の構成概要](/diagrams/architecture/architecture-local-dev.drawio)
 
 > LocalStack Community（無料）で Lambda、API Gateway、S3、DynamoDB をすべてカバー。  
 > Cognito のみ cognito-local で補完する。

@@ -11,7 +11,7 @@ references:
   - ./er-diagram.md
   - ./api-spec.md
   - ../learn/glossary.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # 要件定義
@@ -137,13 +137,13 @@ BookFlow は 3 種のロールで操作権限を制御する。
 
 ### 予約ステータス遷移図
 
-![予約ステータス遷移図](/diagrams/spec/requirements-reservation-status.drawio.svg)
+![予約ステータス遷移図](/diagrams/spec/requirements-reservation-status.drawio)
 
 > **注意**：`reservations.status` に DB DEFAULT はない。アプリ層（Service）が申請時に `PENDING`（requires_approval=true）または `APPROVED`（requires_approval=false）を設定する。`DRAFT` はベース実装では未使用（下書き保存は拡張課題用の予約値）。
 
 ### 承認ステップ ステータス遷移図
 
-![承認ステップ ステータス遷移図](/diagrams/spec/requirements-approval-step-status.drawio.svg)
+![承認ステップ ステータス遷移図](/diagrams/spec/requirements-approval-step-status.drawio)
 
 > `approval_steps.status` の DB DEFAULT は `'PENDING'`。`requires_approval = false` のリソースの予約では `approval_steps` レコードを生成しない。
 

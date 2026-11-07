@@ -14,7 +14,7 @@ references:
   - ../learn/ai-tools-guide.md
   - ../learn/claude-code-best-practices.md
   - ../learn/curriculum.md
-last_updated: '2026-09-04T00:00:00+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # AI-DLC を使わない開発フロー
@@ -66,7 +66,7 @@ AI-DLC エンジンを使わないことは、Claude Code を使わないこと�
 
 ステップ3・4を合わせた流れは次の図のとおりです。
 
-![計画→実装のループ](/diagrams/guide/no-aidlc-workflow-plan-implement.drawio.svg)
+![計画→実装のループ](/diagrams/guide/no-aidlc-workflow-plan-implement.drawio)
 
 Claude Code を[探索→計画→実装→コミット](../learn/claude-code-best-practices.md#explore-plan-code-commit)の「探索・計画」に相当する[プランモード](../learn/ai-tools-guide.md#permission-modes)に切り替え、選んだ課題のビジネス要求シートと関連する既存コードを読み取らせて、実装計画を立てさせます。プランモードの間は変更が加えられません。
 

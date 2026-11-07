@@ -11,7 +11,7 @@ references:
   - ../reference/adr/index.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
   - ../learn/ai-tools-guide.md
-last_updated: '2026-10-09T00:00:00+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # コーディング規約
@@ -179,7 +179,7 @@ Next.js の制約により、`'use server'` ファイルからは非同期関数
 
 `com.example.bookflow` 配下は 4 つのレイヤーに分かれ、依存は一方向です。
 
-![4 層アーキテクチャ](/diagrams/guide/coding-conventions-4-layer.drawio.svg)
+![4 層アーキテクチャ](/diagrams/guide/coding-conventions-4-layer.drawio)
 
 | レイヤー | 置くもの | 置かないもの |
 |---------|---------|-------------|

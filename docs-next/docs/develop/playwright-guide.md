@@ -11,7 +11,7 @@ audience: 学習者
 references:
   - ./integration-test/viewpoints.md
   - ./troubleshooting.md
-timestamp: 2026-10-09
+timestamp: 2026-11-07
 ---
 
 # Playwright とは ![](/img/playwright-logo.svg)
@@ -35,7 +35,7 @@ BookFlow の検証の工程は3つあります。
 
 何れも**画面から実際に操作した結果は確かめていません**。Playwright が確かめるのはここです。
 
-![これまでの検証と Playwright が通す範囲](/diagrams/guide/playwright-verification-gap.drawio.svg)
+![これまでの検証と Playwright が通す範囲](/diagrams/guide/playwright-verification-gap.drawio)
 
 実装をエージェントに任せる開発では、この確認の欠落が従来と比較し問題となります。  
 実装の速度が上がった以上、作ったものが業務として成立しているかの確認も同じ速さで回さなければ、確認の側が開発全体の待ち時間になります。単体テストの範囲はすでにテストコードとして自動で回っていますが、画面から通した確認は人が手で画面を触るしかなく、実装の速さに追いついていません。
@@ -44,7 +44,7 @@ BookFlow の検証の工程は3つあります。
 
 ## できること {#can}
 
-![Playwright の動き](/diagrams/guide/playwright-how-it-works.drawio.svg)
+![Playwright の動き](/diagrams/guide/playwright-how-it-works.drawio)
 
 - 実際のブラウザで、入力、クリック、画面遷移を再現し、表示された内容を検証する
 - 非同期に変わる画面を自動で待つ。要素が現れるまで検証を再試行するため、待ち時間を自分で書かなくてよい
@@ -76,7 +76,7 @@ Playwright には、AI エージェントにテストを作らせたり直させ
 | generator    | その計画から実行できる Playwright のコードを生成する   |
 | healer       | 失敗したテストを再生し、画面を調べて修正案を出す       |
 
-![planner、generator、healer の関係](/diagrams/guide/playwright-agents.drawio.svg)
+![planner、generator、healer の関係](/diagrams/guide/playwright-agents.drawio)
 
 本リポジトリでは**採用していません**。試験観点の作成には運営者が用意したスキルを使います。
 
@@ -86,7 +86,7 @@ Playwright には、AI エージェントにテストを作らせたり直させ
 
 ## 他のテストとの違い {#layers}
 
-![実装を書き換えたときの違い](/diagrams/guide/playwright-test-layers.drawio.svg)
+![実装を書き換えたときの違い](/diagrams/guide/playwright-test-layers.drawio)
 
 |                      | 単体テスト（Vitest、JUnit）         | ブラウザから確かめるテスト（Playwright） |
 | -------------------- | ----------------------------------- | ---------------------------------------- |
