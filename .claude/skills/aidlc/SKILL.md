@@ -10,15 +10,22 @@ description: AI-DLC ワークフロー（INCEPTION→CONSTRUCTION→OPERATIONS�
 
 ## Pre-flight（BookFlow 独自）: 対象タスクの特定とブランチ確認
 
-**この節は上流 AI-DLC エンジンの一部ではない。** `/aidlc` が呼ばれた瞬間、次節のエンジン起動より前に一度だけ実行する BookFlow 独自の前置き処理であり、Workspace Detection をはじめとする上流ステージ定義（`.aidlc-rule-details/` 配下）には変更を加えない。承認ゲート・成果物生成・監査ログの対象外であり、`Docs/spec/aidlc-audit.md` への記録も不要。
+**この節は上流 AI-DLC エンジンの一部ではない。** `/aidlc` が呼ばれた瞬間、次節のエンジン起動より前に一度だけ実行する BookFlow 独自の前置き処理である。承認ゲート・成果物生成の対象外であり、この節の判断を `Docs/spec/aidlc-audit.md` に記録する必要はない（下記 C の初期化では監査ログそのものをテンプレートに戻す）。Workspace Detection（`.aidlc-rule-details/inception/workspace-detection.md`）は、この節の判定と整合するよう Step 1 と Step 4 だけを翻案している。
 
-1. `Docs/spec/aidlc-state.md` の存在を確認する。
-   - **存在する場合**：既存ワークフローの再開（レジューム）とみなし、この節はスキップして次節（エンジン起動）に進む。
-2. 存在しない場合（新規ワークフロー開始時のみ）、現在の git ブランチを確認する。
+1. `Docs/spec/aidlc-state.md` を読み、中身で次の 3 つに分ける。ファイルがあるかどうかだけでは判断しない（`main` にも学習者のトランクにもこのファイルは常にあり、存在だけで判断すると前の課題の記録を「再開」してしまうため。Issue #160）。
+   - **新規**：ファイルが無い、またはテンプレートのまま（Stage Progress のチェックがすべて `[ ]` で、Current Status の Status がプレースホルダー `[In Progress/Complete/Waiting for Approval]` のまま）。→ 手順 2 に進む。
+   - **前の作業の記録**：次のいずれか。→ 下記「C. 前の作業の記録の初期化」に進む。
+     - Project Information に対象タスクの欄（`Target Branch`・`Target Enhancement Sheet`）が無い古い形式（テンプレートのままのものは新規。`main` の `Docs/spec/aidlc-state.md` にはこの欄が無い。本文から課題を推測しない。確認で「再開」を選べるため、作業中でも害はない）
+     - 対象タスクが現在のブランチと一致しない
+     - Status が完了を表している（`Complete` に限らず「完了」「全ステージ完了」などの書き方を含む）
+   - **作業中**：上記のどちらでもない（対象タスクが現在のブランチと一致し、完了していない）。→ 既存ワークフローの再開（レジューム）とみなし、この節はスキップして次節（エンジン起動）に進む。
+2. 新規と判定した場合（C で初期化した場合を含む）、現在の git ブランチを確認する。
+   - **C で初期化し、現在のブランチが初期化前の記録の `Target Branch` と同じ**（前の課題のブランチに乗ったまま起動した場合）：前の課題を新しい作業の対象として採用しないよう、規約に合致していても質問なしでは採用しない。現在のブランチ名と前の課題であることを示し、下記 A → B の順に進める。
    - **`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 規約に既に合致**：`docs-next/docs/develop/dev-workflow.md` 手順2で作成済みのケースなので、ブランチ操作は行わない。**質問はせず**、ブランチ名の `<short-desc>` をそのまま対象タスクの識別子として採用する（`docs-next/docs/spec/enhancements/*/<short-desc>.md` が存在すればそれが対象シート。難易度のディレクトリ（`beginner/` `intermediate/` `advanced/`）を 1 段挟むため、直下ではなくグロブで探す。存在しなければエンハンス課題以外のタスクとみなす）。次節に進む。
-   - **`main` または `master` 上にいる**：下記「A. 対象タスクの特定」→「B. ブランチの作成」の順に進める。
-   - **`main`/`master` でも規約準拠でもない**（別の作業ブランチに乗ったまま起動した場合）：現在のブランチ名を明示したうえで「このまま続ける」か「新しく feature ブランチを作成する」かを `AskUserQuestion` で確認する。「このまま続ける」場合はブランチ名が規約に合致していれば上記と同様に `<short-desc>` を抽出し（合致していなければエンハンス課題以外のタスクとみなし）次節に進む。「新しく作成する」場合は下記 A → B に従う。
+   - **`main`・`master`、または学習者のトランク（`learner/<GitHubユーザー名>/main`）上にいる**：下記「A. 対象タスクの特定」→「B. ブランチの作成」の順に進める（トランクは PR の宛先であり、直接作業しない）。
+   - **上記のどれでもない**（別の作業ブランチに乗ったまま起動した場合）：現在のブランチ名を明示したうえで「このまま続ける」か「新しく feature ブランチを作成する」かを `AskUserQuestion` で確認する。「このまま続ける」場合はブランチ名が規約に合致していれば上記と同様に `<short-desc>` を抽出し（合致していなければエンハンス課題以外のタスクとみなし）次節に進む。「新しく作成する」場合は下記 A → B に従う。
 3. ブランチの作成・切り替えは `git checkout -b` のみを使う。既存の変更を破棄する操作（`git reset --hard` 等）は行わない。
+4. 新規として進める場合、確定した対象タスク（ブランチ名と対象シートのパス。シートが無ければ「なし」）を、エンジンが Workspace Detection で `Docs/spec/aidlc-state.md` を作成するときに Project Information の `Target Branch`・`Target Enhancement Sheet` へ記入する。次回の起動時は、この欄と現在のブランチを比べて手順 1 の判定を行う。
 
 ### A. 対象タスクの特定
 
@@ -35,6 +42,18 @@ description: AI-DLC ワークフロー（INCEPTION→CONSTRUCTION→OPERATIONS�
   3. `gh auth status` が成功する場合に限り、`gh issue list --state open --search "in:body <short-desc>"` 等で候補を取得し、本文に `<short-desc>.md` の文字列を含む Issue に絞り込んで番号の一意特定を試みる。`gh` が使えない場合・絞り込み後に複数件残った場合・該当なしの場合は、Issue 番号をユーザーに確認する（未起票なら `/create-issue` で先に起票するよう案内する）。
   4. 組み立てたブランチ名 `feature/<user>/<issue番号>-<short-desc>` を `AskUserQuestion` で提示し、「提案通り作成」または自由記述での修正を確認してから `git checkout -b` を実行する。
 - **対象エンハンス課題を特定できていない場合**：従来どおり Issue 番号と短い説明をユーザーに確認し、`git checkout -b feature/<user>/<issue>-<desc>` を実行する。
+
+### C. 前の作業の記録の初期化
+
+前の課題（例：STEP-04）の PR をトランクへマージすると、完了した進捗トラッカー・監査ログ・設計成果物もトランクに入り、次の課題のブランチへ引き継がれる。上流 AI-DLC（v1 系。`core-workflow.md` と `workspace-detection.md` は取り込み元の 0.1.8 と同一）は 1 つのワークスペースで 1 つの作業を最初から進める前提で、同じワークスペースで次の作業を始める手順を持たない。BookFlow では、次の作業を新規として始めるために記録を初期化する。前の作業の記録は、その作業の PR とコミット履歴に残る。監査ログの「追記専用」はワークフロー実行中の規律であり、次の作業を始める前の初期化はその対象ではない（運営による初期化の前例：コミット `88a378c2`）。
+
+1. 記録に書かれた対象タスク（分かる範囲で）と Status を示し、「新しい作業として始める（記録を初期化する）」か「前の作業を再開する」かを `AskUserQuestion` で確認する。「再開する」が選ばれた場合は、`Target Branch`・`Target Enhancement Sheet` を現在のブランチと対象シートで記入（欄が無ければ Project Information に追加）してから、この節を抜けて次節（エンジン起動）に進む。記入しておかないと、次回の起動でも同じ確認が出る。
+2. `git status --porcelain -- Docs/spec/aidlc-state.md Docs/spec/aidlc-audit.md Docs/spec/aidlc-docs/` で未コミットの変更を確認する（追跡していないファイルも出る）。変更がある場合は、変更のあるファイルを示し、「初期化をやめ、前の作業の記録をコミットしてから `/aidlc` を起動し直す」か「変更を破棄して初期化する」かを `AskUserQuestion` で確認する。前者は記録を残したい場合、後者は誤って前の作業を再開してしまった変更など、残す必要がない場合に選ぶ。前者なら止める。後者なら手順 3 に進む（手順 3 の上書きと削除で変更は破棄される）。
+3. 初期化前の `Target Branch` を控えたうえで（Pre-flight の手順 2 の判定で使う）、次の 3 つを行う。
+   - `.claude/skills/aidlc/templates/aidlc-state.md` を `Docs/spec/aidlc-state.md` に上書きコピーする
+   - `.claude/skills/aidlc/templates/aidlc-audit.md` を `Docs/spec/aidlc-audit.md` に上書きコピーする
+   - `Docs/spec/aidlc-docs/` を削除する
+4. 初期化したことと、前の作業の記録は PR とコミット履歴に残っていることを学習者に伝える。あわせて、設計成果物を削除したので Workspace Detection の後に既存コードの解析（Reverse Engineering）がもう一度行われること、初期化による変更は新しい作業の実装とは別のコミット（例：`chore: 前の作業の AI-DLC 記録を初期化する`）に分けるとよいことを伝える。コミットは学習者に任せ、ここでは行わない。そのうえで Pre-flight の手順 2（新規）に進む。
 
 ## このスキルの起動 = AI-DLC エンジン開始
 
@@ -115,7 +134,7 @@ When starting a NEW workflow, load and display `common/welcome-message.md` ONCE.
 
 1. **MANDATORY**: Log initial user request in `Docs/spec/aidlc-audit.md`
 2. Load `inception/workspace-detection.md`
-3. Check for existing `Docs/spec/aidlc-state.md` (resume if found); scan workspace; determine brownfield/greenfield; check for existing RE artifacts in `Docs/spec/aidlc-docs/inception/`
+3. Check `Docs/spec/aidlc-state.md` (resume only if it records a workflow in progress; a template-state file — e.g. after Pre-flight C initialized it — means a new workflow); scan workspace; determine brownfield/greenfield; check for existing RE artifacts in `Docs/spec/aidlc-docs/inception/`
 4. Determine next: RE (brownfield + no artifacts) OR Requirements Analysis
 5. **MANDATORY**: Log findings in `Docs/spec/aidlc-audit.md`
 6. Present completion message; automatically proceed to next phase

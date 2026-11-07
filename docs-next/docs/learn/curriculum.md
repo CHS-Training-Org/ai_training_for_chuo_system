@@ -14,7 +14,7 @@ references:
   - ../develop/aidlc-guide.md
   - ../develop/coding-conventions.md
   - ./ai-tools-guide.md
-last_updated: '2026-09-04T00:00:00+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # 学習カリキュラム
@@ -136,6 +136,9 @@ STEP-03 で書き残した「AI-DLC なしで感じた手間」と照らし合�
 | 完了条件   | [中級の課題](../develop/enhancement-catalog.md#intermediate) から 1 課題を選び、[標準開発フロー](../develop/dev-workflow.md#flow) に沿って実装する。PR に `@claude pr-review` とコメントし、AI レビューの総合判定が「完了」になったら自分のトランクブランチへマージする |
 
 複数レイヤーにまたがるため、着手前に [コードベース理解ガイド](#codebase-understanding)で対象機能の処理の流れを確認しておくと計画が立てやすくなります。
+
+STEP-04 の PR をトランクにマージすると、AI-DLC の進捗トラッカー、監査ログ、設計の成果物（`Docs/spec/` 配下）も、STEP-04 の記録のままトランクに入ります。STEP-05 で `/aidlc` を起動すると、前の作業の記録が残っていることが示され、新しい作業として始めるかを確認されるので、「新しい作業として始める」を選んでください。記録は初期化されますが、STEP-04 の記録は STEP-04 の PR とコミットの履歴に残っています。  
+初期化で設計の成果物も消えるため、既存コードの解析（Reverse Engineering）がもう一度行われます。初期化による変更は、STEP-05 の実装とは別のコミットに分けておくと、PR で区別しやすくなります。
 
 ---
 

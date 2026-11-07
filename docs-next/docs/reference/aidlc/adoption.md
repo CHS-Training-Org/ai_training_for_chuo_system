@@ -10,7 +10,7 @@ audience: 運営者・学習者
 references:
   - ../../develop/dev-workflow.md
   - ../../develop/aidlc-guide.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # AI-DLC 採用台帳
@@ -36,6 +36,8 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 
 **2026-07-16 Pre-flight ブランチ確認追加**: `/aidlc` 起動時、エンジン開始（Workspace Detection）より前に BookFlow 独自の前置き処理として、ブランチ作成し忘れを検知して確認する処理を追加。上流ステージ定義（`.aidlc-rule-details/` 配下）には変更なし。
 
+**2026-11-07 Pre-flight の状態判定と記録の初期化**（Issue #160）: 前の課題の進捗トラッカーがトランクに残り、次の課題の `/aidlc` が「再開」として始まる問題に対応した。Pre-flight は `Docs/spec/aidlc-state.md` の存在ではなく中身で判定する。判定は、テンプレートのままなら新規、完了済みか対象タスクが現在のブランチと一致しなければ前の作業の記録、それ以外は作業中とする。前の作業の記録と判定した場合は学習者に確認したうえで、進捗トラッカーと監査ログをテンプレート（`.claude/skills/aidlc/templates/`）に戻し、`Docs/spec/aidlc-docs/` を削除して新規として始める。上流 v1 系（v1.0.1。`core-workflow.md` と `workspace-detection.md` は 0.1.8 と同一）は 1 つのワークスペースで 1 つの作業を進める前提で、次の作業を始める手順を持たないため、BookFlow 独自に補った。判定に使うため、進捗トラッカーのテンプレートに対象タスクの欄（`Target Branch` と `Target Enhancement Sheet`）を追加し、`.aidlc-rule-details/inception/workspace-detection.md` の Step 1（中身での判定）と Step 4（テンプレートの構成を保った記入と対象タスクの記入）を翻案した。対象タスクの欄はスキル内のテンプレートにだけ足し、`Docs/spec/aidlc-state.md` 自体は変えていない（既存のトランクとの衝突を避けるため。欄が無いテンプレートも新規と判定され、エンジンが欄を足す）。この変更は `main` から作るトランクに効く。既存のトランクには `main` を取り込まない運用のため届かない。
+
 ---
 
 ## 状態管理の写像
@@ -44,7 +46,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 | 上流ファイル | BookFlow 写像先 | 理由 |
 |---|---|---|
 | `aidlc-docs/aidlc-state.md` | `Docs/spec/aidlc-state.md` | 単一ファイル（ツリー新設なし）でセッション復元機構（`session-continuity.md`）が機能する |
-| `aidlc-docs/audit.md` | `Docs/spec/aidlc-audit.md` | 単一の追記専用ログファイル。並行ツリーの懸念なし。学習者の AI 利用記録と相補的 |
+| `aidlc-docs/audit.md` | `Docs/spec/aidlc-audit.md` | 単一の追記専用ログファイル。並行ツリーの懸念なし。学習者の AI 利用記録と相補的。次の作業を始める前に限り、Pre-flight が確認のうえテンプレートに初期化する（Issue #160） |
 | `aidlc-docs/<phase>/` 設計成果物 | `Docs/spec/aidlc-docs/<phase>/`（作業用）→ 永続成果は既存 `Docs/spec/` ファイルに統合 | aidlc-docs/ という**ツリー**は新設せず `Docs/spec/` 内の 1 サブディレクトリに限定 |
 | units of work 分解 | 縦切り課題 Issue（`feature/<GitHubユーザー名>/<issue番号>-<short-desc>` 単位） | 既存ブランチ命名・課題粒度と一致 |
 
@@ -78,7 +80,7 @@ AI-DLC エンジン（`core-workflow.md` + 全ステージ）を BookFlow の標
 
 | 上流ファイル | 役割 | BookFlow 反映先 | 採用状態 | 根拠 |
 |---|---|---|---|---|
-| `inception/workspace-detection.md` | ワークスペース検出・state 初期化（必須・最初） | `.aidlc-rule-details/inception/workspace-detection.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。`Docs/spec/aidlc-state.md` の初期化・Brownfield/Greenfield 判定 |
+| `inception/workspace-detection.md` | ワークスペース検出・state 初期化（必須・最初） | `.aidlc-rule-details/inception/workspace-detection.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。`Docs/spec/aidlc-state.md` の初期化・Brownfield/Greenfield 判定。Step 1 は存在ではなく中身で判定し、Step 4 はテンプレートの構成を保って対象タスクの欄を記入するよう翻案（Issue #160） |
 | `inception/reverse-engineering.md` | 既存コード解析（Brownfield のみ・条件付き） | `.aidlc-rule-details/inception/reverse-engineering.md`（翻案済み）+ 将来 `/reverse-engineering` スキル化 | **エンジン採用（翻案・活性化）** | 学習者向け「コードベース理解ガイド」（[`curriculum.md#codebase-understanding`](../../learn/curriculum.md#codebase-understanding)）に直結（台帳「今後の候補」から実装済みに昇格） |
 | `inception/requirements-analysis.md` | 要件分析（必須・深さ適応型） | `.aidlc-rule-details/inception/requirements-analysis.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 必須ステージ。成果は `docs-next/docs/spec/requirements.md` に統合 |
 | `inception/user-stories.md` | ユーザーストーリー作成（条件付き） | `.aidlc-rule-details/inception/user-stories.md`（翻案済み） | **エンジン採用（翻案・活性化）** | 条件付きステージ。ユーザー影響のある機能開発時に実行 |
