@@ -4,9 +4,9 @@
 
 ## Step 1: Check for Existing AI-DLC Project
 
-Check if `Docs/spec/aidlc-state.md` exists:
-- **If exists**: Resume from last phase (load context from previous phases)
-- **If not exists**: Continue with new project assessment
+Check `Docs/spec/aidlc-state.md`（BookFlow 翻案：このファイルは `main` にもトランクにも常に存在するため、存在ではなく中身で判断する。新規か再開かの判定と、前の作業の記録の初期化は、`/aidlc` スキルの Pre-flight がこのステージより前に行う）:
+- **If it records a workflow in progress**（Pre-flight が「作業中」と判定したもの。対象タスクが現在のブランチと一致し、完了していない）: Resume from last phase (load context from previous phases)
+- **If not exists, or still the template**（Stage Progress のチェックがすべて `[ ]` で、Status がプレースホルダーのまま。Pre-flight の初期化の直後もこれにあたる）: Continue with new project assessment
 
 ## Step 2: Scan Workspace for Existing Code
 
@@ -44,7 +44,7 @@ Check if `Docs/spec/aidlc-state.md` exists:
 
 ## Step 4: Create Initial State File
 
-Create `Docs/spec/aidlc-state.md`:
+Create `Docs/spec/aidlc-state.md`（BookFlow 翻案：テンプレートのままのファイルがある場合は、下記の骨組みで置き換えず、テンプレートの構成（frontmatter・Extension Configuration・Stage Progress の一覧など）を保ったまま各欄を埋める。`Target Branch`・`Target Enhancement Sheet` には Pre-flight で確定した対象タスクを記入する（テンプレートに欄が無ければ Project Information に追加する）。次回の起動時に Pre-flight がこの欄と現在のブランチを比べる）:
 
 ```markdown
 # AI-DLC State Tracking
@@ -53,6 +53,8 @@ Create `Docs/spec/aidlc-state.md`:
 - **Project Type**: [Greenfield/Brownfield]
 - **Start Date**: [ISO timestamp]
 - **Current Stage**: INCEPTION - Workspace Detection
+- **Target Branch**: [feature/<GitHubユーザー名>/<issue番号>-<short-desc>]
+- **Target Enhancement Sheet**: [docs-next/docs/spec/enhancements/<難易度>/<short-desc>.md、または なし]
 
 ## Workspace State
 - **Existing Code**: [Yes/No]
