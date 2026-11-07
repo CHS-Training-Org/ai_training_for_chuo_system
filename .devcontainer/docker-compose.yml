@@ -52,10 +52,10 @@ services:
       #   単一ファイルのバインドは差し替えに追従しないため、ホストで一度使うと共有が切れ、
       #   コンテナは古い内容を見続ける（ホストとコンテナで別々に書き換わる）。
       # - 共有されている間は、インストール方式（ホストは native、コンテナは npm-global）を
-      #   互いに書き換え、claude doctor の警告と自動更新の停止（autoUpdates: false）を招いた。
-      # - 共有で引き継いでいたのはオンボーディング済みの印ぐらいで、MCP 設定は無かった。
-      #   認証情報（.credentials.json）は元から claude-config-node にあり、影響しない。
-      # このため再ビルド後の初回起動で、オンボーディング（テーマの選択など）が一度だけ出る。
+      #   互いに書き換え、claude doctor が不一致を警告した。運営の環境では自動更新も止まっていた
+      #   （autoUpdates: false。誰がいつ書き込んだかは特定できていない）。
+      # - 運営の環境では、共有で引き継いでいたのはオンボーディング済みの印ぐらいで、MCP 設定は
+      #   無かった。認証情報（.credentials.json）は元から claude-config-node にあり、影響しない。
       CLAUDE_CONFIG_DIR: /home/node/.claude
     depends_on:
       postgres:

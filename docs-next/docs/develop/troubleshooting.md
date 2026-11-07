@@ -108,7 +108,7 @@ last_updated: '2026-11-07T00:00:00+09:00'
 
 ### 上記のいずれにも当てはまらず起動に失敗する
 
-- **解決策**: コマンドパレット →「**Dev Containers: Show Container Log**」で失敗箇所のログを確認する。`.claude.json` 関連のマウントエラーであれば [§AI ツール関連](#ai-tools) を参照。原因を解消したら「**Dev Containers: Rebuild Container**」で再作成する（named volume は消えないため `node_modules` や DB データは保持される）。
+- **解決策**: コマンドパレット →「**Dev Containers: Show Container Log**」で失敗箇所のログを確認する。原因を解消したら「**Dev Containers: Rebuild Container**」で再作成する（named volume は消えないため `node_modules` や DB データは保持される）。
 
 :::note[docker ps -a に k8s_ で始まるコンテナが大量に表示される場合]
 Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本プロジェクトとは無関係です。  
@@ -353,27 +353,6 @@ fork 側では、AI レビュー（`@claude pr-review`）が依存する secrets
 ---
 
 ## AI ツール関連 {#ai-tools}
-### コンテナ起動が `.claude.json` 関連のマウントエラーで失敗する
-
-- **対象**: ホストの `~/.claude.json` をコンテナと共有していた、以前の DevContainer（トランクの `.devcontainer/docker-compose.yml` に `~/.claude.json` のバインドがある場合）。今の DevContainer は共有しないため起きない。
-- **症状**: 「Reopen in Container」が `.claude.json` のマウントに関するエラー（`... not a directory` 等）で失敗する。
-- **原因**: ホスト（WSL2）側の `~/.claude.json` が**ディレクトリ**として存在している。マウント元が存在しない状態で Docker が自動生成すると空ディレクトリになり、ファイルを期待するコンテナ側と型が衝突する。通常は `devcontainer.json` の `initializeCommand` が空の JSON ファイル（`{}`）を事前生成するため発生しないが、一度ディレクトリ化すると以降の起動が失敗し続ける。
-- **解決策**: WSL2 ターミナルで確認し、**ディレクトリだった場合のみ**削除してから DevContainer を起動し直す（`initializeCommand` がファイルとして再生成する）。
-
-  ```bash
-  ls -ld ~/.claude.json   # 先頭が d ならディレクトリ化している
-  rm -rf ~/.claude.json   # ディレクトリだった場合のみ実行
-  ```
-
-  ファイルとして存在する `~/.claude.json` は Claude Code の認証、設定情報を含むため削除しないでください。
-
-### `claude doctor` がインストール方式の不一致を警告する
-
-- **対象**: ホストの `~/.claude.json` をコンテナと共有していた、以前の DevContainer。
-- **症状**: `claude doctor` が `Running native installation but config install method is 'global'`（ホスト）や、`~/.local/bin/claude missing or broken`（コンテナ）を警告する。ホストまたはコンテナの自動更新が `Auto-updates: disabled (config)` になっている。
-- **原因**: ホスト（native 方式）とコンテナ（npm の global 方式）は Claude Code の入れ方が違うが、共有していた `~/.claude.json` にはインストール方式を 1 つしか書けない。片方で `claude update` などを実行すると、もう片方の方式に書き換わる。さらに、ホストの Claude Code が `~/.claude.json` を保存すると、コンテナとの共有が切れ、それぞれが別々に書き換わる（Issue #171）。
-- **解決策**: 警告が勧める `claude install` は実行しない（コンテナに別の Claude Code が入り、かえって混乱する）。ホストでは `claude update` を実行すると、ホストの方式（native）に戻り、自動更新も有効になる。根本的には、`.claude.json` を共有しない今の DevContainer の構成を取り込み、コンテナを作り直す。
-
 ### `claude: command not found`
 
 - **症状**: コンテナ内のターミナルで `claude` が見つからない。
