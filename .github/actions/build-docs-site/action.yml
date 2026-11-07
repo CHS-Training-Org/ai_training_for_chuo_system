@@ -18,7 +18,8 @@ runs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        # docs コンテナ（node:24-slim）とフロントエンドの CI に揃える。Mermaid 12 が Node.js 22.12 以上を要求する（Issue #180）。
+        node-version: 24
         cache: 'npm'
         cache-dependency-path: docs-next/package-lock.json
 
