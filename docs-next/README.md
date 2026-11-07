@@ -33,7 +33,8 @@ docs-next/
     img/                    # 画像アセット
     assets/logos/           # 技術スタックのロゴ SVG
     design/                 # デザインショーケースの全画面プレビュー
-    diagrams/               # draw.io 図（アーキテクチャ・API・ER図等）とその SVG 出力
+    diagrams/               # draw.io 図の元ファイル（.drawio。ブラウザで描画する）
+    js/drawio-viewer/       # draw.io の閲覧用 JS（同梱。更新手順は同ディレクトリの README.md）
   scripts/                  # last_updated 生成スクリプトと移行用スクリプト（migration/）
   docusaurus.config.ts      # Docusaurus 設定
   sidebars.ts               # サイドバー構成（ディレクトリ構造から自動生成）
