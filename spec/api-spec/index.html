@@ -1,46 +1,9 @@
-<!doctype html><html lang=ja dir=ltr class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-spec/api-spec" data-has-hydrated=false><head><meta charset=UTF-8><meta name=generator content="Docusaurus v3.10.2"><title data-rh=true>REST API 仕様書 | BookFlow ドキュメント</title><meta data-rh=true name=viewport content="width=device-width, initial-scale=1.0"/><meta data-rh=true name=twitter:card content=summary_large_image /><meta data-rh=true property=og:url content=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec /><meta data-rh=true property=og:locale content=ja /><meta data-rh=true name=docusaurus_locale content=ja /><meta data-rh=true name=docsearch:language content=ja /><meta data-rh=true name=docusaurus_version content=current /><meta data-rh=true name=docusaurus_tag content=docs-default-current /><meta data-rh=true name=docsearch:version content=current /><meta data-rh=true name=docsearch:docusaurus_tag content=docs-default-current /><meta data-rh=true property=og:title content="REST API 仕様書 | BookFlow ドキュメント"/><meta data-rh=true name=description content="BookFlow のエンドポイント・リクエスト/レスポンス・認証・シーケンス図を定義した API 仕様書"/><meta data-rh=true property=og:description content="BookFlow のエンドポイント・リクエスト/レスポンス・認証・シーケンス図を定義した API 仕様書"/><link data-rh=true rel=icon href=/ai_training_for_chuo_system/img/favicon.ico /><link data-rh=true rel=canonical href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec /><link data-rh=true rel=alternate href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec hreflang=ja /><link data-rh=true rel=alternate href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec hreflang=x-default /><script data-rh=true type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec","name":"REST API 仕様書","position":1}]}</script><link rel=stylesheet href=/ai_training_for_chuo_system/assets/css/styles.87d2a108.css /><script src=/ai_training_for_chuo_system/assets/js/runtime~main.66b11285.js defer></script><script src=/ai_training_for_chuo_system/assets/js/main.12b34ca5.js defer></script></head><body><svg style="display: none;"><defs>
+<!doctype html><html lang=ja dir=ltr class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-spec/api-spec" data-has-hydrated=false><head><meta charset=UTF-8><meta name=generator content="Docusaurus v3.10.2"><title data-rh=true>REST API 仕様書 | BookFlow ドキュメント</title><meta data-rh=true name=viewport content="width=device-width, initial-scale=1.0"/><meta data-rh=true name=twitter:card content=summary_large_image /><meta data-rh=true property=og:url content=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec /><meta data-rh=true property=og:locale content=ja /><meta data-rh=true name=docusaurus_locale content=ja /><meta data-rh=true name=docsearch:language content=ja /><meta data-rh=true name=docusaurus_version content=current /><meta data-rh=true name=docusaurus_tag content=docs-default-current /><meta data-rh=true name=docsearch:version content=current /><meta data-rh=true name=docsearch:docusaurus_tag content=docs-default-current /><meta data-rh=true property=og:title content="REST API 仕様書 | BookFlow ドキュメント"/><meta data-rh=true name=description content="BookFlow のエンドポイント・リクエスト/レスポンス・認証・シーケンス図を定義した API 仕様書"/><meta data-rh=true property=og:description content="BookFlow のエンドポイント・リクエスト/レスポンス・認証・シーケンス図を定義した API 仕様書"/><link data-rh=true rel=icon href=/ai_training_for_chuo_system/img/favicon.ico /><link data-rh=true rel=canonical href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec /><link data-rh=true rel=alternate href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec hreflang=ja /><link data-rh=true rel=alternate href=https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec hreflang=x-default /><script data-rh=true type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://CHS-Training-Org.github.io/ai_training_for_chuo_system/spec/api-spec","name":"REST API 仕様書","position":1}]}</script><link rel=stylesheet href=/ai_training_for_chuo_system/assets/css/styles.87d2a108.css /><script src=/ai_training_for_chuo_system/assets/js/runtime~main.2c77cdc4.js defer></script><script src=/ai_training_for_chuo_system/assets/js/main.389a5134.js defer></script></head><body><svg style="display: none;"><defs>
 <symbol id=theme-svg-external-link viewBox="0 0 24 24"><path fill=currentColor d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
 </defs></svg>
 <script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme-a0d")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{for(var[t,e]of new URLSearchParams(window.location.search).entries())if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id=__docusaurus><link rel=preload as=image href=/ai_training_for_chuo_system/img/logo.svg /><div role=region aria-label=メインコンテンツまでスキップ><a class=skipToContent_fXgn href=#__docusaurus_skipToContent_fallback>メインコンテンツまでスキップ</a></div><nav aria-label=ナビゲーション class="theme-layout-navbar navbar navbar--fixed-top"><div class=navbar__inner><div class="theme-layout-navbar-left navbar__items"><button aria-label=ナビゲーションバーを開く aria-expanded=false class="navbar__toggle clean-btn" type=button><svg width=30 height=30 viewBox="0 0 30 30" aria-hidden=true><path stroke=currentColor stroke-linecap=round stroke-miterlimit=10 stroke-width=2 d="M4 7h22M4 15h22M4 23h22"/></svg></button><a class=navbar__brand href=/ai_training_for_chuo_system/><div class=navbar__logo><img src=/ai_training_for_chuo_system/img/logo.svg alt="BookFlow Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"/><img src=/ai_training_for_chuo_system/img/logo.svg alt="BookFlow Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"/></div><b class="navbar__title text--truncate">BookFlow Docs</b></a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/learn/curriculum>学習</a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/develop/dev-workflow>開発ガイド</a><a aria-current=page class="navbar__item navbar__link navbar__link--active" href=/ai_training_for_chuo_system/spec/>仕様</a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/reference/architecture>リファレンス</a><a class="navbar__item navbar__link" href=/ai_training_for_chuo_system/operations/operations-guide>運用</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class=navbarSearchContainer_Bca1><div class="navbar__search searchBarContainer_NW3z" dir=ltr><svg aria-hidden=true class=searchIcon_T3tP focusable=false viewBox="0 0 16 16"><path fill=currentColor d="M6.02945 10.20327a4.17382 4.17382 0 1 1 4.17382-4.17382 4.15609 4.15609 0 0 1-4.17382 4.17382Zm9.69195 4.2199-4.8225-4.82338A5.88021 5.88021 0 0 0 12.058 6.02856 6.00467 6.00467 0 1 0 9.59979 10.8989l4.82338 4.82338a.89729.89729 0 0 0 1.29912 0 .89749.89749 0 0 0-.00087-1.29909Z"/></svg><input placeholder=検索 aria-label=Search class="navbar__search-input searchInput_YFbd" value="" /><div class="loadingRing_RJI3 searchBarLoadingRing_YnHq"><div></div><div></div><div></div><div></div></div></div></div><a href=https://github.com/CHS-Training-Org/ai_training_for_chuo_system target=_blank rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width=13.5 height=13.5 aria-label="(opens in new tab)" class=iconExternalLink_nPIU><use href=#theme-svg-external-link /></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type=button disabled title=システムモード aria-label=ダークモードを切り替える(現在はシステムモード)><svg viewBox="0 0 24 24" width=24 height=24 aria-hidden=true class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill=currentColor d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"/></svg><svg viewBox="0 0 24 24" width=24 height=24 aria-hidden=true class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill=currentColor d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"/></svg><svg viewBox="0 0 24 24" width=24 height=24 aria-hidden=true class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill=currentColor d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"/></svg></button></div></div></div><div role=presentation class=navbar-sidebar__backdrop></div></nav><div id=__docusaurus_skipToContent_fallback class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class=docsWrapper_hBAB><button aria-label=先頭へ戻る class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type=button></button><div class=docRoot_UBD9><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class=sidebarViewport_aRkj><div class=sidebar_njMd><nav aria-label=ドキュメントのサイドバー class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/spec/><span class=linkLabel_WmDU>仕様書 (Spec)</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/spec/overview><span class=linkLabel_WmDU>BookFlow 学習用リポジトリ概要</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/spec/requirements><span class=linkLabel_WmDU>要件定義</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/spec/screen-spec><span class=linkLabel_WmDU>画面仕様書</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link menu__link--active" aria-current=page href=/ai_training_for_chuo_system/spec/api-spec><span class=linkLabel_WmDU>REST API 仕様書</span></a><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class=menu__link href=/ai_training_for_chuo_system/spec/er-diagram><span class=linkLabel_WmDU>ER 図</span></a><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class=menu__list-item-collapsible><a class="categoryLink_byQd menu__link menu__link--sublist" href=/ai_training_for_chuo_system/spec/enhancements/><span class=categoryLinkLabel_W154>エンハンス要件カタログ</span></a><button aria-label="'エンハンス要件カタログ'の目次を開く" aria-expanded=false type=button class="clean-btn menu__caret"></button></div></ul></nav></div></div></aside><main class=docMainContainer_TBSr><div class="container padding-top--md padding-bottom--lg"><div class=lastUpdatedContainer_idBY aria-label=最終更新日><div class=container_aRU5><span class=label_tHKe>最終更新</span><time class=date_OwoS datetime=2026-11-07T19:38:55+09:00>2026年11月7日</time></div></div><div class=row><div class="col docItemCol_z5aJ"><div class=docItemContainer_c0TR><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label=パンくずリストのナビゲーション><ul class=breadcrumbs><li class=breadcrumbs__item><a aria-label=ホームページ class=breadcrumbs__link href=/ai_training_for_chuo_system/><svg viewBox="0 0 24 24" class=breadcrumbHomeIcon_YNFT><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill=currentColor /></svg></a><li class="breadcrumbs__item breadcrumbs__item--active"><span class=breadcrumbs__link>REST API 仕様書</span></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_bxCs"><button type=button class="clean-btn tocCollapsibleButton_TO0P">このページの見出し</button></div><div class="theme-doc-markdown markdown"><header><h1>REST API 仕様書</h1></header>
 <hr/>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=api-設計方針>API 設計方針<a href=#api-設計方針 class=hash-link aria-label="API 設計方針 への直接リンク" title="API 設計方針 への直接リンク" translate=no>​</a></h2>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>項目<th>方針<tbody><tr><td>ベース URL<td><code>/api</code> プレフィックスを全エンドポイントに付与<tr><td>リソース命名<td><code>/api/&lt;複数形></code> の REST 命名規則（例：<code>/api/resources</code>・<code>/api/reservations</code>）<tr><td>バージョニング<td>バージョニングなし（URL パスに <code>/v1</code> 等を含めない）<tr><td>認証方式<td>Bearer JWT（Cognito 発行）。詳細は<a href=#auth-method class="">§共通 認証方式</a>を参照<tr><td>レスポンス形式<td>JSON（<code>Content-Type: application/json</code>）<tr><td>日時フォーマット<td>ISO 8601 ローカル日時・オフセットなし（詳細は<a href=#datetime-format class="">§共通 日時フォーマット</a>）<tr><td>エラー形式<td>全エラーを共通フォーマット <code>{ "code", "message" }</code> で返却（詳細は<a href=#common-error class="">§共通 共通エラーレスポンス</a>）</table>
 <hr/>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=共通>§共通<a href=#共通 class=hash-link aria-label="§共通 への直接リンク" title="§共通 への直接リンク" translate=no>​</a></h2>
@@ -66,189 +29,16 @@
 <p>エラー発生時は以下の JSON 形式で返却する。</p>
 <div class="language-json codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-json codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"code"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"ERROR_CODE"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"message"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"人間が読めるエラーメッセージ"</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain"></span><span class="token punctuation" style=color:#393A34>}</span><br/></div></code></pre></div></div>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=http-ステータスコード一覧>HTTP ステータスコード一覧<a href=#http-ステータスコード一覧 class=hash-link aria-label="HTTP ステータスコード一覧 への直接リンク" title="HTTP ステータスコード一覧 への直接リンク" translate=no>​</a></h4>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>ステータス<th>意味<th>例<tbody><tr><td><code>400 Bad Request</code><td>リクエストのバリデーション失敗<td>必須フィールド未入力・パラメータの形式不正・必須クエリパラメータ欠落<tr><td><code>401 Unauthorized</code><td>認証トークン未設定・不正・期限切れ<td>JWT なし・期限切れ JWT・JWT は有効だが DB 未登録のユーザー<tr><td><code>403 Forbidden</code><td>認証済みだが操作権限なし<td>MEMBER が <code>/api/resources</code> に POST<tr><td><code>404 Not Found</code><td>指定リソースが存在しない<td>存在しない ID を指定<tr><td><code>409 Conflict</code><td>競合（重複予約）<td>同一リソース・同一時間帯に承認済み or 承認待ち予約が存在する<tr><td><code>422 Unprocessable Entity</code><td>業務ルール違反<td>終了日時 ≦ 開始日時・<code>PENDING</code> 以外の予約の更新・決済済みステップへの再操作<tr><td><code>500 Internal Server Error</code><td>サーバー内部エラー<td>予期しない例外</table>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=エラーコード一覧>エラーコード一覧<a href=#エラーコード一覧 class=hash-link aria-label="エラーコード一覧 への直接リンク" title="エラーコード一覧 への直接リンク" translate=no>​</a></h4>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>コード<th>HTTP<th>説明<tbody><tr><td><code>VALIDATION_ERROR</code><td>400 / 422<td>バリデーション失敗。フィールド単体の違反（必須未入力・文字数超過・形式不正）は 400、業務ルール違反（日時整合性・ステータスガード）は 422<tr><td><code>UNAUTHORIZED</code><td>401<td>認証が必要<tr><td><code>FORBIDDEN</code><td>403<td>操作権限なし<tr><td><code>NOT_FOUND</code><td>404<td>指定リソースが存在しない<tr><td><code>RESERVATION_CONFLICT</code><td>409<td>重複予約<tr><td><code>COMMENT_REQUIRED</code><td>400<td>却下コメントが欠落または空（承認操作固有）<tr><td><code>APPROVAL_STEP_NOT_FOUND</code><td>404<td>指定承認ステップが存在しない（承認操作固有）<tr><td><code>APPROVAL_ALREADY_DECIDED</code><td>422<td>決済済みステップ（または <code>PENDING</code> 以外の予約）への再操作（承認操作固有）<tr><td><code>APPROVER_NOT_AVAILABLE</code><td>422<td>承認者（APPROVER ロール）が存在しない（予約申請時。seed データ未投入等の設定ミス）<tr><td><code>INTERNAL_SERVER_ERROR</code><td>500<td>サーバー内部エラー</table>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=ページネーション規約>ページネーション規約<a href=#ページネーション規約 class=hash-link aria-label="ページネーション規約 への直接リンク" title="ページネーション規約 への直接リンク" translate=no>​</a></h3>
 <p>一覧系エンドポイント（<code>/api/resources</code>、<code>/api/reservations</code>、<code>/api/users</code>）は Spring Data <code>Pageable</code> 準拠の page/size 方式を採用する。</p>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=リクエストクエリパラメーター>リクエストクエリパラメーター<a href=#リクエストクエリパラメーター class=hash-link aria-label="リクエストクエリパラメーター への直接リンク" title="リクエストクエリパラメーター への直接リンク" translate=no>​</a></h4>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>パラメーター<th>型<th>デフォルト<th>説明<tbody><tr><td><code>page</code><td>integer<td><code>0</code><td>ページ番号（0 始まり）<tr><td><code>size</code><td>integer<td><code>20</code><td>1 ページあたりの件数</table>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス構造>レスポンス構造<a href=#レスポンス構造 class=hash-link aria-label="レスポンス構造 への直接リンク" title="レスポンス構造 への直接リンク" translate=no>​</a></h4>
 <p>Spring Data の <code>Page&lt;T></code> をそのまま JSON 化して返却する。</p>
 <div class="language-json codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-json codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"content"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token punctuation" style=color:#393A34>[</span><span class="token plain"> ...items... </span><span class="token punctuation" style=color:#393A34>]</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"totalElements"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>42</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"totalPages"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>3</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"number"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>0</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"size"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>20</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"numberOfElements"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>20</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"first"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token boolean" style=color:#36acaa>true</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"last"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token boolean" style=color:#36acaa>false</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"empty"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token boolean" style=color:#36acaa>false</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"pageable"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"> ... </span><span class="token punctuation" style=color:#393A34>}</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"sort"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"> ... </span><span class="token punctuation" style=color:#393A34>}</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain"></span><span class="token punctuation" style=color:#393A34>}</span><br/></div></code></pre></div></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>フィールド<th>説明<tbody><tr><td><code>content</code><td>当該ページのアイテム配列<tr><td><code>totalElements</code><td>全件数<tr><td><code>totalPages</code><td>総ページ数<tr><td><code>number</code><td>現在のページ番号（0 始まり）<tr><td><code>size</code><td>1 ページあたりの件数<tr><td><code>numberOfElements</code><td>当該ページの実件数<tr><td><code>first</code> / <code>last</code><td>先頭 / 末尾ページか<tr><td><code>empty</code><td><code>content</code> が空か<tr><td><code>pageable</code> / <code>sort</code><td>Spring Data 内部のページング・ソート情報オブジェクト（クライアントは使用しない）</table>
 <blockquote>
 <p>フロントエンドが利用するのは <code>content</code> / <code>totalElements</code> / <code>totalPages</code> / <code>number</code> / <code>size</code> / <code>first</code> / <code>last</code> の主要フィールドのみ。本書の各エンドポイントのレスポンス例も主要フィールドのみを抜粋して記載する。</p>
@@ -257,177 +47,14 @@
 <hr/>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=エンドポイント一覧>エンドポイント一覧<a href=#エンドポイント一覧 class=hash-link aria-label="エンドポイント一覧 への直接リンク" title="エンドポイント一覧 への直接リンク" translate=no>​</a></h2>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=認証>認証<a href=#認証 class=hash-link aria-label="認証 への直接リンク" title="認証 への直接リンク" translate=no>​</a></h3>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>メソッド<th>パス<th>概要<th>権限<tbody><tr><td>POST<td><code>/api/auth/signout</code><td>サインアウト<td>認証不要</table>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=ユーザー部署>ユーザー・部署<a href=#ユーザー部署 class=hash-link aria-label="ユーザー・部署 への直接リンク" title="ユーザー・部署 への直接リンク" translate=no>​</a></h3>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>メソッド<th>パス<th>概要<th>権限<tbody><tr><td>GET<td><code>/api/users/me</code><td>自プロフィール取得<td>全ロール<tr><td>GET<td><code>/api/users</code><td>ユーザー一覧<td>ADMIN<tr><td>GET<td><code>/api/departments</code><td>部署一覧<td>全ロール</table>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=リソース>リソース<a href=#リソース class=hash-link aria-label="リソース への直接リンク" title="リソース への直接リンク" translate=no>​</a></h3>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>メソッド<th>パス<th>概要<th>権限<tbody><tr><td>GET<td><code>/api/resources</code><td>リソース一覧（カテゴリ・空き日時でフィルタ可）<td>全ロール<tr><td>POST<td><code>/api/resources</code><td>リソース登録<td>ADMIN<tr><td>GET<td><code>/api/resources/{id}</code><td>リソース詳細<td>全ロール<tr><td>PUT<td><code>/api/resources/{id}</code><td>リソース更新<td>ADMIN<tr><td>PATCH<td><code>/api/resources/{id}/status</code><td>有効/無効切替<td>ADMIN<tr><td>GET<td><code>/api/resources/{id}/availability</code><td>空き状況照会（日付範囲指定）<td>全ロール</table>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=予約>予約<a href=#予約 class=hash-link aria-label="予約 への直接リンク" title="予約 への直接リンク" translate=no>​</a></h3>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>メソッド<th>パス<th>概要<th>権限<tbody><tr><td>GET<td><code>/api/reservations</code><td>予約一覧（自分の予約。ADMIN は全件）<td>全ロール<tr><td>POST<td><code>/api/reservations</code><td>予約申請<td>全ロール<tr><td>GET<td><code>/api/reservations/{id}</code><td>予約詳細<td>全ロール（本人 or APPROVER/ADMIN）<tr><td>PUT<td><code>/api/reservations/{id}</code><td>予約内容更新（PENDING のみ）<td>申請者本人<tr><td>POST<td><code>/api/reservations/{id}/cancel</code><td>キャンセル<td>申請者本人 or ADMIN</table>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=承認>承認<a href=#承認 class=hash-link aria-label="承認 への直接リンク" title="承認 への直接リンク" translate=no>​</a></h3>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>メソッド<th>パス<th>概要<th>権限<tbody><tr><td>GET<td><code>/api/approvals/pending</code><td>承認待ち一覧<td>APPROVER / ADMIN<tr><td>POST<td><code>/api/approvals/{stepId}/approve</code><td>承認（<code>stepId</code> = <code>approval_steps.id</code>）<td>APPROVER / ADMIN<tr><td>POST<td><code>/api/approvals/{stepId}/reject</code><td>却下（<code>stepId</code> = <code>approval_steps.id</code>）<td>APPROVER / ADMIN</table>
 <hr/>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id=認証-1>§認証<a href=#認証-1 class=hash-link aria-label="§認証 への直接リンク" title="§認証 への直接リンク" translate=no>​</a></h2>
@@ -447,51 +74,6 @@
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス200-ok-1>レスポンス（200 OK）<a href=#レスポンス200-ok-1 class=hash-link aria-label="レスポンス（200 OK） への直接リンク" title="レスポンス（200 OK） への直接リンク" translate=no>​</a></h4>
 <div class="language-json codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-json codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"id"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440001"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"name"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"山田 太郎"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"email"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"yamada@example.com"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"role"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"MEMBER"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"departmentId"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440010"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"departmentName"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"開発部"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"createdAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-04-01T09:00:00"</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain"></span><span class="token punctuation" style=color:#393A34>}</span><br/></div></code></pre></div></div>
 <p><strong>UserResponse 型定義</strong></p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>フィールド<th>型<th>説明<tbody><tr><td><code>id</code><td>UUID<td>ユーザー ID<tr><td><code>name</code><td>string<td>表示名<tr><td><code>email</code><td>string<td>メールアドレス<tr><td><code>role</code><td>string<td><code>MEMBER</code> / <code>APPROVER</code> / <code>ADMIN</code><tr><td><code>departmentId</code><td>UUID<td>所属部署 ID<tr><td><code>departmentName</code><td>string<td>所属部署名（JOIN）<tr><td><code>createdAt</code><td>TIMESTAMP<td>アカウント作成日時</table>
 <hr/>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=サインインjwt-検証シーケンス図>サインイン〜JWT 検証シーケンス図<a href=#サインインjwt-検証シーケンス図 class=hash-link aria-label="サインイン〜JWT 検証シーケンス図 への直接リンク" title="サインイン〜JWT 検証シーケンス図 への直接リンク" translate=no>​</a></h3>
@@ -502,47 +84,6 @@
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=リクエスト-2>リクエスト<a href=#リクエスト-2 class=hash-link aria-label="リクエスト への直接リンク" title="リクエスト への直接リンク" translate=no>​</a></h4>
 <div class="language-http codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-http codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token plain">GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">Authorization: Bearer &lt;JWT></span><br/></div></code></pre></div></div>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=クエリパラメータ>クエリパラメータ<a href=#クエリパラメータ class=hash-link aria-label="クエリパラメータ への直接リンク" title="クエリパラメータ への直接リンク" translate=no>​</a></h4>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>パラメータ<th>型<th>必須<th>説明<tbody><tr><td><code>category</code><td>string<td>❌<td><code>ROOM</code> / <code>EQUIPMENT</code> / <code>VEHICLE</code> でフィルタ<tr><td><code>from</code><td>TIMESTAMP<td>❌<td>空き確認の開始日時（<code>to</code> と同時指定必須）<tr><td><code>to</code><td>TIMESTAMP<td>❌<td>空き確認の終了日時（<code>from</code> と同時指定必須）<tr><td><code>page</code><td>integer<td>❌<td>ページ番号（デフォルト 0）<tr><td><code>size</code><td>integer<td>❌<td>1 ページあたりの件数（デフォルト 20）</table>
 <blockquote>
 <p><code>from</code> / <code>to</code> を指定した場合、当該時間帯に <code>status IN ('PENDING', 'APPROVED')</code> の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は <code>400 Bad Request</code>（<code>code: VALIDATION_ERROR</code>）。ADMIN は <code>is_active = false</code> のリソースも含む。</p>
@@ -550,120 +91,12 @@
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス200-ok-2>レスポンス（200 OK）<a href=#レスポンス200-ok-2 class=hash-link aria-label="レスポンス（200 OK） への直接リンク" title="レスポンス（200 OK） への直接リンク" translate=no>​</a></h4>
 <div class="language-json codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-json codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"content"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token punctuation" style=color:#393A34>[</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"id"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440020"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"name"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"第1会議室"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"category"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"ROOM"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"capacity"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>10</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"location"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"3F"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"requiresApproval"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token boolean" style=color:#36acaa>false</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"isActive"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token boolean" style=color:#36acaa>true</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"description"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"プロジェクター完備"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"createdAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-04-01T09:00:00"</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token punctuation" style=color:#393A34>}</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token punctuation" style=color:#393A34>]</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"totalElements"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>5</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"totalPages"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>1</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"number"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>0</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"size"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>20</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"first"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token boolean" style=color:#36acaa>true</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"last"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token boolean" style=color:#36acaa>true</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain"></span><span class="token punctuation" style=color:#393A34>}</span><br/></div></code></pre></div></div>
 <p><strong>ResourceResponse 型定義</strong></p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>フィールド<th>型<th>説明<tbody><tr><td><code>id</code><td>UUID<td>リソース ID<tr><td><code>name</code><td>string<td>リソース名<tr><td><code>category</code><td>string<td><code>ROOM</code> / <code>EQUIPMENT</code> / <code>VEHICLE</code><tr><td><code>capacity</code><td>integer / null<td>定員（会議室など）<tr><td><code>location</code><td>string / null<td>場所・棚番号など<tr><td><code>requiresApproval</code><td>boolean<td>承認フロー要否<tr><td><code>isActive</code><td>boolean<td>有効/無効<tr><td><code>description</code><td>string / null<td>説明文<tr><td><code>createdAt</code><td>TIMESTAMP<td>登録日時</table>
 <hr/>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=post-apiresourcesリソース登録admin><code>POST /api/resources</code>（リソース登録、ADMIN）<a href=#post-apiresourcesリソース登録admin class=hash-link aria-label="post-apiresourcesリソース登録admin への直接リンク" title="post-apiresourcesリソース登録admin への直接リンク" translate=no>​</a></h3>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=リクエスト-3>リクエスト<a href=#リクエスト-3 class=hash-link aria-label="リクエスト への直接リンク" title="リクエスト への直接リンク" translate=no>​</a></h4>
 <div class="language-http codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-http codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token plain">POST /api/resources</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">Authorization: Bearer &lt;JWT></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">Content-Type: application/json</span><br/></div><div class=token-line style=color:#393A34><span class="token plain" style=display:inline-block></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">{</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "name": "プロジェクター A",</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "category": "EQUIPMENT",</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "capacity": null,</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "location": "3F 備品棚",</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "requiresApproval": true,</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "isActive": true,</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "description": "4K 対応プロジェクター"</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">}</span><br/></div></code></pre></div></div>
 <p><strong>リクエストフィールド（CreateResourceRequest）</strong></p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>フィールド<th>型<th>必須<th>バリデーション<tbody><tr><td><code>name</code><td>string<td>✅<td>100 文字以内<tr><td><code>category</code><td>string<td>✅<td><code>ROOM</code> / <code>EQUIPMENT</code> / <code>VEHICLE</code><tr><td><code>capacity</code><td>integer / null<td>❌<td><tr><td><code>location</code><td>string / null<td>❌<td>200 文字以内<tr><td><code>requiresApproval</code><td>boolean<td>✅<td><tr><td><code>isActive</code><td>boolean<td>✅<td><tr><td><code>description</code><td>string / null<td>❌<td></table>
 <p>バリデーション違反は <code>400 Bad Request</code>（<code>code: VALIDATION_ERROR</code>）。</p>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス201-created>レスポンス（201 Created）<a href=#レスポンス201-created class=hash-link aria-label="レスポンス（201 Created） への直接リンク" title="レスポンス（201 Created） への直接リンク" translate=no>​</a></h4>
@@ -692,29 +125,6 @@
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=リクエスト-7>リクエスト<a href=#リクエスト-7 class=hash-link aria-label="リクエスト への直接リンク" title="リクエスト への直接リンク" translate=no>​</a></h4>
 <div class="language-http codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-http codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token plain">GET /api/resources/550e8400-e29b-41d4-a716-446655440020/availability?from=2025-06-01T00:00:00&to=2025-06-07T23:59:59</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">Authorization: Bearer &lt;JWT></span><br/></div></code></pre></div></div>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=クエリパラメータ-1>クエリパラメータ<a href=#クエリパラメータ-1 class=hash-link aria-label="クエリパラメータ への直接リンク" title="クエリパラメータ への直接リンク" translate=no>​</a></h4>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>パラメータ<th>型<th>必須<th>説明<tbody><tr><td><code>from</code><td>TIMESTAMP<td>✅<td>照会開始日時<tr><td><code>to</code><td>TIMESTAMP<td>✅<td>照会終了日時</table>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス200-ok-6>レスポンス（200 OK）<a href=#レスポンス200-ok-6 class=hash-link aria-label="レスポンス（200 OK） への直接リンク" title="レスポンス（200 OK） への直接リンク" translate=no>​</a></h4>
 <p>指定期間内の占有済み時間帯（<code>status IN ('PENDING', 'APPROVED')</code> の予約）の配列を返す。空きスロットの計算はフロントエンド側の責務。</p>
@@ -732,35 +142,6 @@
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=リクエスト-8>リクエスト<a href=#リクエスト-8 class=hash-link aria-label="リクエスト への直接リンク" title="リクエスト への直接リンク" translate=no>​</a></h4>
 <div class="language-http codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-http codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token plain">GET /api/reservations?status=PENDING&page=0&size=20</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">Authorization: Bearer &lt;JWT></span><br/></div></code></pre></div></div>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=クエリパラメータ-2>クエリパラメータ<a href=#クエリパラメータ-2 class=hash-link aria-label="クエリパラメータ への直接リンク" title="クエリパラメータ への直接リンク" translate=no>​</a></h4>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>パラメータ<th>型<th>必須<th>説明<tbody><tr><td><code>status</code><td>string<td>❌<td>ステータスフィルター（<code>PENDING</code> / <code>APPROVED</code> / <code>REJECTED</code> / <code>CANCELLED</code>）。複数指定可（例：<code>?status=PENDING&status=APPROVED</code>）<tr><td><code>page</code><td>integer<td>❌<td>ページ番号（デフォルト 0）<tr><td><code>size</code><td>integer<td>❌<td>1 ページあたりの件数（デフォルト 20）</table>
 <blockquote>
 <p>MEMBER / APPROVER は自分の予約のみ返却。ADMIN は全ユーザーの予約を返却。</p>
@@ -768,123 +149,12 @@
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス200-ok-7>レスポンス（200 OK）<a href=#レスポンス200-ok-7 class=hash-link aria-label="レスポンス（200 OK） への直接リンク" title="レスポンス（200 OK） への直接リンク" translate=no>​</a></h4>
 <div class="language-json codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-json codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"content"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token punctuation" style=color:#393A34>[</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"id"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440030"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"resourceId"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440020"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"resourceName"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"第1会議室"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"requesterId"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440001"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"requesterName"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"山田 太郎"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"startAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-06-02T10:00:00"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"endAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-06-02T12:00:00"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"purpose"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"週次ミーティング"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"attendeesCount"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>5</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"status"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"APPROVED"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"createdAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-06-01T09:00:00"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">      </span><span class="token property" style=color:#36acaa>"updatedAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-06-01T09:00:00"</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token punctuation" style=color:#393A34>}</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token punctuation" style=color:#393A34>]</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"totalElements"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>3</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"totalPages"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>1</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"number"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>0</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"size"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>20</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"first"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token boolean" style=color:#36acaa>true</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"last"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token boolean" style=color:#36acaa>true</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain"></span><span class="token punctuation" style=color:#393A34>}</span><br/></div></code></pre></div></div>
 <p><strong>ReservationResponse 型定義</strong></p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>フィールド<th>型<th>説明<tbody><tr><td><code>id</code><td>UUID<td>予約 ID<tr><td><code>resourceId</code><td>UUID<td>リソース ID<tr><td><code>resourceName</code><td>string<td>リソース名（JOIN）<tr><td><code>requesterId</code><td>UUID<td>申請者ユーザー ID<tr><td><code>requesterName</code><td>string<td>申請者名（JOIN）<tr><td><code>startAt</code><td>TIMESTAMP<td>利用開始日時<tr><td><code>endAt</code><td>TIMESTAMP<td>利用終了日時<tr><td><code>purpose</code><td>string<td>利用目的<tr><td><code>attendeesCount</code><td>integer / null<td>参加人数<tr><td><code>status</code><td>string<td><code>PENDING</code> / <code>APPROVED</code> / <code>REJECTED</code> / <code>CANCELLED</code>（DB の CHECK 制約には <code>DRAFT</code> も定義されているがベース実装では未使用。<a class="" href=/ai_training_for_chuo_system/spec/er-diagram>er-diagram.md</a> 参照）<tr><td><code>createdAt</code><td>TIMESTAMP<td>申請日時<tr><td><code>updatedAt</code><td>TIMESTAMP<td>最終更新日時</table>
 <hr/>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=post-apireservations予約申請><code>POST /api/reservations</code>（予約申請）<a href=#post-apireservations予約申請 class=hash-link aria-label="post-apireservations予約申請 への直接リンク" title="post-apireservations予約申請 への直接リンク" translate=no>​</a></h3>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=リクエスト-9>リクエスト<a href=#リクエスト-9 class=hash-link aria-label="リクエスト への直接リンク" title="リクエスト への直接リンク" translate=no>​</a></h4>
 <div class="language-http codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-http codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token plain">POST /api/reservations</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">Authorization: Bearer &lt;JWT></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">Content-Type: application/json</span><br/></div><div class=token-line style=color:#393A34><span class="token plain" style=display:inline-block></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">{</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "resourceId": "550e8400-e29b-41d4-a716-446655440020",</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "startAt": "2025-06-02T10:00:00",</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "endAt": "2025-06-02T12:00:00",</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "purpose": "週次ミーティング",</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  "attendeesCount": 5</span><br/></div><div class=token-line style=color:#393A34><span class="token plain">}</span><br/></div></code></pre></div></div>
 <p><strong>リクエストフィールド（CreateReservationRequest）</strong></p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>フィールド<th>型<th>必須<th>バリデーション<tbody><tr><td><code>resourceId</code><td>UUID<td>✅<td>存在しない ID は <code>404 Not Found</code><tr><td><code>startAt</code><td>TIMESTAMP<td>✅<td><tr><td><code>endAt</code><td>TIMESTAMP<td>✅<td><code>endAt > startAt</code>（違反時は <code>422</code>・<code>code: VALIDATION_ERROR</code>）<tr><td><code>purpose</code><td>string<td>✅<td>255 文字以内<tr><td><code>attendeesCount</code><td>integer / null<td>❌<td>1 以上</table>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス201-created-1>レスポンス（201 Created）<a href=#レスポンス201-created-1 class=hash-link aria-label="レスポンス（201 Created） への直接リンク" title="レスポンス（201 Created） への直接リンク" translate=no>​</a></h4>
 <ul>
@@ -908,31 +178,6 @@
 リクエストフィールド、バリデーションは <code>POST /api/reservations</code> と同一（ただし <code>resourceId</code> は含まない＝リソースの変更は不可）。</p>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス200-ok-9>レスポンス（200 OK）<a href=#レスポンス200-ok-9 class=hash-link aria-label="レスポンス（200 OK） への直接リンク" title="レスポンス（200 OK） への直接リンク" translate=no>​</a></h4>
 <p>更新後の ReservationResponse。</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>HTTP<th><code>code</code><th>条件<tbody><tr><td>403<td><code>FORBIDDEN</code><td>申請者本人以外が操作<tr><td>409<td><code>RESERVATION_CONFLICT</code><td>変更後の時間帯に重複予約あり<tr><td>422<td><code>VALIDATION_ERROR</code><td><code>PENDING</code> 以外の予約を更新、または <code>endAt ≦ startAt</code></table>
 <hr/>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=post-apireservationsidcancelキャンセル><code>POST /api/reservations/{id}/cancel</code>（キャンセル）<a href=#post-apireservationsidcancelキャンセル class=hash-link aria-label="post-apireservationsidcancelキャンセル への直接リンク" title="post-apireservationsidcancelキャンセル への直接リンク" translate=no>​</a></h3>
@@ -958,66 +203,6 @@
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス200-ok-11>レスポンス（200 OK）<a href=#レスポンス200-ok-11 class=hash-link aria-label="レスポンス（200 OK） への直接リンク" title="レスポンス（200 OK） への直接リンク" translate=no>​</a></h4>
 <div class="language-json codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-json codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token punctuation" style=color:#393A34>[</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"id"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440100"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"reservationId"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440050"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"resourceName"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"第1会議室"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"requesterName"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"山田 太郎"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"startAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-07-10T10:00:00"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"endAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-07-10T12:00:00"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"purpose"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"プロジェクトキックオフ"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"stepOrder"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>1</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"status"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"PENDING"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"createdAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-07-05T09:00:00"</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token punctuation" style=color:#393A34>}</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain"></span><span class="token punctuation" style=color:#393A34>]</span><br/></div></code></pre></div></div>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=approvalstepresponse-型定義><code>ApprovalStepResponse</code> 型定義<a href=#approvalstepresponse-型定義 class=hash-link aria-label="approvalstepresponse-型定義 への直接リンク" title="approvalstepresponse-型定義 への直接リンク" translate=no>​</a></h4>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>フィールド<th>型<th>説明<tbody><tr><td><code>id</code><td>UUID<td>approval_steps.id（<code>{stepId}</code> パスパラメータに使用）<tr><td><code>reservationId</code><td>UUID<td>対象予約の ID<tr><td><code>resourceName</code><td>STRING<td>リソース名（reservations → resources の JOIN）<tr><td><code>requesterName</code><td>STRING<td>申請者名（reservations → users の JOIN）<tr><td><code>startAt</code><td>TIMESTAMP<td>利用開始日時<tr><td><code>endAt</code><td>TIMESTAMP<td>利用終了日時<tr><td><code>purpose</code><td>STRING<td>利用目的<tr><td><code>stepOrder</code><td>INTEGER<td>承認ステップの順序（ベースは常に <code>1</code>）<tr><td><code>status</code><td>STRING<td>承認ステータス（<code>PENDING</code> / <code>APPROVED</code> / <code>REJECTED</code>）<tr><td><code>createdAt</code><td>TIMESTAMP<td>承認ステップ生成日時</table>
 <blockquote>
 <p><strong>注意</strong>：<code>{stepId}</code> は <code>approval_steps.id</code>（<code>reservation.id</code> ではない）。クライアントは <code>ApprovalStepResponse.id</code> をそのままパスパラメータとして使用する。</p>
@@ -1048,41 +233,6 @@
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス200-ok-13>レスポンス（200 OK）<a href=#レスポンス200-ok-13 class=hash-link aria-label="レスポンス（200 OK） への直接リンク" title="レスポンス（200 OK） への直接リンク" translate=no>​</a></h4>
 <div class="language-json codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-json codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"id"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440100"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"reservationId"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440050"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"resourceName"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"第1会議室"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"requesterName"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"山田 太郎"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"startAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-07-10T10:00:00"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"endAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-07-10T12:00:00"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"purpose"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"プロジェクトキックオフ"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"stepOrder"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token number" style=color:#36acaa>1</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"status"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"REJECTED"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token property" style=color:#36acaa>"createdAt"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"2025-07-05T09:00:00"</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain"></span><span class="token punctuation" style=color:#393A34>}</span><br/></div></code></pre></div></div>
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=共通エラーapprove--reject-共通>共通エラー（approve / reject 共通）<a href=#共通エラーapprove--reject-共通 class=hash-link aria-label="共通エラー（approve / reject 共通） への直接リンク" title="共通エラー（approve / reject 共通） への直接リンク" translate=no>​</a></h4>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>HTTP<th><code>code</code><th>条件<tbody><tr><td>400<td><code>COMMENT_REQUIRED</code><td>reject でコメントが欠落または空文字<tr><td>403<td><code>FORBIDDEN</code><td>MEMBER がアクセス、または APPROVER が他者担当のステップを操作<tr><td>404<td><code>APPROVAL_STEP_NOT_FOUND</code><td><code>{stepId}</code> が存在しない<tr><td>409<td><code>RESERVATION_CONFLICT</code><td>approve 時に重複予約が検出された<tr><td>422<td><code>APPROVAL_ALREADY_DECIDED</code><td>すでに APPROVED / REJECTED のステップに再操作、または対象予約が <code>PENDING</code> 以外（キャンセル済み等）</table>
 <hr/>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=承認却下シーケンス図>承認・却下シーケンス図<a href=#承認却下シーケンス図 class=hash-link aria-label="承認・却下シーケンス図 への直接リンク" title="承認・却下シーケンス図 への直接リンク" translate=no>​</a></h3>
@@ -1107,31 +257,6 @@
 <h4 class="anchor anchorTargetStickyNavbar_Vzrq" id=レスポンス200-ok-15>レスポンス（200 OK）<a href=#レスポンス200-ok-15 class=hash-link aria-label="レスポンス（200 OK） への直接リンク" title="レスポンス（200 OK） への直接リンク" translate=no>​</a></h4>
 <div class="language-json codeBlockContainer_Ckt0 theme-code-block" style=--prism-color:#393A34;--prism-background-color:#f6f8fa><div class=codeBlockContent_QJqH><pre tabindex=0 class="prism-code language-json codeBlock_bY9V thin-scrollbar" style=color:#393A34;background-color:#f6f8fa><code class=codeBlockLines_e6Vv><div class=token-line style=color:#393A34><span class="token punctuation" style=color:#393A34>[</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"id"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440010"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"name"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"本社"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"parentId"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token null keyword" style=color:#00009f>null</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token punctuation" style=color:#393A34>}</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token punctuation" style=color:#393A34>{</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"id"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440011"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"name"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"開発部"</span><span class="token punctuation" style=color:#393A34>,</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">    </span><span class="token property" style=color:#36acaa>"parentId"</span><span class="token operator" style=color:#393A34>:</span><span class="token plain"> </span><span class="token string" style=color:#e3116c>"550e8400-e29b-41d4-a716-446655440010"</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain">  </span><span class="token punctuation" style=color:#393A34>}</span><span class="token plain"></span><br/></div><div class=token-line style=color:#393A34><span class="token plain"></span><span class="token punctuation" style=color:#393A34>]</span><br/></div></code></pre></div></div>
 <p><strong>DepartmentResponse 型定義</strong></p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <table><thead><tr><th>フィールド<th>型<th>説明<tbody><tr><td><code>id</code><td>UUID<td>部署 ID<tr><td><code>name</code><td>string<td>部署名<tr><td><code>parentId</code><td>UUID / null<td>親部署 ID。<code>null</code> はルート部署</table>
 <hr/>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id=ダッシュボード情報取得シーケンス図>ダッシュボード情報取得シーケンス図<a href=#ダッシュボード情報取得シーケンス図 class=hash-link aria-label="ダッシュボード情報取得シーケンス図 への直接リンク" title="ダッシュボード情報取得シーケンス図 への直接リンク" translate=no>​</a></h3>
