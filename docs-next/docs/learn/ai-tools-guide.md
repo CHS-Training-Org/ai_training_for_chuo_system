@@ -13,7 +13,7 @@ references:
   - ../develop/coding-conventions.md
   - ../develop/no-aidlc-workflow.md
   - ../reference/claude-code/agent-config.md
-last_updated: '2026-10-29T00:00:00+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # AI ツール活用ガイド（Claude Code）
@@ -50,7 +50,7 @@ Claude Code は **DevContainer に組み込み済み**です。学習者が追�
 |---------|------|
 | CLI | devcontainer feature（`anthropics/devcontainer-features/claude-code`）で自動インストール |
 | VS Code 拡張 | `Anthropic.claude-code` が自動インストール |
-| 認証情報 | `.claude`（`.credentials.json` を含む）はコンテナ専用の named volume に隔離。ホストとは共有しない |
+| 認証情報と設定 | `.claude`（`.credentials.json` を含む）と設定ファイル `.claude.json` は、コンテナ専用の named volume に置く。ホストとは共有しない |
 
 ### 初回の認証
 
@@ -66,14 +66,7 @@ claude             # 対話セッションを開始
 
 :::tip[ホストで Claude Code を使ったことがある場合でも、コンテナ内では初回ログインが必要]
 
-`.claude` ディレクトリはホストと共有せずコンテナ専用の named volume に隔離しているため、ホスト側の認証情報は引き継がれません。コンテナ内のターミナルで一度だけ `claude` にログインしてください。
-
-:::
-
-:::warning[コンテナ起動が .claude.json 関連で失敗する場合]
-
-マウント元の `~/.claude.json` はコンテナ初回起動時に自動生成されます（`devcontainer.json` の `initializeCommand`）。  
-起動に失敗する場合は [AI ツール関連のトラブルシューティング](../develop/troubleshooting.md#ai-tools) を参照してください。
+`.claude` ディレクトリと `.claude.json` はホストと共有せず、コンテナ専用の named volume に置いているため、ホスト側の認証情報や設定は引き継がれません。コンテナ内のターミナルで一度だけ `claude` にログインしてください。
 
 :::
 

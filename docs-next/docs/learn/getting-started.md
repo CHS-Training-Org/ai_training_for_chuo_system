@@ -10,7 +10,7 @@ audience: 学習者
 references:
   - ../develop/troubleshooting.md
   - ./ai-tools-guide.md
-last_updated: '2026-09-11T00:00:00+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # 環境構築・起動手順
@@ -502,5 +502,5 @@ which claude   # 再確認
 | `[BetterAuthError]: DOMAIN_AND_REGION_REQUIRED` で 500 エラー | `.env.local` 未設定が原因（ステップ 3 参照） |
 | DB 接続エラー・Flyway マイグレーション失敗 | [troubleshooting.md §DB・マイグレーション関連](../develop/troubleshooting.md#database) |
 | Git の push が `could not read Username` / `403 Permission denied` で失敗する | [troubleshooting.md §Git・GitHub 関連](../develop/troubleshooting.md#git) |
-| Claude Code が動かない・コンテナ起動が `.claude.json` で失敗する | [troubleshooting.md §AI ツール関連](../develop/troubleshooting.md#ai-tools) |
+| Claude Code が動かない | [troubleshooting.md §AI ツール関連](../develop/troubleshooting.md#ai-tools) |
 | `@claude pr-review` に反応がない・観点3の回答が読み取られない | [troubleshooting.md §AI レビュー関連](../develop/troubleshooting.md#ai-review-trouble) |
