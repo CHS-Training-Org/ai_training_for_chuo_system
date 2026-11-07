@@ -2,7 +2,7 @@
 
 レンダリング・エクスポート・レイアウト・エッジで何かおかしいときに読む。ほとんどは1行で解決できる。
 
-> **BookFlow 版の注意**: このリポジトリでは draw.io CLI を使用しない。エクスポートは VSCode の `hediet.vscode-drawio` 拡張で行う。CLI 関連のトラブル（xvfb、--no-sandbox、repair_png など）はここでは対象外。
+> **BookFlow 版の注意**: このリポジトリでは draw.io CLI を使用しない。ドキュメントサイトの図は書き出さず、`.drawio` をブラウザで描画する（SKILL.md の「ドキュメントサイトに載せる図」）。それ以外の用途のエクスポートは VSCode の `hediet.vscode-drawio` 拡張で行う。CLI 関連のトラブル（xvfb、--no-sandbox、repair_png など）はここでは対象外。
 
 ## XML・構造のミス
 

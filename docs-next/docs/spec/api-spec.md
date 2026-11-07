@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # REST API 仕様書
@@ -249,7 +249,7 @@ Authorization: Bearer <JWT>
 
 ### サインイン〜JWT 検証シーケンス図
 
-![サインイン〜JWT 検証シーケンス図](/diagrams/spec/api-spec-signin-jwt.drawio.svg)
+![サインイン〜JWT 検証シーケンス図](/diagrams/spec/api-spec-signin-jwt.drawio)
 
 ---
 
@@ -460,7 +460,7 @@ Authorization: Bearer <JWT>
 
 ### シーケンス図
 
-![シーケンス図（リソース一覧・空き確認）](/diagrams/spec/api-spec-resource-availability.drawio.svg)
+![シーケンス図（リソース一覧・空き確認）](/diagrams/spec/api-spec-resource-availability.drawio)
 
 > **[1]** `SELECT * FROM resources WHERE category='ROOM' AND is_active=true`
 >
@@ -675,7 +675,7 @@ Authorization: Bearer <JWT>
 
 ### 申請シーケンス図（2 パターン）
 
-![申請シーケンス図（2パターン）](/diagrams/spec/api-spec-reservation-apply.drawio.svg)
+![申請シーケンス図（2パターン）](/diagrams/spec/api-spec-reservation-apply.drawio)
 
 > **[1]** `SELECT 1 FROM reservations WHERE resource_id=? AND status IN ('PENDING','APPROVED') AND start_at < :endAt AND end_at > :startAt`
 
@@ -825,7 +825,7 @@ Content-Type: application/json
 
 ### 承認・却下シーケンス図
 
-![承認・却下シーケンス図](/diagrams/spec/api-spec-approval.drawio.svg)
+![承認・却下シーケンス図](/diagrams/spec/api-spec-approval.drawio)
 
 > **[1]** `SELECT 1 FROM reservations WHERE resource_id = ? AND status IN ('PENDING','APPROVED') AND start_at < endAt AND end_at > startAt AND id != reservationId`
 
@@ -912,4 +912,4 @@ Authorization: Bearer <JWT>
 
 ### ダッシュボード情報取得シーケンス図
 
-![ダッシュボード情報取得シーケンス図](/diagrams/spec/api-spec-dashboard.drawio.svg)
+![ダッシュボード情報取得シーケンス図](/diagrams/spec/api-spec-dashboard.drawio)

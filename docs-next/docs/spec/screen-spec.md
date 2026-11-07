@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./api-spec.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # 画面仕様書
@@ -37,7 +37,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ## 画面遷移図
 
-![画面遷移図](/diagrams/spec/screen-spec-navigation.drawio.svg)
+![画面遷移図](/diagrams/spec/screen-spec-navigation.drawio)
 
 > **アクセス制御**：未認証ユーザーが要認証画面にアクセスした場合は `/auth/signin` にリダイレクトする。権限不足のロールが `/approvals` / `/admin/*` にアクセスした場合は 403 エラー画面を表示する。
 

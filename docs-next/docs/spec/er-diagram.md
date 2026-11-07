@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - backend/src/main/resources/db/migration/V001__create_initial_schema.sql
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # ER 図
@@ -19,7 +19,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 ## ER 図
 
-![ER 図](/diagrams/spec/er-diagram.drawio.svg)
+![ER 図](/diagrams/spec/er-diagram.drawio)
 
 > **注意**：タイムスタンプ型は `TIMESTAMP`（`TIMESTAMPTZ` ではない）。H2 PostgreSQL 互換モードで動作するため PostgreSQL 固有型（`jsonb`・`gen_random_uuid` 等）は不使用。
 

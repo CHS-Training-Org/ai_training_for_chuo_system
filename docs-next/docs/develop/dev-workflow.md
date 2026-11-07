@@ -13,7 +13,7 @@ references:
   - ../learn/ai-tools-guide.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
   - ../spec/index.md
-last_updated: '2026-09-04T00:00:00+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # 開発ワークフローガイド
@@ -24,7 +24,7 @@ last_updated: '2026-09-04T00:00:00+09:00'
 ---
 
 ## 標準開発フロー {#flow}
-![標準開発フロー](/diagrams/guide/dev-workflow-standard.drawio.svg)
+![標準開発フロー](/diagrams/guide/dev-workflow-standard.drawio)
 
 計画段階（Workflow Planning）・実装完了段階（PR）のそれぞれで、学習者自身がセルフチェックしてから次に進みます。  
 運営者は必須の承認者ではなく、Teams での質問対応で支援します。

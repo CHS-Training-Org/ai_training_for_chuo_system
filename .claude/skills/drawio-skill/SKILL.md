@@ -17,7 +17,7 @@ metadata: {"author":"Agents365-ai","bookflow-adaptation":"CLI廃止・VSCode拡�
 
 ## 概要
 
-`.drawio` XML ファイルを生成する。レンダリング・エクスポート（PNG/SVG/PDF）は利用者が VSCode の drawio 拡張で行う。
+`.drawio` XML ファイルを生成する。ドキュメントサイトに載せる図は書き出さず、`.drawio` をそのまま参照する（「ドキュメントサイトに載せる図」を参照）。それ以外の用途のレンダリング・エクスポート（PNG/SVG/PDF）は利用者が VSCode の drawio 拡張で行う。
 
 **サポートフォーマット（拡張経由）:** PNG, SVG, PDF, JPG  
 **自動 vision 自己チェック**: 本バージョンでは行わない（cli エクスポートが不在のため）。`scripts/validate.py` による構造検証と、利用者の目視確認で代替する。
@@ -103,12 +103,12 @@ python3 <this-skill-dir>/scripts/encode_drawio_url.py --edit <name>.drawio
 
 5 ラウンドを超えたら、利用者に `.drawio` ファイルを draw.io デスクトップ（またはブラウザ版 diagrams.net）で直接編集するよう提案する。
 
-**Step 5 — 最終エクスポート（利用者操作）**
+**Step 5 — 仕上げ**
 
-利用者が VSCode で `.drawio` を開き、File > Export as で PNG/SVG/PDF を書き出す。  
-編集可能なファイルが必要な場合は `.drawio.png`（拡張が XML を埋め込む）または `.drawio.svg` として保存する。
+- **ドキュメントサイト（`docs-next/`）に載せる図**：書き出しはしない。下の「ドキュメントサイトに載せる図」に従い、`.drawio` を置いて Markdown から参照する。
+- **それ以外の用途**：利用者が VSCode で `.drawio` を開き、File > Export as で PNG/SVG/PDF を書き出す。編集可能なファイルが必要な場合は `.drawio.png`（拡張が XML を埋め込む）または `.drawio.svg` として保存する。
 
-ファイルパスを報告する（`.drawio` ソースと出力ファイル）。
+ファイルパスを報告する（`.drawio` ソースと、書き出した場合は出力ファイル）。
 
 ## フォールバック
 
@@ -291,7 +291,22 @@ N 本が同じ辺に接続する場合: `exitX = 0.25, 0.5, 0.75`... と均等�
 - 接続が集中するノード（ハブ）は中央に配置
 - Kafka/バスなどのイベントバスは列の中央に配置（サービスから左右等距離）
 
+## ドキュメントサイトに載せる図（BookFlow）
+
+ドキュメントサイトは、`.drawio` をそのまま読み込み、閲覧者のブラウザで draw.io 公式の閲覧用 JS により描画する（Issue #178）。書き出した画像（`.drawio.svg` など）は置かない。元ファイルと画像を別々に持つと、書き出し忘れで公開中の図が古くなるため。
+
+1. `.drawio` を `docs-next/static/diagrams/<分類>/<名前>.drawio` に置く（分類は `architecture` `guide` `spec` など既存のディレクトリに合わせる）。
+2. Markdown から、前後を空行で区切った単独の行で参照する：`![図の説明](/diagrams/<分類>/<名前>.drawio)`。パスは `static/` からの絶対パスで書く。
+3. `bash scripts/build-docs.sh` でビルドを確かめる。ファイルが無い、段落の途中に書いた、図として読めない場合はビルドが失敗する（`docs-next/plugins/remark-drawio.js`）。開発サーバーでは、`.drawio` を直したらページを再読み込みする。
+
+次の制約を守る。閲覧用 JS は外部に何も取りに行かない前提で同梱しているため。
+
+- XML は圧縮しない（`<diagram>` の中に `<mxGraphModel>` をそのまま書く）。
+- 外部の画像（`image=https://...`）、外部の stencil（AWS アイコンなどのシェイプライブラリ）、Web フォント（`fontFamily` での指定）、数式（`math="1"`）を使わない。使う場合は、外部へのリクエストが発生しないかを確かめてから運営者に相談する。
+
 ## エクスポート（VSCode 拡張経由）
+
+ドキュメントサイト以外の用途で画像が必要なときに使う。
 
 `.drawio` ファイルを VSCode で開き `hediet.vscode-drawio` 拡張を使ってエクスポートする:
 

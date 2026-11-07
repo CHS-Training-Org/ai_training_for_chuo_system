@@ -128,7 +128,7 @@ BookFlow は学習者 1 人・セルフ承認のため、この部分は形を�
 以下の一覧は BookFlow が固定している版（VERSION 0.1.8）の `.aidlc-rule-details/` に基づきます。
 
 ### INCEPTION フェーズ（WHAT / WHY）
-![INCEPTION フェーズ](/diagrams/guide/dev-workflow-inception.drawio.svg)
+![INCEPTION フェーズ](/diagrams/guide/dev-workflow-inception.drawio)
 
 `/aidlc` 起動後、[プランモード](../learn/ai-tools-guide.md#permission-modes)には入らず通常（agent）モードのままワークスペースと要求を分析し、実行計画を提示するところまでを担います。
 
@@ -143,7 +143,7 @@ BookFlow は学習者 1 人・セルフ承認のため、この部分は形を�
 | Units Generation（作業単位への分解） | 条件付き | 複数の作業単位に分ける必要があるときに実行。単一の単純な単位ならスキップ | 要求を作業単位（Unit of Work）へ分解する。BookFlow では縦切り Issue に対応するため、選択課題 1 件では通常スキップされる | あり |
 
 ### CONSTRUCTION フェーズ（HOW）
-![CONSTRUCTION フェーズ](/diagrams/guide/dev-workflow-construction.drawio.svg)
+![CONSTRUCTION フェーズ](/diagrams/guide/dev-workflow-construction.drawio)
 
 作業単位ごとのループとして回ります。1 つの単位を完了させてから次の単位に移り、
 すべての単位が終わってからビルド・テストに進みます。  

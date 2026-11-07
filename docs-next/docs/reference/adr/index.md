@@ -9,7 +9,7 @@ audience: 運営者・学習者
 references:
   - ../../spec/overview.md
   - ../../spec/index.md
-last_updated: '2026-10-04T00:00:00+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # ADR（Architecture Decision Records）ガイド
@@ -155,6 +155,7 @@ Accepted（YYYY-MM-DD）
 | [ADR-032](./ADR-032-integration-test-tutorial-adoption.md) | 結合テストを独立チュートリアルとして導入 | Accepted |
 | [ADR-033](./ADR-033-claude-usage-metrics.md) | トークン消費量を週次で収集し専用ブランチへ蓄積 | Accepted |
 | [ADR-034](./ADR-034-e2e-workflow-mechanism.md) | 結合テストのワークフローを簡易な状態管理とダッシュボードで進める | Accepted |
+| [ADR-035](./ADR-035-drawio-browser-rendering.md) | ドキュメントの図は draw.io の元ファイルだけを持ち、ブラウザで描画する | Accepted |
 
 ### 開発環境（ADR-022〜）
 
