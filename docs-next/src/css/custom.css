@@ -154,12 +154,32 @@ html {
 }
 
 /* ============================================================================
- * drawio SVG — ダークモードで白背景カードを適用して判読性を確保
+ * draw.io の図（src/components/DrawioDiagram.tsx）
+ * 図は透過の背景にライトの配色で描かれるので、ダークモードでは白背景のカードに載せて判読性を確保する。
  * ============================================================================ */
-[data-theme='dark'] img[src$=".drawio.svg"] {
+.drawio-diagram {
+  position: relative;
+  /* 描画前に確保する大きさ（aspect-ratio）を中身の大きさに当て、ダークモードの余白はその外側に付ける。 */
+  box-sizing: content-box;
+  margin-bottom: var(--ifm-leading);
+}
+
+/* 描画されるまでの間は、確保した場所の中に説明文を薄く出す（見出しと同じ語が本文のように並ばないように）。 */
+.drawio-diagram__fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ifm-color-emphasis-500);
+  font-size: 0.875rem;
+}
+
+[data-theme='dark'] .drawio-diagram {
   background-color: #ffffff;
   border-radius: 4px;
   padding: 8px;
+  color-scheme: light;
 }
 
 /* ============================================================================

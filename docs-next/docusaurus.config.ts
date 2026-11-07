@@ -55,6 +55,9 @@ const config: Config = {
           editUrl:
             'https://github.com/CHS-Training-Org/ai_training_for_chuo_system/tree/main/docs-next/',
           routeBasePath: '/',
+          // ![説明](/diagrams/xxx.drawio) を、ブラウザで描画する <DrawioDiagram> に置き換える（Issue #178）。
+          // 既定の画像処理（transformImage）より前に置き換えないと、.drawio を画像として読もうとして失敗する。
+          beforeDefaultRemarkPlugins: [require('./plugins/remark-drawio')],
         },
         blog: false,
         theme: {
