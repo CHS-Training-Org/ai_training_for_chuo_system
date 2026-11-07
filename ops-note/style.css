@@ -1,0 +1,418 @@
+/*
+ * 運営ノートのスタイル。
+ * 色、書体、文字の大きさ、余白は、リポジトリ直下の DESIGN.md（BookFlow のデザインシステム）に従う。
+ * ドキュメントサイト（docs-next）も同じ DESIGN.md の色と書体を使うので、行き来しても同じサイトの一部に見える。
+ */
+
+:root {
+  /* DESIGN.md §2 Color Palette */
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-soft: #fffbeb;
+  --background: #ffffff;
+  --card: #ffffff;
+  --foreground: #0f172a;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  /* 任意の区間の線と丸。非テキストのコントラスト 3:1 以上を保つ */
+  --route-optional: #64748b;
+  --badge-optional-bg: #fef3c7;
+  --badge-optional-fg: #b45309;
+
+  /* DESIGN.md §3 Typography */
+  --font-base: "Inter", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Noto Sans Mono", monospace;
+
+  /* 新しいタブで開くリンクの印（右上向きの矢印） */
+  --icon-external: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3h7v7'/%3E%3Cpath d='M13 3 3 13'/%3E%3C/svg%3E");
+
+  /* 路線図の丸の直径と線の太さ */
+  --dot: 16px;
+  --line: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* DESIGN.md §2 Dark Mode。Primary は DESIGN.md の #3B82F6 より明るい #60A5FA にして、
+     暗い背景の上でのリンクのコントラストを上げている（意図的な逸脱）。 */
+  :root {
+    --primary: #60a5fa;
+    --primary-dark: #93c5fd;
+    --primary-foreground: #020817;
+    --warning: #f59e0b;
+    --warning-soft: #1f1a0e;
+    --background: #020817;
+    --card: #0f172a;
+    --foreground: #e2e8f0;
+    --border: #334155;
+    --border-strong: #475569;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --route-optional: #94a3b8;
+    --badge-optional-bg: #422006;
+    --badge-optional-fg: #fcd34d;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-base);
+  /* px で固定せず rem にする。ブラウザの基準の文字の大きさを変えている人でも、
+     見出し、表、本文が同じ比率で拡大縮小するように（見出しより本文が大きくなる逆転を防ぐ） */
+  font-size: 1rem;
+  line-height: 1.8;
+  line-break: strict;
+  overflow-wrap: break-word; /* DESIGN.md §3.6 */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 和文の字間は本文の段落と箇条書きだけにかける（表や小さい文字、英数字には効かせない） */
+p, li { letter-spacing: 0.04em; }
+
+a { color: var(--primary); text-underline-offset: 3px; }
+a:hover { color: var(--primary-dark); }
+a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+/* 新しいタブで開くリンクに印を付ける（読み上げでは「新しいタブで開く」と伝える） */
+a[target="_blank"]::after {
+  content: "" / "（新しいタブで開く）";
+  display: inline-block;
+  width: 0.75em;
+  height: 0.75em;
+  margin-left: 0.25em;
+  vertical-align: -0.05em;
+  background-color: currentColor;
+  -webkit-mask: var(--icon-external) no-repeat center / contain;
+  mask: var(--icon-external) no-repeat center / contain;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ---- ページの枠 ---- */
+
+.page {
+  /* DESIGN.md §5 Container（max-w-screen-xl）に近い幅。表、カード、リンクの並びが中心のページなので、
+     文章だけのページ向けの max-w-4xl では窮屈になる。 */
+  /* 文字の大きさの設定に左右されないよう、ページの幅は px で決める。
+     本文もこの幅で表示するので、1 行は 55 文字程度に収まる（80 文字未満の目安） */
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 48px 16px 32px;
+}
+
+@media (min-width: 1024px) {
+  .page { padding: 48px 32px 32px; }
+}
+
+
+/* ---- 見出し（DESIGN.md §3.4） ---- */
+
+h1, h2, h3 { line-height: 1.3; margin: 0; word-break: keep-all; text-wrap: balance; }
+h1 { font-size: clamp(1.5rem, 1.25rem + 1vw, 1.875rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; }
+h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; margin: 32px 0 8px; }
+
+p { margin: 0 0 16px; }
+
+section { margin-top: 48px; scroll-margin-top: 24px; }
+
+/* ページ内リンクで飛んだ先の見出しを示す */
+section:target > h2 {
+  background: var(--muted);
+  box-shadow: 0 0 0 8px var(--muted);
+  border-radius: 4px;
+}
+
+.note { font-size: 0.875rem; color: var(--muted-foreground); line-height: 1.6; }
+.caption { font-size: 0.75rem; color: var(--muted-foreground); line-height: 1.5; }
+
+/* ---- 冒頭 ---- */
+
+.intro__subtitle { margin: 8px 0 24px; color: var(--muted-foreground); }
+
+/* 入口のリンク（DESIGN.md §4 Buttons の lg） */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 32px;
+}
+
+.button {
+  display: inline-block;
+  min-height: 44px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: 1px solid var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.button small { display: block; font-weight: 400; font-size: 0.75rem; opacity: 0.85; }
+.button--primary { background: var(--primary); color: var(--primary-foreground); }
+.button--primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: var(--primary-foreground); }
+.button--outline { background: var(--card); color: var(--primary); }
+.button--outline:hover { background: var(--muted); }
+
+/* ドキュメントサイト内の主要な行き先 */
+.destinations h2 { font-size: 1rem; margin-bottom: 8px; }
+.destinations ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* 文字の長さに合わせて並べ、行の残りの幅は均等に分ける。リンクの文字は折り返さない */
+.destinations li { flex: 1 1 auto; }
+.destinations a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--foreground);
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.destinations a::after { margin-left: auto; color: var(--muted-foreground); }
+.destinations a:hover { border-color: var(--primary); color: var(--primary); }
+.destinations p { margin: 8px 0 0; font-size: 0.875rem; }
+
+/* ---- 進め方（路線図） ---- */
+
+/* 守ること（注意を要する内容に限って Warning の色を使う） */
+.rules {
+  margin: 16px 0 32px;
+  padding: 16px 24px;
+  border-left: 4px solid var(--warning);
+  border-radius: 0 8px 8px 0;
+  background: var(--warning-soft);
+}
+.rules h3 { margin: 0 0 8px; font-size: 1rem; }
+.rules h3::before { content: "⚠ " / ""; color: var(--warning); }
+.rules ul { margin: 0; padding-left: 1.25em; }
+
+.route {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.route__stop {
+  position: relative;
+  padding: 0 0 24px calc(var(--dot) + 20px);
+}
+
+/* 停車駅の間を結ぶ線 */
+.route__stop::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--dot) / 2 - var(--line) / 2);
+  top: calc(0.9em + var(--dot) / 2);
+  bottom: calc(-0.9em + var(--dot) / 2);
+  border-left: var(--line) solid var(--primary);
+}
+.route__stop:last-child::before { display: none; }
+
+/* 停車駅の丸。必須は塗りつぶし、任意は白抜き */
+.route__stop::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(0.9em - var(--dot) / 2);
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  background: var(--primary);
+  border: var(--line) solid var(--primary);
+}
+.route__stop--optional::after {
+  background: var(--background);
+  border-color: var(--route-optional);
+}
+
+/* 任意の駅へ向かう線と、任意の駅から出る線は点線にする */
+.route__stop--before-optional::before,
+.route__stop--optional::before {
+  border-left-style: dashed;
+  border-left-color: var(--route-optional);
+}
+
+.route__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  line-height: 1.8;
+}
+.route__step {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* STEP 番号は道しるべとして本文の色で出し、リンクであることはホバーで示す */
+.route__step a,
+a.route__name { color: var(--foreground); text-decoration: none; }
+.route__step a:hover,
+a.route__name:hover { color: var(--primary); text-decoration: underline; }
+.route__step a::after,
+a.route__name::after { color: var(--muted-foreground); }
+.route__name { font-weight: 600; font-size: 1.125rem; }
+.route__body { margin: 4px 0 0; }
+.route__sub { margin: 4px 0 0; font-size: 0.875rem; }
+
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.badge--optional { background: var(--badge-optional-bg); color: var(--badge-optional-fg); }
+
+/* ---- 表 ---- */
+
+.table-scroll { overflow-x: auto; margin: 0 0 16px; }
+
+table {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  width: 100%;
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+/* 狭い画面で 1 文字ずつ折れないよう、セルに最低限の幅を持たせる */
+td { min-width: 6em; }
+th { word-break: keep-all; }
+thead th { background: var(--muted); font-weight: 600; white-space: nowrap; }
+tbody th { font-weight: 600; white-space: nowrap; }
+.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tfoot th, tfoot td { border-top: 2px solid var(--border-strong); border-bottom: 0; font-weight: 600; }
+
+/* 中身の短い表は、幅いっぱいに広げない */
+.table--compact { width: auto; min-width: min(100%, 32rem); }
+
+.recording__title { font-weight: 500; text-decoration: none; }
+.recording__title:hover { text-decoration: underline; }
+
+/* 運営者向けの表は、狭い画面では横にスクロールさせる（文字を 1 文字ずつ折らない） */
+.operators table { min-width: 44rem; }
+.nowrap { white-space: nowrap; }
+
+/* ---- カード ---- */
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 24px;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); /* DESIGN.md §4 Cards */
+}
+.card p:last-child { margin-bottom: 0; }
+
+/* ---- このノートについて、運営者向け ---- */
+
+.about ul { margin: 0 0 16px; padding-left: 1.25em; }
+
+.operators h2 { font-size: 1.125rem; }
+
+/* ---- フッター ---- */
+
+.site-footer {
+  max-width: 1040px;
+  margin: 48px auto 0;
+  padding: 24px 16px 48px;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+.site-footer ul {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.site-footer p { margin: 0; letter-spacing: 0; }
+@media (min-width: 1024px) {
+  .site-footer { padding: 24px 32px 48px; }
+}
+
+/* ---- 印刷 ---- */
+
+@media print {
+  .page { padding: 0; }
+  section:target > h2 { background: none; box-shadow: none; }
+  .route__stop::before,
+  .route__stop::after,
+  .badge,
+  .rules,
+  .button--primary,
+  thead th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* 紙でも行き先が分かるよう、入口と主要な行き先の URL を添える */
+  .actions a::after,
+  .destinations a::after {
+    content: " (" attr(href) ")";
+    width: auto;
+    height: auto;
+    background: none;
+    -webkit-mask: none;
+    mask: none;
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+  .card, .rules, .route__stop { break-inside: avoid; }
+}
