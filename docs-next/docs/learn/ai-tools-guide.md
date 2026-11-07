@@ -13,7 +13,7 @@ references:
   - ../develop/coding-conventions.md
   - ../develop/no-aidlc-workflow.md
   - ../reference/claude-code/agent-config.md
-last_updated: '2026-10-29T00:00:00+09:00'
+last_updated: '2026-11-07T00:00:00+09:00'
 ---
 
 # AI ツール活用ガイド（Claude Code）
@@ -50,7 +50,7 @@ Claude Code は **DevContainer に組み込み済み**です。学習者が追�
 |---------|------|
 | CLI | devcontainer feature（`anthropics/devcontainer-features/claude-code`）で自動インストール |
 | VS Code 拡張 | `Anthropic.claude-code` が自動インストール |
-| 認証情報 | `.claude`（`.credentials.json` を含む）はコンテナ専用の named volume に隔離。ホストとは共有しない |
+| 認証情報と設定 | `.claude`（`.credentials.json` を含む）と設定ファイル `.claude.json` は、コンテナ専用の named volume に置く。ホストとは共有しない |
 
 ### 初回の認証
 
@@ -66,14 +66,15 @@ claude             # 対話セッションを開始
 
 :::tip[ホストで Claude Code を使ったことがある場合でも、コンテナ内では初回ログインが必要]
 
-`.claude` ディレクトリはホストと共有せずコンテナ専用の named volume に隔離しているため、ホスト側の認証情報は引き継がれません。コンテナ内のターミナルで一度だけ `claude` にログインしてください。
+`.claude` ディレクトリと `.claude.json` はホストと共有せず、コンテナ専用の named volume に置いているため、ホスト側の認証情報や設定は引き継がれません。コンテナ内のターミナルで一度だけ `claude` にログインしてください。
 
 :::
 
-:::warning[コンテナ起動が .claude.json 関連で失敗する場合]
+:::info[コンテナを作り直した後に、初回の設定画面が出る場合]
 
-マウント元の `~/.claude.json` はコンテナ初回起動時に自動生成されます（`devcontainer.json` の `initializeCommand`）。  
-起動に失敗する場合は [AI ツール関連のトラブルシューティング](../develop/troubleshooting.md#ai-tools) を参照してください。
+以前の DevContainer は、ホストの `~/.claude.json` をコンテナと共有していました。今の DevContainer は共有せず、`.claude.json` もコンテナ専用の named volume に置きます（Issue #171）。そのため、以前の構成から作り直した後の最初の起動で、テーマの選択などの初回の設定画面が一度だけ出ます。ログインし直す必要はありません。  
+このとき「`Claude configuration file not found at: /home/node/.claude/.claude.json`」と表示され、バックアップを `cp` で復元するよう案内されることがあります。**復元しないでください。** バックアップは以前の共有していた設定で、復元すると自動更新が止まる設定（`autoUpdates: false`）なども戻ってしまいます。この表示は、設定ファイルが新しく作られた後は出なくなります。  
+以前の構成のコンテナで起きる問題は、[AI ツール関連のトラブルシューティング](../develop/troubleshooting.md#ai-tools) を参照してください。
 
 :::
 
