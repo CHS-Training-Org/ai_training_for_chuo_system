@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="Playwright のAIエージェント">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- 対象アプリ -->
+        <mxCell id="2" value="動いているアプリ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="180" height="50" as="geometry" />
+        </mxCell>
+        <!-- planner -->
+        <mxCell id="3" value="planner&#xa;画面を探索して&#xa;テスト計画を作る" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="130" width="180" height="80" as="geometry" />
+        </mxCell>
+        <!-- 計画 -->
+        <mxCell id="4" value="テスト計画&#xa;Markdown" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="140" width="150" height="60" as="geometry" />
+        </mxCell>
+        <!-- generator -->
+        <mxCell id="5" value="generator&#xa;計画から&#xa;テストコードを生成する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="490" y="130" width="180" height="80" as="geometry" />
+        </mxCell>
+        <!-- コード -->
+        <mxCell id="6" value="テストコード" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#334155;fontColor=#1E293B;arcSize=8;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="730" y="145" width="150" height="50" as="geometry" />
+        </mxCell>
+        <!-- healer -->
+        <mxCell id="7" value="healer&#xa;落ちたテストを再生して&#xa;修正案を出す" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#1E293B;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="940" y="130" width="190" height="80" as="geometry" />
+        </mxCell>
+        <!-- 流れ -->
+        <mxCell id="8" value="探索" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="2" target="3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="4" target="5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="5" target="6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="12" value="落ちたら" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="6" target="7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="13" value="直したコードを戻す" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;fontColor=#1E293B;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="7" target="6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1035" y="250" />
+              <mxPoint x="805" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
