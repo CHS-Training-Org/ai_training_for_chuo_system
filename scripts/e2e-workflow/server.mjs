@@ -724,6 +724,8 @@ function escHtml(v) { return String(v).replace(/[&<>"']/g, function (c) { return
   if (!window.marked || !window.DOMPurify) { out.classList.remove('pending'); var l = out.querySelector('.loading'); if (l) l.remove(); return; }
   out.innerHTML = window.DOMPurify.sanitize(window.marked.parse(src.value));
   out.classList.remove('pending');
+  // 記載元から開く仕様書（ドキュメントサイト）は、ダッシュボードを離れずに見比べられるよう別のタブで開く
+  out.querySelectorAll('a[href^="http"]').forEach(function (a) { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
   // 列の役割を見出しの文字で決める。列の順番には頼らない
   var ID = ['ID', '#', '観点 ID', 'データ ID', 'ケース ID'];
   var NOWRAP = ['区分'];
@@ -1114,7 +1116,7 @@ function answersPanel(st, cur, questions) {
   const saved = st.stages[cur.key].answers || {};
   return `<section class="panel answers" id="answers">
 <div class="gate-title"><h2>仕様の矛盾への回答</h2><span class="muted">${questions.filter((q) => isReflected(q, saved)).length}／${questions.length} 件が観点一覧に反映済み</span></div>
-<p class="muted" style="margin-top:0">文書どうしで矛盾している点です。仕様書を変えないチュートリアルなので、どちらを正とするかを仮に決めます。どちらを選んでも誤りではありません。選んだら「${esc(cur.gate)}」の「差し戻す」を押すと、AI が観点一覧に反映します。</p>
+<p class="muted" style="margin-top:0">文書どうしで矛盾している点です。仕様書を変えないチュートリアルなので、どちらを正とするかを仮に決めます。どちらを選んでも誤りではありません。選んだら「${esc(cur.gate)}」の「差し戻す」を押すと、AI が観点一覧に反映します。選んだ理由は「指摘」の欄に書けます。</p>
 ${questions.map((q) => {
     const reflected = isReflected(q, saved);
     const state = reflected ? '<span class="q-state ok">✓ 観点一覧に反映済み</span>'
