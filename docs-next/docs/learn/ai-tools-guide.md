@@ -13,7 +13,7 @@ references:
   - ../develop/coding-conventions.md
   - ../develop/no-aidlc-workflow.md
   - ../reference/claude-code/agent-config.md
-last_updated: '2026-11-07T00:00:00+09:00'
+last_updated: '2026-11-08T00:00:00+09:00'
 ---
 
 # AI ツール活用ガイド（Claude Code）
@@ -275,6 +275,21 @@ STEP-03 のように既存パターンをなぞる実装では Sonnet で十分�
 「その仕様はどこに書いてある？」「変更したファイルの diff を見せて」のように根拠を確認する習慣をつけると、AI の誤り（ハルシネーション）に気づきやすくなります。
 
 :::
+
+---
+
+## 結合テストで使うスキル {#integration-test-skills}
+
+[STEP-06 結合テストのチュートリアル](./curriculum.md#integration-test)では、Claude Code に `/e2e-workflow` と打って進めます。これは結合テストの案内スキル（`e2e-workflow`）で、今どの段階にいて次に誰が何をするかを示し、AI の番の作業を進めます。
+
+| スキル | 役割 | 呼び出し方 |
+|---|---|---|
+| `e2e-workflow` | 案内役。状態を読んで次の作業を示し、下の3つを呼び出す。テストを流し、フェイルしたケースに見立てを書き、差し戻されたら成果物を直す | 学習者が `/e2e-workflow` と打つ |
+| `generate-test-perspectives` | 仕様書だけを根拠に、試験観点のたたき台を出す | 案内スキルが呼ぶ |
+| `generate-test-cases` | 確定した観点を試験ケースに展開する | 案内スキルが呼ぶ |
+| `generate-test-code` | 確定した試験ケースを Playwright のテストコードに変換する | 案内スキルが呼ぶ |
+
+学習者が直接呼ぶのは `/e2e-workflow` だけです。各段階の関門で確定するか差し戻すかは、学習者がダッシュボードで決めます。AI には確定させません（[関門の決まり](../develop/integration-test/workflow.md#gates)）。
 
 ---
 

@@ -9,9 +9,9 @@ tags:
   - playwright
 audience: 学習者
 references:
-  - ./integration-test/viewpoints.md
+  - ./integration-test/workflow.md
   - ./troubleshooting.md
-timestamp: 2026-11-07
+timestamp: 2026-11-08
 ---
 
 # Playwright とは ![](/img/playwright-logo.svg)
@@ -19,7 +19,7 @@ timestamp: 2026-11-07
 **Playwright** は、ブラウザを実際に操作してアプリケーションの振る舞いを確かめるテストツールです。  
 これまで手作業で行っていた結合テストを、繰り返し実行できるコードにします。
 
-試験観点から順に作っていく手順は[結合テストのチュートリアル](./integration-test/viewpoints.md)にあります。
+AI と協働して試験観点から順に結合テストを作る手順は、[結合テストのワークフロー](./integration-test/workflow.md)にあります。カリキュラムの [STEP-06](../learn/curriculum.md#integration-test) で取り組みます。
 
 ---
 

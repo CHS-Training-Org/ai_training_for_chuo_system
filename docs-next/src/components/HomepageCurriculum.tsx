@@ -49,6 +49,14 @@ const afterSteps = [
     color: '#7C3AED',
     note: '必須・4〜7 時間',
   },
+  {
+    title: '結合テストのチュートリアル',
+    goal: '予約申請画面を題材に、AI が作った結合テストの観点、試験仕様書、実行結果を、仕様書とエビデンスで確かめて確定させる。',
+    icon: '🔍',
+    path: '/learn/curriculum#integration-test',
+    color: '#0891B2',
+    note: '必須・3〜6 時間',
+  },
 ];
 
 export default function HomepageCurriculum() {
@@ -59,7 +67,7 @@ export default function HomepageCurriculum() {
           <h2 id="curriculum-heading" className={styles.title}>必須課題の全体像</h2>
           <p className={styles.description}>
             学習パスは 1 本です。経験年数やレベルによる分岐はなく、全員が同じ順序で進めます。<br />
-            STEP-01 から中級課題まで、目安は合計 17〜24 時間です。
+            STEP-01 から結合テストのチュートリアルまで、目安は合計 20〜30 時間です。
           </p>
         </header>
 

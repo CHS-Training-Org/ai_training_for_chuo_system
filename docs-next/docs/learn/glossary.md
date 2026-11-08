@@ -10,7 +10,7 @@ references:
   - ../spec/overview.md
   - ../spec/requirements.md
   - ../develop/dev-workflow.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-08T00:00:00+09:00'
 ---
 
 # 用語集
@@ -48,7 +48,7 @@ BookFlow の業務ドメイン（施設・備品予約 + 承認ワークフロ�
 | **BFF** | Backend for Frontend。Next.js API Routes がこの役割を担い、認証トークン管理とバックエンド呼び出しを集約する |
 | **DevContainer** | VS Code + Docker を用いた再現性の高い開発環境。`.devcontainer/` 配下に定義 |
 | **選択課題（エンハンス課題）** | GitHub Issue に登録して取り組む、BookFlow への機能追加課題。カタログからどの課題をやるかを学習者が選ぶ。実施するかどうかは選べず、難易度は学習パス上の段階で決まる |
-| **必須ステップ課題** | 環境構築など順序依存のあるステップ課題（STEP-01〜03）。GitHub Issue は起票せず自己チェックで進める |
+| **必須ステップ課題** | 学習パスで全員が順に取り組む STEP-01〜06 の課題。STEP-03〜05 は選択課題から選んで GitHub Issue で取り組み、STEP-01、STEP-02、STEP-06 は Issue を起票せず完了条件を自己チェックして進める |
 | **LocalStack** | AWS サービス（S3・DynamoDB・Lambda・API Gateway）をローカルでエミュレートするツール |
 | **cognito-local** | Amazon Cognito のユーザープール認証フローをローカルでエミュレートする npm パッケージ |
 
