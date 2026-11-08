@@ -30,7 +30,6 @@ BookFlow の `reservations.status` に `DRAFT` ステータスが定義されて
 - 競合する課題：
   - [繰り返し予約](./recurring-reservation.md)。両課題とも `POST /api/reservations` と予約申請フォーム（`/reservations/new`）を変更するため、並行着手は非推奨。
   - [予約一覧のフィルタ拡張](../beginner/reservation-list-filter.md)。両課題とも予約一覧画面（`/reservations`）のタブ・フィルタと `GET /api/reservations` を変更するため、同時並行ではマージ競合の可能性がある。
-- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](../beginner/e2e-test-coverage.md) を行うとよい。
 
 ## 要件
 

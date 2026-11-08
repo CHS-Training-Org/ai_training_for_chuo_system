@@ -27,7 +27,6 @@ BookFlow のリソース詳細画面（`/resources/{id}`）には、当日〜7 �
 
 - 前提課題：なし（既存の空き確認 API `GET /api/resources/{id}/availability` のみに依存）
 - 競合する課題：[リソース詳細画面の情報拡充](../beginner/resource-detail-info.md)・[リソース画像アップロード](../advanced/resource-image-upload.md)。いずれもリソース詳細画面（`/resources/{id}`）を共有して変更するため、同時並行ではマージ競合の可能性がある。
-- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](../beginner/e2e-test-coverage.md) を行うとよい。
 
 ## 要件
 

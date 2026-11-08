@@ -28,7 +28,6 @@ last_updated: '2026-08-01T11:56:18+09:00'
 
 - 前提課題：なし（ベースシステムの既存承認フロー・`departments` 階層構造のみに依存）
 - 競合する課題：[多段階承認フロー](./multi-step-approval.md)。両課題とも `ApprovalService.createStep()`（`backend/.../application/ApprovalService.java`）を別方向に拡張するため、並行着手は非推奨。一方を完成させてからもう一方に着手する。
-- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](../beginner/e2e-test-coverage.md) で承認ルーティングのリグレッションをカバーするとよい。
 
 ## 要件
 

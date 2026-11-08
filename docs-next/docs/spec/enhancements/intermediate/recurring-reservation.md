@@ -30,7 +30,6 @@ BookFlow では毎週月曜の定例会議室や月次報告で使う会議室�
 - 競合する課題：
   - [予約の下書き保存](./reservation-draft.md)。両課題とも `POST /api/reservations` と予約申請フォーム（`/reservations/new`）を変更するため、並行着手は非推奨。
   - **Flyway マイグレーションの番号衝突**：本課題は新規マイグレーションを追加する。Flyway のバージョン番号は対象テーブルに関係なく**リポジトリ全体で1本のグローバル連番**のため、同じく新規マイグレーションを追加する [リソース詳細画面の情報拡充](../beginner/resource-detail-info.md)・[リソース画像アップロード](../advanced/resource-image-upload.md) と `V002` の**番号衝突**が起きる（現状は `V001` のみ）。並行着手する場合は採番を調整する。
-- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](../beginner/e2e-test-coverage.md) を行うとよい。
 
 ## 要件
 

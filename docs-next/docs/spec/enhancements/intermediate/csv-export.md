@@ -27,7 +27,7 @@ BookFlow の予約データは画面上では閲覧できますが、Excel 等�
 
 - 前提課題：なし（既存の `reservations` データを CSV 化する新規エンドポイント `GET /api/reports/reservations/csv` の追加が中心）
 - 競合する課題：[利用実績の集計・グラフ表示](./usage-statistics.md)。どちらの課題も `requirements.md` の主要ユースケース一覧を編集するため、マージのときに同じ行が衝突することがあります（番号は UC-09 と UC-10 に分けてあります）。
-- 推奨着手順序：後続として [OpenAPI クライアント自動生成](../advanced/openapi-client-gen.md)・[既存機能の E2E テスト追加](../beginner/e2e-test-coverage.md) がある。
+- 推奨着手順序：後続として [OpenAPI クライアント自動生成](../advanced/openapi-client-gen.md) がある。
 
 ## 要件
 

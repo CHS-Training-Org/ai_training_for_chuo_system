@@ -59,7 +59,6 @@ last_updated: '2026-11-01T00:00:00+09:00'
 | [リソース一覧のソート順選択](./beginner/resource-list-sort.md) | `resource-list-sort.md` |
 | [予約一覧のフィルタ拡張](./beginner/reservation-list-filter.md) | `reservation-list-filter.md` |
 | [リソース詳細画面の情報拡充](./beginner/resource-detail-info.md) | `resource-detail-info.md` |
-| [既存機能の E2E テスト追加](./beginner/e2e-test-coverage.md) | `e2e-test-coverage.md` |
 
 ### 中級 {#intermediate}
 
