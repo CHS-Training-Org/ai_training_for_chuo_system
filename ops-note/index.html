@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="chuosystem社内「AI駆動開発チュートリアル」運営ノート。ドキュメントサイトへの入口、進め方（STEP-01〜05）、スケジュール、事前準備、質問窓口をまとめた参照ページ。">
+<meta name="description" content="chuosystem社内「AI駆動開発チュートリアル」運営ノート。ドキュメントサイトへの入口、進め方（STEP-01〜06）、スケジュール、事前準備、質問窓口をまとめた参照ページ。">
 <meta name="color-scheme" content="light dark">
 <title>AI駆動開発チュートリアル 運営ノート</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%232563eb'/%3E%3Ctext x='50' y='67' font-size='54' text-anchor='middle' font-family='sans-serif' font-weight='700' fill='%23ffffff'%3ECS%3C/text%3E%3C/svg%3E">
@@ -32,6 +32,7 @@
 <li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/learn/getting-started" target="_blank" rel="noopener noreferrer">環境構築・起動手順</a></li>
 <li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/develop/dev-workflow" target="_blank" rel="noopener noreferrer">開発ワークフローガイド</a></li>
 <li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/develop/enhancement-catalog" target="_blank" rel="noopener noreferrer">選択課題カタログ</a></li>
+<li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/develop/integration-test/workflow" target="_blank" rel="noopener noreferrer">結合テストのワークフロー</a></li>
 <li><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/develop/troubleshooting" target="_blank" rel="noopener noreferrer">トラブルシューティング</a></li>
 </ul>
 <p>※ リンク切れを見つけたら、このノートを直すのではなく<strong>運営に連絡</strong>してください（サイト側を直します）。</p>
@@ -69,13 +70,15 @@
 
 <section aria-labelledby="h-steps">
 <h2 id="h-steps">進め方</h2>
-<p>中級課題（AI-DLCを使う）までのタスクは全て必須です。前のタスクの完了を前提に、次の課題へ進めてください。</p>
+<p>結合テストのチュートリアルまでのタスクは全て必須です。前のタスクの完了を前提に、次の課題へ進めてください。</p>
 
 <div class="rules">
 <h3>各タスクの補足</h3>
 <ul>
 <li>PRのbaseは自分のトランクブランチ（<code>learner/&lt;GitHubユーザー名&gt;/main</code>）。<code>main</code>宛のPRは作らない</li>
 <li>STEP-03のPRはマージしない（STEP-04で同じ課題を作り直すため）</li>
+<li>STEP-06は2026年11月以降に受講を始めた人が対象。それより前に始めた人はSTEP-05までで必須課題を終えたものとする</li>
+<li>STEP-06はIssueもPRも作らない。作業ブランチ（<code>feature/&lt;GitHubユーザー名&gt;/e2e-tutorial</code>）で進め、成果物は<code>main</code>に入れない</li>
 <li>機密情報（顧客情報・認証情報・社外秘）をプロンプトに貼らない</li>
 </ul>
 </div>
@@ -103,9 +106,14 @@
 <div class="route__head"><span class="route__step"><span class="sr-only">サイトの対応箇所: </span><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/learn/curriculum#beginner-with-aidlc" target="_blank" rel="noopener noreferrer">STEP-04</a></span><span class="route__name">初級課題（AI-DLCを使う）</span><span class="badge">必須</span></div>
 <p class="route__body">同じ初級課題をAI-DLCを使って実装し、有無の違いを体感する</p>
 </li>
-<li class="route__stop route__stop--before-optional">
+<li class="route__stop">
 <div class="route__head"><span class="route__step"><span class="sr-only">サイトの対応箇所: </span><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/learn/curriculum#intermediate-with-aidlc" target="_blank" rel="noopener noreferrer">STEP-05</a></span><span class="route__name">中級課題（AI-DLCを使う）</span><span class="badge">必須</span></div>
 <p class="route__body">中級課題をAI-DLCを使って実装する</p>
+</li>
+<li class="route__stop route__stop--before-optional">
+<div class="route__head"><span class="route__step"><span class="sr-only">サイトの対応箇所: </span><a href="https://chs-training-org.github.io/ai_training_for_chuo_system/learn/curriculum#integration-test" target="_blank" rel="noopener noreferrer">STEP-06</a></span><span class="route__name">結合テストのチュートリアル</span><span class="badge">必須</span></div>
+<p class="route__body">予約申請画面を題材に、AIが作った結合テストの成果物を仕様書と実行結果で確かめて確定させる</p>
+<p class="route__sub">IssueとPRは作りません（上の「各タスクの補足」を参照）。</p>
 </li>
 <li class="route__stop route__stop--optional">
 <div class="route__head"><span class="sr-only">サイトの対応箇所: 上級課題</span><a class="route__name" href="https://chs-training-org.github.io/ai_training_for_chuo_system/develop/enhancement-catalog#advanced" target="_blank" rel="noopener noreferrer">上級課題</a><span class="badge badge--optional">任意</span></div>
@@ -130,12 +138,13 @@
 <tr><th scope="rowgroup" rowspan="3">事前作業</th><td>オリエンテーション</td><td class="num">1週</td></tr>
 <tr><td>環境構築</td><td class="num">3週</td></tr>
 <tr><td>ドキュメント読込</td><td class="num">3週</td></tr>
-<tr><th scope="rowgroup" rowspan="3">課題の実施</th><td>初級（AI-DLCなし）</td><td class="num">2週</td></tr>
+<tr><th scope="rowgroup" rowspan="4">課題の実施</th><td>初級（AI-DLCなし）</td><td class="num">2週</td></tr>
 <tr><td>初級（AI-DLCあり）</td><td class="num">2週</td></tr>
 <tr><td>中級（AI-DLCあり）</td><td class="num">2週</td></tr>
+<tr><td>結合テスト</td><td class="num">1週</td></tr>
 </tbody>
 <tfoot>
-<tr><th scope="row">PRレビュー・フォロー</th><td>（全体）</td><td class="num">全9週</td></tr>
+<tr><th scope="row">PRレビュー・フォロー</th><td>（全体）</td><td class="num">全10週</td></tr>
 </tfoot>
 </table>
 </div>
@@ -196,7 +205,7 @@
 </thead>
 <tbody>
 <tr><td><a href="#top">はじめに（このページ）</a></td><td>ノートの位置づけ、ドキュメントサイトとリポジトリへの入口</td><td class="nowrap">運営</td><td class="nowrap">運用変更時</td></tr>
-<tr><td><a href="#h-steps">進め方（STEP-01〜05）</a></td><td>各STEPでやること・参照先・完了条件の所在</td><td class="nowrap">運営</td><td class="nowrap">カリキュラム改訂時</td></tr>
+<tr><td><a href="#h-steps">進め方（STEP-01〜06）</a></td><td>各STEPでやること・参照先・完了条件の所在</td><td class="nowrap">運営</td><td class="nowrap">カリキュラム改訂時</td></tr>
 <tr><td><a href="#h-schedule">スケジュール</a></td><td>全体日程（週次）、工数の目安、週次報告</td><td class="nowrap">運営</td><td class="nowrap">カリキュラム改訂時</td></tr>
 <tr><td><a href="#recordings">オリエンテーション録画</a></td><td>録画リンクと視聴の目安時間</td><td class="nowrap">運営</td><td class="nowrap">録画公開時</td></tr>
 <tr><td><a href="#h-prep">事前準備（端末・アカウント）</a></td><td>端末スペック、ソフト入手経路、Claude Codeシート、GitHub権限</td><td class="nowrap">運営</td><td class="nowrap">カリキュラム改訂時</td></tr>
