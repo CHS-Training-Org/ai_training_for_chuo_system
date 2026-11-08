@@ -11,7 +11,7 @@ audience: 運営者
 references:
   - ../develop/enhancement-catalog.md
   - ../develop/dev-workflow.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-08T00:00:00+09:00'
 ---
 
 # ラベル設計と課題 Issue 起票手順
@@ -40,7 +40,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 ---
 
 ## ラベルマッピング規則 {#mapping}
-起票時に付与するラベルの組み合わせを以下の通りに定めます。必須ステップのうち STEP-01〜02 は GitHub Issue を起票しないため、対象は選択課題のみです。
+起票時に付与するラベルの組み合わせを以下の通りに定めます。必須ステップのうち STEP-01、STEP-02、STEP-06 は GitHub Issue を起票しないため、対象は選択課題のみです。
 
 ### 選択課題（エンハンス課題）
 
