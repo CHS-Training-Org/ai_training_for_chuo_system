@@ -13,9 +13,9 @@
 
 ## 学習の始め方
 
-1. [`docs-next/docs/learn/curriculum.md`](docs-next/docs/learn/curriculum.md) の必須ステップ STEP-01〜03 を順に完了する（環境構築は [`docs-next/docs/learn/getting-started.md`](docs-next/docs/learn/getting-started.md) を参照）
-2. GitHub Issues の `[Level: Beginner]` タグが付いた課題から着手する
-3. [`CONTRIBUTING.md`](CONTRIBUTING.md) に従ってブランチを切り、PR を送る
+1. [`docs-next/docs/learn/curriculum.md`](docs-next/docs/learn/curriculum.md)（学習カリキュラム）の必須ステップ STEP-01〜06 を順に完了する（環境構築は [`docs-next/docs/learn/getting-started.md`](docs-next/docs/learn/getting-started.md) を参照）
+2. STEP-03 と STEP-05 の課題は [選択課題カタログ](docs-next/docs/develop/enhancement-catalog.md) から選び（STEP-04 は STEP-03 と同じ課題をやり直す）、[`CONTRIBUTING.md`](CONTRIBUTING.md) に従ってブランチを切り、PR を送る
+3. STEP-06 は Issue と PR を使わず、[結合テストのワークフロー](docs-next/docs/develop/integration-test/workflow.md) に沿って進める
 
 ---
 

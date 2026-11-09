@@ -10,7 +10,7 @@ references:
   - ../reference/architecture.md
   - ./index.md
   - ../learn/glossary.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-08T00:00:00+09:00'
 ---
 
 # BookFlow 学習用リポジトリ概要
@@ -49,7 +49,7 @@ last_updated: '2026-08-01T11:56:18+09:00'
 |------|------|
 | **運営者** | 計画書の最終承認・リポジトリ設定管理・課題設計・学習者サポート（Teams 経由）・任意のコードフィードバック（マージのブロッキング承認は行わない） |
 | **AI エージェント** | ソフトウェア開発要求に対して INCEPTION（計画）→ CONSTRUCTION（実装）→ OPERATIONS（CI）を駆動する。学習者自身がレビュー・承認 |
-| **学習者** | STEP-01〜05 の順で必須課題に取り組む（詳細は [curriculum.md §学習パスマップ](../learn/curriculum.md#path-map) 参照） |
+| **学習者** | STEP-01〜06 の順で必須課題に取り組む（詳細は[学習パスマップ](../learn/curriculum.md#path-map)を参照） |
 
 > **役割の統一**：本リポジトリに「メンター」「リポジトリオーナー」の区別はなく、リポジトリ設定管理から学習者サポートまでを「運営者」が担います。運用責任マトリクス（役割 × 責務）の詳細は [operations-guide.md §役割分担](../operations/operations-guide.md#roles) を参照してください。
 

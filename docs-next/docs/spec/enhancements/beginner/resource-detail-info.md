@@ -31,7 +31,6 @@ BookFlow の `resources` テーブルが持つカラムは `name`・`category`�
   - [リソース画像アップロード](../advanced/resource-image-upload.md)。両課題とも `resources` テーブルへの新規 Flyway マイグレーション、`GET /api/resources/{id}` レスポンス、`/admin/resources` 編集画面を変更する。並行着手は非推奨。
   - [カレンダービュー](../intermediate/calendar-view.md)。リソース詳細画面（`/resources/{id}`）を共有して変更するため、同時並行ではマージ競合の可能性がある。
   - **Flyway マイグレーションの番号衝突**：本課題は新規マイグレーションを追加する。Flyway のバージョン番号は対象テーブルに関係なく**リポジトリ全体で1本のグローバル連番**のため、同じく新規マイグレーションを追加する [リソース画像アップロード](../advanced/resource-image-upload.md)・[繰り返し予約](../intermediate/recurring-reservation.md) と `V002` の**番号衝突**が起きる（現状は `V001` のみ）。並行着手する場合は採番を調整する。
-- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](./e2e-test-coverage.md) を行うとよい。
 
 ## 要件
 

@@ -27,7 +27,6 @@ ARCHITECTURE.md の技術マッピングでは、操作ログの外部サービ�
 
 - 前提課題：なし（LocalStack の DynamoDB は `.devcontainer/docker-compose.yml` に定義済みのため、外部サービス準備も不要）
 - 競合する課題：[リソース画像アップロード](./resource-image-upload.md)。両課題とも LocalStack の初期化（本課題は DynamoDB テーブル作成、画像アップロードは S3 バケット作成）を追加するため、初期化スクリプトの配置箇所が重なる可能性がある。
-- 推奨着手順序：本課題の完成後に [既存機能の E2E テスト追加](../beginner/e2e-test-coverage.md) を行うとよい。
 
 ## 要件
 

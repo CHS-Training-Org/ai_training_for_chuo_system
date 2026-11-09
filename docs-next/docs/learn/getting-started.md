@@ -10,7 +10,7 @@ audience: 学習者
 references:
   - ../develop/troubleshooting.md
   - ./ai-tools-guide.md
-last_updated: '2026-11-07T00:00:00+09:00'
+last_updated: '2026-11-08T00:00:00+09:00'
 ---
 
 # 環境構築・起動手順
@@ -372,6 +372,22 @@ docker exec -i <postgres コンテナ名> psql -U bookflow -d bookflow \
 :::warning[サインインが /auth/signin に戻ってしまう場合]
 上記の初期データ投入を先に済ませたか確認してください。原因の切り分けは [troubleshooting.md](../develop/troubleshooting.md#startup) を参照してください。
 :::
+
+---
+
+## 結合テストの準備（STEP-06） {#integration-test-setup}
+
+[STEP-06 結合テストのチュートリアル](./curriculum.md#integration-test)で使う環境は、ここまでの手順では用意しません。チュートリアルに取り組んでいない間は、コンテナを重くしないためです。必要なものは、Claude Code で `/e2e-workflow` を実行したときに、案内スキル（`e2e-workflow`）が用意します。
+
+| 用意するもの | 用意されるタイミング | 注意 |
+|---|---|---|
+| テストに使うブラウザ（Chromium）と、ブラウザが使う共有ライブラリ | テストを初めて流すとき | コンテナを作り直すと消えるので、作り直したあとに入れ直す。入れるのに数分かかる |
+| 結合テスト専用のデータベース（`bookflow_e2e`）と、そこにつないだバックエンド | テストを流すとき | 開発用のバックエンドが動いていれば、止めてよいかを案内スキルが確かめる |
+| ワークフローのダッシュボード（`http://localhost:3130`） | `/e2e-workflow` を実行したとき | コンテナを起動しただけでは立ち上がらない |
+
+ブラウザを入れられずに止まったときは、ネットワークやプロキシが原因のことが多く、AI が入れ直しても直りません。表示された出力を添えて運営者に相談してください。手でブラウザを入れるコマンドは [BookFlow での実行](../develop/playwright-guide.md#run)にあります。
+
+チュートリアルを終えて開発に戻る手順は、[チュートリアルの完了](../develop/integration-test/workflow.md#done)にあります。
 
 ---
 

@@ -65,7 +65,8 @@ const ZENSICAL_MAP = {
   'spec/enhancements/resource-list-sort/': 'spec/enhancements/beginner/resource-list-sort/',
   'spec/enhancements/reservation-list-filter/': 'spec/enhancements/beginner/reservation-list-filter/',
   'spec/enhancements/resource-detail-info/': 'spec/enhancements/beginner/resource-detail-info/',
-  'spec/enhancements/e2e-test-coverage/': 'spec/enhancements/beginner/e2e-test-coverage/',
+  // 「既存機能の E2E テスト追加」は結合テストのチュートリアルに置き換えて削除した（Issue #187）
+  'spec/enhancements/e2e-test-coverage/': 'develop/integration-test/workflow/',
   'spec/enhancements/recurring-reservation/': 'spec/enhancements/intermediate/recurring-reservation/',
   'spec/enhancements/calendar-view/': 'spec/enhancements/intermediate/calendar-view/',
   'spec/enhancements/usage-statistics/': 'spec/enhancements/intermediate/usage-statistics/',
@@ -82,6 +83,20 @@ const ZENSICAL_MAP = {
   'spec/aidlc-state/': '',
   'spec/aidlc-audit/': '',
 };
+
+/**
+ * 一本化のあとで削除したページの URL -> 置き換え先。
+ * 削除したページは docs-next のビルド成果物に現れないので、並行運用期間の
+ * `/docs-next/` 付きの URL も 3. では起こせない。ここで両方を持つ。
+ */
+const REMOVED_PAGES = {
+  // 「既存機能の E2E テスト追加」は結合テストのチュートリアル（STEP-06）に置き換えた（Issue #187）
+  'spec/enhancements/beginner/e2e-test-coverage/': 'develop/integration-test/workflow/',
+};
+for (const [from, to] of Object.entries(REMOVED_PAGES)) {
+  ZENSICAL_MAP[from] = to;
+  ZENSICAL_MAP[`docs-next/${from}`] = to;
+}
 
 /** ADR は 001〜028 が同じ規則で移った。ファイル名がそのまま残っているので機械的に起こす。 */
 const ADR_SLUGS = [

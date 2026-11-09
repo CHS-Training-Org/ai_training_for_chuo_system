@@ -13,13 +13,19 @@ references:
   - ../learn/ai-tools-guide.md
   - ../reference/adr/ADR-030-personal-trunk-branch-strategy.md
   - ../spec/index.md
-last_updated: '2026-11-07T00:00:00+09:00'
+last_updated: '2026-11-08T00:00:00+09:00'
 ---
 
 # 開発ワークフローガイド
 
 このガイドは、学習課題（Issue）に着手してから完了するまでの **BookFlow の標準開発フロー** を示します。  
 実装計画の立案から実装までは、原則として AI-DLC エンジンが支援します（例外は各ステップ内で明記）。エンジン自体の仕組みや起動条件は [AI-DLC ガイド](./aidlc-guide.md) を参照してください。
+
+:::note[STEP-06 はこのフローを使わない]
+
+[STEP-06 結合テストのチュートリアル](../learn/curriculum.md#integration-test)は、Issue の選択、AI-DLC、PR、AI レビュー、マージを使いません。進め方は [結合テストのワークフロー](./integration-test/workflow.md) を参照してください。
+
+:::
 
 ---
 

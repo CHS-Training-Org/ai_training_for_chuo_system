@@ -28,7 +28,7 @@ BookFlow の予約一覧画面（`/reservations`）には、承認ステータ�
 
 - 前提課題：なし（ベースシステムの既存 `GET /api/reservations`・予約一覧画面のみに依存）
 - 競合する課題：[予約の下書き保存](../intermediate/reservation-draft.md)。両課題とも予約一覧画面（`/reservations`）のタブ・フィルタと `GET /api/reservations` を変更するため、同時並行ではマージ競合の可能性がある。
-- 推奨着手順序：後続として [OpenAPI クライアント自動生成](../advanced/openapi-client-gen.md)・[既存機能の E2E テスト追加](./e2e-test-coverage.md) がある。
+- 推奨着手順序：後続として [OpenAPI クライアント自動生成](../advanced/openapi-client-gen.md) がある。
 
 ## 要件
 
