@@ -5,14 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CancelButton } from "./CancelButton";
+import { SubmitDraftButton } from "./SubmitDraftButton";
+import { DeleteDraftButton } from "./DeleteDraftButton";
 import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
+import { getReservationActions } from "@/lib/reservation-permissions";
 
 /**
  * 予約詳細画面（screen-spec.md §予約詳細 /reservations/{id} 準拠）。
  *
  * MEMBER は本人の予約のみ閲覧可（他人の予約は BE が 403 → エラー画面）。
- * PENDING のみ編集ボタンを表示（本人のみ、ADMIN は不可）。
- * PENDING/APPROVED 状態のみキャンセルボタンを表示（本人 or ADMIN）。
+ * 下書き（DRAFT）は本人と ADMIN のみ閲覧可（他人の MEMBER と APPROVER は BE が 403）。
+ * ボタンの出し分けは `getReservationActions` に集約している（編集・正式申請・削除・キャンセル）。
  * 承認ステップの表示はカテゴリ 6（ApprovalStepResponse）で実装。
  */
 
@@ -29,8 +32,6 @@ function statusBadgeClass(status: string): string {
   return map[status] ?? "";
 }
 
-const CANCELLABLE_STATUSES = ["PENDING", "APPROVED"];
-
 export default async function ReservationDetailPage({
   params,
 }: {
@@ -44,9 +45,11 @@ export default async function ReservationDetailPage({
 
   const isAdmin = profile?.role === "ADMIN";
   const isOwner = profile?.id === reservation.requesterId;
-  // 編集可能条件: PENDING かつ本人（ADMIN は PUT 権限なし: api-spec.md §権限マトリクス L108）
-  const canEdit = reservation.status === "PENDING" && isOwner && !isAdmin;
-  const canCancel = CANCELLABLE_STATUSES.includes(reservation.status) && (isOwner || isAdmin);
+  const { canEdit, canSubmit, canDelete, canCancel } = getReservationActions({
+    status: reservation.status,
+    isOwner,
+    isAdmin,
+  });
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -96,12 +99,31 @@ export default async function ReservationDetailPage({
         </CardContent>
       </Card>
 
-      {/* 編集ボタン（PENDING・本人のみ） */}
+      {/* 編集ボタン（PENDING は ADMIN を除く本人、DRAFT は ADMIN を含む本人） */}
       {canEdit && (
         <Button asChild variant="outline">
-          <Link href={`/reservations/${reservation.id}/edit`}>予約内容を編集する</Link>
+          <Link
+            href={`/reservations/${reservation.id}/edit`}
+            data-testid="reservation-detail-edit-button"
+          >
+            予約内容を編集する
+          </Link>
         </Button>
       )}
+
+      {/* 正式申請ボタン（DRAFT・本人のみ） */}
+      {canSubmit && (
+        <SubmitDraftButton
+          reservationId={reservation.id}
+          startAt={reservation.startAt}
+          endAt={reservation.endAt}
+          purpose={reservation.purpose}
+          attendeesCount={reservation.attendeesCount}
+        />
+      )}
+
+      {/* 削除ボタン（DRAFT・本人のみ。確認ダイアログあり） */}
+      {canDelete && <DeleteDraftButton reservationId={reservation.id} />}
 
       {/* キャンセルボタン（PENDING/APPROVED・本人 or ADMIN のみ） */}
       {canCancel && <CancelButton reservationId={reservation.id} />}
