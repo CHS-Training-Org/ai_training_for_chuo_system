@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,8 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
  *   <li>{@code GET /api/reservations} — 予約一覧（本人分 or ADMIN は全件、status フィルタ対応）
  *   <li>{@code POST /api/reservations} — 予約申請（全ロール・認証必須）
  *   <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN）
- *   <li>{@code PUT /api/reservations/{id}} — 予約更新（申請者本人・PENDING のみ）
+ *   <li>{@code PUT /api/reservations/{id}} — 予約更新と下書きの正式申請（申請者本人・PENDING と DRAFT のみ）
  *   <li>{@code POST /api/reservations/{id}/cancel} — キャンセル（本人 or ADMIN）
+ *   <li>{@code DELETE /api/reservations/{id}} — 下書きの削除（申請者本人・DRAFT のみ）
  * </ul>
  *
  * <p>行レベルの所有権チェック（本人 or ADMIN）は {@link ReservationService} が担当する（{@code @PreAuthorize} 不使用）。
@@ -50,7 +52,8 @@ public class ReservationController {
   /**
    * 予約一覧を返す。
    *
-   * <p>ADMIN は全件、それ以外は本人分のみ。{@code status} パラメータ（複数指定可）でフィルタ可能。
+   * <p>ADMIN は全件、それ以外は本人分のみ。{@code status} パラメータ（複数指定可）でフィルタ可能。 {@code status} を指定しない場合は、下書き（{@code
+   * DRAFT}）を除く。下書きは {@code status=DRAFT} を指定したときだけ返す。
    */
   @GetMapping
   public Page<ReservationResponse> list(
@@ -63,7 +66,8 @@ public class ReservationController {
   /**
    * 予約を申請する（201 Created）。
    *
-   * <p>{@code requires_approval=false} → 即 {@code APPROVED}、{@code true} → {@code PENDING}。
+   * <p>{@code requires_approval=false} → 即 {@code APPROVED}、{@code true} → {@code PENDING}。 {@code
+   * draft=true} のときは、下書き（{@code DRAFT}）として保存する。
    */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
@@ -72,13 +76,17 @@ public class ReservationController {
     return reservationService.create(req, currentUser);
   }
 
-  /** 予約詳細を返す。MEMBER は本人の予約のみ。 */
+  /** 予約詳細を返す。MEMBER は本人の予約のみ。下書きは本人と ADMIN のみ。 */
   @GetMapping("/{id}")
   public ReservationResponse get(@PathVariable UUID id, @CurrentUser User currentUser) {
     return reservationService.get(id, currentUser);
   }
 
-  /** 予約内容を更新する（{@code PENDING} のみ・申請者本人）。 */
+  /**
+   * 予約内容を更新する（申請者本人・{@code PENDING} と {@code DRAFT} のみ）。
+   *
+   * <p>{@code DRAFT} に {@code draft=true} を指定すると下書きのまま更新し、省略または {@code false} では正式申請になる。
+   */
   @PutMapping("/{id}")
   public ReservationResponse update(
       @PathVariable UUID id,
@@ -91,5 +99,12 @@ public class ReservationController {
   @PostMapping("/{id}/cancel")
   public ReservationResponse cancel(@PathVariable UUID id, @CurrentUser User currentUser) {
     return reservationService.cancel(id, currentUser);
+  }
+
+  /** 下書きを削除する（204 No Content。{@code DRAFT} のみ・申請者本人）。 */
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable UUID id, @CurrentUser User currentUser) {
+    reservationService.delete(id, currentUser);
   }
 }
