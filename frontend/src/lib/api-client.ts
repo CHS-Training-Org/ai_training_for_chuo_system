@@ -219,7 +219,14 @@ export function createApiClient(getToken: TokenGetter = async () => null) {
     await request("POST", path, { body });
   }
 
-  return { get, getPaginated, getArray, post, put, patch, postEmpty };
+  /**
+   * DELETE → レスポンスボディなし（204 No Content）。
+   */
+  async function deleteEmpty(path: string): Promise<void> {
+    await request("DELETE", path);
+  }
+
+  return { get, getPaginated, getArray, post, put, patch, postEmpty, deleteEmpty };
 }
 
 /**

@@ -11,6 +11,9 @@ import java.util.UUID;
  * 予約申請リクエスト DTO（{@code api-spec.md §予約 POST} L518-524 準拠）。
  *
  * <p>{@code resourceId} を含む（{@link UpdateReservationRequest} は含まない点に注意）。
+ *
+ * <p>{@code draft} が {@code true} のとき、下書き（{@code DRAFT}）として保存する。 省略（{@code null}）と {@code false}
+ * は通常の申請として扱う。必須項目の検証は下書きでも同じ。
  */
 public record CreateReservationRequest(
     @NotNull(message = "リソース ID は必須です。") UUID resourceId,
@@ -18,4 +21,5 @@ public record CreateReservationRequest(
     @NotNull(message = "終了日時は必須です。") LocalDateTime endAt,
     @NotBlank(message = "利用目的は必須です。") @Size(max = 255, message = "利用目的は 255 文字以内で入力してください。")
         String purpose,
-    @Positive(message = "参加人数は 1 以上で入力してください。") Integer attendeesCount) {}
+    @Positive(message = "参加人数は 1 以上で入力してください。") Integer attendeesCount,
+    Boolean draft) {}
