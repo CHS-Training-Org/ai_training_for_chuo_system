@@ -6,7 +6,7 @@ tags:
   - ai-dlc
   - state
   - tracking
-timestamp: 2026-08-29
+timestamp: 2026-11-14
 ---
 
 # AI-DLC State Tracking
@@ -18,11 +18,11 @@ timestamp: 2026-08-29
 ## Project Information
 
 - **Project Type**: Brownfield
-- **Start Date**: 2026-09-29T18:54:30+09:00
-- **Current Stage**: OPERATIONS（PR作成・CI品質ゲート、BookFlow標準フローに引き継ぎ）
+- **Start Date**: 2026-11-14T23:00:53+09:00
+- **Current Stage**: INCEPTION - Reverse Engineering
 - **Workspace Root**: /workspace
-- **対象エンハンス課題**: `docs-next/docs/spec/enhancements/beginner/resource-list-filter.md`（STEP-04、STEP-03 の再実装）
-- **ブランチ**: `feature/CHS-MOTOSAWA-TSUKUSHI/23-resource-list-filter-aidlc`（Issue #23）
+- **対象エンハンス課題**: `docs-next/docs/spec/enhancements/intermediate/reservation-draft.md`（STEP-05、中級）
+- **ブランチ**: `feature/CHS-MOTOSAWA-TSUKUSHI/30-reservation-draft`（Issue #30）
 
 ## Workspace State
 
@@ -30,7 +30,7 @@ timestamp: 2026-08-29
 - **Programming Languages**: TypeScript（frontend）/ Java 25（backend）
 - **Build System**: pnpm（frontend）/ Gradle Kotlin DSL（backend）
 - **Project Structure**: Monorepo（Next.js BFF + Spring Boot API）
-- **Reverse Engineering Needed**: Yes（既存 RE 成果物なし）
+- **Reverse Engineering Needed**: Yes（既存の RE 成果物は前回課題 resource-list-filter 向けの限定範囲のため stale と判定し再実行）
 
 ## Code Location Rules
 
@@ -51,29 +51,30 @@ timestamp: 2026-08-29
 ### INCEPTION PHASE
 
 - [x] Workspace Detection
-- [x] Reverse Engineering（Brownfield の場合） — 承認済み
-- [x] Requirements Analysis — 承認済み
-- [x] User Stories（条件付き） — SKIP（既存UC-02の軽微な拡張、新規ペルソナ・新規ワークフローなしのため）
-- [x] Workflow Planning — 承認済み
-- [x] Application Design（条件付き） — SKIP（既存コンポーネント境界内の変更、新規コンポーネント不要）
-- [x] Units Generation（条件付き） — SKIP（単一ユニットオブワーク、分解不要）
+- [x] Reverse Engineering（Brownfield の場合） — 承認済み（成果物: `Docs/spec/aidlc-docs/inception/reverse-engineering/`）
+- [x] Requirements Analysis — 承認済み（成果物: `Docs/spec/aidlc-docs/inception/requirements/requirements.md`）
+- [ ] User Stories（条件付き） — SKIP（受入条件と権限の判断が要件書で確定済み。追加は選択可）
+- [x] Workflow Planning — 承認済み（成果物: `Docs/spec/aidlc-docs/inception/plans/execution-plan.md`）
+- [ ] Application Design（条件付き） — SKIP（新規コンポーネントなし）
+- [ ] Units Generation（条件付き） — SKIP（作業単位は 1 つ）
 
 ### CONSTRUCTION PHASE
 
-- [x] Functional Design（条件付き、ユニット別） — 承認済み（resource-list-filter）
-- [ ] NFR Requirements（条件付き、ユニット別） — SKIP予定
-- [ ] NFR Design（条件付き、ユニット別） — SKIP予定
-- [ ] Infrastructure Design（条件付き、ユニット別） — SKIP予定
-- [x] Code Generation（必須、ユニット別） — 承認済み（resource-list-filter）
-- [x] Build and Test（必須） — 承認済み
+- [x] Functional Design（条件付き、ユニット別） — 承認済み（成果物: `Docs/spec/aidlc-docs/construction/reservation-draft/functional-design/`）
+- [ ] NFR Requirements（条件付き、ユニット別） — SKIP（拡張機能なし・性能要件なし）
+- [ ] NFR Design（条件付き、ユニット別） — SKIP（NFR Requirements を実行しないため）
+- [ ] Infrastructure Design（条件付き、ユニット別） — SKIP（インフラと DB スキーマに変更なし）
+- [x] Code Generation（必須、ユニット別） — 完了・承認済み（計画 19 ステップ完了。要約: `Docs/spec/aidlc-docs/construction/reservation-draft/code/code-summary.md`）
+- [x] Build and Test（必須） — 完了・承認済み（成果物: `Docs/spec/aidlc-docs/construction/build-and-test/`）
 
 ### OPERATIONS PHASE
 
-- [x] Operations（プレースホルダー） — BookFlow運用ではPR作成・CI品質ゲートが相当。`/commit-push`→`/create-pr`に引き継ぐ
+- [ ] Operations（プレースホルダー・実施中） — BookFlow 運用では PR 作成・CI 品質ゲートが相当。`/commit-push` → `/create-pr` に引き継ぐ
 
 ## Current Status
 
 - **Lifecycle Phase**: INCEPTION
-- **Current Stage**: OPERATIONS（`/commit-push` → `/create-pr` → `@claude pr-review`）
-- **Next Stage**: なし（AI-DLCエンジンのワークフローは完了。以降はBookFlow標準フロー）
-- **Status**: Complete
+- **Current Stage**: Operations（コミット・PR）
+- **Next Stage**: なし（PR の AI レビュー・マージで完了）
+- **Execution Plan Summary**: 実行 3（Functional Design / Code Generation / Build and Test）、省略 6（User Stories / Application Design / Units Generation / NFR Requirements / NFR Design / Infrastructure Design）。仕様書の更新は 2 回（Functional Design の前と、Code Generation の前）
+- **Status**: Awaiting Approval

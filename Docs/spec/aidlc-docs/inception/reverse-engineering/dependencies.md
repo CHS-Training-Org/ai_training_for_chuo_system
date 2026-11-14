@@ -1,8 +1,8 @@
 ---
 type: working-doc
 title: Dependencies（Reverse Engineering）
-description: AI-DLC Reverse Engineering ステージが生成する依存関係資料（今回のスコープ：リソース一覧機能）
-timestamp: 2026-09-29
+description: AI-DLC Reverse Engineering ステージが生成する依存関係資料（今回のスコープ：予約の下書き保存）
+timestamp: 2026-11-14
 ---
 
 # Dependencies
@@ -10,40 +10,31 @@ timestamp: 2026-09-29
 ## Internal Dependencies
 
 ```mermaid
-flowchart TD
-    Controller["ResourceController<br/>presentation"] --> Service["ResourceService<br/>application"]
-    Service --> Repository["ResourceRepository<br/>domain"]
-    Repository --> Entity["Resource<br/>domain"]
-    FrontPage["page.tsx"] --> FilterForm["ResourceFilterForm.tsx"]
-    FrontPage --> Action["resources.ts (Server Action)"]
-    Action -->|HTTP| Controller
+flowchart LR
+  Pages["FE: 予約の各ページ"] --> Actions["FE: Server Actions"]
+  Actions --> Types["FE: lib/types と lib/schemas"]
+  Actions -->|"HTTP"| Controller["BE: ReservationController"]
+  Controller --> ReservationSvc["BE: ReservationService"]
+  ReservationSvc --> ApprovalSvc["BE: ApprovalService"]
+  ReservationSvc --> ResourceRepo["BE: ResourceRepository"]
+  ReservationSvc --> ReservationRepo["BE: ReservationRepository"]
+  ResourceSvc["BE: ResourceService"] --> ReservationRepo
 ```
 
-### ResourceController は ResourceService に依存
-- **Type**: Compile
-- **Reason**: プレゼンテーション層はユースケース実装をアプリケーション層に委譲する（4層アーキテクチャの規約）
+### ReservationService depends on ApprovalService
+- **Type**: Compile / Runtime
+- **Reason**: 承認要のリソースの予約作成時に `createInitialStep` を呼ぶ。承認ステップ生成の唯一の呼び出し元。
 
-### ResourceService は ResourceRepository に依存
-- **Type**: Compile
-- **Reason**: 永続化操作をドメイン層のリポジトリインターフェースに委譲する
+### ResourceService depends on ReservationRepository
+- **Type**: Compile / Runtime
+- **Reason**: 空き確認で占有予約（PENDING / APPROVED）を取得する。
 
-### frontend の Server Action はバックエンド API に依存
-- **Type**: Runtime（HTTP）
-- **Reason**: BFF層はブラウザから直接呼ばれず、Server Action 経由でバックエンドを呼ぶ規約（コーディング規約）
+### 占有状態集合の重複定義
+- `ReservationService`・`ApprovalService`・`ResourceService` が、同じ `[PENDING, APPROVED]` を個別に持つ（共有定数はない）。
 
 ## External Dependencies
 
-### Spring Data JPA
-- **Version**: Spring Boot 4.0.6 同梱
-- **Purpose**: `ResourceRepository` の派生クエリ・JPQL実行
-- **License**: Apache-2.0
-
-### Zod
-- **Version**: `^3.25.76`
-- **Purpose**: Server Actions でのAPIレスポンス実行時検証
-- **License**: MIT
-
-### react-hook-form
-- **Version**: `^7.76.1`
-- **Purpose**: `ResourceFilterForm` のフォーム状態管理
-- **License**: MIT
+### 主要ライブラリ
+- **Version**: `frontend/package.json` / `backend/build.gradle.kts` を参照（今回のスコープでは追加・変更しない）
+- **Purpose**: React Hook Form + Zod（フォーム検証）、shadcn/ui（UI）、Spring Data JPA（永続化）、Flyway（マイグレーション）
+- **License**: 未調査（今回の課題では新規依存を追加しない前提）
