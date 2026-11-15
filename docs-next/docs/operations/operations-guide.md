@@ -169,7 +169,7 @@ bash scripts/build-docs.sh
 |------|------|------|
 | `Broken link` / `Broken anchor` | 移動・改名したページへのリンクが残っている | リンク先を修正する（`onBrokenLinks` / `onBrokenAnchors` が `'throw'` のため必ず失敗する） |
 | リダイレクト生成で「既存ページと衝突」 | 旧 URL と新 URL のパスが同じになった | `.github/scripts/gen-legacy-redirects.mjs` の対応表から該当行を外す（転送は不要で、実ページが応答する） |
-| ビルドエラー | Markdown 構文エラー・Mermaid 構文ミス | エラー箇所を修正する |
+| ビルドエラー | Markdown 構文エラー・draw.io の図のパス誤り | エラー箇所を修正する |
 
 環境・コンテナ起動に関するトラブルは [troubleshooting.md](../develop/troubleshooting.md) を参照してください。
 

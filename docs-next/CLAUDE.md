@@ -5,7 +5,8 @@
 対象は文章そのもの（段落構成・論証・語り口・冗長表現・リンクの書き方）であり、frontmatter などの**構造規約**は対象外。構造規約は以下を参照する。
 
 - ADR フォーマット：[`docs/reference/adr/index.md`](docs/reference/adr/index.md)
-- Mermaid・ASCII 図の構文規約：[`.claude/rules/aidlc-guardrails.md`](../.claude/rules/aidlc-guardrails.md) §3・§4
+- 図：draw.io（`.drawio`）で描き、`static/diagrams/` に置いて参照する。描き方は `/drawio-skill` に従う。ドキュメントサイトは Mermaid を描画しない
+- ASCII 図の構文規約：[`.claude/rules/aidlc-guardrails.md`](../.claude/rules/aidlc-guardrails.md) §4
 
 ただしファイルの追加・削除に伴うナビゲーション・一覧表の同期は、書く作業と同時に発生して漏らしやすいため、次節の確認手順として本ファイルに含める。
 

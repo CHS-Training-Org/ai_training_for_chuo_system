@@ -114,7 +114,7 @@ UC-01〜UC-08 はベース実装のユースケース。課題で足す UC の�
 
 ### er-diagram.md — エンティティ定義表
 
-カラム追加・テーブル追加時は、(1) Mermaid `erDiagram` に型付きで追記、(2) 該当エンティティ定義表に行を追加、(3) 必要ならリレーション説明表・インデックス方針表も更新する。**先に Flyway マイグレーションを書き、それに合わせる**。
+カラム追加・テーブル追加時は、(1) ER 図（`docs-next/static/diagrams/spec/er-diagram.drawio`）に型付きで追記、(2) 該当エンティティ定義表に行を追加、(3) 必要ならリレーション説明表・インデックス方針表も更新する。**先に Flyway マイグレーションを書き、それに合わせる**。
 
 ```markdown
 ### <table_name>
@@ -181,14 +181,16 @@ UC-01〜UC-08 はベース実装のユースケース。課題で足す UC の�
 
 ---
 
-## Mermaid 図の使い分け
+## 図の使い分け
+
+図は draw.io（`.drawio`）で描き、`docs-next/static/diagrams/spec/` に置いて Markdown から `![説明](/diagrams/spec/<名前>.drawio)` で参照する（描き方は `/drawio-skill` に従う）。ドキュメントサイトは Mermaid を描画しないため、```` ```mermaid ```` のコードブロックで図を書かない。
 
 | 図種 | 用途 | 使用ファイル |
 |------|------|-------------|
-| `stateDiagram-v2` | ステータス遷移（予約・承認ステップの状態機械） | requirements.md |
-| `flowchart` | 画面遷移図 | screen-spec.md |
-| `erDiagram` | データモデル | er-diagram.md |
-| `sequenceDiagram` | トランザクション的フロー（複数アクター間の往復があるもの。申請→承認、JWT 検証など） | api-spec.md |
+| 状態遷移図 | ステータス遷移（予約・承認ステップの状態機械） | requirements.md |
+| フローチャート | 画面遷移図 | screen-spec.md |
+| ER 図 | データモデル | er-diagram.md |
+| シーケンス図 | トランザクション的フロー（複数アクター間の往復があるもの。申請→承認、JWT 検証など） | api-spec.md |
 
 > **注意**：単純な取得系 API（一覧・詳細の単発 GET 等）にシーケンス図は不要。アクター間の分岐・副作用・複数往復がある処理に限って描く。
 

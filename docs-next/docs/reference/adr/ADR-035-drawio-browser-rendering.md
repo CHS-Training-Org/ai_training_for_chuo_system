@@ -7,7 +7,7 @@ tags:
   - docs
   - diagrams
   - drawio
-timestamp: 2026-11-07
+timestamp: 2026-11-15
 ---
 
 # ADR-035 — ドキュメントの図：draw.io の元ファイルだけを持ち、ブラウザで描画する
@@ -73,3 +73,26 @@ draw.io の図を正確に描くには、文字の幅を測るためにブラウ
 **この方式で問題が出たときの退路**
 
 閲覧用 JS の読み込みの重さや描画のずれが許容できなくなった場合は、同じ閲覧用 JS を Playwright の Chromium で動かし、ビルド時に SVG を書き出す方式に移る。元ファイルは `.drawio` のままでよい。構成図以外の図（シーケンス図、状態遷移図）を Mermaid に寄せることも、将来の選択肢として残す。
+
+## 追記（2026-11-15）Mermaid の描画の廃止
+
+### Context（追記理由）
+
+受講者と同じ構成の devcontainer の消費メモリを、運営者の PC（物理 RAM 16GB）で計測したところ、VS Code の接続、`pnpm dev`、`./gradlew bootRun` を同時に動かした状態で、WSL2 の VM の上限とスワップを使い切っていた。その中で docs コンテナの開発サーバー（`docusaurus start`）は 0.9〜1.1GB を使っていた。開発サーバーは静的ファイルを配るのではなく、サイト全体を Rspack でバンドルした結果をメモリに置き続けるためである。
+
+条件を1つずつ変えて測ると、Mermaid のテーマ（`@docusaurus/theme-mermaid`）を外したときだけ、はっきり減った。テーマを入れると、Mermaid とその依存（d3、cytoscape など）がサイト全体のバンドルに入る。一方、Mermaid で描いた図は、結合テストのワークフローの「全体の流れ」の1枚だけで、ほかの図は本 ADR の決定どおり draw.io で描かれていた。
+
+### Decision（追記）
+
+**ドキュメントサイトは Mermaid を描画しない。図はすべて draw.io で描く。**
+
+- 「全体の流れ」の図を draw.io（`static/diagrams/guide/integration-test-workflow-overview.drawio`）に描き直した。
+- `@docusaurus/theme-mermaid`、`markdown.mermaid`、`themeConfig.mermaid`、Mermaid の図の拡大縮小を付ける client module と `mermaid-diagram-pan-zoom` を外した。
+- 図を Mermaid で書くよう求めていた指示（`/update-spec` スキルの表記規約、`docs-next/CLAUDE.md`、`.claude/rules/aidlc-guardrails.md` の ASCII 図の規約）を、draw.io で描く指示に改めた。
+
+### Consequences（追記）
+
+- 開発サーバーの使用量は、安定時が 856〜975MB から 713MB に、ピークが 980〜1,141MB から 871MB に減った（約 150〜250MB）。
+- ```` ```mermaid ```` のコードブロックを書いても、ビルドは失敗せず、図にならずにコードのまま表示される。混入はビルドでは検出できないため、上記の指示と、プレビューでの確認で防ぐ。
+- 本 ADR の「退路」に挙げた「構成図以外の図を Mermaid に寄せる」選択肢は取り下げる。再び検討するときは、開発サーバーの使用メモリが増えることも判断に入れる。
+- [ADR-027](./ADR-027-docusaurus-migration.md) で `@docusaurus/theme-mermaid` へ移行した Mermaid の扱いは、この追記で置き換わる。
