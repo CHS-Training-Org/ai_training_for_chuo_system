@@ -20,6 +20,8 @@
   // 残骸が残り、次回 `docker compose up` が munger の rmdir 失敗（"directory not empty"）で
   // 起動できなくなる。スクリプトが非空の残骸のみを安全に削除する（判別ロジックの詳細と
   // 安全性はスクリプト内コメント参照）。Rancher Desktop 以外では no-op。`|| true` で起動を止めない。
+  // 止まっているコンテナの proxy に残った空のディレクトリも消す。ソケット（Wayland、docker-host.sock）の
+  // マウントが「not a directory」で失敗するのを防ぐ（Issue #192）。
   // （以前はホストに空の ~/.claude.json を事前生成していたが、~/.claude.json をホストと
   //   共有しなくなったため不要になった。docker-compose.yml の CLAUDE_CONFIG_DIR を参照。Issue #171）
   "initializeCommand": "sh \"${localWorkspaceFolder}/scripts/clean-devcontainer-mounts.sh\" || true",
@@ -75,6 +77,12 @@
   },
   "forwardPorts": [3000, 8000, 8080, 3130],
   "portsAttributes": {
+    // ドキュメントの開発サーバー（scripts/docs-dev.sh）は docs コンテナで動き、compose の ports でホストに公開している。
+    // VS Code がターミナルに出た URL を見てこの作業用コンテナの 8001（何も動いていない）を転送すると、
+    // Windows の localhost:8001 を VS Code が先に使ってしまい、ブラウザが docs コンテナに届かなくなる（Issue #192）。
+    "8001": {
+      "onAutoForward": "ignore"
+    },
     "3130": {
       "label": "結合テストのダッシュボード",
       "onAutoForward": "silent"

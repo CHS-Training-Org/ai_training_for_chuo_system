@@ -359,7 +359,7 @@ docker exec -i <postgres コンテナ名> psql -U bookflow -d bookflow \
 | 確認対象 | URL / コマンド | 期待する結果 |
 |---------|----------------|--------------|
 | バックエンド | `curl http://localhost:8080/actuator/health` | `{"status":"UP"}` が返る |
-| ドキュメントサイト | `http://localhost:8000` | 本ドキュメントサイトが表示される（docs コンテナが自動起動） |
+| ドキュメントサイト | `http://localhost:8000` | 本ドキュメントサイトが表示される（docs コンテナが起動時にビルドしてから配信するので、表示されるまで少しかかる） |
 
 続いて `http://localhost:3000` を開き、サインイン画面のロール別ログインボタンでサインインします。ダッシュボードにサンプルデータが表示されれば、環境構築は完了です。
 
@@ -422,7 +422,9 @@ docker compose -f .devcontainer/docker-compose.yml up -d
 - `postgres:5432`：RDB（PostgreSQL 16）
 - `localstack:4566`：AWS モック（S3 / DynamoDB）
 - `cognito-local:9229`：Cognito モック
-- `docs:8000`：ドキュメントサイト
+- `docs:8000`：ドキュメントサイト（起動時にビルドした静的ファイルを配信する）
+
+ローカルのドキュメントサイトは、docs コンテナが起動したときの内容を表示します。ドキュメントを直したときや、ブランチを切り替えたときは、作業用コンテナで `bash scripts/build-docs.sh` を実行してからページを再読み込みすると、今の内容が表示されます。`/update-spec` で仕様書を更新した場合は、最後にこのビルドが実行されます。
 
 ### 3. Cognito のセットアップ（初回のみ）
 

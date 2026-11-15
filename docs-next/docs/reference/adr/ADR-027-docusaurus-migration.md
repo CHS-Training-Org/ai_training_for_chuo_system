@@ -128,6 +128,7 @@ action から Zensical のビルドを外した。並行運用の案内バナー
 **DevContainer**：ローカルプレビュー用の `docs` サービスは uv/Python イメージで
 `zensical serve` を起動していたため、Node イメージで Docusaurus の開発サーバーを
 起動する構成に差し替えた。公開ポート（`:8000`）は変えていない。
+この構成は、[ADR-036](./ADR-036-docs-static-serving.md) で静的ファイルの配信に置き換えた（2026-11-15）。
 
 ## 追記（2026-10-07）：検索プラグインの置き換え {#search-plugin-replacement}
 

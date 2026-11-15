@@ -1,7 +1,7 @@
 ---
 sidebar_position: 6
 title: ER 図
-description: BookFlow のデータモデル・テーブル定義・リレーションを Mermaid で記述した ER 図
+description: BookFlow のデータモデル・テーブル定義・リレーションを draw.io で記述した ER 図
 tags:
   - spec
   - er-diagram

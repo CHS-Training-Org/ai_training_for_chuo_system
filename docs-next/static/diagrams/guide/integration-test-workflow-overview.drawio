@@ -1,0 +1,100 @@
+<mxfile>
+  <diagram name="結合テストの全体の流れ">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ライフライン: 学習者（中心 x=120） -->
+        <mxCell id="L1" value="学習者" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=40;fillColor=#FFEDD5;strokeColor=#334155;fontColor=#1E293B;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="160" height="640" as="geometry" />
+        </mxCell>
+
+        <!-- ライフライン: AI（中心 x=420） -->
+        <mxCell id="L2" value="AI" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=40;fillColor=#DBEAFE;strokeColor=#334155;fontColor=#1E293B;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="160" height="640" as="geometry" />
+        </mxCell>
+
+        <!-- ライフライン: 成果物（中心 x=720） -->
+        <mxCell id="L3" value="成果物" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=40;fillColor=#E5E7EB;strokeColor=#334155;fontColor=#1E293B;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="40" width="160" height="640" as="geometry" />
+        </mxCell>
+
+        <!-- 段階1 -->
+        <mxCell id="M1" value="1 試験観点の作成を依頼" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="110" as="sourcePoint" />
+            <mxPoint x="420" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M2" value="観点一覧を出力" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="150" as="sourcePoint" />
+            <mxPoint x="720" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="N1" value="関門1&#xa;レビューして確定" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#111827;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="170" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="M3" value="問題があれば差し戻し" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#999999;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="240" as="sourcePoint" />
+            <mxPoint x="420" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 段階2 -->
+        <mxCell id="M4" value="2 試験仕様書の作成を依頼" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="290" as="sourcePoint" />
+            <mxPoint x="420" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M5" value="試験仕様書を出力" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="330" as="sourcePoint" />
+            <mxPoint x="720" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="N2" value="関門2&#xa;過不足を確認して確定" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#111827;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="350" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="M6" value="問題があれば差し戻し" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#999999;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="420" as="sourcePoint" />
+            <mxPoint x="420" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 段階3 -->
+        <mxCell id="M7" value="3 テストコードの作成と実行を依頼" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="470" as="sourcePoint" />
+            <mxPoint x="420" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M8" value="テストコードと説明を出力" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="510" as="sourcePoint" />
+            <mxPoint x="720" y="510" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M9" value="テストを流し、エビデンスと見立てを出力" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#475569;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="550" as="sourcePoint" />
+            <mxPoint x="720" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="N3" value="関門3&#xa;説明とエビデンスを見て確定" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#111827;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="570" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="M10" value="問題があれば差し戻し" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#999999;fontColor=#1E293B;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="640" as="sourcePoint" />
+            <mxPoint x="420" y="640" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

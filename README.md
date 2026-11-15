@@ -24,7 +24,8 @@
 ドキュメントは **Docusaurus** で静的サイトとして公開しています。
 
 - **公開サイト**: https://chs-training-org.github.io/ai_training_for_chuo_system/
-- **ローカルプレビュー**: devcontainer 起動時に自動で http://localhost:8000 が立ち上がります。
+- **ローカルプレビュー**: devcontainer 起動時に docs コンテナがビルドし、http://localhost:8000 で静的ファイルを配信します。ドキュメントを直したら、下の手動ビルドを実行してページを再読み込みすると反映されます。
+- **開発サーバー**（運営者用。編集をすぐ反映したいとき）: `bash scripts/docs-dev.sh` で http://localhost:8001 に起動します（Ctrl+C で停止）。
 - **手動ビルド**（`docs-next/build/` への静的出力が必要な場合）: 作業用コンテナには Docusaurus の依存が無いため、docs コンテナの中でビルドするスクリプトを使います。
   ```bash
   bash scripts/build-docs.sh

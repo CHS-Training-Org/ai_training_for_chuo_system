@@ -140,6 +140,8 @@ services:
   docs:
     # ドキュメントサイト（Docusaurus）のローカルプレビュー。
     # Zensical 版の廃止（Issue #93）に伴い、uv/Python イメージから Node へ移した。
+    # 開発サーバー（docusaurus start）は常に 0.7〜1GB を使うため、ビルド済みの静的ファイルを
+    # 配る方式にした（Issue #192、ADR-036）。開発サーバーは運営者が scripts/docs-dev.sh で必要なときだけ起動する。
     image: node:24-slim
     # root のまま動かすと、ビルドの成果物（docs-next/build・docs-next/.docusaurus）がホスト側で
     # root 所有になる（Issue #166）。node:24-slim の node ユーザー（uid 1000）で動かす。
@@ -157,16 +159,27 @@ services:
       # ツリーから外して IDE のファイル監視・検索対象を減らすため。
       - docs-node-modules:/workspace/docs-next/node_modules
     ports:
+      # 8000 は静的配信、8001 は scripts/docs-dev.sh で起動する開発サーバー
       - "8000:8000"
+      - "8001:8001"
     environment:
       # CI=true によるカラー抑制を上書きし、Claude Code 等の CLI ツールで色付き表示を維持する
       FORCE_COLOR: "1"
-    # 初回起動時に依存をインストールしてから開発サーバーを起動する。
-    # Docusaurus の開発サーバーは HMR を内蔵しているため、docs-next/docs 配下を
-    # 編集するとブラウザが自動更新される。追加の監視プロセスは不要。
-    #
-    # --host 0.0.0.0 でコンテナ外へ公開し、--no-open でブラウザ起動を抑止する。
-    command: sh -c "npm ci && exec npm run start -- --host 0.0.0.0 --port 8000 --no-open"
+    # 起動のたびに依存をインストールしてビルドし、docs-next/build を docusaurus serve で配る。
+    # ブランチを切り替えたあとに起動しても、そのブランチの内容が表示される。
+    # 起動後にドキュメントを直したときは scripts/build-docs.sh でビルドし直す。出力先が同じ
+    # docs-next/build なので、サーバーを起動し直さなくても、ページを再読み込みすれば反映される。
+    # ビルドが失敗しても（リンク切れなど）コンテナは止めずに配信を始める。止めると restart で
+    # 起動を繰り返すため。表示されないページがあれば scripts/build-docs.sh でエラーを確かめる。
+    # 配信は npm run serve を通さず直接起動する。npm のプロセスが常に約 70MB を使うため。
+    command:
+      - sh
+      - -c
+      - |
+        npm ci || exit 1
+        npm run build || echo "ドキュメントサイトのビルドに失敗しました。bash scripts/build-docs.sh でエラーを確かめてください。" >&2
+        mkdir -p build
+        exec node_modules/.bin/docusaurus serve --host 0.0.0.0 --port 8000 --no-open
 
 volumes:
   postgres-data:

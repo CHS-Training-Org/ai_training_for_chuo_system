@@ -10,7 +10,7 @@ tags:
   - tutorial
   - workflow
 audience: 学習者
-timestamp: 2026-11-08
+timestamp: 2026-11-15
 references:
   - ./viewpoints.md
   - ./cases.md
@@ -41,36 +41,7 @@ git checkout -b feature/<GitHubユーザー名>/e2e-tutorial
 
 ## 全体の流れ {#overview}
 
-<div class="diagram-compact">
-
-```mermaid
-%%{init: {"themeVariables": {"noteBkgColor": "#ffedd5", "noteBorderColor": "#ea580c", "noteTextColor": "#111827", "actorBkg": "#ffffff", "actorBorder": "#6b7280"}}}%%
-sequenceDiagram
-  box rgb(255,237,213) 学習者
-    participant L as 学習者
-  end
-  box rgb(219,234,254) AI
-    participant A as AI
-  end
-  box rgb(229,231,235) 成果物
-    participant F as 成果物
-  end
-  L->>A: 1 試験観点の作成を依頼
-  A->>F: 観点一覧を出力
-  Note over L: 関門1 レビューして確定
-  L-->>A: 問題があれば差し戻し
-  L->>A: 2 試験仕様書の作成を依頼
-  A->>F: 試験仕様書を出力
-  Note over L: 関門2 過不足を確認して確定
-  L-->>A: 問題があれば差し戻し
-  L->>A: 3 テストコードの作成と実行を依頼
-  A->>F: テストコードと説明を出力
-  A->>F: テストを流し、エビデンスと見立てを出力
-  Note over L: 関門3 説明とエビデンスを見て確定
-  L-->>A: 問題があれば差し戻し
-```
-
-</div>
+![結合テストの全体の流れ（学習者、AI、成果物の3つのレーン）](/diagrams/guide/integration-test-workflow-overview.drawio)
 
 図は、学習者、AI、成果物の3つのレーンで、上から順に読みます。各段階は、学習者が AI に依頼し、AI が成果物を出力し、学習者が関門（橙のメモ）でレビューして確定する、の繰り返しです。
 

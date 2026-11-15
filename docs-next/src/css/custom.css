@@ -586,12 +586,6 @@ html {
     grid-template-columns: 1fr;
   }
 }
-/* ページ内では縮めて表示し、細部は全画面表示（Mermaid の拡大ボタン）で見る図。
-   拡大処理が表示枠に付ける max-height（インライン指定）より優先させる。 */
-.diagram-compact .docusaurus-mermaid-container {
-  max-height: 480px !important;
-}
-
 /* 結合テストのワークフロー「段階ごとの役割分担」表。列幅を内容任せにすると、
    長いセルのある列が細く潰れるため、列ごとに割合を決める。 */
 .stage-table table {

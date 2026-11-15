@@ -98,13 +98,11 @@ last_updated: '2026-11-07T00:00:00+09:00'
 - **原因**: リポジトリを Windows 側（`/mnt/c/...`）に置いている。WSL2 からのクロスファイルシステムアクセスが低速で、inotify のファイル変更イベントも正しく伝播しない。
 - **解決策**: リポジトリを **WSL2 ネイティブ FS（`/home/<user>/...`）へ clone し直す**。WSL2 ターミナルで `pwd` が `/home/...` を返すことを確認してから VS Code を `code .` で開き、`Reopen in Container` する。詳細は [getting-started.md](../learn/getting-started.md) の「OS 別の事前準備」を参照。
 
-### （Windows）「Reopen in Container」時に Wayland ソケットのマウントエラーが出る
+### （Windows）「Reopen in Container」時にソケットのマウントエラーが出る {#socket-mount-error}
 
-- **症状**: WSLg 有効環境で DevContainer 起動時に Wayland ソケット関連のマウントエラーで失敗する。
-- **解決策**: VS Code のグローバル設定（`Preferences: Open User Settings (JSON)`）に以下を追加する。
-  ```json
-  "dev.containers.mountWaylandSocket": false
-  ```
+- **症状**: 2回目以降の「Reopen in Container」が、`error mounting ... to rootfs at "/tmp/vscode-wayland-....sock"`（または `/var/run/docker-host.sock`）と `not a directory: Are you trying to mount a directory onto a file` で失敗する。
+- **原因**: Rancher Desktop は、bind mount するファイルやディレクトリを中継用のディレクトリ（`/mnt/wsl/rancher-desktop/run/docker-mounts/` 配下）を通してコンテナに渡します。コンテナが動いている間に WSL のシャットダウンやスリープ、Rancher Desktop の再起動が起きると、ソケットを中継していた場所に空のディレクトリが残ることがあります。VS Code は既存のコンテナを作り直さずに起動するので、ソケットをマウントする先がディレクトリになっていて失敗します。
+- **解決策**: 「Reopen in Container」のたびに実行される掃除のスクリプト（`scripts/clean-devcontainer-mounts.sh`）が、止まっているコンテナの空の残骸を消します。それでも失敗する場合は、WSL のターミナルでリポジトリのルートに移動し、`sh scripts/clean-devcontainer-mounts.sh` を実行してから、もう一度「Reopen in Container」を実行する。
 
 ### 上記のいずれにも当てはまらず起動に失敗する
 
@@ -215,10 +213,16 @@ Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本�
 - **原因**: コンテナ内で同じサーバーを**二重起動**している（別のターミナルですでに起動中）。なお 3001 等の代替ポートはホストへ公開されておらず、認証設定（`BETTER_AUTH_URL`）も 3000 前提のため、3001 で起動したフロントエンドは正しく動きません。
 - **解決策**: VS Code のターミナル一覧（パネル右側のリスト）を確認し、起動済みのプロセスを <kbd>ctrl+c</kbd> で停止してから起動し直す。ターミナルを閉じてしまいプロセスだけが残った場合は、コマンドパレット →「**Dev Containers: Rebuild Container**」でコンテナごと再起動するのが確実です。
 
+### ドキュメントサイト（`localhost:8000`）の内容が古い・ページが表示されない {#docs-site-stale}
+
+- **症状**: ドキュメントを直したのに `http://localhost:8000` の表示が変わらない。ブランチを切り替えたのに前のブランチの内容が表示される。または、ページが「Page Not Found」になる。
+- **原因**: docs コンテナは、起動したときにビルドした静的ファイルを配信しています。起動後の変更は、ビルドし直すまで表示に反映されません。ページが表示されない場合は、起動時のビルドが途中であるか、リンク切れなどで失敗しています。
+- **解決策**: 作業用コンテナで `bash scripts/build-docs.sh` を実行し、終わったらページを再読み込みする。ビルドが失敗した場合は、表示されたエラー（存在しないページやアンカーへのリンクなど）を直してから、もう一度実行する。
+
 ### DevContainer 起動時に `port is already allocated` で失敗する
 
 - **症状**: 起動時に `Bind for 0.0.0.0:5432 failed: port is already allocated` のようなエラーで失敗する。
-- **原因**: 本プロジェクトはホスト側のポート **3000（frontend）/ 5432（postgres）/ 4566（localstack）/ 8000（docs）/ 9229（cognito-local）** を使用する。別プロジェクトのコンテナや、ホストに直接インストールしたサービス（ローカルの PostgreSQL 等）が同じポートを使っていると衝突する。
+- **原因**: 本プロジェクトはホスト側のポート **3000（frontend）/ 5432（postgres）/ 4566（localstack）/ 8000・8001（docs）/ 9229（cognito-local）** を使用する。別プロジェクトのコンテナや、ホストに直接インストールしたサービス（ローカルの PostgreSQL 等）が同じポートを使っていると衝突する。
 - **解決策**:
     1. WSL2（またはコンテナ内）で `docker ps` を実行し、同じポートを公開している別コンテナがあれば `docker stop <コンテナ名>` で停止する
     2. コンテナ以外のプロセスは Windows 側 PowerShell で特定する：

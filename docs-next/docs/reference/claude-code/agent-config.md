@@ -33,7 +33,7 @@ last_updated: '2026-11-08T00:00:00+09:00'
 | ファイル | 目的 |
 |---------|------|
 | `aidlc-core.md` | AI-DLC 起動判断の薄いポインタ。`/aidlc` の明示起動、または「AI-DLC で進めて」等の意図指定を検知したときにだけ `aidlc` スキルを起動する。指定のない小修正・質問では起動しない |
-| `aidlc-guardrails.md` | AI 駆動開発のガードレール。過信防止・出力粒度調整・コンテンツ検証・ASCII 図規約を定義する |
+| `aidlc-guardrails.md` | AI 駆動開発のガードレール。過信防止・出力粒度調整・コンテンツ検証・ASCII 図規約を定義する。ドキュメントサイトの図は Mermaid ではなく draw.io で描くことも定める |
 | `aidlc-questions.md` | 確認質問の様式。`AskUserQuestion`（要件確認）とチャットでの直接承認（計画承認）の使い分けを規定する |
 | `agent-config-sync.md` | AI-DLC 非依存の横断ルール。`.claude/rules/` `.claude/skills/*/SKILL.md` `.claude/settings.json` のいずれかを変更したら、同じ変更でこの台帳（本ページ）も追従させる |
 | `ops-note-sync.md` | AI-DLC 非依存の横断ルール。カリキュラム、標準開発フロー、運用ガイド、主要なページの URL を変えたら、同じ変更で運営ノート（`ops-note/index.html`）の該当する節を見直させる |

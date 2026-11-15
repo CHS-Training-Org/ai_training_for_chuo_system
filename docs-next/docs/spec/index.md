@@ -27,7 +27,7 @@ BookFlow の実装仕様を正確に記述します。学習者が機能を理�
 | [requirements.md](./requirements.md) | 要件定義。機能要件・非機能要件・ロール権限・ステータス遷移を定義 | 学習者・運営者 |
 | [screen-spec.md](./screen-spec.md) | 画面仕様書。全 10 画面のレイアウト・操作・バリデーションを定義 | 学習者・運営者 |
 | [api-spec.md](./api-spec.md) | REST API 仕様書。エンドポイント・リクエスト/レスポンス・シーケンス図を定義 | 学習者・運営者 |
-| [er-diagram.md](./er-diagram.md) | ER 図（Mermaid）。データモデル・テーブル定義・リレーションを定義 | 学習者・運営者 |
+| [er-diagram.md](./er-diagram.md) | ER 図（draw.io）。データモデル・テーブル定義・リレーションを定義 | 学習者・運営者 |
 | [enhancements/](./enhancements/index.md) | エンハンス課題のビジネス要求シート集。配置規約・原則を定義 | 学習者・運営者 |
 | [aidlc-adoption.md](../reference/aidlc/adoption.md) | AI-DLC 採用台帳。AWS Labs AI-DLC から取り込んだ要素・反映先・状態・上流同期手順を管理（BookFlow 機能仕様ではなく上流参照の管理台帳） | 運営者 |
 
