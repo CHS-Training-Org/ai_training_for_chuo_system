@@ -71,7 +71,14 @@
       ],
       "settings": {
         "editor.formatOnSave": true,
-        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current"
+        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current",
+        // Java の言語サーバー 2 つ（jdt.ls、Spring Boot）のメモリを減らす（ADR-037）。
+        // Serial GC と軽い JIT（C1 のみ）でヒープの外（GC の管理領域、JIT）を減らす。jdt.ls は初回の解析で
+        // ヒープを上限近くまで広げて手放さないため、上限を既定の 2G から 512m に下げる（生存データは約 93MB）。
+        // java.jdt.ls.vmargs は拡張の既定値を置き換えるので、既定値のうち GC 以外の指定もここに書く。
+        // spring-boot.ls.java.vmargs は拡張の既定値（-Xmx1024m）に足される。
+        "java.jdt.ls.vmargs": "-XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Dsun.zip.disableMemoryMapping=true -Xmx512m -Xms100m -Xlog:disable",
+        "spring-boot.ls.java.vmargs": ["-XX:+UseSerialGC", "-XX:TieredStopAtLevel=1"]
       }
     }
   },
