@@ -25,7 +25,7 @@ cd frontend && pnpm test reservations reservation-permissions
 
 ### 2. Review Test Results
 
-- **Expected**: backend 194 件・frontend 121 件、いずれも failures=0
+- **Expected**: backend 194 件・frontend 127 件、いずれも failures=0
 - **Test Coverage**: 本ユニットの新規ロジック（下書きの作成・更新・正式申請・削除、下書きの閲覧権限、一覧の `DRAFT` 除外、`getReservationActions`）はすべてユニットテストでカバー
 - **Test Report Location**: `backend/build/test-results/test/`（JUnit XML）、`backend/build/reports/tests/test/index.html`（HTML）。frontend は `vitest run` のコンソール出力（HTML レポート設定なし）
 
