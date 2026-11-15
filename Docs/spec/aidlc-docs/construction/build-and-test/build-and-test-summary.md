@@ -21,8 +21,8 @@ timestamp: 2026-11-14
 
 | 項目 | backend | frontend |
 |---|---|---|
-| Total Tests | 194 | 114 |
-| Passed | 194 | 114 |
+| Total Tests | 194 | 121 |
+| Passed | 194 | 121 |
 | Failed | 0 | 0 |
 | Skipped | 0 | 0 |
 | Status | ✅ Pass | ✅ Pass |
@@ -33,6 +33,7 @@ timestamp: 2026-11-14
 - `ReservationControllerTest`：46 件。`POST draft:true`、`GET` の下書き（本人・ADMIN・他人）、`PUT` の分岐、`DELETE` の 204/403/404/422 を MockMvc と H2 で確認
 - `reservation-permissions.test.ts`：11 件（新規、`getReservationActions` の状態 × 本人 × ADMIN の組み合わせ）
 - `reservations.test.ts`（Server Action）：28 件。`draft` オプション、`deleteReservationAction`、`tryUpdateReservationAction`（重複を値として返す。4 件）を含む
+- `reservation-edit-form.test.tsx`・`reservation-form.test.tsx`（フォームの送信先の分岐）：7 件（新規。Enter・「下書き保存」・「申請する」で `draft: true` を付けるかどうかを、実際のフォームを描画して確認）
 
 ### Integration Tests
 
