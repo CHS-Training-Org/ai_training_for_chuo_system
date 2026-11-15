@@ -70,7 +70,7 @@ description: BookFlow の仕様書 docs-next/docs/spec/（requirements / screen-
    bash scripts/build-docs.sh
    ```
 
-   `onBrokenLinks` / `onBrokenAnchors` が `'throw'` なので、存在しないページ・アンカーを指しているとここで失敗する。
+   `onBrokenLinks` / `onBrokenAnchors` が `'throw'` なので、存在しないページ・アンカーを指しているとここで失敗する。成功すると、ローカルのドキュメントサイト（`http://localhost:8000`）の表示も更新されるので、更新した仕様書をページの再読み込みで確かめられることをユーザーに伝える。
 
 ## 参照
 

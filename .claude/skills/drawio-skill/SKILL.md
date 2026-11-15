@@ -297,7 +297,7 @@ N 本が同じ辺に接続する場合: `exitX = 0.25, 0.5, 0.75`... と均等�
 
 1. `.drawio` を `docs-next/static/diagrams/<分類>/<名前>.drawio` に置く（分類は `architecture` `guide` `spec` など既存のディレクトリに合わせる）。
 2. Markdown から、前後を空行で区切った単独の行で参照する：`![図の説明](/diagrams/<分類>/<名前>.drawio)`。パスは `static/` からの絶対パスで書く。
-3. `bash scripts/build-docs.sh` でビルドを確かめる。ファイルが無い、段落の途中に書いた、図として読めない場合はビルドが失敗する（`docs-next/plugins/remark-drawio.js`）。開発サーバーでは、`.drawio` を直したらページを再読み込みする。
+3. `bash scripts/build-docs.sh` でビルドを確かめる。ファイルが無い、段落の途中に書いた、図として読めない場合はビルドが失敗する（`docs-next/plugins/remark-drawio.js`）。ビルドが通ったら、ローカルのドキュメントサイト（`http://localhost:8000`）のページを再読み込みすれば図を確かめられる。運営者が開発サーバー（`bash scripts/docs-dev.sh`、`http://localhost:8001`）を使っているときも、`.drawio` を直したらページを再読み込みする。
 
 次の制約を守る。閲覧用 JS は外部に何も取りに行かない前提で同梱しているため。
 

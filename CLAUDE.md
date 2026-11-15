@@ -86,9 +86,10 @@ cd backend
 docker compose -f .devcontainer/docker-compose.yml up -d
 
 # ドキュメントサイト（Docusaurus）
-# 開発サーバーは devcontainer 起動時に docs サービスが自動起動（http://localhost:8000）
+# devcontainer 起動時に docs サービスがビルドし、静的ファイルを配信する（http://localhost:8000）
 # 作業用コンテナには Docusaurus の依存が無いため、ビルドは docs コンテナの中で行う
-bash scripts/build-docs.sh   # 手動ビルド（docs-next/build/ に出力。リンク・アンカー破損があれば失敗する）
+bash scripts/build-docs.sh   # 手動ビルド（docs-next/build/ に出力。リンク・アンカー破損があれば失敗する）。8000 の表示もこれで更新される
+bash scripts/docs-dev.sh     # 運営者用：開発サーバーを前面で起動（http://localhost:8001、Ctrl+C で停止）
 ```
 
 ---

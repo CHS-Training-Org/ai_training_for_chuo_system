@@ -5,6 +5,8 @@
 # named volume（docs-node-modules）にあるため、ビルドは docs コンテナに任せる。
 # 出力先は docs-next/build/（bind mount のため作業用コンテナとホストからも見える）。
 # リンク・アンカーが壊れていると、Docusaurus の onBrokenLinks / onBrokenAnchors が 'throw' のため失敗する。
+# docs コンテナは docs-next/build/ を http://localhost:8000 で配信しているので、ビルドが終わったら
+# ページを再読み込みすれば、ローカルのドキュメントサイトにも修正が反映される（Issue #192）。
 #
 # 使い方（作業用コンテナのターミナルで）: bash scripts/build-docs.sh
 set -euo pipefail

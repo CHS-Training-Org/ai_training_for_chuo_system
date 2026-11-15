@@ -75,6 +75,12 @@
   },
   "forwardPorts": [3000, 8000, 8080, 3130],
   "portsAttributes": {
+    // ドキュメントの開発サーバー（scripts/docs-dev.sh）は docs コンテナで動き、compose の ports でホストに公開している。
+    // VS Code がターミナルに出た URL を見てこの作業用コンテナの 8001（何も動いていない）を転送すると、
+    // Windows の localhost:8001 を VS Code が先に使ってしまい、ブラウザが docs コンテナに届かなくなる（Issue #192）。
+    "8001": {
+      "onAutoForward": "ignore"
+    },
     "3130": {
       "label": "結合テストのダッシュボード",
       "onAutoForward": "silent"

@@ -44,11 +44,9 @@ docs-next/
 
 ## Local Development
 
-```bash
-npm run start
-```
+devcontainer では、docs コンテナが起動時に `npm run build` を実行し、`build/` を `npm run serve` で配信する（http://localhost:8000）。ドキュメントを直したら、作業用コンテナで `bash scripts/build-docs.sh` を実行してページを再読み込みする。
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+編集をすぐ反映したいときは、作業用コンテナで `bash scripts/docs-dev.sh` を実行すると、開発サーバー（`npm run start` 相当）が http://localhost:8001 に起動する。常に動かさないのは、開発サーバーが 0.7〜1GB のメモリを使うため（ADR-036）。
 
 ## Build
 
