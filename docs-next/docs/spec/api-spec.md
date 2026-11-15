@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-08-01T11:56:18+09:00'
+last_updated: '2026-11-14T00:00:00+09:00'
 ---
 
 # REST API 仕様書
@@ -175,11 +175,12 @@ Spring Data の `Page<T>` をそのまま JSON 化して返却する。
 
 | メソッド | パス | 概要 | 権限 |
 |--------|------|------|------|
-| GET | `/api/reservations` | 予約一覧（自分の予約。ADMIN は全件） | 全ロール |
-| POST | `/api/reservations` | 予約申請 | 全ロール |
-| GET | `/api/reservations/{id}` | 予約詳細 | 全ロール（本人 or APPROVER/ADMIN） |
-| PUT | `/api/reservations/{id}` | 予約内容更新（PENDING のみ） | 申請者本人 |
+| GET | `/api/reservations` | 予約一覧（自分の予約。ADMIN は全件。`status` 未指定は下書きを除く） | 全ロール |
+| POST | `/api/reservations` | 予約申請（`draft: true` で下書き保存） | 全ロール |
+| GET | `/api/reservations/{id}` | 予約詳細 | 全ロール（本人 or APPROVER/ADMIN。下書きは本人 or ADMIN） |
+| PUT | `/api/reservations/{id}` | 予約内容更新（PENDING、DRAFT）、下書きの正式申請 | 申請者本人 |
 | POST | `/api/reservations/{id}/cancel` | キャンセル | 申請者本人 or ADMIN |
+| DELETE | `/api/reservations/{id}` | 下書きの削除（DRAFT のみ） | 申請者本人 |
 
 ### 承認
 
@@ -484,11 +485,11 @@ Authorization: Bearer <JWT>
 
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
-| `status` | string | ❌ | ステータスフィルター（`PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`） |
+| `status` | string | ❌ | ステータスフィルター（`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`）。複数指定可（例：`?status=PENDING&status=APPROVED`）。**未指定の場合は `DRAFT` を除くすべての予約を返す**。下書きを取得するには `status=DRAFT` を指定する |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
-> MEMBER / APPROVER は自分の予約のみ返却。ADMIN は全ユーザーの予約を返却。
+> MEMBER / APPROVER は自分の予約のみ返却。ADMIN は全ユーザーの予約を返却。ADMIN も `status` 未指定のときは `DRAFT` を含めない。`status=DRAFT` を指定した場合は、ADMIN には全ユーザーの下書き、それ以外には自分の下書きを返す。
 
 #### レスポンス（200 OK）
 
@@ -532,7 +533,7 @@ Authorization: Bearer <JWT>
 | `endAt` | TIMESTAMP | 利用終了日時 |
 | `purpose` | string | 利用目的 |
 | `attendeesCount` | integer / null | 参加人数 |
-| `status` | string | `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`（DB の CHECK 制約には `DRAFT` も定義されているがベース実装では未使用。[er-diagram.md](./er-diagram.md) 参照） |
+| `status` | string | `DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`（`DRAFT` は下書き保存で設定される。値の定義は[ER 図](./er-diagram.md)の `reservations` を参照） |
 | `createdAt` | TIMESTAMP | 申請日時 |
 | `updatedAt` | TIMESTAMP | 最終更新日時 |
 
@@ -565,8 +566,16 @@ Content-Type: application/json
 | `endAt` | TIMESTAMP | ✅ | `endAt > startAt`（違反時は `422`・`code: VALIDATION_ERROR`） |
 | `purpose` | string | ✅ | 255 文字以内 |
 | `attendeesCount` | integer / null | ❌ | 1 以上 |
+| `draft` | boolean / null | ❌ | `true` で下書き保存（`status = "DRAFT"`）。省略、`null`、`false` は通常の申請 |
+
+#### 下書き保存（`draft: true`）
+
+`draft: true` を指定すると、予約を下書きとして保存する。必須項目と `endAt > startAt` は通常の申請と同じに検証する（違反時は `422`・`code: VALIDATION_ERROR`）。重複予約チェックは行わず、承認ステップも生成しない。下書きは利用する時間帯を占有しない。  
+下書きの正式申請は、`PUT /api/reservations/{id}` で行う（[予約内容更新と正式申請](#put-reservation)を参照）。
 
 #### レスポンス（201 Created）
+
+- `draft = true` の場合：`status = "DRAFT"`
 
 - `requires_approval = false` の場合：`status = "APPROVED"`（即時確定）
 - `requires_approval = true` の場合：`status = "PENDING"`（承認待ち）。同時に承認ステップ（`approval_steps`・`step_order = 1`）を 1 件生成し、`role = 'APPROVER'` のユーザーを承認者として割り当てる（割当ルールの詳細は [requirements.md の UC-05](./requirements.md#uc-05) を参照）。APPROVER ロールのユーザーが存在しない場合は `422`（`code: APPROVER_NOT_AVAILABLE`）
@@ -588,7 +597,7 @@ Content-Type: application/json
 }
 ```
 
-重複予約の場合は `409 Conflict`（`code: "RESERVATION_CONFLICT"`）を返す。
+重複予約の場合は `409 Conflict`（`code: "RESERVATION_CONFLICT"`）を返す。下書き保存（`draft: true`）では重複予約チェックを行わないため、返らない。
 
 ---
 
@@ -605,11 +614,11 @@ Authorization: Bearer <JWT>
 
 ReservationResponse 型。
 
-**アクセス制御**：MEMBER は本人の予約のみ取得可。他人の予約へのアクセスは `403 Forbidden`。
+**アクセス制御**：MEMBER は本人の予約のみ取得可。他人の予約へのアクセスは `403 Forbidden`。`DRAFT` の予約は、本人と ADMIN のみ取得可。他人の MEMBER と APPROVER が取得すると `403 Forbidden`。
 
 ---
 
-### `PUT /api/reservations/{id}`（予約内容更新）
+### `PUT /api/reservations/{id}`（予約内容更新） {#put-reservation}
 
 #### リクエスト
 
@@ -626,8 +635,20 @@ Content-Type: application/json
 }
 ```
 
-**制約**：`status = 'PENDING'` の予約のみ更新可（`APPROVED` への更新は不可）。申請者本人のみ操作可能。日時変更時は重複予約チェックを再実行する（自分自身を除外）。  
-リクエストフィールド、バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可）。
+**制約**：申請者本人のみ操作可能（ADMIN も、自分の下書きなら可。他人の予約は `403`）。更新できる予約は `PENDING` と `DRAFT` のみ（`APPROVED` などへの更新は不可）。重複予約チェックは、`PENDING` の更新と下書きの正式申請で再実行する（自分自身を除外）。  
+リクエストフィールド、バリデーションは `POST /api/reservations` と同一（ただし `resourceId` は含まない＝リソースの変更は不可）。任意の `draft`（boolean / null）も受け付ける。
+
+#### 予約の状態と `draft` による動作
+
+| 予約の状態 | `draft` | 動作 |
+|-----------|---------|------|
+| `DRAFT` | `true` | 下書きのまま内容を更新する。必須項目と `endAt > startAt` を検証し、重複予約チェックは行わない |
+| `DRAFT` | 省略 / `false` | 正式申請。重複予約チェックを行い、`requires_approval = true` のリソースは `PENDING`（承認ステップを生成）、`false` のリソースは `APPROVED` にする |
+| `PENDING` | 省略 / `false` | 内容を更新する（従来どおり） |
+| `PENDING` | `true` | `422`（承認待ちの予約は下書きにできない） |
+| 上記以外 | 任意 | `422` |
+
+正式申請が失敗した場合（重複予約の `409`、承認者がいない `422`）、予約は `DRAFT` のまま変わらない。
 
 #### レスポンス（200 OK）
 
@@ -636,8 +657,9 @@ Content-Type: application/json
 | HTTP | `code` | 条件 |
 |------|--------|------|
 | 403 | `FORBIDDEN` | 申請者本人以外が操作 |
-| 409 | `RESERVATION_CONFLICT` | 変更後の時間帯に重複予約あり |
-| 422 | `VALIDATION_ERROR` | `PENDING` 以外の予約を更新、または `endAt ≦ startAt` |
+| 409 | `RESERVATION_CONFLICT` | 変更後の時間帯（正式申請では申請する時間帯）に重複予約あり |
+| 422 | `VALIDATION_ERROR` | `PENDING` と `DRAFT` 以外の予約を更新、`PENDING` の予約に `draft: true` を指定、または `endAt ≦ startAt` |
+| 422 | `APPROVER_NOT_AVAILABLE` | 正式申請で、承認が必要なリソースなのに APPROVER ロールのユーザーが存在しない |
 
 ---
 
@@ -671,6 +693,29 @@ Authorization: Bearer <JWT>
   "updatedAt": "2025-06-01T10:00:00"
 }
 ```
+
+---
+
+### `DELETE /api/reservations/{id}`（下書きの削除）
+
+#### リクエスト
+
+```http
+DELETE /api/reservations/550e8400-e29b-41d4-a716-446655440030
+Authorization: Bearer <JWT>
+```
+
+**制約**：申請者本人のみ操作可能（ADMIN も、他人の下書きは削除できない）。`status = 'DRAFT'` の予約のみ削除できる。削除は物理削除で、元に戻せない。
+
+#### レスポンス（204 No Content）
+
+ボディなし。
+
+| HTTP | `code` | 条件 |
+|------|--------|------|
+| 403 | `FORBIDDEN` | 申請者本人以外が操作 |
+| 404 | `NOT_FOUND` | 予約が存在しない |
+| 422 | `VALIDATION_ERROR` | `DRAFT` 以外の予約を削除 |
 
 ---
 

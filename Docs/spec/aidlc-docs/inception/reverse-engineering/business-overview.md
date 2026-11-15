@@ -1,38 +1,55 @@
 ---
 type: working-doc
 title: Business Overview（Reverse Engineering）
-description: AI-DLC Reverse Engineering ステージが生成するビジネス概要（今回のスコープ：リソース一覧のフィルタ・キーワード検索）
-timestamp: 2026-09-29
+description: AI-DLC Reverse Engineering ステージが生成する業務概要（今回のスコープ：予約の下書き保存）
+timestamp: 2026-11-14
 ---
 
 # Business Overview
 
-> 本リポジトリ全体の詳しいアーキテクチャは `docs-next/docs/reference/architecture.md` と `docs-next/docs/spec/overview.md` に既にドキュメント化されている。ここでは今回のエンハンス課題（リソース一覧のキーワード検索）に関わる範囲に絞って記述する。
+**スコープ注記**: リポジトリ全体ではなく、対象エンハンス課題「予約の下書き保存」（`docs-next/docs/spec/enhancements/intermediate/reservation-draft.md`）に関連する予約ドメインに絞る。全体像は `docs-next/docs/reference/architecture.md` を参照。
 
 ## Business Context Diagram
 
 ```mermaid
 flowchart LR
-    Member[MEMBER<br/>一般利用者] -->|リソースを検索・予約| BookFlow
-    Approver[APPROVER<br/>承認者] -->|予約を承認/却下| BookFlow
-    Admin[ADMIN<br/>管理者] -->|リソースを管理| BookFlow
-    BookFlow[["BookFlow<br/>施設・備品予約システム"]]
+  Member["MEMBER 申請者"] -->|"予約の申請・編集・取消"| BookFlow["BookFlow 施設・備品予約システム"]
+  Approver["APPROVER 承認者"] -->|"承認・却下"| BookFlow
+  Admin["ADMIN 管理者"] -->|"リソース管理・全予約の閲覧・取消"| BookFlow
+  BookFlow --> DB[("PostgreSQL")]
 ```
 
 ## Business Description
 
-- **Business Description**: BookFlow は社内の会議室・備品・社用車といったリソースの予約を一元管理する業務システム。ロール（`MEMBER`/`APPROVER`/`ADMIN`）に応じてリソース閲覧・予約申請・承認・管理の各業務を提供する。
-- **Business Transactions**:
-  - リソース一覧の閲覧・カテゴリ/期間による空き確認（対象 UC: UC-02）
-  - 予約申請・承認・却下・取消
-  - リソースの登録・編集（ADMIN）
+- **Business Description**: 社内の施設（会議室）・備品・社用車を予約するシステム。申請者が時間帯を指定して予約し、承認が必要なリソースは承認者の承認を経て確定する。
+- **Business Transactions（予約ドメイン）**:
+  - 予約申請: リソース・開始終了日時・目的・参加人数を入力して申請する。承認不要のリソースは即時に確定（APPROVED）、承認必要なリソースは承認待ち（PENDING）になり承認ステップが作られる。
+  - 予約の一覧・詳細参照: MEMBER は本人分のみ、APPROVER・ADMIN は全件を参照できる（現行実装）。
+  - 予約の更新: 本人のみ、PENDING のときだけ可能（ADMIN も不可）。
+  - 予約の取消: 本人または ADMIN。PENDING / APPROVED のときだけ可能。
+  - 承認・却下: 承認者が承認ステップに対して行い、予約を APPROVED / REJECTED にする。
+  - 重複予約チェック: 同一リソースで PENDING / APPROVED の予約と時間帯が重なる申請を 409 で拒否する。
 - **Business Dictionary**:
-  - **リソース**（`resources`）: 予約対象の物理資源。カテゴリは `ROOM`（会議室）/ `EQUIPMENT`（備品）/ `VEHICLE`（社用車）
-  - **予約**（`reservations`）: リソースの利用申請。状態は `PENDING`/`APPROVED`/`REJECTED`/`CANCELLED`
-  - **承認要否**（`requires_approval`）: リソースごとに設定され、`true` の場合は予約に承認ステップが必要
+
+| 用語 | 意味 |
+|---|---|
+| DRAFT | 下書き。DB の CHECK 制約と列挙型には定義済みだが、現行実装では未使用（今回の課題で実装する） |
+| PENDING | 承認待ち |
+| APPROVED | 承認済み（承認不要リソースの申請も即この状態） |
+| REJECTED / CANCELLED | 却下 / 取消 |
+| 占有（OCCUPIED_STATUSES） | 時間帯を押さえているとみなす状態の集合。PENDING と APPROVED。DRAFT は含まれない |
+| approval_steps | 承認待ち予約ごとに 1 件作られる承認ステップ |
 
 ## Component Level Business Descriptions
 
-### リソース一覧・検索（今回のスコープ）
-- **Purpose**: 利用者がカテゴリ・空き期間・（今回追加する）キーワードでリソースを絞り込んで一覧できるようにする
-- **Responsibilities**: フィルタ条件の受け付け（フロントエンド）、条件に応じたリソース検索（バックエンド）、権限に応じた表示制御（ADMIN のみ無効化リソースも閲覧可）
+### 予約（Reservation）
+- **Purpose**: 利用者の予約の申請から確定・取消までの状態を管理する。
+- **Responsibilities**: 申請の受付、重複判定、承認要否に応じた状態決定、参照権限の制御、更新・取消のガード。
+
+### 承認（Approval）
+- **Purpose**: 承認が必要なリソースの予約を、承認者が確定または却下する。
+- **Responsibilities**: 承認ステップの生成、承認待ち一覧、承認・却下の実行と二重決済の防止。
+
+### リソース（Resource）
+- **Purpose**: 予約対象（会議室・備品・社用車）と、その空き状況の提供。
+- **Responsibilities**: 一覧・詳細、時間帯指定の空き確認（占有予約の除外）。

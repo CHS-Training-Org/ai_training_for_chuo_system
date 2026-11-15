@@ -6,8 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { UpdateReservationSchema } from "@/lib/schemas/reservation";
-import { updateReservationAction } from "@/server/actions/reservations";
-import { ApiClientError } from "@/lib/api-client";
+import { tryUpdateReservationAction, updateReservationAction } from "@/server/actions/reservations";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -37,6 +36,8 @@ function toDatetimeLocal(isoString: string): string {
 
 interface ReservationEditFormProps {
   reservationId: string;
+  /** 予約の状態。`DRAFT` のとき「下書き保存」と「申請する」、それ以外は「更新する」を出す。 */
+  status: string;
   defaultValues: {
     startAt: string;
     endAt: string;
@@ -51,18 +52,26 @@ interface ReservationEditFormProps {
  * 予約編集フォーム（screen-spec.md §予約編集 /reservations/{id}/edit 準拠）。
  *
  * - リソースは変更不可。現在のリソース名を読み取り専用で表示する。
- * - 対象は PENDING の予約のみ。PENDING 以外は BE が 422 で弾く。
- * - 重複時は 409 Conflict → エラーメッセージを表示する。
- * - 更新成功後は予約詳細（/reservations/{id}）へリダイレクトする。
+ * - 対象は PENDING と DRAFT の予約のみ。それ以外は BE が 422 で弾く。
+ * - PENDING は「更新する」。DRAFT は「下書き保存」（下書きのまま更新）と「申請する」（正式申請）。
+ * - 重複時は 409 Conflict → エラーメッセージを表示する（下書き保存は重複判定をしないため 409 にならない）。
+ * - 成功後は予約詳細（/reservations/{id}）へリダイレクトする。
+ *
+ * 下書きでは、Enter キーで送信されるのを「下書き保存」にしている（正式申請は取り消せないため、
+ * 明示的に「申請する」を押したときだけ行う）。
  */
 export function ReservationEditForm({
   reservationId,
+  status,
   defaultValues,
   resourceName,
 }: ReservationEditFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [conflictError, setConflictError] = useState<string | null>(null);
+  const isDraft = status === "DRAFT";
+  // 実行中のボタンを区別する（押したボタンだけ「〜中...」にするため）
+  const [pendingAction, setPendingAction] = useState<"update" | "draft" | "submit" | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -74,27 +83,36 @@ export function ReservationEditForm({
     },
   });
 
-  const handleSubmit = (values: FormValues) => {
+  /** 「更新する」（PENDING）と「申請する」（DRAFT の正式申請）。`draft` は指定しない。 */
+  const handleSubmit = (action: "update" | "submit") => (values: FormValues) => {
     setConflictError(null);
+    setPendingAction(action);
     startTransition(async () => {
-      try {
-        await updateReservationAction(reservationId, values);
+      const result = await tryUpdateReservationAction(reservationId, values);
+      if (result.ok) {
         router.push(`/reservations/${reservationId}`);
-      } catch (err) {
-        if (err instanceof ApiClientError && err.code === "RESERVATION_CONFLICT") {
-          setConflictError(
-            "指定した時間帯は既に予約が入っています。別の時間帯を選択してください。",
-          );
-        } else {
-          throw err;
-        }
+      } else {
+        setConflictError("指定した時間帯は既に予約が入っています。別の時間帯を選択してください。");
       }
+    });
+  };
+
+  /** 「下書き保存」（DRAFT のまま更新）。重複判定をしないため 409 は返らない。 */
+  const handleSaveDraft = (values: FormValues) => {
+    setConflictError(null);
+    setPendingAction("draft");
+    startTransition(async () => {
+      await updateReservationAction(reservationId, values, { draft: true });
+      router.push(`/reservations/${reservationId}`);
     });
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(isDraft ? handleSaveDraft : handleSubmit("update"))}
+        className="space-y-4"
+      >
         {/* リソース（読み取り専用） */}
         <div className="space-y-1">
           <p className="text-sm font-medium leading-none">リソース</p>
@@ -176,9 +194,30 @@ export function ReservationEditForm({
         {conflictError && <p className="text-sm font-medium text-destructive">{conflictError}</p>}
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "更新中..." : "更新する"}
-          </Button>
+          {isDraft ? (
+            <>
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={isPending}
+                data-testid="reservation-edit-form-save-draft-button"
+              >
+                {isPending && pendingAction === "draft" ? "保存中..." : "下書き保存"}
+              </Button>
+              <Button
+                type="button"
+                onClick={form.handleSubmit(handleSubmit("submit"))}
+                disabled={isPending}
+                data-testid="reservation-edit-form-submit-button"
+              >
+                {isPending && pendingAction === "submit" ? "申請中..." : "申請する"}
+              </Button>
+            </>
+          ) : (
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "更新中..." : "更新する"}
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"

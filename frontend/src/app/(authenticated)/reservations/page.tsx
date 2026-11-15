@@ -43,7 +43,9 @@ function statusBadgeClass(status: string): string {
   return map[status] ?? "";
 }
 
-const ALL_STATUSES = ["PENDING", "APPROVED", "REJECTED", "CANCELLED"];
+// 「すべて」タブの後ろに並べるステータスのタブ。
+// 「すべて」は status を付けずに BE を呼び、BE が下書きを除く。下書きは「下書き」タブ（?status=DRAFT）でだけ表示する。
+const STATUS_TABS = ["PENDING", "APPROVED", "REJECTED", "CANCELLED", "DRAFT"];
 
 export default async function ReservationsPage({
   searchParams,
@@ -86,13 +88,15 @@ export default async function ReservationsPage({
               ? "bg-primary text-primary-foreground border-primary"
               : "border-border hover:bg-muted"
           }`}
+          data-testid="reservations-status-tab-all"
         >
           すべて
         </Link>
-        {ALL_STATUSES.map((s) => (
+        {STATUS_TABS.map((s) => (
           <Link
             key={s}
             href={`/reservations?status=${s}`}
+            data-testid={`reservations-status-tab-${s.toLowerCase()}`}
             className={`rounded-full px-3 py-1 text-sm border transition-colors ${
               selectedStatuses.includes(s)
                 ? "bg-primary text-primary-foreground border-primary"

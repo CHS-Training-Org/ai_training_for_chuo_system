@@ -47,6 +47,8 @@ export function ReservationForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [conflictError, setConflictError] = useState<string | null>(null);
+  // 実行中のボタンを区別する（ボタンの表示文言を、押したボタンだけ「〜中...」にするため）
+  const [pendingAction, setPendingAction] = useState<"submit" | "draft" | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -59,8 +61,22 @@ export function ReservationForm({
     },
   });
 
+  /**
+   * 下書き保存（draft: true）。必須項目と「終了 > 開始」は申請時と同じ検証（FormSchema）を通る。
+   * 下書きは重複判定をしないため、409 は返らない。成功したら一覧の「下書き」タブへ遷移する。
+   */
+  const handleSaveDraft = (values: FormValues) => {
+    setConflictError(null);
+    setPendingAction("draft");
+    startTransition(async () => {
+      await createReservationAction(values, { draft: true });
+      router.push("/reservations?status=DRAFT");
+    });
+  };
+
   const handleSubmit = (values: FormValues) => {
     setConflictError(null);
+    setPendingAction("submit");
     startTransition(async () => {
       try {
         await createReservationAction(values);
@@ -180,7 +196,16 @@ export function ReservationForm({
 
         <div className="flex gap-3">
           <Button type="submit" disabled={isPending}>
-            {isPending ? "申請中..." : "予約を申請する"}
+            {isPending && pendingAction === "submit" ? "申請中..." : "予約を申請する"}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={form.handleSubmit(handleSaveDraft)}
+            disabled={isPending}
+            data-testid="reservation-form-save-draft-button"
+          >
+            {isPending && pendingAction === "draft" ? "保存中..." : "下書き保存"}
           </Button>
           <Button
             type="button"

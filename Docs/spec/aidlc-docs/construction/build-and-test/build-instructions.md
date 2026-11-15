@@ -1,8 +1,8 @@
 ---
 type: working-doc
 title: Build Instructions（Build and Test）
-description: AI-DLC Build and Test ステージのビルド手順
-timestamp: 2026-10-01
+description: AI-DLC Build and Test ステージのビルド手順（ユニット reservation-draft）
+timestamp: 2026-11-14
 ---
 
 # Build Instructions
@@ -12,6 +12,7 @@ timestamp: 2026-10-01
 - **Build Tool**: Gradle Wrapper（backend）/ pnpm（frontend）
 - **Dependencies**: `backend/build.gradle.kts`・`frontend/package.json` に既存定義済み（本ユニットでの追加依存なし）
 - **Environment Variables**: 既存の `.devcontainer` / `frontend/.env.local` 設定をそのまま使用（本ユニットでの追加設定なし）
+- **DB**: Flyway マイグレーションの追加なし（`V001` のみ。`reservations.status` 列に `DRAFT` を入れられる既存の定義を使う）
 - **System Requirements**: Java 25、Node.js（pnpm 11.5.0）
 
 ## Build Steps
@@ -36,13 +37,15 @@ cd frontend && pnpm build
 
 ### 4. Verify Build Success
 
-- **Expected Output**: backend は `BUILD SUCCESSFUL`、frontend は `Compiled successfully` と全11ルートの静的生成完了
+- **Expected Output**: backend は `BUILD SUCCESSFUL`、frontend は全 11 ルートの静的生成完了（`/reservations/[id]` と `/reservations/[id]/edit` を含む）
 - **Build Artifacts**: `backend/build/libs/*.jar`、`frontend/.next/`
-- **Common Warnings**: backend の Checkstyle は既存コード由来のテストメソッド命名警告（`severity=warning`）が多数出るが、ビルド失敗の原因にはならない（既知の許容事項）
+- **Common Warnings**: backend の Checkstyle は既存コード由来のテストメソッド命名警告（`severity=warning`）が出るが、ビルド失敗の原因にはならない（既知の許容事項）
 
 ## Troubleshooting
 
 ### Build Fails with Compilation Errors
 
-- **Cause**: `ResourceRepository.search()` のオーバーロード（Page版・List版）の引数順を間違えている可能性
-- **Solution**: `domain-entities.md`・`business-logic-model.md`（Functional Design）のシグネチャ定義と照合する
+- **Cause（backend）**: `CreateReservationRequest` / `UpdateReservationRequest` の最後に `Boolean draft` を足したため、DTO を `new` している既存のテストの呼び出しに `null` の引数が足りない
+- **Solution**: 呼び出し側の末尾に `null` を足す（`ReservationServiceTest` で 10 か所対応済み）
+- **Cause（frontend）**: `createReservationAction` / `updateReservationAction` の第 3 引数 `options` の型が合っていない
+- **Solution**: `frontend/src/server/actions/reservations.ts` のシグネチャ（`options?: { draft?: boolean }`）と照合する

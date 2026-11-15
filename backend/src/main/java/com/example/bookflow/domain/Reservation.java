@@ -96,7 +96,7 @@ public class Reservation {
   }
 
   /**
-   * 予約内容を更新する（PUT 対応・{@code PENDING} 状態のみ許可）。
+   * 予約内容を更新する（PUT 対応・{@code PENDING} または {@code DRAFT} 状態のみ許可）。
    *
    * @param startAt 新しい開始日時
    * @param endAt 新しい終了日時
@@ -124,7 +124,19 @@ public class Reservation {
   }
 
   /**
+   * 下書きを承認待ちにする（{@code DRAFT} から {@code PENDING}）。
+   *
+   * <p>下書きを正式申請し、リソースが承認を必要とするときに呼ばれる。 呼び出し前に Service 層で遷移元（{@code DRAFT}）と重複予約チェックを確認すること。
+   */
+  public void markPending() {
+    this.status = ReservationStatus.PENDING;
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  /**
    * 予約を承認済みにする（カテゴリ 6 承認ワークフロー用）。
+   *
+   * <p>下書きを正式申請し、リソースが承認を必要としないときにも呼ばれる（{@code DRAFT} から {@code APPROVED}）。
    *
    * <p>承認者が {@code POST /api/approvals/{stepId}/approve} を実行した際に呼ばれる。 呼び出し前に Service
    * 層で重複再チェックを実施すること。

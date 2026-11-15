@@ -204,6 +204,8 @@ export const handlers = [
         purpose: body.purpose ?? MOCK_RESERVATION_RESPONSE.purpose,
         startAt: body.startAt ?? MOCK_RESERVATION_RESPONSE.startAt,
         endAt: body.endAt ?? MOCK_RESERVATION_RESPONSE.endAt,
+        // draft: true のときは下書き（DRAFT）として保存される
+        status: body.draft === true ? "DRAFT" : MOCK_RESERVATION_RESPONSE.status,
       },
       { status: 201 },
     );
@@ -218,6 +220,8 @@ export const handlers = [
       purpose: body.purpose ?? MOCK_RESERVATION_RESPONSE.purpose,
       startAt: body.startAt ?? MOCK_RESERVATION_RESPONSE.startAt,
       endAt: body.endAt ?? MOCK_RESERVATION_RESPONSE.endAt,
+      // draft: true のときは下書きのまま更新される（draft なしは正式申請の結果として既定の状態を返す）
+      status: body.draft === true ? "DRAFT" : MOCK_RESERVATION_RESPONSE.status,
     });
   }),
 
@@ -229,6 +233,11 @@ export const handlers = [
       status: "CANCELLED",
       updatedAt: "2025-06-01T10:00:00",
     });
+  }),
+
+  // 下書きの削除（204 No Content）
+  http.delete("/api/backend/reservations/:id", () => {
+    return new HttpResponse(null, { status: 204 });
   }),
 
   // ユーザー一覧（ADMIN 専用・ページネーション）

@@ -49,22 +49,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
   // ---------------------------------------------------------------------------
 
   /**
-   * 指定申請者の全予約をページネーションで返す（N+1 を避けるため resource・requester を JOIN FETCH）。
-   *
-   * @param requesterId 申請者 ID
-   * @param pageable ページネーション
-   * @return 予約ページ
-   */
-  @Query(
-      value =
-          "SELECT r FROM Reservation r JOIN FETCH r.resource JOIN FETCH r.requester"
-              + " WHERE r.requester.id = :requesterId",
-      countQuery = "SELECT count(r) FROM Reservation r WHERE r.requester.id = :requesterId")
-  Page<Reservation> findByRequesterIdFetch(
-      @Param("requesterId") UUID requesterId, Pageable pageable);
-
-  /**
-   * 指定申請者の指定ステータス予約をページネーションで返す。
+   * 指定申請者の指定ステータス予約をページネーションで返す（N+1 を避けるため resource・requester を JOIN FETCH）。
    *
    * @param requesterId 申請者 ID
    * @param statuses フィルタするステータス群
@@ -84,18 +69,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
       Pageable pageable);
 
   /**
-   * 全予約をページネーションで返す（ADMIN 用・JOIN FETCH）。
-   *
-   * @param pageable ページネーション
-   * @return 予約ページ
-   */
-  @Query(
-      value = "SELECT r FROM Reservation r JOIN FETCH r.resource JOIN FETCH r.requester",
-      countQuery = "SELECT count(r) FROM Reservation r")
-  Page<Reservation> findAllFetch(Pageable pageable);
-
-  /**
-   * 全予約の指定ステータスをページネーションで返す（ADMIN + status フィルタ用）。
+   * 全予約の指定ステータスをページネーションで返す（ADMIN 用）。
    *
    * @param statuses フィルタするステータス群
    * @param pageable ページネーション
