@@ -29,6 +29,8 @@ echo "::: [4/6] Gradle: 使っていない daemon を 15 分で終わらせる :
 mkdir -p ~/.gradle
 touch ~/.gradle/gradle.properties
 sed -i '/^org\.gradle\.daemon\.idletimeout=/d' ~/.gradle/gradle.properties
+# 末尾に改行がないと、追記する行が最後の行につながるため、先に改行を補う。
+[ -s ~/.gradle/gradle.properties ] && [ -n "$(tail -c 1 ~/.gradle/gradle.properties)" ] && echo >> ~/.gradle/gradle.properties
 echo "org.gradle.daemon.idletimeout=900000" >> ~/.gradle/gradle.properties
 
 echo "::: [5/6] backend: gradle dependencies :::"

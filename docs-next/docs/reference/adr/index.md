@@ -163,4 +163,4 @@ Accepted（YYYY-MM-DD）
 |---|--------|--------|
 | [ADR-022](./ADR-022-wsl-container-future-adoption.md) | WSL Container（wslc）の将来採用 | Proposed |
 | [ADR-036](./ADR-036-docs-static-serving.md) | ローカルのドキュメントサイトを静的ファイルで配信する | Accepted |
-| [ADR-037](./ADR-037-java-language-server-vmargs.md) | Java の言語サーバーを Serial GC と軽い JIT で動かし、jdt.ls のヒープの上限を下げる | Accepted |
+| [ADR-037](./ADR-037-java-language-server-vmargs.md) | Java の言語サーバーと Gradle daemon のメモリを減らす | Accepted |
