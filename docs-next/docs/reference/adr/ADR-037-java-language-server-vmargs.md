@@ -63,3 +63,26 @@ Spring Boot の拡張を外す案（約 0.4GB 減る）も検討したが、Spri
 **問題が出たときの戻し方**
 
 jdt.ls がメモリ不足で止まる場合は、`-Xmx512m` を `-Xmx1G` に上げる（作り直した直後は約 880MB になる）。補完やエラー表示が遅くなった場合は、`-XX:TieredStopAtLevel=1` を外す（解析済みの状態の削減が約 100MB に下がる）。手元で試すときは、VS Code のリモート設定（コマンドパレットの「Preferences: Open Remote Settings (JSON)」）で 2 つの設定を上書きし、ウィンドウを再読み込みする。
+
+## 追記（2026-11-15）使っていない Gradle daemon を 15 分で終わらせる
+
+### Context（追記理由）
+
+言語サーバーと同じく、VS Code を接続すると Gradle daemon も動き出す（Issue #196）。gradle-server（`vscode-gradle` 拡張。Java の拡張がプロジェクトの構成を読み込むための仲介）が daemon を起動し、ターミナルの `./gradlew bootRun` や `test` も起動の条件が同じなのでそれを使い回す。daemon は何もしなくても既定で 3 時間残り、約 510〜825MB を使い続ける（テストを流した後ほど大きい）。
+
+運営者の PC で、daemon が終わるまでの時間（`org.gradle.daemon.idletimeout`）を短くして確かめた。ターミナルの `./gradlew` から使った daemon も、gradle-server が起動した daemon も、設定した時間だけ何もしなければ自分で終わった。gradle-server は動き続け、構成の読み込みが必要になると daemon を起動し直す。代わりに、daemon が終わった後の最初のビルドは遅くなる。`./gradlew test --rerun-tasks` は、daemon がある状態で 16.4〜17.3 秒、daemon がない状態からで 27.7 秒だった。
+
+### Decision（追記）
+
+**Gradle daemon は、15 分ビルドしなければ終わらせる。** `.devcontainer/postCreate.sh` で、コンテナの中の Gradle のユーザー設定（`~/.gradle/gradle.properties`）に `org.gradle.daemon.idletimeout=900000` を書き込む。
+
+- 15 分にしたのは、Claude Code とやり取りしながらテストを繰り返す間は daemon を残し、ドキュメントを読む、休憩するなど、しばらく手を止めたときにメモリを空けるためである。1 分のように短いと、テストを流すたびに起動待ちが入る。
+- リポジトリの `backend/gradle.properties` には書かない。書くと CI のビルドにも効くためである。
+- `postCreate.sh` の中で `./gradlew dependencies` より前に書き、そこで起動する daemon にも効かせる。
+
+### Consequences（追記）
+
+- 15 分以上ビルドしなかった後は、daemon の分（約 510〜825MB）が空く。
+- その後の最初のビルドは、daemon の起動待ちで約 10 秒遅くなる。
+- `postCreate.sh` はコンテナを作るときに動くので、既存の環境では Rebuild Container が必要になる。手元で試すときは、`~/.gradle/gradle.properties` に同じ行を書き、`./gradlew --stop` で今ある daemon を止める。
+
