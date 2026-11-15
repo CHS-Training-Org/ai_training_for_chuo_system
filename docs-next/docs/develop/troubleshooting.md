@@ -243,6 +243,12 @@ Rancher Desktop の Kubernetes 機能が有効だと表示されますが、本�
 
 ---
 
+### Java の補完やエラー表示が効かない・「The Java Language Server encountered an OutOfMemory error」が出る {#jdtls-out-of-memory}
+
+- **症状**: VS Code で Java ファイルの補完やエラー表示が出ない、または不安定になる。右下に「The Java Language Server encountered an OutOfMemory error」という通知が出る。
+- **原因**: devcontainer のメモリを減らすため、Java の言語サーバーのヒープの上限を 512MB にしています（[ADR-037](../reference/adr/ADR-037-java-language-server-vmargs.md)）。依存ライブラリを増やした場合などに足りなくなると、言語サーバーは止まらずに、一部の機能が使えないまま動き続けます。
+- **解決策**: 通知の「Increase Memory ..」を押し、再読み込みの案内が出たら従う。上限が 2 倍になり、その値が `.vscode/settings.json` に書き込まれます。この変更は自分の環境だけで効くので、そのままコミットしてかまいません。通知を閉じてしまった場合は、コマンドパレットの「Developer: Reload Window」でウィンドウを再読み込みし、言語サーバーを起動し直してください。
+
 ## DB・マイグレーション関連 {#database}
 ### バックエンド起動時に `Connection to postgres:5432 refused` になる
 
