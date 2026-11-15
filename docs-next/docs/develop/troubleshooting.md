@@ -98,13 +98,11 @@ last_updated: '2026-11-07T00:00:00+09:00'
 - **原因**: リポジトリを Windows 側（`/mnt/c/...`）に置いている。WSL2 からのクロスファイルシステムアクセスが低速で、inotify のファイル変更イベントも正しく伝播しない。
 - **解決策**: リポジトリを **WSL2 ネイティブ FS（`/home/<user>/...`）へ clone し直す**。WSL2 ターミナルで `pwd` が `/home/...` を返すことを確認してから VS Code を `code .` で開き、`Reopen in Container` する。詳細は [getting-started.md](../learn/getting-started.md) の「OS 別の事前準備」を参照。
 
-### （Windows）「Reopen in Container」時に Wayland ソケットのマウントエラーが出る
+### （Windows）「Reopen in Container」時にソケットのマウントエラーが出る {#socket-mount-error}
 
-- **症状**: WSLg 有効環境で DevContainer 起動時に Wayland ソケット関連のマウントエラーで失敗する。
-- **解決策**: VS Code のグローバル設定（`Preferences: Open User Settings (JSON)`）に以下を追加する。
-  ```json
-  "dev.containers.mountWaylandSocket": false
-  ```
+- **症状**: 2回目以降の「Reopen in Container」が、`error mounting ... to rootfs at "/tmp/vscode-wayland-....sock"`（または `/var/run/docker-host.sock`）と `not a directory: Are you trying to mount a directory onto a file` で失敗する。
+- **原因**: Rancher Desktop は、bind mount するファイルやディレクトリを中継用のディレクトリ（`/mnt/wsl/rancher-desktop/run/docker-mounts/` 配下）を通してコンテナに渡します。コンテナが動いている間に WSL のシャットダウンやスリープ、Rancher Desktop の再起動が起きると、ソケットを中継していた場所に空のディレクトリが残ることがあります。VS Code は既存のコンテナを作り直さずに起動するので、ソケットをマウントする先がディレクトリになっていて失敗します。
+- **解決策**: 「Reopen in Container」のたびに実行される掃除のスクリプト（`scripts/clean-devcontainer-mounts.sh`）が、止まっているコンテナの空の残骸を消します。それでも失敗する場合は、WSL のターミナルでリポジトリのルートに移動し、`sh scripts/clean-devcontainer-mounts.sh` を実行してから、もう一度「Reopen in Container」を実行する。
 
 ### 上記のいずれにも当てはまらず起動に失敗する
 
