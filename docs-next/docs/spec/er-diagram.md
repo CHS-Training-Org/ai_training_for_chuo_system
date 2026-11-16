@@ -11,7 +11,7 @@ references:
   - ./requirements.md
   - backend/src/main/resources/db/migration/V001__create_initial_schema.sql
   - backend/src/main/resources/db/migration/V002__add_resource_equipment_and_notes.sql
-last_updated: '2026-09-30T00:00:00+09:00'
+last_updated: '2026-11-13T00:00:00+09:00'
 ---
 
 # ER 図
@@ -75,11 +75,11 @@ last_updated: '2026-09-30T00:00:00+09:00'
 | `end_at` | `TIMESTAMP` | NOT NULL / CHECK (`end_at > start_at`) | 利用終了日時 |
 | `purpose` | `VARCHAR(255)` | NOT NULL | 利用目的 |
 | `attendees_count` | `INTEGER` | NULL 可 | 参加人数 |
-| `status` | `VARCHAR(20)` | NOT NULL / CHECK (`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`) | **DB DEFAULT なし**（アプリ層で設定）。`DRAFT` はベース実装では未使用（拡張課題用の予約値。[requirements.md](./requirements.md) の「予約申請」セクション参照） |
+| `status` | `VARCHAR(20)` | NOT NULL / CHECK (`DRAFT` / `PENDING` / `APPROVED` / `REJECTED` / `CANCELLED`) | **DB DEFAULT なし**（アプリ層で設定）。`DRAFT` は下書き保存で使う（[UC-09](./requirements.md#uc-09) 参照）。`DRAFT` は `approval_steps` を持たず、物理削除の対象になる |
 | `created_at` | `TIMESTAMP` | NOT NULL / DEFAULT CURRENT_TIMESTAMP | |
 | `updated_at` | `TIMESTAMP` | NOT NULL / DEFAULT CURRENT_TIMESTAMP | |
 
-> **重複予約防止**：同一リソース・同一時間帯に `status IN ('PENDING', 'APPROVED')` の予約が複数存在することを禁止する。V001 に専用 DB 制約はないため**アプリ層（Service）での排他制御**が実装責務。
+> **重複予約防止**：同一リソース・同一時間帯に `status IN ('PENDING', 'APPROVED')` の予約が複数存在することを禁止する。`DRAFT` は時間帯を占有しないため対象外。V001 に専用 DB 制約はないため**アプリ層（Service）での排他制御**が実装責務。
 
 ### approval_steps
 
