@@ -1,99 +1,80 @@
-# Requirements — リソース詳細画面の情報拡充
+# Requirements — 予約の下書き保存
 
 ## Intent Analysis
 
-- **User Request**: `docs-next/docs/spec/enhancements/beginner/resource-detail-info.md` の内容をもとに、AI-DLC で実行計画を立てて実装を進める
-- **Request Type**: Enhancement（既存機能の拡張。新規リソースドメインの追加ではない）
-- **Scope Estimate**: Multiple Components（バックエンド4層 + Flyway マイグレーション + フロントエンド詳細画面 + 管理画面フォーム + 関連 spec 3点）
-- **Complexity Estimate**: Moderate（新規データモデル設計は伴わないが、既存の `resources` ドメインを構成する全レイヤーに影響する縦切り変更）
-- **Requirements Depth**: Standard（ビジネス要求シートに要件・受入条件が明記済みのため、ゼロからの要件定義ではなく、実装方式の確定と非機能面の明文化を中心に行う）
+- **User Request**: `docs-next/docs/spec/enhancements/intermediate/reservation-draft.md` の要求を分析し、AI-DLC で実行計画を立てる
+- **Request Type**: Enhancement（既存の予約申請フローへの機能追加。UC-03 の拡張）
+- **Scope Estimate**: Multiple Components（バックエンド4層のうち presentation / application / domain、フロントエンドの予約フォーム・一覧・詳細・編集・Server Actions、関連 spec 4点）
+- **Complexity Estimate**: Moderate（新規テーブルなし・DB スキーマ変更なし。ただし権限分岐、状態遷移、承認ステップ生成の条件分岐が絡む）
+- **Requirements Depth**: Standard（シートに要件と受入条件があるため、シート内の矛盾・空白の解消と実装方式の確定を中心に行う）
 
 ## Source
 
-- ビジネス要求シート: `docs-next/docs/spec/enhancements/beginner/resource-detail-info.md`
-- 既存実装の把握: `Docs/spec/aidlc-docs/inception/reverse-engineering/code-structure.md`、`.../api-documentation.md`
+- ビジネス要求シート: `docs-next/docs/spec/enhancements/intermediate/reservation-draft.md`
+- 既存実装の把握: `Docs/spec/aidlc-docs/inception/reverse-engineering/reservation-domain.md`
 
 ## Extension Configuration（確定）
 
 | Extension | Enabled | 理由 |
 |---|---|---|
-| Security Baseline | No | 学習用モノレポにおける小規模フィールド追加（PoC 相当）で、新規の認可・入力境界は生じない |
-| Resiliency Baseline | No | 可用性・DR 設計を要件レベルで検討する必要のない変更範囲 |
-| Property-Based Testing | No | 複雑なビジネスロジック・データ変換を伴わない単純な CRUD フィールド追加 |
+| Security Baseline | No | 学習用チュートリアルのため。権限チェックは本書の FR-05 で個別に定義する |
+| Resiliency Baseline | No | 可用性・DR の要件がない |
+| Property-Based Testing | No | 状態遷移は例示ベースの JUnit テストで網羅できる |
+
+## 確定事項（確認質問の回答）
+
+| 論点 | 決定 | 影響 |
+|---|---|---|
+| 他人の下書きの閲覧 | 本人と ADMIN のみ閲覧可。APPROVER と他の MEMBER は 403 | シートの RSV-02（本人のみ）と受入条件（ADMIN は除く）の食い違いは、受入条件に合わせて解消する。RSV-02 の記述は spec 更新時に直す |
+| 下書きの必須項目 | 現行の必須項目（リソース・開始日時・終了日時・利用目的）を満たす入力のみ保存可 | DB スキーマ変更なし。Flyway 追加なし |
+| 重複チェックの時期 | 正式申請時のみ | 下書き保存では検査しない。下書きは時間帯を占有しない（既存の `OCCUPIED_STATUSES` は変更しない） |
+| 正式申請の遷移先 | リソースの `requires_approval` で決定 | 要承認なら `PENDING` + 承認ステップ生成、承認不要なら `APPROVED`。受入条件の「`PENDING` に変更」は要承認リソースの場合と読み替える |
+| 下書きの削除 | `DELETE /api/reservations/{id}` を新設し物理削除 | API・画面・テスト・仕様の追加が必要。シートの影響範囲に無い追加スコープ |
 
 ## Functional Requirements
 
 | # | 要件 | 由来 |
 |---|------|------|
-| FR-01 | `resources` テーブルに `equipment TEXT NULL`（設備一覧）・`notes TEXT NULL`（利用上の注意）の2カラムを Flyway マイグレーションで追加する | RES-01 |
-| FR-02 | `Resource` エンティティ・`ResourceResponse` DTO に `equipment` / `notes` を追加し、`GET /api/resources/{id}` のレスポンスに含める | RES-02 |
-| FR-03 | `CreateResourceRequest` / `UpdateResourceRequest` に `equipment` / `notes`（ともに任意項目）を追加し、管理者が登録・編集画面から入力できるようにする | RES-03 |
-| FR-04 | リソース詳細画面（`/resources/{id}`）に `equipment` / `notes` を表示する。値が `null`・空文字の場合は当該項目ごと非表示にする | RES-04 |
-| FR-05 | `GET /api/resources`（一覧）は `ResourceResponse` を共有 DTO として使うため、`equipment` / `notes` は自然に含まれる。一覧画面側での新規表示は不要（詳細画面のみ表示） | RES-05 |
-
-### 確定した実装方式（クラリファイング質問で解消）
-
-- **カラム名・ラベル**: `equipment`（表示ラベル「設備一覧」）、`notes`（表示ラベル「利用上の注意」）をそのまま採用する。ビジネス要求シートの例示どおり。
-- **入力・表示形式**: どちらも**自由記述の段落**として扱う。1つのテキストエリアに自由文で入力し、詳細画面では改行を保持したまま段落として表示する。既存の `description` フィールドと同じ扱いとし、カンマ・改行区切りを箇条書きにパースする処理は実装しない。
-- **文字数制約**: 既存の `description`（TEXT、Bean Validation の `@Size` 制約なし）と同様の扱いとし、`equipment` / `notes` にもアプリケーション層での文字数上限は設けない（DB 側の `TEXT` 型の範囲に委ねる）。既存パターンとの一貫性を優先した判断であり、新たな制約を導入する要件は要求シートにない。
-- **テーブル構造**: 要求シート RES-01 が「`resources` テーブルに...フィールドを追加する」と明記しているため、別テーブル（`resource_attributes` 等への正規化）は採用しない。単一マイグレーションで `resources` テーブルに直接カラムを追加する。
+| FR-01 | `POST /api/reservations` が `draft: true`（省略時は `false`）を受け取り、`true` のときステータス `DRAFT` で予約を作成する。このとき重複チェックと `approval_steps` 生成は行わない。必須項目の検証は通常申請と同一 | RSV-01 |
+| FR-02 | `DRAFT` 予約は `approval_steps` を持たず、承認一覧（`/approvals`）に表示されない | RSV-02 |
+| FR-03 | `PUT /api/reservations/{id}` が `DRAFT` 予約を更新できる。更新のみの場合は `DRAFT` のまま。正式申請を指示する項目（名称は spec 更新時に確定。仮称 `submit: true`）を受け取ったとき、重複チェック（自己除外）を行い、`requires_approval=true` なら `PENDING` へ遷移して承認ステップを生成、`false` なら `APPROVED` へ遷移する | RSV-03 |
+| FR-04 | `DELETE /api/reservations/{id}` を新設する。`DRAFT` 予約のみ、申請者本人のみ物理削除できる（成功は 204）。`DRAFT` 以外は 422、本人以外は 403 | RSV-02（削除） |
+| FR-05 | `DRAFT` 予約の権限: 閲覧（`GET /api/reservations/{id}`）は本人と ADMIN のみ可（APPROVER・他の MEMBER は 403）。更新・正式申請・削除は本人のみ可（ADMIN も 403）。一覧は既存どおり本人分のみ（ADMIN は全件）で、ADMIN の全予約一覧に他人の下書きも含まれる | RSV-02・受入条件 |
+| FR-06 | 予約申請フォーム（`/reservations/new`）に「下書き保存」ボタンを追加する。押下で `draft: true` として保存し、予約一覧へ遷移する | RSV-04 |
+| FR-07 | 予約一覧（`/reservations`）に「下書き」フィルタタブ（`status=DRAFT`）を追加する。「すべて」には下書きも含まれる | RSV-05 |
+| FR-08 | 予約詳細（`/reservations/{id}`）で `DRAFT` かつ本人の場合、「編集」「正式申請」「削除」の操作を表示する。編集画面（`/reservations/{id}/edit`）は `DRAFT` も開ける | 受入条件 |
+| FR-09 | 既存の `PUT` の `PENDING` 以外への 422 ガードは `PENDING` / `DRAFT` のみ許可に変更する。`POST /api/reservations/{id}/cancel` は `DRAFT` を引き続き 422 とする（削除は DELETE で行う） | 整合性 |
 
 ## Non-Functional Requirements
 
-- **後方互換性**: 新カラムは `NULL` 許容とし、既存データへの移行・デフォルト値設定は不要（受入条件と一致）。
-- **回帰防止**: 既存の `ResourceServiceTest` / `ResourceControllerTest`（バックエンド）、`frontend/tests/unit/server/actions/resources.test.ts`（フロントエンド）が引き続き pass すること。
-- **型の一貫性**: フロントエンドの `ResourceResponseSchema`（`frontend/src/lib/types/api.ts`）は共有型パッケージを持たずバックエンド DTO と手動同期されているため、`equipment` / `notes`追加時は両者を同時に更新する。
-- **採番の一貫性**: Flyway のバージョン番号はリポジトリ全体でグローバル連番（現状 `V001` のみ）。本課題は `V002` を使用する。競合課題（[リソース画像アップロード](/workspace/docs-next/docs/spec/enhancements/advanced/resource-image-upload.md)、[繰り返し予約](/workspace/docs-next/docs/spec/enhancements/intermediate/recurring-reservation.md)）と並行着手する場合は採番調整が必要（本課題単独の実装では問題にならない）。
-- **テストカバレッジ**: `equipment` / `notes` を含む API リクエスト・レスポンスの新規テストを追加する（受入条件どおり）。
+| # | 要件 |
+|---|------|
+| NFR-01 | 正式申請（`DRAFT` → `PENDING`/`APPROVED`）は、リソース行の悲観ロック取得後に重複チェックを行い、既存の `update()` と同じ直列化方式に揃える |
+| NFR-02 | 承認者不在（`APPROVER_NOT_AVAILABLE`）などで正式申請が失敗した場合、トランザクションをロールバックして予約は `DRAFT` のまま残す |
+| NFR-03 | 4 レイヤー構成を維持する。ステータス遷移の判定と権限チェックは `application`（Service）層に置く。ドメイン層（`Reservation`）には遷移を表すメソッドを追加する |
+| NFR-04 | 新規 DB 変更なし。API のエラー形式は既存の共通エラーレスポンスに従う |
 
-## データモデル変更
+## 受入条件（シートの条件を確定事項で補正）
 
-- **新規マイグレーション**: `backend/src/main/resources/db/migration/V002__add_resource_equipment_and_notes.sql`
-  - `ALTER TABLE resources ADD COLUMN equipment TEXT;`
-  - `ALTER TABLE resources ADD COLUMN notes TEXT;`
-- **`Resource` エンティティ**（`ddl-auto: validate` のため、マイグレーションとエンティティのカラム定義を同時に一致させる必要がある）
-  - フィールド追加：`equipment (String, nullable)` / `notes (String, nullable)`
-  - `create()` / `update()` ファクトリ・業務メソッドへの反映
+- [ ] 「下書き保存」ボタンで `DRAFT` ステータスの予約が保存される
+- [ ] 下書きが予約一覧の「下書き」フィルタに表示される
+- [ ] 下書き詳細から再編集と正式申請ができる。正式申請後は、要承認リソースなら `PENDING`、承認不要リソースなら `APPROVED` になる
+- [ ] 下書きは承認一覧に表示されない
+- [ ] 本人と ADMIN 以外が下書き詳細にアクセスすると 403（APPROVER も 403）
+- [ ] 下書きの削除は本人のみ可能で、`DRAFT` 以外の削除は 422
+- [ ] 正式申請時に時間帯が重複していれば 409 を返し、予約は `DRAFT` のまま残る
+- [ ] バックエンドの状態遷移テストに `DRAFT` → `PENDING` と `DRAFT` → `APPROVED` のケースを追加する
 
-## API 変更
+## 更新が必要な spec（シートの記載に追加）
 
-- `GET /api/resources/{id}` レスポンス（`ResourceResponse`）に `equipment` / `notes` を追加
-- `POST /api/resources`（`CreateResourceRequest`）・`PUT /api/resources/{id}`（`UpdateResourceRequest`）に `equipment` / `notes`（任意項目、Bean Validation の必須制約なし）を追加
-- `GET /api/resources`（一覧）：`ResourceResponse` を共有するため実装上の追加変更は不要（レスポンスに新フィールドが自然に含まれる）
-- 影響を受けないエンドポイント：`PATCH /api/resources/{id}/status`、`GET /api/resources/{id}/availability`
+- `api-spec.md`: `POST` の `draft`、`PUT` の `DRAFT` 更新と正式申請、`DELETE` の新設、エンドポイント一覧・権限マトリクス・エラー表、レスポンスの `status` 説明
+- `screen-spec.md`: `/reservations/new`、`/reservations`、`/reservations/{id}`、`/reservations/{id}/edit`
+- `requirements.md`: §予約の「下書き保存はベース実装の対象外」、予約ステータス遷移図（`.drawio` / `.svg` を含む）と注記、UC-07 の機能要件
+- `er-diagram.md`: `status` 列の備考（`DRAFT` はベース実装では未使用）の更新（スキーマ変更はなし）
 
-## UI 変更
+## 想定リスクと留意点
 
-- **リソース詳細画面**（`frontend/src/app/(authenticated)/resources/[id]/page.tsx`）: 「設備一覧」「利用上の注意」を既存の説明欄と同様の段落表示で追加。値が空の項目は非表示。
-- **管理者向けリソース編集フォーム**（`frontend/src/app/(authenticated)/admin/resources/ResourceManagementClient.tsx` の `ResourceForm`）: 新規登録・編集ダイアログ共通で、`equipment` / `notes` のテキストエリア入力欄を追加。
-- **フロントエンド型・スキーマ**: `frontend/src/lib/types/api.ts`（`ResourceResponseSchema`）、`frontend/src/lib/schemas/resource.ts`（`CreateResourceSchema` / `UpdateResourceSchema`）に対応するフィールドを追加。
-
-## Spec 更新（Spec-first、`/update-spec` スキルで対応）
-
-> **注意**：ビジネス要求シートの「影響範囲」節は `er-diagram.md` / `api-spec.md` / `screen-spec.md` の3点のみを挙げているが、`docs-next/docs/spec/requirements.md`（ベース機能要件定義書）も更新対象に含める。同ファイルの **RES-04**（「リソース詳細（名称・カテゴリ・定員・場所・説明・承認フロー要否）を閲覧できる」）と **RES-05**（「ADMIN はリソースを新規登録できる（名称・カテゴリ・定員・場所・説明・`requires_approval`・`is_active` を入力）」）はいずれも閲覧・入力可能フィールドを列挙しており、`equipment` / `notes` を追加すると現状の記述と食い違う。なお、この `RES-04`/`RES-05` はビジネス要求シート側の `RES-01`〜`RES-05` とは別文書内の別採番であり、内容上の関連はない。
-
-- `docs-next/docs/spec/requirements.md` §RES-04（閲覧可能フィールド列挙）・§RES-05（登録時入力フィールド列挙）：`equipment` / `notes` を追記
-- `docs-next/docs/spec/er-diagram.md` §`resources` テーブル：定義テーブルに `equipment` / `notes` カラムを追記
-- `docs-next/static/diagrams/spec/er-diagram.drawio`：`resources` エンティティの表シェイプ（現在9行）に `equipment` / `notes` の2行を追加し、高さ・周辺エンティティとのレイアウトを調整したうえで `er-diagram.drawio.svg` を再エクスポートする（`er-diagram.md` はこのSVGを画像として埋め込んでおり、Markdown側の定義テーブルのみ更新すると図と記述が不一致になる。`drawio-skill` を使う）
-- `docs-next/docs/spec/api-spec.md` §`GET /api/resources/{id}` / §`POST /api/resources` / §`PUT /api/resources/{id}`：新フィールドを追記
-- `docs-next/docs/spec/screen-spec.md` §`/resources/{id}` / §`/admin/resources`：表示・入力欄を追記
-
-## スコープ外
-
-- [リソース画像アップロード](/workspace/docs-next/docs/spec/enhancements/advanced/resource-image-upload.md)・[カレンダービュー](/workspace/docs-next/docs/spec/enhancements/intermediate/calendar-view.md)との並行実装（競合課題のため対象外）
-- 設備情報の構造化（別テーブル `resource_attributes` への正規化、チェックボックス選択式 UI）
-- `GET /api/resources` 一覧側の表示変更（RES-05 により対象外）
-
-## 受入条件（ビジネス要求シートより転記）
-
-- [ ] 管理者がリソース登録・編集画面から設備情報・利用上の注意を入力・更新できる
-- [ ] リソース詳細画面に設備情報・利用上の注意が表示される（未登録時は非表示でよい）
-- [ ] Flyway マイグレーションが正常に実行され、既存データへの影響がない（`NULL` 許容）
-- [ ] `GET /api/resources/{id}` のレスポンスに新フィールドが含まれる
-- [ ] バックエンドの既存テストが引き続き pass する
-- [ ] 新フィールドを含む API 動作のテストを追加する
-
-## リスク・留意事項
-
-- `ddl-auto: validate` のため、マイグレーション適用漏れや型不一致があると起動時に検証エラーとなる。マイグレーション・エンティティ・DTO・フロントエンド型を必ず同時に更新する。
-- Flyway バージョン番号のグローバル連番制約により、他の競合課題との並行着手時は `V002` 番号の衝突に注意（本課題単独では問題なし）。
+- 課題シートの RSV-02 と受入条件の食い違いは本書で解消した。spec 更新時に RSV-02 側の記述を揃えないと、シートと仕様が乖離する。
+- シートの競合課題（繰り返し予約、予約一覧のフィルタ拡張）は `POST /api/reservations` と予約一覧を同時に変更する。両課題とも未着手であることを前提とする。
+- 予約ステータス遷移図は draw.io 図（`requirements-reservation-status.drawio.svg`）なので、更新時は `drawio-skill` の利用を検討する。
+- スコープはシートの見積り（半日〜1日）より大きい。DELETE API の新設が主な増分である。

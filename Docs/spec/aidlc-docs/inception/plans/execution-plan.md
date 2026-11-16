@@ -1,36 +1,65 @@
-# Execution Plan — リソース詳細画面の情報拡充
+# Execution Plan: 予約の下書き保存
 
 ## Detailed Analysis Summary
 
 ### Transformation Scope（Brownfield）
 
-- **Transformation Type**: Single component change（`resources` ドメイン内での既存コンポーネントの拡張。アーキテクチャ変更・デプロイモデル変更なし）
-- **Primary Changes**: `resources` テーブルへの2カラム追加（`equipment` / `notes`）と、それに伴うバックエンド4層・フロントエンド・関連 spec 4点の同期
-- **Related Components**: `Resource`（domain）/ `ResourceRepository`（domain）/ `ResourceService`（application）/ `ResourceController`・DTO群（presentation）/ `V002` マイグレーション（infrastructure 相当）/ リソース詳細画面・管理画面フォーム・Zod スキーマ（frontend）
+- **Transformation Type**: Single component change（予約ドメイン内の機能追加。アーキテクチャ変更・デプロイモデル変更なし）
+- **Primary Changes**: 予約ステータス `DRAFT` の生成・更新・正式申請・削除を追加し、閲覧権限と一覧・詳細・編集・申請フォームの画面を対応させる
+- **Related Components**:
+  - backend: `ReservationController` / `ReservationService` / `Reservation` / `CreateReservationRequest` / `UpdateReservationRequest` / `ReservationRepository`（変更不要の見込み）/ `ApprovalService`（呼び出しのみ）
+  - frontend: `ReservationForm` / `ReservationEditForm` / 予約一覧・詳細・編集ページ / `reservations.ts`（Server Actions）/ `reservation.ts`（Zod スキーマ）/ `labels.ts`・`enums.ts`（確認のみ）
+  - docs: `api-spec.md` / `screen-spec.md` / `requirements.md`（状態遷移図を含む）/ `er-diagram.md`
 
 ### Change Impact Assessment
 
 | 観点 | 影響 | 説明 |
 |---|---|---|
-| User-facing changes | Yes | リソース詳細画面に設備一覧・利用上の注意を表示。管理画面に入力欄を追加 |
-| Structural changes | No | 新規コンポーネント・新規サービス層は不要。既存の4層アーキテクチャの境界内で完結 |
-| Data model changes | Yes | `resources` テーブルに `equipment TEXT NULL` / `notes TEXT NULL` を追加（Flyway `V002`） |
-| API changes | Yes | 既存エンドポイント（`GET/POST/PUT /api/resources{,/{id}}`）のリクエスト・レスポンスに任意フィールドを追加。新規エンドポイントはなし |
-| NFR impact | No | Requirements Analysis で Security/Resiliency/PBT 拡張はいずれも不採用と確定済み。性能・セキュリティ・スケーラビリティへの新規要求なし |
+| User-facing changes | Yes | 申請フォームに「下書き保存」、一覧に「下書き」タブ、詳細に「編集・正式申請・削除」を追加 |
+| Structural changes | No | 新規コンポーネント・サービス層は不要。4 層の境界内で完結 |
+| Data model changes | No | `reservations.status` の CHECK に `DRAFT` は定義済み。Flyway 追加なし |
+| API changes | Yes | `POST` に `draft`、`PUT` に `DRAFT` 更新と正式申請、`DELETE /api/reservations/{id}` を新設 |
+| NFR impact | No | 拡張 3 種は不採用。正式申請の直列化は既存の悲観ロック方式を踏襲 |
 
 ### Component Relationships
 
-- **Primary Component**: `resources` ドメイン（backend 4層 + frontend 詳細/管理画面）
-- **Infrastructure Components**: なし（CDK/Terraform 等の IaC はこのリポジトリに存在しない）
-- **Shared Components**: `frontend/src/lib/types/api.ts`（`ResourceResponseSchema`、バックエンド DTO と手動同期）
-- **Dependent Components**: `ReservationController` 等は `resources` テーブルを参照するが、今回追加する2カラムは予約ドメインのロジックに影響しない
-- **Supporting Components**: `docs-next/docs/spec/{requirements.md, er-diagram.md, api-spec.md, screen-spec.md}`（Spec-first のため実装前に更新）
+```mermaid
+flowchart LR
+    FE["frontend<br/>予約フォーム・一覧・詳細・編集"]
+    SA["Server Actions<br/>reservations.ts"]
+    RC["ReservationController"]
+    RS["ReservationService"]
+    RE["Reservation<br/>(domain)"]
+    AS["ApprovalService"]
+    DB[("reservations")]
+    FE --> SA
+    SA --> RC
+    RC --> RS
+    RS --> RE
+    RS --> AS
+    RE --> DB
+```
+
+- **Primary Component**: `ReservationService`（遷移判定・権限・重複チェック・承認ステップ生成の分岐をここに集約）
+- **Shared Components**: `frontend/src/lib/types/api.ts`、`ReservationResponse`（変更不要の見込み）
+- **Dependent Components**: `ApprovalService`（正式申請で `createInitialStep` を呼ぶ。承認一覧は `approval_steps` 経由のため下書きは自然に出ない）
+- **Supporting Components**: 仕様書 4 点（Spec-first）
+
+| 構成要素 | Change Type | Priority |
+|---|---|---|
+| `ReservationService` | Major | Critical |
+| `Reservation`（遷移メソッド追加） | Minor | Critical |
+| `ReservationController`（DELETE 追加） | Minor | Critical |
+| 2 つの Request DTO | Minor | Critical |
+| 予約フォーム・一覧・詳細・編集ページ | Major | Important |
+| Server Actions・Zod スキーマ | Minor | Important |
+| 仕様書 4 点・状態遷移図 | Major | Critical（実装より先） |
 
 ### Risk Assessment
 
-- **Risk Level**: Low（既存カラムへの影響がない追加のみ・新規エンドポイントなし・単一ドメイン内で完結）
-- **Rollback Complexity**: Easy（`ALTER TABLE ... DROP COLUMN` で Flyway 追加分を取り消し可能。既存データへの影響なし）
-- **Testing Complexity**: Simple（既存テストの回帰確認 + 新フィールドを含む数件のテスト追加）
+- **Risk Level**: Medium（`POST`/`PUT` の既存挙動に分岐を足すため回帰リスクがある。権限分岐が 3 ロールにまたがる。競合課題 2 件と同じ API・画面を触る）
+- **Rollback Complexity**: Easy（DB 変更なし。コード差分の取り消しのみ）
+- **Testing Complexity**: Moderate（状態遷移 × 権限 × `requires_approval` の組み合わせを網羅する必要がある）
 
 ## Workflow Visualization
 
@@ -53,29 +82,33 @@ flowchart TD
         NFRA["NFR Requirements<br/><b>SKIP</b>"]
         NFRD["NFR Design<br/><b>SKIP</b>"]
         ID["Infrastructure Design<br/><b>SKIP</b>"]
+        SP["Spec-first Update<br/><b>EXECUTE</b>"]
         CG["Code Generation<br/><b>EXECUTE</b>"]
         BT["Build and Test<br/><b>EXECUTE</b>"]
     end
 
     subgraph OPERATIONS["Operations Phase"]
-        OPS["Operations - CI<br/><b>PLACEHOLDER</b>"]
+        OPS["Operations<br/><b>PR and CI</b>"]
     end
 
     Start --> WD
     WD --> RE
     RE --> RA
     RA --> WP
-    WP --> CG
+    WP --> SP
+    SP --> CG
     CG --> BT
-    BT -.-> OPS
-    BT --> End(["Complete"])
+    BT --> OPS
+    OPS --> End(["Complete"])
 
     style WD fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style RE fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style RA fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style WP fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style SP fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style CG fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style BT fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    style OPS fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style US fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style AD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style UG fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
@@ -83,10 +116,6 @@ flowchart TD
     style NFRA fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style NFRD fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
     style ID fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style OPS fill:#BDBDBD,stroke:#424242,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    style INCEPTION fill:#BBDEFB,stroke:#1565C0,stroke-width:3px,color:#000
-    style CONSTRUCTION fill:#C8E6C9,stroke:#2E7D32,stroke-width:3px,color:#000
-    style OPERATIONS fill:#FFF59D,stroke:#F57F17,stroke-width:3px,color:#000
     style Start fill:#CE93D8,stroke:#6A1B9A,stroke-width:3px,color:#000
     style End fill:#CE93D8,stroke:#6A1B9A,stroke-width:3px,color:#000
 
@@ -95,68 +124,68 @@ flowchart TD
 
 ## Phases to Execute
 
-### 🔵 INCEPTION PHASE
+### INCEPTION PHASE
 
-- [x] Workspace Detection（COMPLETED）
-- [x] Reverse Engineering（COMPLETED）
-- [x] Requirements Analysis（COMPLETED）
-- [ ] User Stories — **SKIP**
-  - **Rationale**: 新規ユーザー体験・新規ペルソナの追加ではなく、既存の閲覧・編集フローに2フィールドを足すだけの拡張。受入条件はビジネス要求シートに既に明記されており、ストーリー分解による追加情報はない。
-- [x] Execution Plan（IN PROGRESS — 本ドキュメント）
-- [ ] Application Design — **SKIP**
-  - **Rationale**: 新規コンポーネント・新規サービスは不要。既存の `ResourceService` / `ResourceController` の責務範囲内で完結する変更のため。
-- [ ] Units Generation — **SKIP**
-  - **Rationale**: 縦切りの単一ユニット（`resource-detail-info`）で完結する変更であり、複数ユニットへの分解・依存関係整理は不要。
+- [x] Workspace Detection (COMPLETED)
+- [x] Reverse Engineering (COMPLETED: 予約ドメイン分を追加)
+- [x] Requirements Analysis (COMPLETED)
+- [ ] User Stories: SKIP
+  - **Rationale**: 利用者は予約申請者（MEMBER）一人称の機能拡張で、ADMIN と APPROVER の扱いも受入条件で確定済み。受入条件は要件定義書に揃っている
+- [x] Workflow Planning (IN PROGRESS)
+- [ ] Application Design: SKIP
+  - **Rationale**: 新規コンポーネント・サービスなし。既存の `ReservationService` / `Reservation` にメソッドを足す範囲で、責務の置き場所は要件 NFR-03 で確定済み
+- [ ] Units Generation: SKIP
+  - **Rationale**: 縦切り 1 ユニット（`reservation-draft`）で完結する
 
-### 🟢 CONSTRUCTION PHASE（ユニット: `resource-detail-info`）
+### CONSTRUCTION PHASE（ユニット: `reservation-draft`）
 
-- [ ] Functional Design — **SKIP**
-  - **Rationale**: 新規データモデルは単純な nullable TEXT 列2つのみで、複雑なビジネスルールを伴わない。フィールド定義・表示方式・入力方式は Requirements Analysis の `requirements.md`（データモデル変更／API変更／UI変更の各節）で確定済みであり、追加の詳細設計は不要。
-- [ ] NFR Requirements — **SKIP**
-  - **Rationale**: Requirements Analysis で Security/Resiliency/Property-Based Testing の3拡張はいずれも不採用と確定済み。新たな性能・セキュリティ・スケーラビリティ要求もない。
-- [ ] NFR Design — **SKIP**
-  - **Rationale**: NFR Requirements を実行しないため連動して SKIP。
-- [ ] Infrastructure Design — **SKIP**
-  - **Rationale**: CDK/Terraform 等の IaC はこのリポジトリに存在せず、デプロイモデル・ネットワーク構成への変更もない。
-- [x] Code Generation — **EXECUTE（ALWAYS）**
-  - **Rationale**: Part 1（実装計画）→ Part 2（実装）で以下を縦切りで実装する。
-    1. Spec-first: `docs-next/docs/spec/{requirements.md, er-diagram.md（Markdown表 + .drawio + SVG再エクスポート）, api-spec.md, screen-spec.md}` を `/update-spec` スキルで更新
-    2. バックエンド: `V002__add_resource_equipment_and_notes.sql` → `Resource` エンティティ → `ResourceResponse`/`CreateResourceRequest`/`UpdateResourceRequest` → 既存テストの回帰確認 + 新規テスト追加
-    3. フロントエンド: `ResourceResponseSchema` / `CreateResourceSchema` / `UpdateResourceSchema` → リソース詳細画面の表示追加 → 管理画面 `ResourceForm` の入力欄追加 → 既存テストの回帰確認
-- [x] Build and Test — **EXECUTE（ALWAYS）**
-  - **Rationale**: バックエンド・フロントエンドの lint・テスト・ビルドを実行し、回帰がないことを確認する。
+- [ ] Functional Design: SKIP
+  - **Rationale**: 状態遷移・権限・エラーの振る舞いは要件定義書で確定済み。残る細部（正式申請を指示する項目の名称、DELETE の成功ステータス）は次の仕様更新で確定する
+- [ ] NFR Requirements: SKIP
+  - **Rationale**: 拡張 3 種が不採用で、新規の非機能要求がない（NFR-01〜04 は既存方式の踏襲）
+- [ ] NFR Design: SKIP
+  - **Rationale**: NFR Requirements を SKIP するため連動
+- [ ] Infrastructure Design: SKIP
+  - **Rationale**: IaC・インフラ変更なし
+- [ ] Spec-first 更新（`/update-spec`）: EXECUTE
+  - **Rationale**: 仕様が真実の源。実装より先に `api-spec.md` / `screen-spec.md` / `requirements.md`（状態遷移図を含む）/ `er-diagram.md` を更新する。ここで正式申請を指示する項目の名称（仮称 `submit`）と DELETE の応答を確定する
+- [ ] Code Generation: EXECUTE（必須）
+  - **Rationale**: 実装計画（番号付きステップとチェックボックス）を作成して承認を得た後、バックエンド→フロントエンドの順に実装する
+- [ ] Build and Test: EXECUTE（必須）
+  - **Rationale**: `./gradlew test spotlessApply checkstyleMain`、`pnpm lint` / `pnpm test` / `pnpm build`、`docs-next` の `npm run build` で検証する
 
-### 🟡 OPERATIONS PHASE
+### OPERATIONS PHASE
 
-- [ ] Operations（CI） — **PLACEHOLDER**
-  - **Rationale**: BookFlow では CI Frontend / CI Backend のワークフローゲートが Operations 相当。PR 作成後に GitHub Actions 上で実行される。
+- [ ] Operations: BookFlow 翻案（コミット・push、PR 作成、CI 確認）
+  - **Rationale**: `/commit-push` と `/create-pr` の確認ゲートを経て、CI Frontend / CI Backend の通過を確認する
 
-## Module Update Sequence
+## 実装の進め方（Code Generation の想定ステップ）
 
-単一リポジトリ内の縦切り変更のため「パッケージ」単位の調整は不要だが、レイヤー間の依存関係から以下の順序で実装する。
+| 順 | 内容 | 主な対象 |
+|---|---|---|
+| 1 | ドメイン: `Reservation` に正式申請の遷移メソッドを追加 | `Reservation.java` |
+| 2 | DTO: `draft`（POST）と正式申請の指示項目（PUT）を追加 | 2 つの Request DTO |
+| 3 | Service: 下書き作成、`DRAFT` 更新、正式申請（重複チェック・承認ステップ生成の分岐）、削除、閲覧権限の分岐、`PUT` ガード変更 | `ReservationService.java` |
+| 4 | Controller: `DELETE` 追加 | `ReservationController.java` |
+| 5 | バックエンドのテスト: 状態遷移（`DRAFT`→`PENDING` / `APPROVED`）、権限、削除、承認一覧への非表示、重複時に `DRAFT` 維持 | `ReservationServiceTest` / `ReservationControllerTest` |
+| 6 | フロント: Zod スキーマと Server Actions（下書き保存・正式申請・削除） | `reservation.ts` / `reservations.ts` |
+| 7 | フロント: 申請フォームの「下書き保存」、一覧の「下書き」タブ | `ReservationForm.tsx` / 一覧ページ |
+| 8 | フロント: 詳細の操作（編集・正式申請・削除）と編集ページの `DRAFT` 許可 | 詳細・編集ページ |
+| 9 | フロントのテスト（Vitest + MSW） | `tests/unit/` |
 
-1. **Spec 更新**（Spec-first）— 後続の実装がこの内容に従う
-2. **バックエンド**（マイグレーション → エンティティ → DTO → Controller/Service の既存メソッド更新）— フロントエンドが参照する API 契約を先に確定させる
-3. **フロントエンド**（型・Zod スキーマ → 詳細画面表示 → 管理画面フォーム）
-4. **テスト・ビルド確認**（Build and Test フェーズ）
+バックエンドを先に実装し、API 契約が固まってからフロントに進める。
 
 ## Estimated Timeline
 
-- **Total Phases**: 2（Code Generation, Build and Test）+ Spec 更新
-- **Estimated Duration**: 3〜4時間（ビジネス要求シート記載の見積りを踏襲。対象レイヤー: 両方）
+- **Total Stages to Execute**: 4（Spec-first 更新・Code Generation・Build and Test・Operations。INCEPTION の 4 ステージは完了済み、7 ステージは SKIP）
+- **Estimated Duration**: 1〜2 日（シートの見積り半日〜1日に、DELETE API の新設と権限分岐のテストが加わる）
 
 ## Success Criteria
 
-- **Primary Goal**: リソース詳細画面・管理画面で設備一覧（`equipment`）・利用上の注意（`notes`）を登録・表示できるようにする
-- **Key Deliverables**:
-  - `docs-next/docs/spec/` 4ファイルの更新（Spec-first）
-  - `V002` マイグレーション・`Resource` エンティティ・関連 DTO の更新
-  - リソース詳細画面・管理画面フォームの更新
-  - 新フィールドを含む API テストの追加
-- **Quality Gates**（`CLAUDE.md` 記載のコマンドで検証）:
-  - `cd backend && ./gradlew test`（既存テスト回帰 + 新規テスト）
-  - `cd backend && ./gradlew spotlessApply && ./gradlew checkstyleMain`
-  - `cd frontend && pnpm test`（既存テスト回帰）
-  - `cd frontend && pnpm lint`
-  - `cd docs-next && npm run build`（spec 更新後、リンク・アンカー破損がないことを確認）
-  - ビジネス要求シートの受入条件（6項目）を全て満たす
+- **Primary Goal**: 予約を `DRAFT` として保存し、再編集・正式申請・削除できる
+- **Key Deliverables**: 更新済みの仕様書 4 点、`DRAFT` 対応のバックエンド（`POST` / `PUT` / `DELETE`）、フロントの 4 画面、対応するテスト
+- **Quality Gates**:
+  - 要件定義書の受入条件 8 項目をすべて満たす
+  - `./gradlew test spotlessCheck checkstyleMain` と `pnpm lint` / `format:check` / `test` / `build` が成功する
+  - `docs-next` の `npm run build` が成功する（リンク・アンカー破損なし）
+  - 既存の `PENDING` / `APPROVED` の申請・更新・キャンセルの挙動が変わらない（回帰テスト）
