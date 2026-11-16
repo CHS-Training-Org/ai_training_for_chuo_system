@@ -20,7 +20,7 @@ timestamp: 2026-11-16
 
 - **Project Type**: Brownfield
 - **Start Date**: 2026-11-06T03:07:14+00:00
-- **Current Stage**: CONSTRUCTION - Build and Test（完了・承認待ち）
+- **Current Stage**: OPERATIONS（完了）
 - **対象ユニット**: `reservation-draft`（単一ユニット想定。Units Generation は SKIP 見込み）
 - **Workspace Root**: /workspace
 - **対象エンハンス課題**: `docs-next/docs/spec/enhancements/intermediate/reservation-draft.md`（予約の下書き保存）
@@ -67,15 +67,15 @@ timestamp: 2026-11-16
 - [x] Infrastructure Design（条件付き、ユニット別） — SKIP（IaC 対象なし）
 - [x] Spec-first 更新（`/update-spec` スキル、Code Generation Step 1 の前提） — api-spec / screen-spec / requirements / er-diagram / エンハンスシートを更新（`npm run build` 成功。学習者確認済み 2026-11-16）
 - [x] Code Generation（必須、ユニット別） — 計画: `Docs/spec/aidlc-docs/construction/plans/reservation-draft-code-generation-plan.md`（承認済み 2026-11-16）、全 16 ステップ完了。要約: `Docs/spec/aidlc-docs/construction/reservation-draft/code/code-summary.md`。承認済み 2026-11-16
-- [x] Build and Test（必須） — 成果物: `Docs/spec/aidlc-docs/construction/build-and-test/build-and-test-summary.md`（BE 164 / FE 115 pass、build 成功。学習者の承認待ち）
+- [x] Build and Test（必須） — 成果物: `Docs/spec/aidlc-docs/construction/build-and-test/build-and-test-summary.md`（BE 164 / FE 115 pass、build 成功。承認済み 2026-11-16）
 
 ### OPERATIONS PHASE
 
-- [ ] Operations（BookFlow 翻案：PR 作成と CI 確認）
+- [x] Operations（BookFlow 翻案：PR 作成と CI 確認） — PR #198（base: `learner/CHS-YOSHIKAWA-KENTO/main`）。CI Backend / CI Frontend / build 全件 pass（2026-11-16）
 
 ## Current Status
 
-- **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Build and Test（完了）
-- **Next Stage**: Operations（コミット・push、PR 作成、CI 確認）
-- **Status**: 全コマンド成功。学習者の承認待ち
+- **Lifecycle Phase**: OPERATIONS
+- **Current Stage**: Operations（完了）
+- **Next Stage**: なし（学習者によるセルフレビューとマージ）
+- **Status**: PR #198 作成済み、CI 全件 pass。動作確認結果・セルフレビューは学習者が PR 本文に記入する
