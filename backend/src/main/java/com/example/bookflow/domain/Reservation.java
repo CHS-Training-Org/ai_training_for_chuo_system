@@ -15,7 +15,8 @@ import java.util.UUID;
 /**
  * 予約エンティティ（V001 {@code reservations} テーブルと完全一致）。
  *
- * <p>カテゴリ 5 で予約申請（{@link #create}）・内容更新（{@link #update}）・キャンセル（{@link #cancel}）を追加。
+ * <p>カテゴリ 5 で予約申請（{@link #create}）・内容更新（{@link #update}）・キャンセル（{@link #cancel}）を追加。 下書き保存（{@code
+ * DRAFT}）の正式申請は {@link #submit} で遷移させる。
  *
  * <p>{@code ddl-auto: validate} のため、カラム名・型・制約は V001 と整合していなければならない。
  */
@@ -96,7 +97,7 @@ public class Reservation {
   }
 
   /**
-   * 予約内容を更新する（PUT 対応・{@code PENDING} 状態のみ許可）。
+   * 予約内容を更新する（PUT 対応・{@code PENDING} / {@code DRAFT} 状態のみ許可）。
    *
    * @param startAt 新しい開始日時
    * @param endAt 新しい終了日時
@@ -109,6 +110,25 @@ public class Reservation {
     this.endAt = endAt;
     this.purpose = purpose;
     this.attendeesCount = attendeesCount;
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  /**
+   * 下書き予約を正式申請する（{@code DRAFT} → {@code PENDING} / {@code APPROVED}）。
+   *
+   * <p>遷移可否の判定（重複チェック・権限）は Service 層で行う。ここは不正遷移の最終防御。
+   *
+   * @param newStatus 遷移先（{@code PENDING} または {@code APPROVED}）
+   * @throws IllegalStateException 現在が {@code DRAFT} でない、または遷移先が不正な場合
+   */
+  public void submit(ReservationStatus newStatus) {
+    if (this.status != ReservationStatus.DRAFT) {
+      throw new IllegalStateException("DRAFT 以外の予約は正式申請できません。現在のステータス: " + this.status);
+    }
+    if (newStatus != ReservationStatus.PENDING && newStatus != ReservationStatus.APPROVED) {
+      throw new IllegalStateException("正式申請の遷移先は PENDING / APPROVED のみです: " + newStatus);
+    }
+    this.status = newStatus;
     this.updatedAt = LocalDateTime.now();
   }
 

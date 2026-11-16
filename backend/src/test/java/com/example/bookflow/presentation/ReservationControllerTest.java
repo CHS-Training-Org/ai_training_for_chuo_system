@@ -1,5 +1,7 @@
 package com.example.bookflow.presentation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -8,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.bookflow.support.BaseControllerTest;
 import com.example.bookflow.support.WithMockAdmin;
+import com.example.bookflow.support.WithMockApprover;
 import com.example.bookflow.support.WithMockMember;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -510,5 +513,271 @@ class ReservationControllerTest extends BaseControllerTest {
     mockMvc
         .perform(post("/api/reservations/" + RESERVATION_PENDING_ID + "/cancel"))
         .andExpect(status().isUnauthorized());
+  }
+
+  // ---------------------------------------------------------------------------
+  // 下書き（DRAFT）— 作成・閲覧権限・正式申請・削除
+  // ---------------------------------------------------------------------------
+
+  /** MEMBER の DRAFT を投入し、その ID を返す。後始末は deleteSeedData（requester_id = MEMBER_ID）が行う。 */
+  private UUID insertMemberDraft(UUID resourceId, LocalDateTime start) {
+    UUID id = UUID.randomUUID();
+    jdbcTemplate.update(
+        "INSERT INTO reservations"
+            + " (id, resource_id, requester_id, start_at, end_at, purpose, status, created_at, updated_at)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        id,
+        resourceId,
+        MEMBER_ID,
+        start,
+        start.plusHours(2),
+        "下書き",
+        "DRAFT",
+        LocalDateTime.of(2025, 6, 1, 9, 0),
+        LocalDateTime.of(2025, 6, 1, 9, 0));
+    return id;
+  }
+
+  private String statusOf(UUID id) {
+    return jdbcTemplate.queryForObject(
+        "SELECT status FROM reservations WHERE id = ?", String.class, id);
+  }
+
+  private int countApprovalSteps(UUID reservationId) {
+    return jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM approval_steps WHERE reservation_id = ?",
+        Integer.class,
+        reservationId);
+  }
+
+  private static final String SUBMIT_BODY =
+      """
+      {
+        "startAt": "2025-08-01T10:00:00",
+        "endAt": "2025-08-01T12:00:00",
+        "purpose": "正式申請",
+        "submit": true
+      }
+      """;
+
+  @Test
+  @WithMockMember
+  void create_draftTrue_returns201DraftWithoutApprovalStep() throws Exception {
+    String body =
+        """
+        {
+          "resourceId": "%s",
+          "startAt": "2025-06-10T10:00:00",
+          "endAt": "2025-06-10T12:00:00",
+          "purpose": "下書き保存",
+          "draft": true
+        }
+        """
+            .formatted(RESOURCE_WITH_APPROVAL_ID);
+
+    // 時間帯が既存の APPROVED 予約と重複していても下書きは保存できる
+    String json =
+        mockMvc
+            .perform(
+                post("/api/reservations").contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.status").value("DRAFT"))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    UUID id = UUID.fromString(objectMapper.readTree(json).get("id").asText());
+    assertThat(countApprovalSteps(id)).isZero();
+  }
+
+  @Test
+  @WithMockMember
+  void create_draftWithMissingPurpose_returns422() throws Exception {
+    String body =
+        """
+        {
+          "resourceId": "%s",
+          "startAt": "2025-06-10T10:00:00",
+          "endAt": "2025-06-10T12:00:00",
+          "draft": true
+        }
+        """
+            .formatted(RESOURCE_WITH_APPROVAL_ID);
+
+    mockMvc
+        .perform(post("/api/reservations").contentType(MediaType.APPLICATION_JSON).content(body))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  @WithMockMember
+  void get_draftByOwner_returns200() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_WITH_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+
+    mockMvc
+        .perform(get("/api/reservations/" + id))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("DRAFT"));
+  }
+
+  @Test
+  @WithMockAdmin
+  void get_draftByAdmin_returns200() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_WITH_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+
+    mockMvc.perform(get("/api/reservations/" + id)).andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockApprover
+  void get_draftByApprover_returns403() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_WITH_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+
+    mockMvc.perform(get("/api/reservations/" + id)).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockApprover
+  void get_pendingOfOtherByApprover_stillReturns200() throws Exception {
+    mockMvc.perform(get("/api/reservations/" + RESERVATION_PENDING_ID)).andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockMember
+  void update_draftWithSubmitOnApprovalResource_transitionsToPending() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_WITH_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(SUBMIT_BODY))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("PENDING"));
+    assertThat(countApprovalSteps(id)).isEqualTo(1);
+  }
+
+  @Test
+  @WithMockMember
+  void update_draftWithSubmitOnNoApprovalResource_transitionsToApproved() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_NO_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(SUBMIT_BODY))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("APPROVED"));
+    assertThat(countApprovalSteps(id)).isZero();
+  }
+
+  @Test
+  @WithMockMember
+  void update_draftWithoutSubmit_staysDraft() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_WITH_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+    String body =
+        """
+        {
+          "startAt": "2025-08-01T10:00:00",
+          "endAt": "2025-08-01T12:00:00",
+          "purpose": "下書きを更新"
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + id).contentType(MediaType.APPLICATION_JSON).content(body))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("DRAFT"))
+        .andExpect(jsonPath("$.purpose").value("下書きを更新"));
+  }
+
+  @Test
+  @WithMockMember
+  void update_draftSubmitWithConflict_returns409AndStaysDraft() throws Exception {
+    // RESERVATION_MEMBER_ID（APPROVED・RESOURCE_NO_APPROVAL・2025-06-10 10:00-12:00）と重複
+    UUID id = insertMemberDraft(RESOURCE_NO_APPROVAL_ID, LocalDateTime.of(2025, 6, 10, 11, 0));
+    String body =
+        """
+        {
+          "startAt": "2025-06-10T11:00:00",
+          "endAt": "2025-06-10T13:00:00",
+          "purpose": "重複する正式申請",
+          "submit": true
+        }
+        """;
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + id).contentType(MediaType.APPLICATION_JSON).content(body))
+        .andExpect(status().isConflict());
+    assertThat(statusOf(id)).isEqualTo("DRAFT");
+  }
+
+  @Test
+  @WithMockAdmin
+  void update_draftByAdmin_returns403() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_WITH_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+
+    mockMvc
+        .perform(
+            put("/api/reservations/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(SUBMIT_BODY))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockMember
+  void delete_draftByOwner_returns204AndRemovesRow() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_WITH_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+
+    mockMvc.perform(delete("/api/reservations/" + id)).andExpect(status().isNoContent());
+
+    Integer rows =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM reservations WHERE id = ?", Integer.class, id);
+    assertThat(rows).isZero();
+  }
+
+  @Test
+  @WithMockMember
+  void delete_nonDraft_returns422() throws Exception {
+    mockMvc
+        .perform(delete("/api/reservations/" + RESERVATION_PENDING_ID))
+        .andExpect(status().isUnprocessableEntity());
+  }
+
+  @Test
+  @WithMockAdmin
+  void delete_draftByAdmin_returns403() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_WITH_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+
+    mockMvc.perform(delete("/api/reservations/" + id)).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockMember
+  void delete_nonExistentId_returns404() throws Exception {
+    mockMvc
+        .perform(delete("/api/reservations/" + UUID.randomUUID()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void delete_unauthenticated_returns401() throws Exception {
+    mockMvc
+        .perform(delete("/api/reservations/" + RESERVATION_PENDING_ID))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @WithMockMember
+  void cancel_draft_returns422() throws Exception {
+    UUID id = insertMemberDraft(RESOURCE_WITH_APPROVAL_ID, LocalDateTime.of(2025, 8, 1, 10, 0));
+
+    mockMvc
+        .perform(post("/api/reservations/" + id + "/cancel"))
+        .andExpect(status().isUnprocessableEntity());
   }
 }

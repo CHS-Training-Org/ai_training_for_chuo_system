@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,8 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
  * <ul>
  *   <li>{@code GET /api/reservations} — 予約一覧（本人分 or ADMIN は全件、status フィルタ対応）
  *   <li>{@code POST /api/reservations} — 予約申請（全ロール・認証必須）
- *   <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN）
- *   <li>{@code PUT /api/reservations/{id}} — 予約更新（申請者本人・PENDING のみ）
+ *   <li>{@code GET /api/reservations/{id}} — 予約詳細（本人 or APPROVER/ADMIN。DRAFT は本人 or ADMIN）
+ *   <li>{@code PUT /api/reservations/{id}} — 予約更新・下書きの正式申請（申請者本人・PENDING/DRAFT のみ）
+ *   <li>{@code DELETE /api/reservations/{id}} — 下書き削除（申請者本人・DRAFT のみ）
  *   <li>{@code POST /api/reservations/{id}/cancel} — キャンセル（本人 or ADMIN）
  * </ul>
  *
@@ -63,7 +65,8 @@ public class ReservationController {
   /**
    * 予約を申請する（201 Created）。
    *
-   * <p>{@code requires_approval=false} → 即 {@code APPROVED}、{@code true} → {@code PENDING}。
+   * <p>{@code requires_approval=false} → 即 {@code APPROVED}、{@code true} → {@code PENDING}。 {@code
+   * draft=true} のときは {@code DRAFT} で保存する。
    */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
@@ -78,13 +81,20 @@ public class ReservationController {
     return reservationService.get(id, currentUser);
   }
 
-  /** 予約内容を更新する（{@code PENDING} のみ・申請者本人）。 */
+  /** 予約内容を更新する（{@code PENDING}/{@code DRAFT} のみ・申請者本人）。{@code submit=true} で下書きを正式申請する。 */
   @PutMapping("/{id}")
   public ReservationResponse update(
       @PathVariable UUID id,
       @Valid @RequestBody UpdateReservationRequest req,
       @CurrentUser User currentUser) {
     return reservationService.update(id, req, currentUser);
+  }
+
+  /** 下書きを削除する（{@code DRAFT} のみ・申請者本人。204 No Content）。 */
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable UUID id, @CurrentUser User currentUser) {
+    reservationService.delete(id, currentUser);
   }
 
   /** 予約をキャンセルする（{@code PENDING}/{@code APPROVED} のみ・本人 or ADMIN）。 */
