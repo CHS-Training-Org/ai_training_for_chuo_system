@@ -61,6 +61,7 @@ export async function getReservationAction(id: string): Promise<ReservationRespo
  * 予約を申請する（201 Created）。
  *
  * {@code requires_approval=false} → 即 APPROVED、{@code true} → PENDING。
+ * {@code input.draft = true} のときは DRAFT（下書き）として保存する（重複チェックなし）。
  * 重複時は ApiClientError(code='RESERVATION_CONFLICT', status=409) をスロー。
  */
 export async function createReservationAction(
@@ -76,7 +77,7 @@ export async function createReservationAction(
 }
 
 /**
- * 予約内容を更新する（PENDING のみ・申請者本人）。
+ * 予約内容を更新する（PENDING / DRAFT・申請者本人）。DRAFT は DRAFT のまま更新する。
  *
  * 日時変更時に重複が発生した場合は ApiClientError(409) をスロー。
  */
@@ -91,6 +92,35 @@ export async function updateReservationAction(
     endAt: toIsoWithSeconds(input.endAt),
   };
   return client.put(`/reservations/${id}`, body, ReservationResponseSchema);
+}
+
+/**
+ * 下書き（DRAFT）を正式申請する（申請者本人のみ）。
+ *
+ * {@code submit: true} を付けて PUT する。{@code requires_approval} に応じて PENDING / APPROVED へ遷移する。
+ * 重複は ApiClientError(code='RESERVATION_CONFLICT', 409)、承認者不在は
+ * ApiClientError(code='APPROVER_NOT_AVAILABLE', 422) をスローし、予約は DRAFT のまま残る。
+ */
+export async function submitReservationAction(
+  id: string,
+  input: UpdateReservationInput,
+): Promise<ReservationResponse> {
+  const client = createApiClient(getAccessToken);
+  const body = {
+    ...input,
+    submit: true,
+    startAt: toIsoWithSeconds(input.startAt),
+    endAt: toIsoWithSeconds(input.endAt),
+  };
+  return client.put(`/reservations/${id}`, body, ReservationResponseSchema);
+}
+
+/**
+ * 下書き（DRAFT）を削除する（204 No Content・申請者本人のみ）。
+ */
+export async function deleteReservationAction(id: string): Promise<void> {
+  const client = createApiClient(getAccessToken);
+  await client.deleteEmpty(`/reservations/${id}`);
 }
 
 /**

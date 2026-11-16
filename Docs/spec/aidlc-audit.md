@@ -228,3 +228,114 @@ timestamp: 2026-08-29
 **Context**: OPERATIONS 中の追加修正（Build and Test 再確認済み）。次: コミット・push → AI レビュー ラウンド2
 
 ---
+
+## 新規ワークフロー開始 / Workspace Detection / Reverse Engineering（追加分）
+**Timestamp**: 2026-11-06T03:07:14+00:00
+**User Input**: "AI-DLCを起動して、reservation-draft.mdの要求を分析し、実行計画を立ててください。"
+**AI Response**: "`/aidlc` を起動。既存の `Docs/spec/aidlc-state.md` は完了済みの前ワークフロー（resource-detail-info、PR #145）のものだったため、レジュームではなく新規ワークフローとして扱い、状態ファイルを reservation-draft 用にリセットした（前ワークフローの記録は git 履歴と本監査ログに残る）。ブランチ `feature/CHS-YOSHIKAWA-KENTO/30-reservation-draft` は規約合致のため `<short-desc>=reservation-draft` を採用し、対象シートは `docs-next/docs/spec/enhancements/intermediate/reservation-draft.md`。Workspace Detection: Brownfield（Java 25 / Spring Boot 4.0、TypeScript / Next.js 15）。既存 RE 成果物は resources ドメイン中心で予約ドメイン未網羅のため、予約ドメイン分を `reverse-engineering/reservation-domain.md` として追加。シートの矛盾・空白を5点特定し、AskUserQuestion で確認する。"
+**Context**: INCEPTION - Workspace Detection 完了 → Reverse Engineering（追加分）→ Requirements Analysis（確認質問）
+
+---
+
+## Requirements Analysis — 確認質問と回答
+**Timestamp**: 2026-11-06T03:30:00+00:00
+**User Input**: (AskUserQuestion 回答・原文) 閲覧権限="本人と ADMIN のみ閲覧可（Recommended）" / 下書き必須項目="現行の必須項目を満たす入力のみ（Recommended）" / 重複チェック="正式申請時のみ（Recommended）" / 正式申請の遷移="リソースの requires_approval で決定（Recommended）" / 下書きの削除="DELETE API を新設して物理削除" / Security Baseline="No（Recommended）" / Resiliency Baseline="No（Recommended）" / Property-Based Testing="No（Recommended）"
+**AI Response**: "回答間の矛盾・曖昧さなし（追加質問不要）と判断し requirements.md を生成。削除のみ推奨外の選択で、DELETE API 新設により API・画面・テスト・仕様のスコープが増える点を requirements.md に明記。拡張3種は全て No として aidlc-state.md に記録。RE（予約ドメイン追加分）はこの回答と同時に進行。"
+**Context**: INCEPTION - Requirements Analysis 完了 → 学習者の承認待ち
+
+---
+
+## Requirements Analysis — 承認 / Workflow Planning
+**Timestamp**: 2026-11-06T04:00:00+00:00
+**User Input**: "要件については承認します。実行計画を立ててください。"
+**AI Response**: "Requirements Analysis（および予約ドメインの逆解析追加分）を承認として記録。Workflow Planning を実行し execution-plan.md を生成。判定: User Stories / Application Design / Units Generation / Functional Design / NFR Requirements / NFR Design / Infrastructure Design は SKIP（根拠は execution-plan.md）。Spec-first 更新・Code Generation・Build and Test・Operations は実行。リスクは Medium。実行計画の承認待ちで停止。"
+**Context**: INCEPTION - Workflow Planning 完了 → 学習者の承認待ち
+
+---
+
+## Workflow Planning — 承認 / Spec-first 更新 開始
+**Timestamp**: 2026-11-13T00:00:00+00:00
+**User Input**: "Docs/spec/aidlc-docs/inception/plans/execution-plan.mdを承認します。AI-DLCを起動して、Spec-first 更新（/update-spec）を実施してください。"
+**AI Response**: "実行計画を承認として記録。既存の aidlc-state.md があるためレジュームとして扱い、Pre-flight はスキップ。次ステージ Spec-first 更新（`/update-spec`）を開始する。ここで正式申請を指示する項目名（仮称 `submit`）と DELETE の成功応答を確定する。"
+**Context**: INCEPTION 完了 → CONSTRUCTION - Spec-first 更新
+
+---
+
+## Spec-first 更新 — 実施
+**Timestamp**: 2026-11-13T00:30:00+00:00
+**User Input**: (上記「Workflow Planning — 承認 / Spec-first 更新 開始」と同じ)
+**AI Response**: "`/update-spec` に沿って更新。確定: 正式申請の指示項目は `submit`（boolean、PUT の DRAFT 更新時のみ）、DELETE の成功応答は 204 No Content。`requirements.md`（UC-09・DRF-01〜07 新設、権限マトリクス、RSV-01/02/07、重複チェック注記、予約ステータス遷移図を Mermaid stateDiagram-v2 に置換）、`api-spec.md`（POST draft、PUT submit、DELETE 新設、エラー表、一覧表）、`screen-spec.md`（4 画面）、`er-diagram.md`（status 備考）、エンハンスシート（RSV-02 を確定事項に合わせ、RSV-06 と受入条件を追加）。`docs-next` の `npm run build` 成功（svg 読込の警告は既存）。"
+**Context**: CONSTRUCTION - Spec-first 更新 完了 → 学習者の確認待ち。次: Code Generation 計画
+---
+
+## Code Generation — Part 1（計画）開始
+**Timestamp**: 2026-11-16T01:59:04+00:00
+**User Input**: "docs-next/docs/spec/
+　　　　　　　　　　　-requirements.md
+                      -api-spec.md
+                      -screen-spec.md
+                      -er-diagram.md
+enhancements/intermediate/reservation-draft.md
+の内容を確認しました。
+AI-DLCを起動して、Code Generationをお願いします。"
+**AI Response**: "既存の `Docs/spec/aidlc-state.md` があるためレジュームとして扱い、Pre-flight はスキップ。仕様書 4 点とエンハンスシートの確認を Spec-first 更新の承認として記録。`construction/code-generation.md` に従い、既存コード（ReservationService / Reservation / ReservationController / DTO / フロントの予約画面・Server Actions・MSW）を確認して Code Generation 計画書 `Docs/spec/aidlc-docs/construction/plans/reservation-draft-code-generation-plan.md` を作成（全 16 ステップ。バックエンド → フロントエンド → テスト → 要約）。Flyway・新規 ErrorCode は不要と判断。計画の承認待ちで停止。"
+**Context**: CONSTRUCTION - Code Generation Part 1（Planning）→ 計画承認待ち
+
+---
+
+## Code Generation — 計画承認プロンプト
+**Timestamp**: 2026-11-16T01:59:04+00:00
+**User Input**: (なし — 承認依頼の記録)
+**AI Response**: "計画書 `Docs/spec/aidlc-docs/construction/plans/reservation-draft-code-generation-plan.md` の全体（全 16 ステップ）への承認を学習者に依頼した。"
+**Context**: CONSTRUCTION - Code Generation Step 6（承認プロンプトの記録）
+
+---
+
+## Code Generation — 計画承認 / Part 2（生成）開始
+**Timestamp**: 2026-11-16T02:12:38+00:00
+**User Input**: "Docs/spec/aidlc-docs/construction/plans/reservation-draft-code-generation-plan.mdを確認いたしました。
+AI-DLCを起動して、実装してください。"
+**AI Response**: "計画書の全体（全 16 ステップ）への承認として記録。レジュームとして Part 2 を開始し、計画の Step 1 から順に実装する。"
+**Context**: CONSTRUCTION - Code Generation Part 1 完了（承認）→ Part 2（Generation）
+
+---
+
+## Code Generation — Part 2（生成）完了
+**Timestamp**: 2026-11-16T02:18:07+00:00
+**User Input**: (上記「Code Generation — 計画承認 / Part 2（生成）開始」と同じ)
+**AI Response**: "計画の全 16 ステップを実行し、チェックボックスを更新。BE: Reservation.submit()、ReservationService（下書き作成・DRAFT 更新・正式申請・delete・DRAFT 閲覧権限）、Controller の DELETE、DTO の draft/submit。FE: スキーマ、api-client の deleteEmpty、Server Actions（submit/delete）、下書き保存ボタン、詳細の正式申請・削除、編集ページの DRAFT 許可、一覧の下書きタブ、ラベル・バッジ色。テスト: BE の Service/Controller、FE の actions/スキーマ/フォーム/詳細ページ。変異検証 4 件（FE 2・BE 2）でテスト失敗を確認後に復元。確認: ./gradlew test spotlessCheck checkstyleMain 成功、pnpm lint / format:check / test（115 件）成功。コード要約は Docs/spec/aidlc-docs/construction/reservation-draft/code/code-summary.md。仕様書との差異はなく spec 追加修正なし。2 択の完了メッセージを提示し承認待ち。"
+**Context**: CONSTRUCTION - Code Generation 完了 → 学習者の承認待ち（次: Build and Test）
+
+---
+
+## Code Generation — 承認 / Build and Test 開始
+**Timestamp**: 2026-11-16T02:25:43+00:00
+**User Input**: "Docs/spec/aidlc-docs/construction/reservation-draft/code/code-summary.mdを確認いたしました。
+AI-DLCを起動して、Build & Testを実行してください。"
+**AI Response**: "code-summary.md の確認を Code Generation の承認として記録（Continue to Next Stage）。レジュームとして Build and Test を開始し、CLAUDE.md のコマンド（BE: test / spotlessCheck / checkstyleMain、FE: lint / format:check / test / build、docs-next: npm run build）を実行する。"
+**Context**: CONSTRUCTION - Code Generation 完了（承認）→ Build and Test
+
+---
+
+## Build and Test — 実行完了
+**Timestamp**: 2026-11-16T02:27:29+00:00
+**User Input**: (上記「Code Generation — 承認 / Build and Test 開始」と同じ)
+**AI Response**: "BE: ./gradlew clean test spotlessCheck checkstyleMain 成功（164 件 pass、checkstyle warning 4 件は既存同数）。FE: pnpm lint / format:check / test（115 件）/ build 成功。docs-next: npm run build 成功。結果と受入条件 8 項目の対応、未検証事項（ブラウザ手動確認・E2E・一部 UI の個別テスト無し）を build-and-test-summary.md に記録。「Ready to proceed to Operations stage?」の承認待ち。"
+**Context**: CONSTRUCTION - Build and Test 完了 → 学習者の承認待ち（次: Operations）
+
+---
+
+## Build and Test — 承認 / Operations 開始
+**Timestamp**: 2026-11-16T09:35:48+00:00
+**User Input**: "Docs/spec/aidlc-docs/construction/build-and-test/build-and-test-summary.mdを確認いたしました。
+AI-DLCを起動して、Operations 段階（PR 作成と CI 確認）に進んでください。"
+**AI Response**: "build-and-test-summary.md の確認を Build and Test の承認として記録。レジュームとして Operations を開始。状況確認の結果: 作業ツリーに未コミット差分あり（変更 28 件・未追跡 8 件）、ブランチ `feature/CHS-YOSHIKAWA-KENTO/30-reservation-draft` は未 push、既存 PR なし。`origin/main` は PR #197 まで進んでおり、本ブランチは PR #145 マージ時点から分岐している。次は `/commit-push` でコミット分割と push を確認し、`/create-pr` で PR を作成し、CI Frontend / CI Backend を確認する。"
+**Context**: OPERATIONS - コミット・push の確認前
+---
+
+## Operations — 完了（PR 作成・CI 通過）
+**Timestamp**: 2026-11-16T09:50:00+00:00
+**User Input**: "learner/CHS-YOSHIKAWA-KENTO/main" / "gh pr create で作成してください。"
+**AI Response**: "`/commit-push` で 4 コミットに分割（docs(spec) / feat(backend) / feat(frontend) / docs(aidlc)）し、現在のブランチのまま push（origin/main の取り込みは行わない）。`/create-pr` で base を `learner/CHS-YOSHIKAWA-KENTO/main` として PR #198 を作成。CI Backend / CI Frontend / build が全件 pass。PR 本文の動作確認結果とセルフレビューは学習者の記入待ち（ブラウザ手動確認と E2E は未実施）。"
+**Context**: OPERATIONS 完了
+---

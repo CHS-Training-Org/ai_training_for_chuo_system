@@ -1,51 +1,56 @@
 ---
-title: Build and Test Summary — resource-detail-info
-description: Construction フェーズ Build and Test ステージの実行結果（バックエンド・フロントエンド）
+title: Build and Test Summary — reservation-draft
+description: Construction フェーズ Build and Test ステージの実行結果（バックエンド・フロントエンド・ドキュメントサイト）
 ---
 
-# Build and Test Summary — resource-detail-info
+# Build and Test Summary — reservation-draft
 
-複雑度が低い変更（既存 `resources` テーブルへの nullable TEXT カラム2列追加）のため、`CLAUDE.md` の「よく使うコマンド」に記載された実コマンドを実行して検証した（統合・性能・セキュリティテストの個別テンプレートは対象外。理由：新規エンドポイント・外部連携・パフォーマンス要求がなく、単体・結合テストの範囲で受入条件を検証できるため）。
+新規エンドポイント（`DELETE`）と既存 `POST` / `PUT` の分岐追加で、DB スキーマ変更・外部連携・性能要求はない。そのため `CLAUDE.md` の「よく使うコマンド」の実コマンドで検証した（統合テストは Spring の結合テスト `ReservationControllerTest` が H2 で担う。性能・セキュリティ・E2E の個別テンプレートは対象外。理由は、拡張 3 種が不採用で新規 NFR がなく、既存の悲観ロック方式を踏襲しているため）。
 
-> **再実行（2026-10-10）**: マイグレーションファイルを `V002__add_resource_detail_fields.sql` → `V002__add_resource_equipment_and_notes.sql` にリネームした後、全コマンドを再実行し結果が変わらないことを確認した（`build/resources/main/db/migration/` に新名のみ存在）。
+> 実行日: 2026-11-16。前ワークフロー（resource-detail-info）の同名ファイルは本内容で置き換えた（履歴は git に残る）。
 
 ## バックエンド
 
 | コマンド | 結果 |
 |---|---|
-| `cd backend && ./gradlew test` | ✅ BUILD SUCCESSFUL（既存テスト回帰 + 新規テスト3件 [`create_adminWithEquipmentAndNotes_returns201WithFieldsPopulated`, `get_existingIdWithoutEquipmentAndNotes_returnsNullFields`, `update_adminWithEquipmentAndNotes_returns200WithUpdatedFields`] を含め全件 pass） |
-| `cd backend && ./gradlew spotlessApply` | ✅ BUILD SUCCESSFUL |
-| `cd backend && ./gradlew checkstyleMain` | ✅ BUILD SUCCESSFUL（warning 4件。うち2件は `ReservationRepository` の既存警告（Spring Data JPA 派生クエリ名に対する誤検知、本変更と無関係）。新規2件は `Resource.create()` / `update()` の `ParameterNumber`（7 → 9）警告。`severity=warning` かつ `isIgnoreFailures=false` だが Gradle Checkstyle タスクは既定で warning ではビルドを失敗させないため、CI ゲートには影響しない。既存の `CreateResourceRequest`/`ResourceResponse` 等の record ベース DTO と一貫したフィールド追加方針を優先し、パラメータオブジェクト等への設計変更は本課題のスコープ外とした） |
+| `cd backend && ./gradlew clean test spotlessCheck checkstyleMain` | ✅ BUILD SUCCESSFUL。JUnit 164 件・失敗 0・エラー 0・スキップ 0 |
+
+- 新規の下書き系テスト: `ReservationServiceTest`（`Create` に 3 件、`Draft` ネスト 20 件）、`ReservationControllerTest`（17 件）。`DRAFT`→`PENDING` / `DRAFT`→`APPROVED` の遷移ケースを含む
+- Checkstyle の warning は 4 件で、`resource-detail-info` 時点と同数（`ReservationRepository` の既存誤検知と `Resource` の `ParameterNumber`）。本変更による増加なし。Gradle は warning でビルドを失敗させない
 
 ## フロントエンド
 
 | コマンド | 結果 |
 |---|---|
-| `cd frontend && pnpm test` | ✅ 10 ファイル・80 テスト全件 pass |
 | `cd frontend && pnpm lint` | ✅ 警告・エラーなし |
-| `cd frontend && pnpm build` | ✅ 型チェック・本番ビルド成功（13ルート生成） |
+| `cd frontend && pnpm format:check` | ✅ 全ファイル整形済み |
+| `cd frontend && pnpm test` | ✅ 16 ファイル・115 テスト全件 pass |
+| `cd frontend && pnpm build` | ✅ 型チェック・本番ビルド成功（11 ページ生成。`/reservations/**` を含む全ルート） |
 
 ## ドキュメントサイト
 
 | コマンド | 結果 |
 |---|---|
-| `cd docs-next && npm run build` | ✅ リンク・アンカー破損なし（`er-diagram.drawio.svg` 再エクスポート後の再確認済み） |
+| `cd docs-next && npm run build` | ✅ 成功（リンク・アンカー破損なし）。draw.io SVG の読込警告は既存で、本変更と無関係 |
 
-## 受入条件チェック（`requirements.md` より）
+## 受入条件チェック（`reservation-draft.md` より）
 
-- [x] 管理者がリソース登録・編集画面から設備情報・利用上の注意を入力・更新できる（`ResourceManagementClient.tsx` フォーム追加）
-- [x] リソース詳細画面に設備情報・利用上の注意が表示される（未登録時は非表示）（`resources/[id]/page.tsx`）
-- [x] Flyway マイグレーションが正常に実行され、既存データへの影響がない（`NULL` 許容）（`V002__add_resource_equipment_and_notes.sql`、`./gradlew test` で H2 適用確認済み）
-- [x] `GET /api/resources/{id}` のレスポンスに新フィールドが含まれる（`ResourceResponse` に追加、`get_existingIdWithoutEquipmentAndNotes_returnsNullFields` で確認）
-- [x] バックエンドの既存テストが引き続き pass する
-- [x] 新フィールドを含む API 動作のテストを追加する
+- [x] 「下書き保存」で `DRAFT` 保存 — `create_draftTrue_returns201DraftWithoutApprovalStep`、`reservation-form.test.tsx`
+- [x] 一覧の `DRAFT` フィルタで表示 — `reservations/page.tsx` の `ALL_STATUSES` に `DRAFT` を追加（ビルドで型・描画確認。表示そのものの自動テストは無し）
+- [x] 詳細から再編集・正式申請（要承認 → `PENDING`、承認不要 → `APPROVED`）— `update_draftWithSubmitOn{Approval,NoApproval}Resource_*`、`reservation-detail-page.test.tsx`
+- [x] 承認一覧に出ない — `create_draftTrue_*` で `approval_steps` が 0 件であることを検証。承認一覧は `approval_steps` 経由のため自然に出ない
+- [x] 本人と ADMIN 以外は 403（APPROVER も）— `get_draftByApprover_returns403`、`get_draftByApprover_throwsAccessDeniedException`
+- [x] 削除は本人のみ、`DRAFT` 以外は 422 — `delete_draftByOwner_*`、`delete_nonDraft_returns422`、`delete_draftByAdmin_returns403`
+- [x] 正式申請の重複は 409 で `DRAFT` 維持 — `update_draftSubmitWithConflict_returns409AndStaysDraft`（DB の status を検証）
+- [x] 遷移テストに `DRAFT`→`PENDING` と `DRAFT`→`APPROVED` を追加
 
-## 既知の残作業
+## 未検証の事項（正直な記録）
 
-- なし。`er-diagram.drawio.svg` の再エクスポート（VSCode の `hediet.vscode-drawio` 拡張での手動対応が必要だった項目）は完了済み。
+- ブラウザでの手動確認と Playwright E2E は未実施（ローカルではブラウザサインインが動かないため、確認するなら開発用ロール別ログインボタンを使う）
+- 一覧の「下書き」タブ、編集ページの `DRAFT` 許可、`SubmitDraftButton` のエラー表示（409 / 承認者不在）、`DeleteDraftButton` の確認ダイアログには、個別の自動テストがない（型チェック・ビルドのみ）
 
 ## Overall Status
 
-- **Build**: Success（backend / frontend とも）
-- **All Tests**: Pass
-- **Ready for Operations**: Yes（PR 作成後、CI Frontend / CI Backend ワークフローで再検証される）
+- **Build**: Success（backend / frontend / docs-next）
+- **All Tests**: Pass（BE 164 / FE 115）
+- **Ready for Operations**: Yes（PR 作成後、CI Frontend / CI Backend で再検証される）

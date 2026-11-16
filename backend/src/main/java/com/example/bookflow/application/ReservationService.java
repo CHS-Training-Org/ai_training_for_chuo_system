@@ -32,7 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>重複予約チェック（{@code PENDING}/{@code APPROVED} との時間帯重複 → 409）
  *   <li>{@code requires_approval} 分岐（false → 即 {@code APPROVED}、true → {@code PENDING}）
  *   <li>所有権チェック（本人または ADMIN のみ操作可 → 403）
- *   <li>ステータスガード（PUT は PENDING のみ・cancel は PENDING/APPROVED のみ → 422）
+ *   <li>ステータスガード（PUT は PENDING/DRAFT のみ・DELETE は DRAFT のみ・cancel は PENDING/APPROVED のみ → 422）
+ *   <li>下書き（{@code DRAFT}）：重複チェック・承認ステップ生成なしで保存し、{@code submit=true} の正式申請時に行う。 閲覧は本人と ADMIN
+ *       のみ、更新・正式申請・削除は本人のみ
  * </ul>
  *
  * <p>重複判定ロジックは {@link ResourceService#overlaps} ({@code public static}) を再利用する。
@@ -108,7 +110,7 @@ public class ReservationService {
   /**
    * 指定 ID の予約を返す。
    *
-   * <p>MEMBER は本人の予約のみアクセス可。他人の予約へのアクセスは 403。
+   * <p>MEMBER は本人の予約のみアクセス可。他人の予約へのアクセスは 403。{@code DRAFT} は本人と ADMIN のみ（APPROVER も 403）。
    *
    * @param id 予約 ID
    * @param currentUser ログインユーザー
@@ -156,12 +158,25 @@ public class ReservationService {
       throw new BusinessException(ErrorCode.VALIDATION_ERROR, "終了日時は開始日時より後に設定してください。");
     }
 
+    // 下書き保存: 重複チェック・承認ステップ生成を行わず DRAFT で保存する
+    if (Boolean.TRUE.equals(req.draft())) {
+      Reservation draft =
+          Reservation.create(
+              resource,
+              requester,
+              req.startAt(),
+              req.endAt(),
+              req.purpose(),
+              req.attendeesCount(),
+              ReservationStatus.DRAFT);
+      return ReservationResponse.from(reservationRepository.save(draft));
+    }
+
     // 3. 重複予約チェック（自分含む全 PENDING/APPROVED を検索）
     checkConflict(resource.getId(), null, req.startAt(), req.endAt());
 
     // 4. ステータス決定（requires_approval=false → APPROVED、true → PENDING）
-    ReservationStatus status =
-        resource.isRequiresApproval() ? ReservationStatus.PENDING : ReservationStatus.APPROVED;
+    ReservationStatus status = decideStatus(resource);
 
     // 5. 予約保存
     Reservation reservation =
@@ -188,17 +203,17 @@ public class ReservationService {
   // ---------------------------------------------------------------------------
 
   /**
-   * 予約内容を更新する（{@code PENDING} 状態のみ可）。
+   * 予約内容を更新する（{@code PENDING}/{@code DRAFT} 状態のみ可）。下書きは {@code submit=true} で正式申請できる。
    *
    * <p>業務ロジック：
    *
    * <ol>
    *   <li>予約存在確認（404）
    *   <li>所有権チェック（本人のみ・403）
-   *   <li>ステータスガード（PENDING のみ・422）
+   *   <li>ステータスガード（PENDING/DRAFT のみ・422）
    *   <li>日時整合性チェック
-   *   <li>重複予約チェック（自己除外）
-   *   <li>更新保存
+   *   <li>重複予約チェック（自己除外。DRAFT の更新のみでは行わず、正式申請時に行う）
+   *   <li>更新保存（正式申請時は requires_approval に応じて PENDING/APPROVED へ遷移）
    * </ol>
    *
    * @param id 予約 ID
@@ -214,10 +229,12 @@ public class ReservationService {
       throw new AccessDeniedException("この予約を更新する権限がありません。");
     }
 
-    // ステータスガード（PENDING のみ）
-    if (reservation.getStatus() != ReservationStatus.PENDING) {
+    // ステータスガード（PENDING / DRAFT のみ）
+    boolean isDraft = reservation.getStatus() == ReservationStatus.DRAFT;
+    if (!isDraft && reservation.getStatus() != ReservationStatus.PENDING) {
       throw new BusinessException(
-          ErrorCode.VALIDATION_ERROR, "PENDING 状態の予約のみ更新できます。現在のステータス: " + reservation.getStatus());
+          ErrorCode.VALIDATION_ERROR,
+          "PENDING または DRAFT 状態の予約のみ更新できます。現在のステータス: " + reservation.getStatus());
     }
 
     // 日時整合性チェック
@@ -225,16 +242,60 @@ public class ReservationService {
       throw new BusinessException(ErrorCode.VALIDATION_ERROR, "終了日時は開始日時より後に設定してください。");
     }
 
+    // DRAFT の更新のみ（正式申請でない）: 重複チェックなしで DRAFT のまま更新
+    boolean submit = isDraft && Boolean.TRUE.equals(req.submit());
+    if (isDraft && !submit) {
+      reservation.update(req.startAt(), req.endAt(), req.purpose(), req.attendeesCount());
+      return ReservationResponse.from(reservationRepository.save(reservation));
+    }
+
     // 重複予約チェック（悲観ロックでリソース行を先取得し、並行操作を直列化してから自己除外チェック）
-    resourceRepository
-        .findByIdForUpdate(reservation.getResource().getId())
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException("リソースが存在しません: " + reservation.getResource().getId()));
-    checkConflict(reservation.getResource().getId(), id, req.startAt(), req.endAt());
+    Resource resource =
+        resourceRepository
+            .findByIdForUpdate(reservation.getResource().getId())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "リソースが存在しません: " + reservation.getResource().getId()));
+    checkConflict(resource.getId(), id, req.startAt(), req.endAt());
 
     reservation.update(req.startAt(), req.endAt(), req.purpose(), req.attendeesCount());
+
+    if (submit) {
+      // 正式申請: requires_approval で PENDING / APPROVED を決定。承認ステップ生成の失敗は
+      // トランザクションのロールバックにより DRAFT のまま残る
+      ReservationStatus next = decideStatus(resource);
+      reservation.submit(next);
+      Reservation saved = reservationRepository.save(reservation);
+      if (next == ReservationStatus.PENDING) {
+        approvalService.createInitialStep(saved);
+      }
+      return ReservationResponse.from(saved);
+    }
     return ReservationResponse.from(reservationRepository.save(reservation));
+  }
+
+  // ---------------------------------------------------------------------------
+  // 下書き削除
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 下書き予約を物理削除する（{@code DRAFT} のみ・申請者本人のみ。ADMIN も不可）。
+   *
+   * @param id 予約 ID
+   * @param currentUser ログインユーザー
+   */
+  public void delete(UUID id, User currentUser) {
+    Reservation reservation = findOrThrow(id);
+
+    if (!reservation.getRequester().getId().equals(currentUser.getId())) {
+      throw new AccessDeniedException("この予約を削除する権限がありません。");
+    }
+    if (reservation.getStatus() != ReservationStatus.DRAFT) {
+      throw new BusinessException(
+          ErrorCode.VALIDATION_ERROR, "DRAFT 状態の予約のみ削除できます。現在のステータス: " + reservation.getStatus());
+    }
+    reservationRepository.delete(reservation);
   }
 
   // ---------------------------------------------------------------------------
@@ -283,13 +344,25 @@ public class ReservationService {
   /**
    * 読み取りアクセスの所有権チェック。
    *
-   * <p>MEMBER は本人の予約のみ参照可。ADMIN / APPROVER は全件可。
+   * <p>MEMBER は本人の予約のみ参照可。ADMIN / APPROVER は全件可。ただし {@code DRAFT} は本人と ADMIN のみ（APPROVER も不可）。
    */
   private void checkReadAccess(Reservation reservation, User currentUser) {
-    if (currentUser.getRole() == Role.MEMBER
-        && !reservation.getRequester().getId().equals(currentUser.getId())) {
+    boolean isOwner = reservation.getRequester().getId().equals(currentUser.getId());
+    Role role = currentUser.getRole();
+    if (reservation.getStatus() == ReservationStatus.DRAFT) {
+      if (!isOwner && role != Role.ADMIN) {
+        throw new AccessDeniedException("この下書きを参照する権限がありません。");
+      }
+      return;
+    }
+    if (role == Role.MEMBER && !isOwner) {
       throw new AccessDeniedException("この予約を参照する権限がありません。");
     }
+  }
+
+  /** {@code requires_approval} に応じた申請後ステータス（true → PENDING、false → APPROVED）。 */
+  private static ReservationStatus decideStatus(Resource resource) {
+    return resource.isRequiresApproval() ? ReservationStatus.PENDING : ReservationStatus.APPROVED;
   }
 
   /**
