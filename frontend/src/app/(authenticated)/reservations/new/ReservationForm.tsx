@@ -59,11 +59,12 @@ export function ReservationForm({
     },
   });
 
-  const handleSubmit = (values: FormValues) => {
+  const handleSubmit = (values: FormValues, draft = false) => {
     setConflictError(null);
     startTransition(async () => {
       try {
-        await createReservationAction(values);
+        // 下書き保存は draft: true を付与（必須項目の検証は FormSchema で通常申請と同一）
+        await createReservationAction(draft ? { ...values, draft: true } : values);
         router.push("/reservations");
       } catch (err) {
         if (err instanceof ApiClientError && err.code === "RESERVATION_CONFLICT") {
@@ -79,7 +80,7 @@ export function ReservationForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit((values) => handleSubmit(values))} className="space-y-4">
         {/* リソース選択 */}
         <FormField
           control={form.control}
@@ -179,8 +180,17 @@ export function ReservationForm({
         {conflictError && <p className="text-sm font-medium text-destructive">{conflictError}</p>}
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "申請中..." : "予約を申請する"}
+          <Button type="submit" disabled={isPending} data-testid="reservation-form-submit-button">
+            {isPending ? "処理中..." : "予約を申請する"}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isPending}
+            data-testid="reservation-form-draft-button"
+            onClick={form.handleSubmit((values) => handleSubmit(values, true))}
+          >
+            下書き保存
           </Button>
           <Button
             type="button"

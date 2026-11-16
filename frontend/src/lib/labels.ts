@@ -19,7 +19,7 @@ export const ROLE_LABELS: Record<string, string> = {
  * - CANCELLED = "キャンセル済み"（screen-spec L224 の表記に準拠）
  */
 export const RESERVATION_STATUS_LABELS: Record<string, string> = {
-  DRAFT: "ドラフト",
+  DRAFT: "下書き",
   PENDING: "承認待ち",
   APPROVED: "承認済み",
   REJECTED: "却下",

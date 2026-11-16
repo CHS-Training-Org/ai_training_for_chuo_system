@@ -28,6 +28,8 @@ const {
   createReservationAction,
   updateReservationAction,
   cancelReservationAction,
+  submitReservationAction,
+  deleteReservationAction,
 } = await import("@/server/actions/reservations");
 
 // ---------------------------------------------------------------------------
@@ -202,5 +204,131 @@ describe("cancelReservationAction", () => {
     );
 
     await expect(cancelReservationAction(MOCK_RESERVATION_RESPONSE.id)).rejects.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 下書き（DRAFT）: draft 送信 / 正式申請 / 削除
+// ---------------------------------------------------------------------------
+
+describe("下書き保存・正式申請・削除", () => {
+  const INPUT = {
+    resourceId: MOCK_RESERVATION_RESPONSE.resourceId,
+    startAt: "2025-07-01T10:00",
+    endAt: "2025-07-01T12:00",
+    purpose: "下書き",
+  };
+
+  it("createReservationAction: draft: true がボディにそのまま送信される", async () => {
+    let sent: Record<string, unknown> | null = null;
+    server.use(
+      http.post("/api/backend/reservations", async ({ request }) => {
+        sent = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(
+          { ...MOCK_RESERVATION_RESPONSE, status: "DRAFT" },
+          { status: 201 },
+        );
+      }),
+    );
+
+    const result = await createReservationAction({ ...INPUT, draft: true });
+
+    expect(sent).toMatchObject({ draft: true, startAt: "2025-07-01T10:00:00" });
+    expect(result.status).toBe("DRAFT");
+  });
+
+  it("createReservationAction: draft 未指定ならボディに draft キーを含めない", async () => {
+    let sent: Record<string, unknown> | null = null;
+    server.use(
+      http.post("/api/backend/reservations", async ({ request }) => {
+        sent = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(MOCK_RESERVATION_RESPONSE, { status: 201 });
+      }),
+    );
+
+    await createReservationAction(INPUT);
+
+    expect(sent).not.toHaveProperty("draft");
+  });
+
+  it("submitReservationAction: submit: true を付けて PUT し、遷移後の予約を返す", async () => {
+    let sent: Record<string, unknown> | null = null;
+    server.use(
+      http.put("/api/backend/reservations/:id", async ({ request }) => {
+        sent = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ ...MOCK_RESERVATION_RESPONSE, status: "PENDING" });
+      }),
+    );
+
+    const result = await submitReservationAction(MOCK_RESERVATION_RESPONSE.id, {
+      startAt: "2025-07-01T10:00",
+      endAt: "2025-07-01T12:00",
+      purpose: "下書き",
+    });
+
+    expect(sent).toMatchObject({ submit: true, endAt: "2025-07-01T12:00:00" });
+    expect(result.status).toBe("PENDING");
+  });
+
+  it("updateReservationAction: submit を付けない（DRAFT のまま更新）", async () => {
+    let sent: Record<string, unknown> | null = null;
+    server.use(
+      http.put("/api/backend/reservations/:id", async ({ request }) => {
+        sent = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(MOCK_RESERVATION_RESPONSE);
+      }),
+    );
+
+    await updateReservationAction(MOCK_RESERVATION_RESPONSE.id, {
+      startAt: "2025-07-01T10:00:00",
+      endAt: "2025-07-01T12:00:00",
+      purpose: "更新",
+    });
+
+    expect(sent).not.toHaveProperty("submit");
+  });
+
+  it("submitReservationAction: 409 は code=RESERVATION_CONFLICT の ApiClientError", async () => {
+    server.use(
+      http.put("/api/backend/reservations/:id", () =>
+        HttpResponse.json({ code: "RESERVATION_CONFLICT", message: "重複" }, { status: 409 }),
+      ),
+    );
+
+    await expect(
+      submitReservationAction(MOCK_RESERVATION_RESPONSE.id, {
+        startAt: "2025-07-01T10:00:00",
+        endAt: "2025-07-01T12:00:00",
+        purpose: "x",
+      }),
+    ).rejects.toMatchObject({ status: 409, code: "RESERVATION_CONFLICT" });
+  });
+
+  it("deleteReservationAction: 204 で正常終了する", async () => {
+    await expect(deleteReservationAction(MOCK_RESERVATION_RESPONSE.id)).resolves.toBeUndefined();
+  });
+
+  it("deleteReservationAction: 422（DRAFT 以外）は ApiClientError をスローする", async () => {
+    server.use(
+      http.delete("/api/backend/reservations/:id", () =>
+        HttpResponse.json({ code: "VALIDATION_ERROR", message: "DRAFT のみ" }, { status: 422 }),
+      ),
+    );
+
+    await expect(deleteReservationAction(MOCK_RESERVATION_RESPONSE.id)).rejects.toMatchObject({
+      status: 422,
+    });
+  });
+
+  it("deleteReservationAction: 403（本人以外）は ApiClientError をスローする", async () => {
+    server.use(
+      http.delete("/api/backend/reservations/:id", () =>
+        HttpResponse.json({ code: "FORBIDDEN", message: "権限なし" }, { status: 403 }),
+      ),
+    );
+
+    await expect(deleteReservationAction(MOCK_RESERVATION_RESPONSE.id)).rejects.toMatchObject({
+      status: 403,
+    });
   });
 });

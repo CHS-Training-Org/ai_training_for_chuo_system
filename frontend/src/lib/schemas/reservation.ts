@@ -25,12 +25,14 @@ export const CreateReservationSchema = z.object({
     .min(1, "利用目的は必須です")
     .max(255, "利用目的は 255 文字以内で入力してください"),
   attendeesCount: z.number().int().positive().nullable().optional(),
+  /** true で DRAFT（下書き）として保存する。必須項目の検証は通常申請と同一。 */
+  draft: z.boolean().optional(),
 });
 
 /**
  * 予約内容更新フォームの Zod スキーマ（PUT /api/reservations/{id} 対応）。
  *
- * {@code resourceId} を含まない（変更不可）。
+ * {@code resourceId} を含まない（変更不可）。{@code submit} は DRAFT の正式申請時のみ付与する。
  */
 export const UpdateReservationSchema = z.object({
   startAt: z.string().min(1, "開始日時は必須です"),
@@ -40,6 +42,7 @@ export const UpdateReservationSchema = z.object({
     .min(1, "利用目的は必須です")
     .max(255, "利用目的は 255 文字以内で入力してください"),
   attendeesCount: z.number().int().positive().nullable().optional(),
+  submit: z.boolean().optional(),
 });
 
 export type CreateReservationInput = z.infer<typeof CreateReservationSchema>;

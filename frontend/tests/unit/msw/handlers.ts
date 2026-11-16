@@ -223,6 +223,11 @@ export const handlers = [
     });
   }),
 
+  // 下書き削除（204 No Content）
+  http.delete("/api/backend/reservations/:id", () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
   // キャンセル
   http.post("/api/backend/reservations/:id/cancel", ({ params }) => {
     return HttpResponse.json({
