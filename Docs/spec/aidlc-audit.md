@@ -339,3 +339,10 @@ AI-DLCを起動して、Operations 段階（PR 作成と CI 確認）に進ん�
 **AI Response**: "`/commit-push` で 4 コミットに分割（docs(spec) / feat(backend) / feat(frontend) / docs(aidlc)）し、現在のブランチのまま push（origin/main の取り込みは行わない）。`/create-pr` で base を `learner/CHS-YOSHIKAWA-KENTO/main` として PR #198 を作成。CI Backend / CI Frontend / build が全件 pass。PR 本文の動作確認結果とセルフレビューは学習者の記入待ち（ブラウザ手動確認と E2E は未実施）。"
 **Context**: OPERATIONS 完了
 ---
+
+## PR AI レビュー NG への対応
+**Timestamp**: 2026-11-22T00:00:00+00:00
+**User Input**: "GithubでPRのAIレビューを行ったのですが、NGとなりました。どう対処すればいいのでしょうか。" / "ドキュメント更新と/commit-pushを実行してください。"
+**AI Response**: "NG の根拠（4 分岐に自動テストがない）に対し、FE テスト 3 ファイル（13 件）を追加。分岐を元に戻すと 5 件が失敗することを確認。FE 全 128 件 pass、lint / format:check 成功。build-and-test-summary.md の未検証事項を更新。"
+**Context**: OPERATIONS - PR #198 の AI レビュー指摘対応
+---

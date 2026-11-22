@@ -47,10 +47,21 @@ description: Construction フェーズ Build and Test ステージの実行結�
 ## 未検証の事項（正直な記録）
 
 - ブラウザでの手動確認と Playwright E2E は未実施（ローカルではブラウザサインインが動かないため、確認するなら開発用ロール別ログインボタンを使う）
-- 一覧の「下書き」タブ、編集ページの `DRAFT` 許可、`SubmitDraftButton` のエラー表示（409 / 承認者不在）、`DeleteDraftButton` の確認ダイアログには、個別の自動テストがない（型チェック・ビルドのみ）
+- 承認者不在（422 `APPROVER_NOT_AVAILABLE`）で `DRAFT` のまま残ることは、DB の status を検証するテストがない（`ReservationServiceTest` のモックで例外伝播のみ確認。409 の経路は DB まで検証済み）
+
+## PR AI レビュー NG への対応（フロントエンドのテスト追加）
+
+AI レビューで「新規ロジックにテストがない」と NG になった 4 分岐に、変更を取り消すと失敗するテストを追加した。
+
+- [x] 編集ページの `DRAFT` 許可 — `reservation-edit-page.test.tsx`
+- [x] 一覧の「下書き」タブ（`?status=DRAFT`） — `reservations-list-page.test.tsx`
+- [x] `SubmitDraftButton` の 409 / 承認者不在メッセージ — `reservation-draft-buttons.test.tsx`
+- [x] `DeleteDraftButton` の確認後の削除と一覧遷移 — `reservation-draft-buttons.test.tsx`
+
+4 分岐を元に戻して 5 件が失敗することを確認した。
 
 ## Overall Status
 
 - **Build**: Success（backend / frontend / docs-next）
-- **All Tests**: Pass（BE 164 / FE 115）
+- **All Tests**: Pass（BE 164 / FE 128）
 - **Ready for Operations**: Yes（PR 作成後、CI Frontend / CI Backend で再検証される）
