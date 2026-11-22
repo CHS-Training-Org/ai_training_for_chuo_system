@@ -18,6 +18,7 @@ import { RESERVATION_STATUS_LABELS } from "@/lib/labels";
  * マイ予約一覧画面（screen-spec.md §マイ予約 /reservations 準拠）。
  *
  * MEMBER は本人の予約のみ、ADMIN は全件表示（BE 側でロール判定）。
+ * 「下書き」タブで DRAFT のみ表示。「すべて」（status 指定なし）には下書きも含まれる。
  * URL searchParams の status でフィルタ可能（複数値 ?status=PENDING&status=APPROVED）。
  * page でページ遷移（0 始まり）。status フィルタは引き継ぐ。
  */
@@ -38,12 +39,12 @@ function statusBadgeClass(status: string): string {
     APPROVED: "bg-green-100 text-green-700",
     REJECTED: "bg-red-100 text-red-700",
     CANCELLED: "text-muted-foreground",
-    DRAFT: "text-muted-foreground",
+    DRAFT: "bg-blue-100 text-blue-700",
   };
   return map[status] ?? "";
 }
 
-const ALL_STATUSES = ["PENDING", "APPROVED", "REJECTED", "CANCELLED"];
+const ALL_STATUSES = ["DRAFT", "PENDING", "APPROVED", "REJECTED", "CANCELLED"];
 
 export default async function ReservationsPage({
   searchParams,

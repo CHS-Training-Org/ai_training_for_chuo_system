@@ -37,8 +37,9 @@ BookFlow の `reservations.status` に `DRAFT` ステータスが定義されて
 | # | 要件 |
 |---|------|
 | RSV-01 | `POST /api/reservations` に下書き保存オプションを追加し、`"draft": true` を指定するとステータス `DRAFT` で予約を作成する |
-| RSV-02 | `DRAFT` ステータスの予約は承認フローに流れない（`approval_steps` が作成されない）。申請者本人のみが閲覧・編集・削除できる |
-| RSV-03 | `PUT /api/reservations/{id}` で `DRAFT` → `PENDING` への遷移（正式申請）をサポートする |
+| RSV-02 | `DRAFT` ステータスの予約は承認フローに流れない（`approval_steps` が作成されない）。申請者本人のみが編集・削除でき、閲覧できるのは申請者本人と ADMIN のみ |
+| RSV-03 | `PUT /api/reservations/{id}` に `submit: true` を指定して正式申請できる。遷移先はリソースの `requires_approval` で決まり、`true` なら `PENDING`、`false` なら `APPROVED` とする。重複チェックは正式申請時に行う |
+| RSV-06 | `DELETE /api/reservations/{id}` で `DRAFT` 予約を物理削除できる（成功は 204。`DRAFT` 以外は 422） |
 | RSV-04 | 予約申請フォームに「下書き保存」ボタンを追加する |
 | RSV-05 | 予約一覧の「下書き」タブまたはフィルタで `DRAFT` 予約を確認できる |
 
@@ -46,10 +47,12 @@ BookFlow の `reservations.status` に `DRAFT` ステータスが定義されて
 
 - [ ] 「下書き保存」ボタンをクリックすると、`DRAFT` ステータスで予約が保存される
 - [ ] 下書きは予約一覧（`/reservations`）の `DRAFT` フィルタで表示される
-- [ ] 下書き詳細ページ（`/reservations/{id}`）から再編集・正式申請（`PENDING` に変更）ができる
+- [ ] 下書き詳細ページ（`/reservations/{id}`）から再編集・正式申請ができる（要承認リソースは `PENDING`、承認不要リソースは `APPROVED` になる）
 - [ ] 下書き予約は承認一覧（`/approvals`）に表示されない
-- [ ] 申請者本人以外が `DRAFT` 予約の詳細にアクセスすると 403 が返る（ADMIN は除く）
-- [ ] バックエンドのステータス遷移テストに `DRAFT` → `PENDING` のケースを追加する
+- [ ] 申請者本人と ADMIN 以外が `DRAFT` 予約の詳細にアクセスすると 403 が返る（APPROVER も 403）
+- [ ] 下書きの削除は本人のみ可能で、`DRAFT` 以外の削除は 422 が返る
+- [ ] 正式申請時に時間帯が重複していれば 409 が返り、予約は `DRAFT` のまま残る
+- [ ] バックエンドのステータス遷移テストに `DRAFT` → `PENDING` と `DRAFT` → `APPROVED` のケースを追加する
 
 ## 影響範囲
 
