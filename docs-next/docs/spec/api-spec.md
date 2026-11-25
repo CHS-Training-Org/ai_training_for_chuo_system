@@ -277,7 +277,7 @@ Authorization: Bearer <JWT>
 
 > `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
 
-> `keyword` は `category`・`from` / `to` と AND 条件で組み合わせる。`%` と `_` は通常の文字として扱い、ワイルドカードにはしない。未指定時の挙動は従来と変わらない。
+> `keyword` は `category`・`from` / `to` と AND 条件で組み合わせる。`%` と `_` と `\` は通常の文字として扱い、ワイルドカードやエスケープ文字にはしない。未指定時の挙動は従来と変わらない。
 
 #### レスポンス（200 OK）
 
