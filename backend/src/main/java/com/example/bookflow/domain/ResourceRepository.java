@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +19,8 @@ import org.springframework.data.repository.query.Param;
  * の両形式を提供するのは、 {@code GET /api/resources?from&to} の空きフィルタが Java 側（{@link
  * com.example.bookflow.application.ResourceService}）で行われるため、 フィルタ前に全件を取得する必要があるためである。
  */
-public interface ResourceRepository extends JpaRepository<Resource, UUID> {
+public interface ResourceRepository
+    extends JpaRepository<Resource, UUID>, JpaSpecificationExecutor<Resource> {
 
   // ---- 悲観ロック（重複予約の直列化） ----
 
