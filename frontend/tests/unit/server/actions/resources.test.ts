@@ -5,7 +5,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "../../msw/server";
-import { MOCK_RESOURCE_RESPONSE, MOCK_AVAILABILITY_SLOTS } from "../../msw/handlers";
+import {
+  MOCK_RESOURCE_RESPONSE,
+  MOCK_RESOURCE_LIST_RESPONSE,
+  MOCK_AVAILABILITY_SLOTS,
+} from "../../msw/handlers";
 
 // Next.js サーバー専用モジュールをモック
 vi.mock("next/navigation", () => ({
@@ -50,6 +54,40 @@ describe("listResourcesAction", () => {
     // MSW がクエリパラメータを受け取っても同じレスポンスを返す（パラメータ検証はBE側）
     const result = await listResourcesAction({ category: "ROOM" });
     expect(result.content).toHaveLength(1);
+  });
+
+  it("keyword 指定時: BE へ keyword をクエリパラメータとして渡す", async () => {
+    let receivedUrl: URL | undefined;
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedUrl = new URL(request.url);
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction({ keyword: "会議", category: "ROOM" });
+
+    // 既存のカテゴリ条件と同時に渡る（AND 条件の組み合わせは BE が行う）
+    expect(receivedUrl?.searchParams.get("keyword")).toBe("会議");
+    expect(receivedUrl?.searchParams.get("category")).toBe("ROOM");
+  });
+
+  it("keyword が未指定または空文字のとき: keyword パラメータを送らない", async () => {
+    const receivedUrls: URL[] = [];
+    server.use(
+      http.get("/api/backend/resources", ({ request }) => {
+        receivedUrls.push(new URL(request.url));
+        return HttpResponse.json(MOCK_RESOURCE_LIST_RESPONSE);
+      }),
+    );
+
+    await listResourcesAction();
+    await listResourcesAction({ keyword: "" });
+
+    expect(receivedUrls).toHaveLength(2);
+    for (const url of receivedUrls) {
+      expect(url.searchParams.has("keyword")).toBe(false);
+    }
   });
 
   it("401 時: ApiClientError をスローする", async () => {

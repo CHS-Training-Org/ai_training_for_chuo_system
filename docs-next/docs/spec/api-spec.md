@@ -10,7 +10,7 @@ audience: 学習者・運営者
 references:
   - ./requirements.md
   - ./er-diagram.md
-last_updated: '2026-11-07T00:00:00+09:00'
+last_updated: '2026-11-26T00:00:00+09:00'
 ---
 
 # REST API 仕様書
@@ -260,7 +260,7 @@ Authorization: Bearer <JWT>
 #### リクエスト
 
 ```http
-GET /api/resources?category=ROOM&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
+GET /api/resources?category=ROOM&keyword=会議&from=2025-06-01T09:00:00&to=2025-06-01T18:00:00&page=0&size=20
 Authorization: Bearer <JWT>
 ```
 
@@ -269,12 +269,15 @@ Authorization: Bearer <JWT>
 | パラメータ | 型 | 必須 | 説明 |
 |------------|-----|------|------|
 | `category` | string | ❌ | `ROOM` / `EQUIPMENT` / `VEHICLE` でフィルタ |
+| `keyword` | string | ❌ | リソース名・説明への部分一致（大文字・小文字を区別しない）。前後の空白は無視し、空または空白のみの場合は未指定として扱う。`%` と `_` は文字そのものとして扱う |
 | `from` | TIMESTAMP | ❌ | 空き確認の開始日時（`to` と同時指定必須） |
 | `to` | TIMESTAMP | ❌ | 空き確認の終了日時（`from` と同時指定必須） |
 | `page` | integer | ❌ | ページ番号（デフォルト 0） |
 | `size` | integer | ❌ | 1 ページあたりの件数（デフォルト 20） |
 
 > `from` / `to` を指定した場合、当該時間帯に `status IN ('PENDING', 'APPROVED')` の予約が存在しないリソースのみを返す（占有中のリソースは結果から除外される）。片方のみ指定した場合は `400 Bad Request`（`code: VALIDATION_ERROR`）。ADMIN は `is_active = false` のリソースも含む。
+
+> `keyword` は `category`、`from` / `to`、ADMIN 以外に対する `is_active = true` の絞り込みと AND 条件で組み合わせる。キーワードに一致しても、占有中のリソースは `from` / `to` 指定時に除外される。`keyword` に不正値はなく、長さの上限も設けないため、`keyword` 起因のエラーレスポンスはない。
 
 #### レスポンス（200 OK）
 

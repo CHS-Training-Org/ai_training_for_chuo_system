@@ -10,6 +10,7 @@ import { RESOURCE_CATEGORY_LABELS } from "@/lib/labels";
 
 interface SearchParams {
   category?: string;
+  keyword?: string;
   from?: string;
   to?: string;
   page?: string;
@@ -18,7 +19,7 @@ interface SearchParams {
 /**
  * リソース一覧画面（screen-spec.md §リソース /resources 準拠）。
  *
- * カテゴリフィルタ・空き確認フォーム（from/to）・リソースカードリストを表示する。
+ * カテゴリフィルタ・キーワード検索・空き確認フォーム（from/to）・リソースカードリストを表示する。
  * ADMIN は is_active=false のリソースもグレーアウト表示する（BE 側でロール判定）。
  */
 export default async function ResourcesPage({
@@ -32,12 +33,15 @@ export default async function ResourcesPage({
 
   const resources = await listResourcesAction({
     category: params.category,
+    keyword: params.keyword,
     from: params.from,
     to: params.to,
     page: params.page ? Number(params.page) : 0,
   });
 
   const hasTimeFilter = Boolean(params.from && params.to);
+  // 空白のみのキーワードは BE でも未指定として扱われる
+  const hasKeyword = Boolean(params.keyword?.trim());
 
   return (
     <div className="space-y-6">
@@ -55,7 +59,11 @@ export default async function ResourcesPage({
 
       {/* フィルタフォーム */}
       <ResourceFilterForm
+        // 入力欄は非制御（defaultValue）のため、URL の条件が変わったら作り直す。
+        // これがないと「リセット」後も入力済みの文字が欄に残る。
+        key={`${params.category ?? ""}|${params.keyword ?? ""}|${params.from ?? ""}|${params.to ?? ""}`}
         defaultCategory={params.category}
+        defaultKeyword={params.keyword}
         defaultFrom={params.from}
         defaultTo={params.to}
       />
@@ -73,7 +81,9 @@ export default async function ResourcesPage({
           <p className="text-muted-foreground">
             {hasTimeFilter
               ? "指定した時間帯に空きのあるリソースがありません。"
-              : "リソースがありません。"}
+              : hasKeyword
+                ? "キーワードに一致するリソースがありません。"
+                : "リソースがありません。"}
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
