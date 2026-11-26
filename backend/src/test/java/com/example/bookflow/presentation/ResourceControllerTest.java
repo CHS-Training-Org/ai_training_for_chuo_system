@@ -11,6 +11,8 @@ import com.example.bookflow.support.BaseControllerTest;
 import com.example.bookflow.support.WithMockAdmin;
 import com.example.bookflow.support.WithMockMember;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +46,9 @@ class ResourceControllerTest extends BaseControllerTest {
   private static final LocalDateTime RESERVATION_END = LocalDateTime.of(2025, 6, 2, 12, 0);
 
   @Autowired private JdbcTemplate jdbcTemplate;
+
+  /** キーワード検索のテストで追加投入したリソースの ID（{@link #deleteSeedData} で削除する）。 */
+  private final List<UUID> extraResourceIds = new ArrayList<>();
 
   @BeforeEach
   void insertSeedData() {
@@ -113,9 +118,33 @@ class ResourceControllerTest extends BaseControllerTest {
     jdbcTemplate.update("DELETE FROM reservations WHERE id = ?", RESERVATION_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", ACTIVE_RESOURCE_ID);
     jdbcTemplate.update("DELETE FROM resources WHERE id = ?", INACTIVE_RESOURCE_ID);
+    for (UUID id : extraResourceIds) {
+      jdbcTemplate.update("DELETE FROM resources WHERE id = ?", id);
+    }
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", USER_ID);
     jdbcTemplate.update("DELETE FROM users WHERE id = ?", ADMIN_USER_ID);
     jdbcTemplate.update("DELETE FROM departments WHERE id = ?", DEPT_ID);
+  }
+
+  /** キーワード検索用に、有効なリソースを 1 件追加する。description は null 可。 */
+  private UUID insertResource(String name, String category, String description) {
+    UUID id = UUID.randomUUID();
+    extraResourceIds.add(id);
+    jdbcTemplate.update(
+        "INSERT INTO resources (id, name, category, requires_approval, is_active, description,"
+            + " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        id,
+        name,
+        category,
+        false,
+        true,
+        description,
+        LocalDateTime.of(2025, 4, 1, 9, 0));
+    return id;
+  }
+
+  private static String idMatcher(UUID id) {
+    return "$.content[?(@.id == '" + id + "')]";
   }
 
   // ---------------------------------------------------------------------------
@@ -195,6 +224,178 @@ class ResourceControllerTest extends BaseControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /api/resources?keyword= — キーワード検索
+  // ---------------------------------------------------------------------------
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesName_returnsOnlyMatchingResources() throws Exception {
+    UUID notMatching = insertResource("ノートPC", "EQUIPMENT", null);
+
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "会議").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(ACTIVE_RESOURCE_ID)).exists())
+        .andExpect(jsonPath(idMatcher(notMatching)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordMatchesDescriptionOnly_returnsResourceAndSkipsNullDescription()
+      throws Exception {
+    // 名前には含まれず、説明にだけ含まれるリソース
+    UUID byDescription = insertResource("備品X", "EQUIPMENT", "高性能プロジェクター付き");
+
+    // seed の「第1会議室」は description が null。例外にならず、一致もしないこと
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "プロジェクター").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(byDescription)).exists())
+        .andExpect(jsonPath(idMatcher(ACTIVE_RESOURCE_ID)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithDifferentCase_matchesCaseInsensitively() throws Exception {
+    UUID byName = insertResource("Projector Alpha", "EQUIPMENT", null);
+    UUID byDescription = insertResource("備品Y", "EQUIPMENT", "Portable SPEAKER");
+
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "pROJECTOR").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(byName)).exists())
+        .andExpect(jsonPath(idMatcher(byDescription)).doesNotExist());
+
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "speaker").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(byDescription)).exists())
+        .andExpect(jsonPath(idMatcher(byName)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithPercent_treatsPercentAsLiteral() throws Exception {
+    UUID literal = insertResource("割引100%ルーム", "ROOM", null);
+    // % がワイルドカードなら「100%」にも一致してしまう名前
+    UUID wildcardOnly = insertResource("100番ルーム", "ROOM", null);
+
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "100%").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(literal)).exists())
+        .andExpect(jsonPath(idMatcher(wildcardOnly)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithUnderscore_treatsUnderscoreAsLiteral() throws Exception {
+    UUID literal = insertResource("A_B室", "ROOM", null);
+    // _ がワイルドカード（任意の 1 文字）なら「A_B」にも一致してしまう名前
+    UUID wildcardOnly = insertResource("AXB室", "ROOM", null);
+
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "A_B").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(literal)).exists())
+        .andExpect(jsonPath(idMatcher(wildcardOnly)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithNoMatch_returnsEmptyPage() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "存在しない語zzz").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty())
+        .andExpect(jsonPath("$.totalElements").value(0));
+  }
+
+  @Test
+  @WithMockMember
+  void list_blankKeyword_behavesAsUnspecified() throws Exception {
+    UUID other = insertResource("ノートPC", "EQUIPMENT", null);
+
+    // 空白のみは未指定として扱い、条件が解除される（有効なリソースが全件返る）
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "   ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(ACTIVE_RESOURCE_ID)).exists())
+        .andExpect(jsonPath(idMatcher(other)).exists())
+        .andExpect(jsonPath(idMatcher(INACTIVE_RESOURCE_ID)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithSurroundingSpaces_ignoresSpaces() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/resources").param("keyword", "  会議  ").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(ACTIVE_RESOURCE_ID)).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithCategory_combinesWithAnd() throws Exception {
+    // キーワードには一致するが、カテゴリが異なる
+    UUID otherCategory = insertResource("会議用モニター", "EQUIPMENT", null);
+
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議")
+                .param("category", "ROOM")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(ACTIVE_RESOURCE_ID)).exists())
+        .andExpect(jsonPath(idMatcher(otherCategory)).doesNotExist());
+  }
+
+  @Test
+  @WithMockMember
+  void list_keywordWithTimeRange_excludesOccupiedEvenIfKeywordMatches() throws Exception {
+    // 占有されていない（予約なし）ので、from/to と keyword の両方を満たす
+    UUID free = insertResource("会議用モニター", "EQUIPMENT", null);
+
+    // seed の APPROVED 予約（10:00〜12:00）と重複する範囲。「第1会議室」は keyword に一致するが除外される
+    mockMvc
+        .perform(
+            get("/api/resources")
+                .param("keyword", "会議")
+                .param("from", "2025-06-02T09:00:00")
+                .param("to", "2025-06-02T11:00:00")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(ACTIVE_RESOURCE_ID)).doesNotExist())
+        .andExpect(jsonPath(idMatcher(free)).exists());
+  }
+
+  @Test
+  @WithMockMember
+  void list_memberKeywordMatchingInactiveResource_doesNotReturnInactive() throws Exception {
+    // 「旧備品A」は inactive。キーワードに一致しても MEMBER には返らない
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(INACTIVE_RESOURCE_ID)).doesNotExist());
+  }
+
+  @Test
+  @WithMockAdmin
+  void list_adminKeywordMatchingInactiveResource_returnsInactive() throws Exception {
+    mockMvc
+        .perform(get("/api/resources").param("keyword", "旧備品").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(idMatcher(INACTIVE_RESOURCE_ID)).exists())
+        .andExpect(jsonPath(idMatcher(ACTIVE_RESOURCE_ID)).doesNotExist());
   }
 
   // ---------------------------------------------------------------------------

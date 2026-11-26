@@ -7,6 +7,7 @@ import com.example.bookflow.domain.ReservationStatus;
 import com.example.bookflow.domain.Resource;
 import com.example.bookflow.domain.ResourceCategory;
 import com.example.bookflow.domain.ResourceRepository;
+import com.example.bookflow.domain.ResourceSpecifications;
 import com.example.bookflow.presentation.dto.CreateResourceRequest;
 import com.example.bookflow.presentation.dto.OccupiedSlot;
 import com.example.bookflow.presentation.dto.ResourceResponse;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +65,7 @@ public class ResourceService {
    * PENDING} / {@code APPROVED} の予約が存在するリソースを除外する（Java 側で重複判定）。
    *
    * @param category カテゴリフィルタ（null の場合は全カテゴリ）
+   * @param keyword キーワード（リソース名・説明への部分一致。null・空・空白のみの場合はフィルタしない）
    * @param from 空き確認の開始日時（null の場合はフィルタしない）
    * @param to 空き確認の終了日時（null の場合はフィルタしない）
    * @param isAdmin ADMIN ロールであれば inactive を含む
@@ -72,47 +75,27 @@ public class ResourceService {
   @Transactional(readOnly = true)
   public Page<ResourceResponse> list(
       ResourceCategory category,
+      String keyword,
       LocalDateTime from,
       LocalDateTime to,
       boolean isAdmin,
       Pageable pageable) {
+    Specification<Resource> spec = ResourceSpecifications.search(category, keyword, !isAdmin);
     if (from != null && to != null) {
-      return listWithAvailabilityFilter(category, from, to, isAdmin, pageable);
+      return listWithAvailabilityFilter(spec, from, to, pageable);
     }
-    return listPaginated(category, isAdmin, pageable);
-  }
-
-  /** from/to 指定なし：通常ページネーション。 */
-  private Page<ResourceResponse> listPaginated(
-      ResourceCategory category, boolean isAdmin, Pageable pageable) {
-    Page<Resource> page;
-    if (isAdmin) {
-      page =
-          category != null
-              ? resourceRepository.findByCategory(category, pageable)
-              : resourceRepository.findAll(pageable);
-    } else {
-      page =
-          category != null
-              ? resourceRepository.findByCategoryAndIsActiveTrue(category, pageable)
-              : resourceRepository.findByIsActiveTrue(pageable);
-    }
-    return page.map(ResourceResponse::from);
+    return resourceRepository.findAll(spec, pageable).map(ResourceResponse::from);
   }
 
   /**
-   * from/to 指定あり：全候補を取得し Java で重複判定してから手動ページネーション。
+   * from/to 指定あり：条件に合う全候補を取得し Java で重複判定してから手動ページネーション。
    *
    * <p>重複するリソース ID を一括取得（1 クエリ）し、候補リストから除外する。
    */
   private Page<ResourceResponse> listWithAvailabilityFilter(
-      ResourceCategory category,
-      LocalDateTime from,
-      LocalDateTime to,
-      boolean isAdmin,
-      Pageable pageable) {
+      Specification<Resource> spec, LocalDateTime from, LocalDateTime to, Pageable pageable) {
     // 1. 候補リソースを全取得（ページネーション前）
-    List<Resource> candidates = fetchAllCandidates(category, isAdmin);
+    List<Resource> candidates = resourceRepository.findAll(spec);
 
     // 2. 候補のうち占有済み予約があるリソース ID を特定（1 クエリ）
     List<UUID> candidateIds = candidates.stream().map(Resource::getId).toList();
@@ -136,18 +119,6 @@ public class ResourceService {
             ? List.of()
             : candidates.subList(start, end).stream().map(ResourceResponse::from).toList();
     return new PageImpl<>(content, pageable, total);
-  }
-
-  private List<Resource> fetchAllCandidates(ResourceCategory category, boolean isAdmin) {
-    if (isAdmin) {
-      return category != null
-          ? resourceRepository.findByCategory(category)
-          : resourceRepository.findAll();
-    } else {
-      return category != null
-          ? resourceRepository.findByCategoryAndIsActiveTrue(category)
-          : resourceRepository.findByIsActiveTrue();
-    }
   }
 
   // ---------------------------------------------------------------------------
